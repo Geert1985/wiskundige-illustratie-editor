@@ -266,6 +266,7 @@
     if (!mousePoint) return;
 
     const snap = snapToPoint(mousePoint);
+    drag.lastPoint = snap.point;
     const end = constrainedEndpoint(drag.start, snap.point);
     engine.renderer.preview.end = end;
     updateCrosshair(event, measurementValue() == null ? snap : { point: end, snapped: false });
@@ -356,7 +357,7 @@
 
     if (tool === "line" || tool === "circle") {
       const snap = snapToPoint(p);
-      drag = { mode: "draw", shape: tool, start: snap.point };
+      drag = { mode: "draw", shape: tool, start: snap.point, lastPoint: snap.point };
       typedMeasurement = "";
       engine.renderer.preview = { type: tool, start: snap.point, end: snap.point };
       crosshair.hidden = false;
@@ -537,7 +538,9 @@
         event.preventDefault();
         typedMeasurement += event.key;
         const value = measurementValue();
+        if (drag.lastPoint) engine.renderer.preview.end = constrainedEndpoint(drag.start, drag.lastPoint);
         setStatus(drag.shape === "circle" ? "Straal: " + (value == null ? typedMeasurement : value) : "Lengte: " + (value == null ? typedMeasurement : value));
+        render();
         return;
       }
 
@@ -545,26 +548,29 @@
         event.preventDefault();
         if (!typedMeasurement.includes(".")) typedMeasurement = typedMeasurement || "0";
         typedMeasurement += ".";
+        if (drag.lastPoint) engine.renderer.preview.end = constrainedEndpoint(drag.start, drag.lastPoint);
         setStatus(drag.shape === "circle" ? "Straal: " + typedMeasurement : "Lengte: " + typedMeasurement);
+        render();
         return;
       }
 
       if (event.key === "Backspace") {
         event.preventDefault();
         typedMeasurement = typedMeasurement.slice(0, -1);
+        if (drag.lastPoint) engine.renderer.preview.end = constrainedEndpoint(drag.start, drag.lastPoint);
         const value = measurementValue();
         setStatus(value == null ? "Voer een positieve lengte in." : (drag.shape === "circle" ? "Straal: " + value : "Lengte: " + value));
+        render();
         return;
       }
 
       if (event.key === "Enter") {
         event.preventDefault();
         const value = measurementValue();
-        if (value != null && engine.renderer.preview) {
-          const mousePoint = pointerPosition(event);
-          const previewEnd = mousePoint ? constrainedEndpoint(drag.start, mousePoint) : engine.renderer.preview.end;
-          if (drag.shape === "line") finishLine(drag.start, previewEnd);
-          else finishCircle(drag.start, previewEnd);
+        if (value != null && engine.renderer.preview && drag.lastPoint) {
+          const end = constrainedEndpoint(drag.start, drag.lastPoint);
+          if (drag.shape === "line") finishLine(drag.start, end);
+          else finishCircle(drag.start, end);
           drag = null;
           typedMeasurement = "";
           engine.renderer.preview = null;
