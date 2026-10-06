@@ -17,19 +17,26 @@
   const titleInput = document.getElementById("titleInput");
   const descriptionInput = document.getElementById("descriptionInput");
   const crosshair = document.getElementById("crosshair");
+  const axesBtn = document.getElementById("axesBtn");
 
   let engine = new MI.Engine(null, {
     width: 1000,
     height: 650,
-    bounds: { xMin: 0, yMin: 0, xMax: 10, yMax: 6 },
+    bounds: { xMin: -5, yMin: -3, xMax: 5, yMax: 3 },
     background: "#f7f7f4",
-    padding: 30
+    padding: 30,
+    showAxes: true,
+    axisStep: 1
   });
   let tool = "select";
   let selectedId = null;
   let drag = null;
 
   function setStatus(message) { status.textContent = message; }
+
+  function updateAxesButton() {
+    axesBtn.textContent = engine.renderer.showAxes ? "Assenstelsel verbergen" : "Assenstelsel tonen";
+  }
 
   // Convert browser coordinates to the SVG user coordinate system first,
   // then invert the renderer's mathematical mapping. This accounts for
@@ -66,6 +73,7 @@
     updateMeta();
     canvas.innerHTML = engine.renderSVG();
     objectCount.textContent = engine.model.objects.length + (engine.model.objects.length === 1 ? " object" : " objecten");
+    updateAxesButton();
 
     if (selectedId) {
       const selected = canvas.querySelector('[data-object-id="' + CSS.escape(selectedId) + '"]');
@@ -230,12 +238,27 @@
     if (button) activateTool(button.dataset.tool);
   });
 
+  axesBtn.addEventListener("click", function () {
+    engine.renderer.showAxes = !engine.renderer.showAxes;
+    render();
+    setStatus(engine.renderer.showAxes ? "Assenstelsel getoond." : "Assenstelsel verborgen.");
+  });
+
   titleInput.addEventListener("input", render);
   descriptionInput.addEventListener("input", render);
 
   document.getElementById("newBtn").addEventListener("click", function () {
     if (!global.confirm("Een nieuwe illustratie starten? Niet-opgeslagen wijzigingen gaan verloren.")) return;
-    engine = new MI.Engine(null, engine.renderer);
+    const rendererOptions = {
+      width: engine.renderer.width,
+      height: engine.renderer.height,
+      bounds: Object.assign({}, engine.renderer.bounds),
+      background: engine.renderer.background,
+      padding: engine.renderer.padding,
+      showAxes: engine.renderer.showAxes,
+      axisStep: engine.renderer.axisStep
+    };
+    engine = new MI.Engine(null, rendererOptions);
     selectedId = null;
     titleInput.value = "";
     descriptionInput.value = "";
