@@ -117,15 +117,13 @@
 
   canvasWrap.addEventListener("wheel", zoomAt, { passive: false });
 
-  /* A label is presentation data, not the geometric object itself. Handle its drag
-     before the normal canvas hit-testing so dragging a label never moves the object. */
   canvas.addEventListener("mousedown", function (event) {
     if (event.button !== 0 || tool !== "select") return;
-    const label = event.target.closest ? event.target.closest(".object-label") : null;
+    const label = event.target && event.target.closest ? event.target.closest(".object-label") : null;
     if (!label) return;
-    const object = engine.get(label.dataset.labelId);
+    const object = engine.get(label.getAttribute("data-label-id"));
     if (!object) return;
-    const scale = engine.renderer.scale();
+    const scale = engine.renderer.scale() || 1;
     const defaultDx = (object.type === "line" || object.type === "text" ? 6 : 8) / scale;
     const defaultDy = (object.type === "line" || object.type === "text" ? -6 : -8) / -scale;
     let originalOffsetX = Number(object.labelOffsetX);
@@ -138,19 +136,11 @@
       const legacyDy = Number.isFinite(Number(object.labelDy)) ? Number(object.labelDy) : (object.type === "line" || object.type === "text" ? -6 : -8);
       originalOffsetY = -legacyDy / scale;
     }
-    drag = {
-      mode: "label",
-      objectId: object.id,
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      originalOffsetX: Number.isFinite(originalOffsetX) ? originalOffsetX : defaultDx,
-      originalOffsetY: Number.isFinite(originalOffsetY) ? originalOffsetY : defaultDy
-    };
+    drag = { mode: "label", objectId: object.id, startClientX: event.clientX, startClientY: event.clientY, originalOffsetX: originalOffsetX, originalOffsetY: originalOffsetY };
     selectedId = object.id;
     event.preventDefault();
-    event.stopPropagation();
+    event.stopImmediatePropagation();
     setStatus("Label verplaatsen.");
-    render();
   }, true);
 
   canvasWrap.addEventListener("mousedown", function (event) {
@@ -170,10 +160,7 @@
       const object = engine.get(drag.objectId);
       if (!object) return;
       const scale = engine.renderer.scale() || 1;
-      engine.update(object.id, {
-        labelOffsetX: drag.originalOffsetX + (event.clientX - drag.startClientX) / scale,
-        labelOffsetY: drag.originalOffsetY - (event.clientY - drag.startClientY) / scale
-      });
+      engine.update(object.id, { labelOffsetX: drag.originalOffsetX + (event.clientX - drag.startClientX) / scale, labelOffsetY: drag.originalOffsetY - (event.clientY - drag.startClientY) / scale });
       render();
       return;
     }
