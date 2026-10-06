@@ -9,6 +9,7 @@
   let drawStart = null;
   const originalRenderSVG = MI.Engine.prototype.renderSVG;
   const originalAdd = MI.Engine.prototype.add;
+  const originalUpdate = MI.Engine.prototype.update;
 
   function eventToMath(event, engine) {
     const svg = document.querySelector("#canvas svg");
@@ -115,18 +116,45 @@
     return originalRenderSVG.apply(this, arguments);
   };
 
+  // Final snapping uses the same priority as the visual indicator: geometric point first, grid second.
   MI.Engine.prototype.add = function (object) {
     const next = JSON.parse(JSON.stringify(object));
-    const snapCoordinate = (x, y) => bestSnap(this, { x, y }, null);
+    const snapCoordinate = (x, y, excludeId) => bestSnap(this, { x, y }, excludeId);
     if (next.type === "line") {
-      let snap = snapCoordinate(next.x1, next.y1); if (snap.snapped) { next.x1 = snap.x; next.y1 = snap.y; }
-      snap = snapCoordinate(next.x2, next.y2); if (snap.snapped) { next.x2 = snap.x; next.y2 = snap.y; }
+      let snap = snapCoordinate(next.x1, next.y1, null); if (snap.snapped) { next.x1 = snap.x; next.y1 = snap.y; }
+      snap = snapCoordinate(next.x2, next.y2, null); if (snap.snapped) { next.x2 = snap.x; next.y2 = snap.y; }
     } else if (next.type === "point" || next.type === "text") {
-      const snap = snapCoordinate(next.x, next.y); if (snap.snapped) { next.x = snap.x; next.y = snap.y; }
+      const snap = snapCoordinate(next.x, next.y, null); if (snap.snapped) { next.x = snap.x; next.y = snap.y; }
     } else if (next.type === "circle") {
-      const snap = snapCoordinate(next.cx, next.cy); if (snap.snapped) { next.cx = snap.x; next.cy = snap.y; }
+      const snap = snapCoordinate(next.cx, next.cy, null); if (snap.snapped) { next.cx = snap.x; next.cy = snap.y; }
     }
     return originalAdd.call(this, next);
+  };
+
+  MI.Engine.prototype.update = function (id, patch) {
+    const next = Object.assign({}, patch);
+    const object = this.get(id);
+    if (object) {
+      if ((object.type === "point" || object.type === "text") && Number.isFinite(next.x) && Number.isFinite(next.y)) {
+        const snap = bestSnap(this, { x: next.x, y: next.y }, id);
+        if (snap.snapped) { next.x = snap.x; next.y = snap.y; }
+      }
+      if (object.type === "circle" && Number.isFinite(next.cx) && Number.isFinite(next.cy)) {
+        const snap = bestSnap(this, { x: next.cx, y: next.cy }, id);
+        if (snap.snapped) { next.cx = snap.x; next.cy = snap.y; }
+      }
+      if (object.type === "line") {
+        if (Number.isFinite(next.x1) && Number.isFinite(next.y1)) {
+          const snap = bestSnap(this, { x: next.x1, y: next.y1 }, id);
+          if (snap.snapped) { next.x1 = snap.x; next.y1 = snap.y; }
+        }
+        if (Number.isFinite(next.x2) && Number.isFinite(next.y2)) {
+          const snap = bestSnap(this, { x: next.x2, y: next.y2 }, id);
+          if (snap.snapped) { next.x2 = snap.x; next.y2 = snap.y; }
+        }
+      }
+    }
+    return originalUpdate.call(this, id, next);
   };
 
   const canvas = document.getElementById("canvas");
