@@ -23,18 +23,10 @@
   }
 
   function hitDistance(object, x, y) {
-    if (object.type === "point") {
-      return Math.hypot(x - object.x, y - object.y);
-    }
-    if (object.type === "line") {
-      return distancePointToSegment(x, y, object.x1, object.y1, object.x2, object.y2);
-    }
-    if (object.type === "circle") {
-      return Math.abs(Math.hypot(x - object.cx, y - object.cy) - object.r);
-    }
-    if (object.type === "text") {
-      return Math.hypot(x - object.x, y - object.y);
-    }
+    if (object.type === "point") return Math.hypot(x - object.x, y - object.y);
+    if (object.type === "line") return distancePointToSegment(x, y, object.x1, object.y1, object.x2, object.y2);
+    if (object.type === "circle") return Math.abs(Math.hypot(x - object.cx, y - object.cy) - object.r);
+    if (object.type === "text") return Math.hypot(x - object.x, y - object.y);
     return Infinity;
   }
 
@@ -46,21 +38,10 @@
       this.renderer = new MI.SvgRenderer(rendererOptions || {});
     }
 
-    add(object) {
-      return this.model.add(object);
-    }
-
-    update(id, patch) {
-      return this.model.update(id, patch);
-    }
-
-    remove(id) {
-      return this.model.remove(id);
-    }
-
-    get(id) {
-      return this.model.get(id);
-    }
+    add(object) { return this.model.add(object); }
+    update(id, patch) { return this.model.update(id, patch); }
+    remove(id) { return this.model.remove(id); }
+    get(id) { return this.model.get(id); }
 
     selectAt(x, y, tolerance) {
       const maxDistance = Number.isFinite(Number(tolerance)) ? Number(tolerance) : 0.25;
@@ -68,6 +49,7 @@
       let bestDistance = Infinity;
 
       this.model.objects.forEach((object) => {
+        if (object.visible === false) return;
         const distance = hitDistance(object, x, y);
         if (distance <= maxDistance && distance < bestDistance) {
           best = object;
@@ -82,41 +64,20 @@
       const object = this.model.get(id);
       if (!object) throw new Error("Object niet gevonden: " + id);
 
-      if (object.type === "point" || object.type === "text") {
-        return this.update(id, { x: x, y: y });
-      }
-      if (object.type === "circle") {
-        return this.update(id, { cx: x, cy: y });
-      }
+      if (object.type === "point" || object.type === "text") return this.update(id, { x: x, y: y });
+      if (object.type === "circle") return this.update(id, { cx: x, cy: y });
       if (object.type === "line") {
         const dx = x - object.x1;
         const dy = y - object.y1;
-        return this.update(id, {
-          x1: x,
-          y1: y,
-          x2: object.x2 + dx,
-          y2: object.y2 + dy
-        });
+        return this.update(id, { x1: x, y1: y, x2: object.x2 + dx, y2: object.y2 + dy });
       }
       throw new Error("Verplaatsen wordt nog niet ondersteund voor: " + object.type);
     }
 
-    toJSON() {
-      return this.model.toJSON();
-    }
-
-    toJSONString(pretty) {
-      return JSON.stringify(this.toJSON(), null, pretty ? 2 : 0);
-    }
-
-    load(data) {
-      this.model.load(data);
-      return this;
-    }
-
-    renderSVG() {
-      return this.renderer.render(this.model);
-    }
+    toJSON() { return this.model.toJSON(); }
+    toJSONString(pretty) { return JSON.stringify(this.toJSON(), null, pretty ? 2 : 0); }
+    load(data) { this.model.load(data); return this; }
+    renderSVG() { return this.renderer.render(this.model); }
   }
 
   MI.Engine = Engine;
