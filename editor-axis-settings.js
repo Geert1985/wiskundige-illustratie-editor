@@ -77,15 +77,36 @@
     if (canvas) canvas.innerHTML = activeEngine.renderSVG();
   }
 
-  function refreshMenu() {
-    const menu = document.querySelector("[data-axis-settings]");
-    if (!menu) return;
-    const button = document.querySelector('[data-view-select="axes"]');
-    if (button) openMenu(button);
+  function installViewListCleanup() {
+    const style = document.createElement("style");
+    style.textContent = '#viewList > .view-row:has([data-view-select="grid"]) { display: none; }';
+    document.head.appendChild(style);
+  }
+
+  function installOriginFix() {
+    if (!MI.SvgRenderer || MI.SvgRenderer.prototype.__fziOriginFixInstalled) return;
+    const originalRenderAxes = MI.SvgRenderer.prototype.renderAxes;
+    MI.SvgRenderer.prototype.renderAxes = function () {
+      const output = originalRenderAxes.apply(this, arguments);
+      if (!this.showAxes || this.coordinateSystem !== "cartesian" || !this.showOrigin) return output;
+
+      const b = this.bounds;
+      const hasXAxis = this.showXAxis && b.yMin <= 0 && b.yMax >= 0;
+      const hasYAxis = this.showYAxis && b.xMin <= 0 && b.xMax >= 0;
+      if ((hasXAxis && hasYAxis) || (!hasXAxis && !hasYAxis)) return output;
+
+      const x0 = this.mapX(0);
+      const y0 = this.mapY(0);
+      const origin = '<text x="' + (x0 + 7) + '" y="' + (y0 + 16) + '" fill="#666" font-size="11" font-family="Source Sans 3, sans-serif">0</text>';
+      return output.replace('</g>', origin + '</g>');
+    };
+    MI.SvgRenderer.prototype.__fziOriginFixInstalled = true;
   }
 
   function start() {
     trackEngine();
+    installViewListCleanup();
+    installOriginFix();
     const viewList = document.getElementById("viewList");
     if (!viewList) return;
 
