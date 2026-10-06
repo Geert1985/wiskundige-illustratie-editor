@@ -114,7 +114,7 @@
   }
   function updateSnap(event) {
     const p=mathPoint(event); if(!p){activeCandidate=null;ensureMarker().hidden=true;return;}
-    const list=candidates(p); activeCandidate=list[0]||null, marker=ensureMarker();
+    const list=candidates(p); activeCandidate=list[0]||null; const marker=ensureMarker();
     if(activeCandidate){ const sp=screenPoint(activeCandidate.point); marker.hidden=!sp; if(sp){marker.style.left=sp.x+"px";marker.style.top=sp.y+"px";marker.title=activeCandidate.type;} setClientPosition(event,activeCandidate.point); }
     else marker.hidden=true;
   }
@@ -122,67 +122,52 @@
   function colorForObject(object){ const style=object.style||{}; return style.stroke && style.stroke!=="none" ? style.stroke : (style.fill||"#222222"); }
   function repaintCanvas(){
     const engine=activeEngine(); if(!engine) return; canvas.innerHTML=engine.renderSVG();
-    if(engine.model && engine.model.objects) engine.model.objects.forEach(o=>{ const g=canvas.querySelector('[data-object-id="'+CSS.escape(o.id)+'"]'); if(g && o.visible===false) g.style.display="none"; });
-    if(activeCandidate){ const marker=ensureMarker(); const sp=screenPoint(activeCandidate.point); if(sp){marker.style.left=sp.x+"px";marker.style.top=sp.y+"px";} }
+    if(engine.model&&engine.model.objects) engine.model.objects.forEach(o=>{const g=canvas.querySelector('[data-object-id="'+CSS.escape(o.id)+'"]');if(g&&o.visible===false)g.style.display="none";});
   }
   function updateColorControls(){
-    if(!viewList) return;
-    viewList.querySelectorAll("[data-fzi-color]").forEach(el=>el.remove());
-    const selected=viewList.querySelector(".view-row-selected"); if(!selected) return;
-    const selector=selected.querySelector("[data-select-object]"); if(!selector) return;
-    const id=selector.dataset.selectObject, engine=activeEngine(), object=engine&&engine.get(id); if(!object) return;
-    const wrapper=document.createElement("span"); wrapper.className="fzi-color-button"; wrapper.dataset.fziColor="1";
-    const input=document.createElement("input"); input.type="color"; input.value=colorForObject(object); input.title="Kleur van geselecteerd object"; input.setAttribute("aria-label","Kleur van geselecteerd object");
+    if(!viewList)return;
+    const selected=viewList.querySelector(".view-row-selected");
+    viewList.querySelectorAll("[data-fzi-color]").forEach(el=>{if(!selected||!selected.contains(el))el.remove();});
+    if(!selected)return;
+    const selector=selected.querySelector("[data-select-object]");if(!selector)return;
+    const id=selector.dataset.selectObject,engine=activeEngine(),object=engine&&engine.get(id);if(!object)return;
+    const existing=selected.querySelector("[data-fzi-color]"), existingInput=existing&&existing.querySelector("input");
+    if(existing&&existingInput){existingInput.value=colorForObject(object);return;}
+    const wrapper=document.createElement("span");wrapper.className="fzi-color-button";wrapper.dataset.fziColor="1";
+    const input=document.createElement("input");input.type="color";input.value=colorForObject(object);input.title="Kleur van geselecteerd object";input.setAttribute("aria-label","Kleur van geselecteerd object");
     input.addEventListener("click",e=>e.stopPropagation());
-    input.addEventListener("change",e=>{ const current=activeEngine()&&activeEngine().get(id); if(!current)return; const value=e.target.value, style=Object.assign({},current.style||{},{stroke:value}); if(current.type==="point"||current.type==="text") style.fill=value; activeEngine().update(id,{style}); repaintCanvas(); });
-    wrapper.appendChild(input); const labelButton=selected.querySelector("[data-toggle-label]"); if(labelButton) selected.insertBefore(wrapper,labelButton); else selected.appendChild(wrapper);
+    input.addEventListener("change",e=>{const current=activeEngine()&&activeEngine().get(id);if(!current)return;const value=e.target.value,style=Object.assign({},current.style||{},{stroke:value});if(current.type==="point"||current.type==="text")style.fill=value;activeEngine().update(id,{style});repaintCanvas();});
+    wrapper.appendChild(input);const labelButton=selected.querySelector("[data-toggle-label]");if(labelButton)selected.insertBefore(wrapper,labelButton);else selected.appendChild(wrapper);
   }
 
   function refreshSnapButtons(){
-    const grid=viewList&&viewList.querySelector("[data-fzi-snap=grid]"), objects=viewList&&viewList.querySelector("[data-fzi-snap=objects]");
-    if(grid){ grid.classList.toggle("active",snapSettings.grid); grid.classList.toggle("inactive",!snapSettings.grid); grid.textContent=snapSettings.grid?"🧲":"⊘"; grid.setAttribute("aria-label",snapSettings.grid?"Rasterpunten snappen aan":"Rasterpunten snappen uit"); grid.title=snapSettings.grid?"Rasterpunten snappen is aan":"Rasterpunten snappen is uit"; }
-    if(objects){ const on=objectSnapEnabled(); objects.classList.toggle("active",on); objects.classList.toggle("inactive",!on); objects.textContent=on?"⌁":"⊘"; objects.title=on?"Object-snappen is aan":"Object-snappen is uit"; }
+    const grid=viewList&&viewList.querySelector("[data-fzi-snap=grid]"),objects=viewList&&viewList.querySelector("[data-fzi-snap=objects]");
+    if(grid){grid.classList.toggle("active",snapSettings.grid);grid.classList.toggle("inactive",!snapSettings.grid);grid.textContent=snapSettings.grid?"🧲":"⊘";grid.setAttribute("aria-label",snapSettings.grid?"Rasterpunten snappen aan":"Rasterpunten snappen uit");grid.title=snapSettings.grid?"Rasterpunten snappen is aan":"Rasterpunten snappen is uit";}
+    if(objects){const on=objectSnapEnabled();objects.classList.toggle("active",on);objects.classList.toggle("inactive",!on);objects.textContent=on?"⌁":"⊘";objects.title=on?"Object-snappen is aan":"Object-snappen is uit";}
   }
 
   function injectSnapUI(){
     ensureStyle();
     const row=viewList&&viewList.querySelector('[data-view="grid"]')?.closest(".view-row");
-    if(row&&!row.querySelector("[data-fzi-snap=grid]")){
-      const button=document.createElement("button"); button.className="fzi-snap-button"; button.type="button"; button.dataset.fziSnap="grid";
-      row.insertBefore(button,row.lastElementChild); button.addEventListener("click",e=>{e.stopPropagation();snapSettings.grid=!snapSettings.grid;saveSettings();refreshSnapButtons();});
-    }
-    if(row&&!row.querySelector("[data-fzi-snap=objects]")){
-      const os=document.createElement("button"); os.className="fzi-snap-button"; os.type="button"; os.dataset.fziSnap="objects"; row.insertBefore(os,row.lastElementChild); os.addEventListener("click",e=>{e.stopPropagation();togglePopover(os);});
-    }
-    refreshSnapButtons(); updateColorControls();
+    if(row&&!row.querySelector("[data-fzi-snap=grid]")){const button=document.createElement("button");button.className="fzi-snap-button";button.type="button";button.dataset.fziSnap="grid";row.insertBefore(button,row.lastElementChild);button.addEventListener("click",e=>{e.stopPropagation();snapSettings.grid=!snapSettings.grid;saveSettings();refreshSnapButtons();});}
+    if(row&&!row.querySelector("[data-fzi-snap=objects]")){const os=document.createElement("button");os.className="fzi-snap-button";os.type="button";os.dataset.fziSnap="objects";row.insertBefore(os,row.lastElementChild);os.addEventListener("click",e=>{e.stopPropagation();togglePopover(os);});}
+    refreshSnapButtons();updateColorControls();
   }
 
-  function objectSnapEnabled(){ return snapSettings.point||snapSettings.endpoint||snapSettings.midpoint||snapSettings.center||snapSettings.intersection; }
+  function objectSnapEnabled(){return snapSettings.point||snapSettings.endpoint||snapSettings.midpoint||snapSettings.center||snapSettings.intersection;}
   function togglePopover(anchor){
-    const old=document.querySelector(".fzi-snap-popover"); if(old){old.remove();return;}
-    const pop=document.createElement("div"); pop.className="fzi-snap-popover";
-    const items=[['point','Punten'],['endpoint','Eindpunten'],['midpoint','Middelpunten'],['center','Centra'],['intersection','Snijpunten']];
-    pop.innerHTML='<strong>Object-snappen</strong>'+items.map(([k,t])=>'<label><input type="checkbox" data-snap-choice="'+k+'" '+(snapSettings[k]?"checked":"")+'> '+t+'</label>').join("");
-    document.body.appendChild(pop); const a=anchor.getBoundingClientRect(); pop.style.left=a.left+"px"; pop.style.top=(a.bottom+4)+"px";
+    const old=document.querySelector(".fzi-snap-popover");if(old){old.remove();return;}
+    const pop=document.createElement("div");pop.className="fzi-snap-popover";const items=[['point','Punten'],['endpoint','Eindpunten'],['midpoint','Middelpunten'],['center','Centra'],['intersection','Snijpunten']];
+    pop.innerHTML='<strong>Object-snappen</strong>'+items.map(([k,t])=>'<label><input type="checkbox" data-snap-choice="'+k+'" '+(snapSettings[k]?"checked":"")+'> '+t+'</label>').join("");document.body.appendChild(pop);
+    const a=anchor.getBoundingClientRect();pop.style.left=a.left+"px";pop.style.top=(a.bottom+4)+"px";
     pop.addEventListener("change",e=>{const input=e.target.closest("[data-snap-choice]");if(!input)return;snapSettings[input.dataset.snapChoice]=input.checked;saveSettings();refreshSnapButtons();});
   }
 
-  function labelDown(event){
-    const target=event.target.closest&&event.target.closest(".object-label"); if(!target)return false;
-    const engine=activeEngine(), id=target.dataset.labelId, object=engine&&engine.get(id); if(!object)return false;
-    event.preventDefault();event.stopImmediatePropagation();
-    labelDrag={id,target,startX:event.clientX,startY:event.clientY,baseDx:Number(object.labelDx)||0,baseDy:Number(object.labelDy)||0,baseSvgX:Number(target.getAttribute("x")),baseSvgY:Number(target.getAttribute("y"))}; return true;
-  }
-
+  function labelDown(event){const target=event.target.closest&&event.target.closest(".object-label");if(!target)return false;const engine=activeEngine(),id=target.dataset.labelId,object=engine&&engine.get(id);if(!object)return false;event.preventDefault();event.stopImmediatePropagation();labelDrag={id,target,startX:event.clientX,startY:event.clientY,baseDx:Number(object.labelDx)||0,baseDy:Number(object.labelDy)||0,baseSvgX:Number(target.getAttribute("x")),baseSvgY:Number(target.getAttribute("y"))};return true;}
   canvasWrap.addEventListener("mousedown",event=>{if(labelDown(event))return;updateSnap(event);},true);
-  global.addEventListener("mousemove",event=>{
-    if(labelDrag){ event.preventDefault();event.stopImmediatePropagation(); const engine=activeEngine(),object=engine&&engine.get(labelDrag.id);if(!object)return; const dx=event.clientX-labelDrag.startX,dy=event.clientY-labelDrag.startY; object.labelDx=labelDrag.baseDx+dx;object.labelDy=labelDrag.baseDy+dy;object.showLabel=true; labelDrag.target.setAttribute("x",String(labelDrag.baseSvgX+dx));labelDrag.target.setAttribute("y",String(labelDrag.baseSvgY+dy)); return; }
-    if(canvasWrap.contains(event.target)) updateSnap(event);
-  },true);
-  global.addEventListener("mouseup",event=>{
-    if(!labelDrag)return; event.preventDefault();event.stopImmediatePropagation(); const engine=activeEngine(); if(engine){const o=engine.get(labelDrag.id);if(o){engine.update(o.id,{labelDx:labelDrag.baseDx+(event.clientX-labelDrag.startX),labelDy:labelDrag.baseDy+(event.clientY-labelDrag.startY),showLabel:true});try{localStorage.setItem("fzi.mathIllustration.draft",engine.toJSONString(true));}catch(_){}}} labelDrag=null;
-  },true);
+  global.addEventListener("mousemove",event=>{if(labelDrag){event.preventDefault();event.stopImmediatePropagation();const engine=activeEngine(),object=engine&&engine.get(labelDrag.id);if(!object)return;const dx=event.clientX-labelDrag.startX,dy=event.clientY-labelDrag.startY;object.labelDx=labelDrag.baseDx+dx;object.labelDy=labelDrag.baseDy+dy;object.showLabel=true;labelDrag.target.setAttribute("x",String(labelDrag.baseSvgX+dx));labelDrag.target.setAttribute("y",String(labelDrag.baseSvgY+dy));return;}if(canvasWrap.contains(event.target))updateSnap(event);},true);
+  global.addEventListener("mouseup",event=>{if(!labelDrag)return;event.preventDefault();event.stopImmediatePropagation();const engine=activeEngine();if(engine){const o=engine.get(labelDrag.id);if(o){engine.update(o.id,{labelDx:labelDrag.baseDx+(event.clientX-labelDrag.startX),labelDy:labelDrag.baseDy+(event.clientY-labelDrag.startY),showLabel:true});try{localStorage.setItem("fzi.mathIllustration.draft",engine.toJSONString(true));}catch(_){}}}labelDrag=null;},true);
 
   ensureStyle();
-  if(viewList){ uiObserver=new MutationObserver(injectSnapUI); uiObserver.observe(viewList,{childList:true,subtree:true}); injectSnapUI(); }
+  if(viewList){uiObserver=new MutationObserver(injectSnapUI);uiObserver.observe(viewList,{childList:true,subtree:true});injectSnapUI();}
 })(window);
