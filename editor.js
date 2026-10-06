@@ -121,6 +121,32 @@
   function zoomAt(event) { if (drag) return; event.preventDefault(); const p = pointerPosition(event); if (!p) return; const b = engine.renderer.bounds, factor = event.deltaY < 0 ? 0.85 : 1 / 0.85, nx = (b.xMax - b.xMin) * factor, ny = (b.yMax - b.yMin) * factor, fx = (p.x - b.xMin) / (b.xMax - b.xMin), fy = (p.y - b.yMin) / (b.yMax - b.yMin); engine.renderer.bounds = { xMin: p.x - fx * nx, xMax: p.x + (1 - fx) * nx, yMin: p.y - fy * ny, yMax: p.y + (1 - fy) * ny }; render(); }
 
   canvasWrap.addEventListener("wheel", zoomAt, { passive: false });
+
+  /* A label is presentation data, not the geometric object itself. Handle its drag
+     before the normal canvas hit-testing so dragging a label never moves the object. */
+  canvas.addEventListener("mousedown", function (event) {
+    if (event.button !== 0 || tool !== "select") return;
+    const label = event.target.closest ? event.target.closest(".object-label") : null;
+    if (!label) return;
+    const object = engine.get(label.dataset.labelId);
+    if (!object) return;
+    const defaultDx = object.type === "line" || object.type === "text" ? 6 : 8;
+    const defaultDy = object.type === "line" || object.type === "text" ? -6 : -8;
+    drag = {
+      mode: "label",
+      objectId: object.id,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      originalDx: Number.isFinite(Number(object.labelDx)) ? Number(object.labelDx) : defaultDx,
+      originalDy: Number.isFinite(Number(object.labelDy)) ? Number(object.labelDy) : defaultDy
+    };
+    selectedId = object.id;
+    event.preventDefault();
+    event.stopPropagation();
+    setStatus("Label verplaatsen.");
+    render();
+  }, true);
+
   canvasWrap.addEventListener("mousedown", function (event) {
     if (event.button !== 0) return; event.preventDefault(); const p = pointerPosition(event); if (!p) return; const screenPerMath = svgScreenScale();
     if (tool === "point") { const snap = snapToPoint(p); selectedId = engine.add({ type: "point", x: snap.point.x, y: snap.point.y }).id; render(); setStatus(snap.snapped ? (snap.grid ? "Punt vastgeklikt op rasterpunt." : "Punt vastgeklikt aan bestaand punt.") : "Punt toegevoegd."); return; }
@@ -133,13 +159,24 @@
   });
 
   global.addEventListener("mousemove", function (event) {
-    if (!drag) return; if (drag.mode === "draw") { updateDrawPreview(event); return; }
+    if (!drag) return;
+    if (drag.mode === "label") {
+      const object = engine.get(drag.objectId);
+      if (!object) return;
+      engine.update(object.id, {
+        labelDx: drag.originalDx + (event.clientX - drag.startClientX),
+        labelDy: drag.originalDy + (event.clientY - drag.startClientY)
+      });
+      render();
+      return;
+    }
+    if (drag.mode === "draw") { updateDrawPreview(event); return; }
     const delta = mathDeltaFromScreen(event.clientX - drag.startClientX, event.clientY - drag.startClientY, drag.screenPerMath);
     if (drag.mode === "object") { const o = drag.original; if (drag.objectType === "point" || drag.objectType === "text") { const target = snapToPoint({ x: o.x + delta.x, y: o.y + delta.y }, drag.objectId); engine.update(drag.objectId, { x: target.point.x, y: target.point.y }); } else if (drag.objectType === "circle") { const target = snapToPoint({ x: o.cx + delta.x, y: o.cy + delta.y }, drag.objectId); engine.update(drag.objectId, { cx: target.point.x, cy: target.point.y }); } else if (drag.objectType === "line") engine.update(drag.objectId, { x1: o.x1 + delta.x, y1: o.y1 + delta.y, x2: o.x2 + delta.x, y2: o.y2 + delta.y }); render(); return; }
     if (drag.mode === "pan") { const original = drag.bounds, dx = delta.x, dy = delta.y; engine.renderer.bounds = { xMin: original.xMin - dx, xMax: original.xMax - dx, yMin: original.yMin - dy, yMax: original.yMax - dy }; render(); }
   });
 
-  global.addEventListener("mouseup", function () { if (!drag) return; const current = drag; drag = null; crosshair.hidden = true; crosshair.classList.remove("snapped"); if (current.mode === "draw") { const end = current.lastPoint || current.start, constrained = constrainedEndpoint(current.start, end); if (current.shape === "line") finishLine(current.start, constrained); if (current.shape === "circle") finishCircle(current.start, constrained); return; } if (current.mode === "pan") setStatus("Canvas verschoven."); });
+  global.addEventListener("mouseup", function () { if (!drag) return; const current = drag; drag = null; crosshair.hidden = true; crosshair.classList.remove("snapped"); if (current.mode === "draw") { const end = current.lastPoint || current.start, constrained = constrainedEndpoint(current.start, end); if (current.shape === "line") finishLine(current.start, constrained); if (current.shape === "circle") finishCircle(current.start, constrained); return; } if (current.mode === "pan") setStatus("Canvas verschoven."); if (current.mode === "label") setStatus("Label verplaatst."); });
 
   viewList.addEventListener("click", function (event) {
     const eye = event.target.closest("[data-object-visibility]"); if (eye) { const object = engine.get(eye.dataset.objectVisibility); if (object) { engine.update(object.id, { visible: object.visible === false }); render(); } return; }
