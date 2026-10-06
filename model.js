@@ -36,6 +36,8 @@
       showLabel: input.showLabel === true || hasLegacyLabel,
       labelDx: finite(input.labelDx, 0),
       labelDy: finite(input.labelDy, 0),
+      labelOffsetX: Number.isFinite(Number(input.labelOffsetX)) ? Number(input.labelOffsetX) : null,
+      labelOffsetY: Number.isFinite(Number(input.labelOffsetY)) ? Number(input.labelOffsetY) : null,
       style: normaliseStyle(type, input.style)
     };
 
