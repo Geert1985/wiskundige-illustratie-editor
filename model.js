@@ -27,12 +27,13 @@
     const type = input.type;
     const id = String(input.id || "");
     if (!id) throw new Error("Elk illustratie-object heeft een id nodig.");
+    const hasLegacyLabel = input.showLabel == null && input.label != null;
     const object = {
       id: id,
       name: String(input.name == null || input.name === "" ? id : input.name),
       type: type,
       visible: input.visible !== false,
-      showLabel: input.showLabel === true,
+      showLabel: input.showLabel === true || hasLegacyLabel,
       style: normaliseStyle(type, input.style)
     };
 
@@ -59,8 +60,7 @@
       this.type = data.type || "geometry"; this.version = MODEL_VERSION; this.meta = clone(data.meta || {});
       this.objects = (Array.isArray(data.objects) ? data.objects : []).map(normaliseObject);
       const ids = this.objects.map((object) => String(object.id).match(/-(\d+)$/)).filter(Boolean).map((match) => Number(match[1]));
-      this._nextId = ids.length ? Math.max.apply(null, ids) + 1 : 1;
-      return this;
+      this._nextId = ids.length ? Math.max.apply(null, ids) + 1 : 1; return this;
     }
   }
 
