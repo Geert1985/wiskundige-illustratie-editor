@@ -71,14 +71,16 @@
       return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(),this.renderAxes(),body,this.renderPreview(),'</svg>'].join("\n");
     }
 
-    renderLabel(object, label, dx, dy, line) {
+    renderLabel(object, label, defaultDx, defaultDy, line) {
       let x, y;
       if (line) { x = this.mapX((object.x1 + object.x2) / 2); y = this.mapY((object.y1 + object.y2) / 2); }
       else if (object.type === "circle") { x = this.mapX(object.cx); y = this.mapY(object.cy); }
       else { x = this.mapX(object.x); y = this.mapY(object.y); }
       const style = object.style || {};
       const labelColor = style.stroke && style.stroke !== "none" ? style.stroke : (style.fill || "#222");
-      return '<text x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="14" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
+      const dx = Number.isFinite(Number(object.labelDx)) ? Number(object.labelDx) : defaultDx;
+      const dy = Number.isFinite(Number(object.labelDy)) ? Number(object.labelDy) : defaultDy;
+      return '<text class="object-label" data-label-id="' + esc(object.id) + '" x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="14" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
     }
 
     renderObject(object) {
