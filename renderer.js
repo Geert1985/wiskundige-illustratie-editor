@@ -6,7 +6,7 @@
   const MI = NS.MathIllustration = NS.MathIllustration || {};
   const SVG_NS = "http://www.w3.org/2000/svg";
 
-  function esc(value) { return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;"); }
+  function esc(value) { return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;/g").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;"); }
   function number(value, digits) { return Number(Number(value).toFixed(digits == null ? 6 : digits)); }
   function axisNumber(value) { const n = Number(Number(value).toFixed(1)); return Object.is(n, -0) ? 0 : n; }
   function dash(style) { return style.dash ? ' stroke-dasharray="' + esc(style.dash) + '"' : ""; }
@@ -19,6 +19,9 @@
       this.bounds = Object.assign({ xMin: -5, yMin: -3, xMax: 5, yMax: 3 }, opts.bounds || {});
       this.background = opts.background || "transparent"; this.padding = Number(opts.padding || 0);
       this.showAxes = opts.showAxes !== false; this.showGrid = opts.showGrid === true; this.axisStep = Number(opts.axisStep || 1);
+      this.showXAxis = opts.showXAxis !== false; this.showYAxis = opts.showYAxis !== false;
+      this.showAxisLabels = opts.showAxisLabels !== false; this.showOrigin = opts.showOrigin !== false;
+      this.coordinateSystem = opts.coordinateSystem || "cartesian";
       this.preview = null; this.syncAspectRatio();
     }
 
@@ -39,17 +42,32 @@
     }
 
     renderAxes() {
-      if (!this.showAxes) return "";
+      if (!this.showAxes || this.coordinateSystem !== "cartesian") return "";
       const b = this.bounds, parts = [], axisStroke = "#777", tickStroke = "#aaa", labelFill = "#666", x0 = this.mapX(0), y0 = this.mapY(0), step = this.axisStep;
-      if (b.yMin <= 0 && b.yMax >= 0) {
+      const canDrawX = this.showXAxis && b.yMin <= 0 && b.yMax >= 0;
+      const canDrawY = this.showYAxis && b.xMin <= 0 && b.xMax >= 0;
+      if (canDrawX) {
         parts.push('<line x1="' + this.mapX(b.xMin) + '" y1="' + y0 + '" x2="' + this.mapX(b.xMax) + '" y2="' + y0 + '" stroke="' + axisStroke + '" stroke-width="1.4"/>');
-        for (let x = Math.ceil(b.xMin / step) * step; x <= b.xMax + 1e-9; x += step) { if (Math.abs(x) < 1e-9) continue; const sx = this.mapX(x); parts.push('<line x1="' + sx + '" y1="' + (y0 - 4) + '" x2="' + sx + '" y2="' + (y0 + 4) + '" stroke="' + tickStroke + '" stroke-width="1"/>'); parts.push('<text x="' + sx + '" y="' + (y0 + 18) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">' + esc(axisNumber(x)) + '</text>'); }
-        parts.push('<text x="' + (this.mapX(b.xMax) - 8) + '" y="' + (y0 - 8) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif" text-anchor="end">x</text>');
+        for (let x = Math.ceil(b.xMin / step) * step; x <= b.xMax + 1e-9; x += step) {
+          if (Math.abs(x) < 1e-9) continue;
+          const sx = this.mapX(x);
+          parts.push('<line x1="' + sx + '" y1="' + (y0 - 4) + '" x2="' + sx + '" y2="' + (y0 + 4) + '" stroke="' + tickStroke + '" stroke-width="1"/>');
+          if (this.showAxisLabels) parts.push('<text x="' + sx + '" y="' + (y0 + 18) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">' + esc(axisNumber(x)) + '</text>');
+        }
+        if (this.showAxisLabels) parts.push('<text x="' + (this.mapX(b.xMax) - 8) + '" y="' + (y0 - 8) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif" text-anchor="end">x</text>');
       }
-      if (b.xMin <= 0 && b.xMax >= 0) {
+      if (canDrawY) {
         parts.push('<line x1="' + x0 + '" y1="' + this.mapY(b.yMin) + '" x2="' + x0 + '" y2="' + this.mapY(b.yMax) + '" stroke="' + axisStroke + '" stroke-width="1.4"/>');
-        for (let y = Math.ceil(b.yMin / step) * step; y <= b.yMax + 1e-9; y += step) { if (Math.abs(y) < 1e-9) continue; const sy = this.mapY(y); parts.push('<line x1="' + (x0 - 4) + '" y1="' + sy + '" x2="' + (x0 + 4) + '" y2="' + sy + '" stroke="' + tickStroke + '" stroke-width="1"/>'); parts.push('<text x="' + (x0 - 8) + '" y="' + (sy + 4) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="end">' + esc(axisNumber(y)) + '</text>'); }
-        parts.push('<text x="' + (x0 + 8) + '" y="' + (this.mapY(b.yMax) + 12) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif">y</text>');
+        for (let y = Math.ceil(b.yMin / step) * step; y <= b.yMax + 1e-9; y += step) {
+          if (Math.abs(y) < 1e-9) continue;
+          const sy = this.mapY(y);
+          parts.push('<line x1="' + (x0 - 4) + '" y1="' + sy + '" x2="' + (x0 + 4) + '" y2="' + sy + '" stroke="' + tickStroke + '" stroke-width="1"/>');
+          if (this.showAxisLabels) parts.push('<text x="' + (x0 - 8) + '" y="' + (sy + 4) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="end">' + esc(axisNumber(y)) + '</text>');
+        }
+        if (this.showAxisLabels) parts.push('<text x="' + (x0 + 8) + '" y="' + (this.mapY(b.yMax) + 12) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif">y</text>');
+      }
+      if (this.showOrigin && canDrawX && canDrawY) {
+        parts.push('<text x="' + (x0 + 7) + '" y="' + (y0 + 16) + '" fill="' + labelFill + '" font-size="11" font-family="Source Sans 3, sans-serif">0</text>');
       }
       return '<g data-illustration-axes aria-hidden="true">' + parts.join("") + '</g>';
     }
