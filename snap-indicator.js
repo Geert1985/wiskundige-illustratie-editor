@@ -33,6 +33,7 @@
   }
 
   function bestSnap(engine, point, excludeId) {
+    if (engine.renderer.showSnapPoints === false) return { x: point.x, y: point.y, snapped: false, grid: false, kind: null };
     const geometric = MI.snapPoint ? MI.snapPoint(engine, point, excludeId) : null;
     if (geometric && geometric.snapped) return { x: geometric.x, y: geometric.y, snapped: true, grid: false, kind: geometric.kind };
     return gridSnap(engine, point) || { x: point.x, y: point.y, snapped: false, grid: false, kind: null };
@@ -87,11 +88,17 @@
   function showIndicator(event) {
     if (!activeEngine) return;
     const toolButton = document.querySelector(".tool.active");
-    if (!toolButton || toolButton.dataset.tool === "select") { removeIndicator(); return; }
+    if (!toolButton) { removeIndicator(); return; }
+    const toolName = toolButton.dataset.tool;
+    const movingObject = toolName === "select" && document.getElementById("canvasWrap")?.dataset.snapDragging === "true";
+    if (toolName === "select" && !movingObject) { removeIndicator(); return; }
+    if (toolName !== "select" && toolName !== "line" && toolName !== "circle" && toolName !== "point" && toolName !== "text") { removeIndicator(); return; }
+
     const mouse = eventToMath(event, activeEngine);
     const svg = document.querySelector("#canvas svg");
     if (!mouse || !svg) return;
-    const snap = bestSnap(activeEngine, mouse, null);
+    const excludeId = movingObject ? document.getElementById("canvasWrap").dataset.snapExcludeId || null : null;
+    const snap = bestSnap(activeEngine, mouse, excludeId);
     removeIndicator();
     if (!snap.snapped) {
       if (activeEngine.renderer.preview && drawStart) updateCrosshair(event, snap);
