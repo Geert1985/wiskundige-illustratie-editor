@@ -25,7 +25,6 @@
     const step = Number(engine.renderer.axisStep) || 1;
     const gx = Math.round(point.x / step) * step;
     const gy = Math.round(point.y / step) * step;
-    // A fixed screen-space tolerance makes snapping predictable at every zoom level.
     const tolerance = 12 / Math.max(engine.renderer.scale(), 1e-9);
     return Math.hypot(point.x - gx, point.y - gy) <= tolerance
       ? { x: gx, y: gy, snapped: true, grid: true, kind: "grid" }
@@ -100,8 +99,7 @@
 
     const p = { x: activeEngine.renderer.mapX(snap.x), y: activeEngine.renderer.mapY(snap.y) };
     const layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    layer.setAttribute("class", "fzi-snap-indicator");
-    layer.setAttribute("pointer-events", "none");
+    layer.setAttribute("class", "fzi-snap-indicator"); layer.setAttribute("pointer-events", "none");
     const ring = document.createElementNS("http://www.w3.org/2000/svg", "circle");
     ring.setAttribute("cx", p.x); ring.setAttribute("cy", p.y); ring.setAttribute("r", "8");
     ring.setAttribute("fill", "none"); ring.setAttribute("stroke", "#2563eb"); ring.setAttribute("stroke-width", "2");
@@ -117,7 +115,6 @@
     return originalRenderSVG.apply(this, arguments);
   };
 
-  // Final snapping uses the same priority as the visual indicator: geometric point first, grid second.
   MI.Engine.prototype.add = function (object) {
     const next = JSON.parse(JSON.stringify(object));
     const snapCoordinate = (x, y) => bestSnap(this, { x, y }, null);
@@ -141,10 +138,12 @@
         if (activeEngine && activeEngine.renderer.preview) drawStart = { ...activeEngine.renderer.preview.start };
       }, 0);
     });
-    canvas.addEventListener("pointermove", showIndicator);
-    canvas.addEventListener("pointerleave", function () { removeIndicator(); });
   }
 
-  global.addEventListener("mouseup", function () { drawStart = null; });
+  // Run after editor.js' mousemove handler so its render() cannot erase the indicator.
+  global.addEventListener("mousemove", showIndicator);
+  global.addEventListener("mouseup", function () { drawStart = null; removeIndicator(); });
+  global.addEventListener("mouseleave", removeIndicator);
+
   MI.Engine.prototype.__fziSnapIndicatorInstalled = true;
 })(window);
