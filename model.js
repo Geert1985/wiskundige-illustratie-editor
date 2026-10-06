@@ -59,6 +59,7 @@
     const object = {
       id: String(input.id || ""),
       type: type,
+      visible: input.visible !== false,
       style: normaliseStyle(type, input.style)
     };
 
