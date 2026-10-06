@@ -32,6 +32,7 @@
   let tool = "select";
   let selectedId = null;
   let drag = null;
+  let typedMeasurement = "";
 
   function setStatus(message) { status.textContent = message; }
   function fmt(value) { return Number(value).toFixed(1); }
@@ -50,8 +51,10 @@
 
   function updateBoundsInputs() {
     const b = engine.renderer.bounds;
-    xMinInput.value = fmt(b.xMin); xMaxInput.value = fmt(b.xMax);
-    yMinInput.value = fmt(b.yMin); yMaxInput.value = fmt(b.yMax);
+    xMinInput.value = fmt(b.xMin);
+    xMaxInput.value = fmt(b.xMax);
+    yMinInput.value = fmt(b.yMin);
+    yMaxInput.value = fmt(b.yMax);
   }
 
   function applyVisibilityToCanvas() {
@@ -65,7 +68,6 @@
     const rows = [];
     rows.push('<div class="view-row"><span class="view-name">Assenstelsel</span><button class="eye-btn" type="button" data-view="axes" aria-label="Assenstelsel zichtbaar">' + eyeIcon(engine.renderer.showAxes) + '</button></div>');
     rows.push('<div class="view-row"><span class="view-name">Raster</span><button class="eye-btn" type="button" data-view="grid" aria-label="Raster zichtbaar">' + eyeIcon(engine.renderer.showGrid) + '</button></div>');
-
     if (engine.model.objects.length) rows.push('<div class="view-divider"></div>');
 
     engine.model.objects.forEach((object) => {
@@ -124,7 +126,10 @@
 
     const deleteButton = document.getElementById("deleteSelected");
     if (deleteButton) deleteButton.addEventListener("click", () => {
-      engine.remove(object.id); selectedId = null; render(); setStatus("Object verwijderd.");
+      engine.remove(object.id);
+      selectedId = null;
+      render();
+      setStatus("Object verwijderd.");
     });
   }
 
@@ -139,6 +144,7 @@
 
   function activateTool(next) {
     tool = next;
+    typedMeasurement = "";
     document.querySelectorAll(".tool").forEach((button) => button.classList.toggle("active", button.dataset.tool === tool));
     setStatus(tool === "select" ? "Selecteer een object of verschuif het canvas." : "Teken: " + tool + ".");
   }
@@ -156,7 +162,10 @@
     engine.model.objects.forEach((object) => {
       if (object.type !== "point" || object.visible === false || object.id === excludeId) return;
       const distance = Math.hypot(point.x - object.x, point.y - object.y);
-      if (distance <= tolerance && distance < bestDistance) { best = object; bestDistance = distance; }
+      if (distance <= tolerance && distance < bestDistance) {
+        best = object;
+        bestDistance = distance;
+      }
     });
     return best ? { point: { x: best.x, y: best.y }, snapped: true, object: best } : { point: point, snapped: false, object: null };
   }
@@ -167,9 +176,14 @@
     const matrix = svg.getScreenCTM();
     if (!matrix) return null;
     const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
-    const r = engine.renderer, b = r.bounds;
-    const dw = r.width - r.padding * 2, dh = r.height - r.padding * 2;
-    return { x: b.xMin + ((p.x - r.padding) / dw) * (b.xMax - b.xMin), y: b.yMin + ((r.height - r.padding - p.y) / dh) * (b.yMax - b.yMin) };
+    const r = engine.renderer;
+    const b = r.bounds;
+    const dw = r.width - r.padding * 2;
+    const dh = r.height - r.padding * 2;
+    return {
+      x: b.xMin + ((p.x - r.padding) / dw) * (b.xMax - b.xMin),
+      y: b.yMin + ((r.height - r.padding - p.y) / dh) * (b.yMax - b.yMin)
+    };
   }
 
   function screenPosition(point) {
@@ -177,8 +191,10 @@
     if (!svg) return null;
     const matrix = svg.getScreenCTM();
     if (!matrix) return null;
-    const r = engine.renderer, b = r.bounds;
-    const dw = r.width - r.padding * 2, dh = r.height - r.padding * 2;
+    const r = engine.renderer;
+    const b = r.bounds;
+    const dw = r.width - r.padding * 2;
+    const dh = r.height - r.padding * 2;
     const svgX = r.padding + ((point.x - b.xMin) / (b.xMax - b.xMin)) * dw;
     const svgY = r.height - r.padding - ((point.y - b.yMin) / (b.yMax - b.yMin)) * dh;
     const p = new DOMPoint(svgX, svgY).matrixTransform(matrix);
@@ -195,28 +211,81 @@
     crosshair.classList.toggle("snapped", Boolean(snap && snap.snapped));
   }
 
+  function measurementValue() {
+    if (!typedMeasurement) return null;
+    const value = Number(typedMeasurement);
+    return Number.isFinite(value) && value > 0 ? value : null;
+  }
+
+  function constrainedEndpoint(start, mousePoint) {
+    const value = measurementValue();
+    if (value == null) return mousePoint;
+
+    let dx = mousePoint.x - start.x;
+    let dy = mousePoint.y - start.y;
+    const directionLength = Math.hypot(dx, dy);
+    if (directionLength < 1e-9) {
+      dx = 1;
+      dy = 0;
+    } else {
+      dx /= directionLength;
+      dy /= directionLength;
+    }
+    return { x: start.x + dx * value, y: start.y + dy * value };
+  }
+
+  function measurementStatus() {
+    const value = measurementValue();
+    if (value == null) return null;
+    return drag && drag.shape === "circle" ? "Straal: " + value : "Lengte: " + value;
+  }
+
   function finishLine(start, end) {
-    if (Math.hypot(end.x - start.x, end.y - start.y) < 0.05) return;
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    if (length < 0.05) return;
+    const requestedLength = measurementValue();
     engine.renderer.preview = null;
     selectedId = engine.add({ type: "line", x1: start.x, y1: start.y, x2: end.x, y2: end.y }).id;
-    render(); setStatus("Lijnstuk toegevoegd.");
+    render();
+    setStatus(requestedLength != null ? "Lijnstuk met lengte " + requestedLength + " toegevoegd." : "Lijnstuk toegevoegd.");
   }
 
   function finishCircle(center, end) {
-    const radius = Math.hypot(end.x - center.x, end.y - center.y);
+    const requestedRadius = measurementValue();
+    const radius = requestedRadius != null ? requestedRadius : Math.hypot(end.x - center.x, end.y - center.y);
     if (radius < 0.05) return;
     engine.renderer.preview = null;
     selectedId = engine.add({ type: "circle", cx: center.x, cy: center.y, r: radius }).id;
-    render(); setStatus("Cirkel toegevoegd.");
+    render();
+    setStatus(requestedRadius != null ? "Cirkel met straal " + requestedRadius + " toegevoegd." : "Cirkel toegevoegd.");
+  }
+
+  function updateDrawPreview(event) {
+    if (!drag || drag.mode !== "draw") return;
+    const mousePoint = pointerPosition(event);
+    if (!mousePoint) return;
+
+    const snap = snapToPoint(mousePoint);
+    const end = constrainedEndpoint(drag.start, snap.point);
+    engine.renderer.preview.end = end;
+    updateCrosshair(event, measurementValue() == null ? snap : { point: end, snapped: false });
+    setStatus(measurementStatus() || (drag.shape === "circle" ? "Typ een straal, bijvoorbeeld 2." : "Typ een lengte, bijvoorbeeld 3."));
+    render();
   }
 
   function applyBounds() {
-    const xmin = Number(xMinInput.value), xmax = Number(xMaxInput.value), ymin = Number(yMinInput.value), ymax = Number(yMaxInput.value);
+    const xmin = Number(xMinInput.value);
+    const xmax = Number(xMaxInput.value);
+    const ymin = Number(yMinInput.value);
+    const ymax = Number(yMaxInput.value);
     if (!Number.isFinite(xmin) || !Number.isFinite(xmax) || !Number.isFinite(ymin) || !Number.isFinite(ymax) || xmin >= xmax || ymin >= ymax) {
-      setStatus("Ongeldig coördinatenbereik."); updateBoundsInputs(); return;
+      setStatus("Ongeldig coördinatenbereik.");
+      updateBoundsInputs();
+      return;
     }
     engine.renderer.bounds = { xMin: xmin, yMin: ymin, xMax: xmax, yMax: ymax };
-    render(); setStatus("Coördinatenbereik toegepast.");
+    render();
+    setStatus("Coördinatenbereik toegepast.");
   }
 
   function zoomAt(event) {
@@ -224,10 +293,18 @@
     event.preventDefault();
     const p = pointerPosition(event);
     if (!p) return;
-    const b = engine.renderer.bounds, factor = event.deltaY < 0 ? 0.85 : 1 / 0.85;
-    const nx = (b.xMax - b.xMin) * factor, ny = (b.yMax - b.yMin) * factor;
-    const fx = (p.x - b.xMin) / (b.xMax - b.xMin), fy = (p.y - b.yMin) / (b.yMax - b.yMin);
-    engine.renderer.bounds = { xMin: p.x - fx * nx, xMax: p.x + (1 - fx) * nx, yMin: p.y - fy * ny, yMax: p.y + (1 - fy) * ny };
+    const b = engine.renderer.bounds;
+    const factor = event.deltaY < 0 ? 0.85 : 1 / 0.85;
+    const nx = (b.xMax - b.xMin) * factor;
+    const ny = (b.yMax - b.yMin) * factor;
+    const fx = (p.x - b.xMin) / (b.xMax - b.xMin);
+    const fy = (p.y - b.yMin) / (b.yMax - b.yMin);
+    engine.renderer.bounds = {
+      xMin: p.x - fx * nx,
+      xMax: p.x + (1 - fx) * nx,
+      yMin: p.y - fy * ny,
+      yMax: p.y + (1 - fy) * ny
+    };
     render();
   }
 
@@ -240,7 +317,10 @@
   viewList.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-view], button[data-object-visibility]");
     if (!button) return;
-    if (button.dataset.view) { toggleView(button.dataset.view); return; }
+    if (button.dataset.view) {
+      toggleView(button.dataset.view);
+      return;
+    }
     const object = engine.get(button.dataset.objectVisibility);
     if (!object) return;
     engine.update(object.id, { visible: object.visible === false });
@@ -258,7 +338,9 @@
     if (tool === "point") {
       const snap = snapToPoint(p);
       selectedId = engine.add({ type: "point", x: snap.point.x, y: snap.point.y }).id;
-      render(); setStatus(snap.snapped ? "Punt vastgeklikt aan bestaand punt." : "Punt toegevoegd."); return;
+      render();
+      setStatus(snap.snapped ? "Punt vastgeklikt aan bestaand punt." : "Punt toegevoegd.");
+      return;
     }
 
     if (tool === "text") {
@@ -266,7 +348,8 @@
       if (text !== null && text.trim()) {
         const snap = snapToPoint(p);
         selectedId = engine.add({ type: "text", x: snap.point.x, y: snap.point.y, text: text.trim() }).id;
-        render(); setStatus("Tekst toegevoegd.");
+        render();
+        setStatus("Tekst toegevoegd.");
       }
       return;
     }
@@ -274,21 +357,23 @@
     if (tool === "line" || tool === "circle") {
       const snap = snapToPoint(p);
       drag = { mode: "draw", shape: tool, start: snap.point };
+      typedMeasurement = "";
       engine.renderer.preview = { type: tool, start: snap.point, end: snap.point };
-      crosshair.hidden = false; updateCrosshair(event, snap); render(); return;
+      crosshair.hidden = false;
+      updateCrosshair(event, snap);
+      render();
+      setStatus(tool === "circle" ? "Typ tijdens het tekenen een straal, bijvoorbeeld 2." : "Typ tijdens het tekenen een lengte, bijvoorbeeld 3.");
+      return;
     }
 
     const hit = engine.selectAt(p.x, p.y, 0.18);
     if (hit) {
       selectedId = hit.object.id;
-      drag = { mode: "object", objectId: selectedId, objectType: hit.object.type, start: p };
+      drag = { mode: "object", objectId: selectedId, start: p, objectType: hit.object.type };
       setStatus("Object geselecteerd.");
     } else {
       selectedId = null;
-      // Store screen coordinates and the original bounds. Recalculating the
-      // drag from the original state prevents feedback-loop jitter while the
-      // SVG is re-rendered during panning.
-      drag = { mode: "pan", startClientX: event.clientX, startClientY: event.clientY, bounds: { ...engine.renderer.bounds } };
+      drag = { mode: "pan", start: p, bounds: { ...engine.renderer.bounds } };
       setStatus("Canvas verschuiven.");
     }
     render();
@@ -296,32 +381,12 @@
 
   global.addEventListener("mousemove", function (event) {
     if (!drag) return;
-
-    if (drag.mode === "pan") {
-      const r = engine.renderer;
-      const original = drag.bounds;
-      const wrap = canvasWrap.getBoundingClientRect();
-      const scaleX = (original.xMax - original.xMin) / Math.max(1, wrap.width);
-      const scaleY = (original.yMax - original.yMin) / Math.max(1, wrap.height);
-      const dx = (event.clientX - drag.startClientX) * scaleX;
-      const dy = (event.clientY - drag.startClientY) * scaleY;
-      engine.renderer.bounds = {
-        xMin: original.xMin - dx,
-        xMax: original.xMax - dx,
-        yMin: original.yMin + dy,
-        yMax: original.yMax + dy
-      };
-      render();
-      return;
-    }
-
     const p = pointerPosition(event);
     if (!p) return;
 
     if (drag.mode === "draw") {
-      const snap = snapToPoint(p);
-      engine.renderer.preview.end = snap.point;
-      updateCrosshair(event, snap); render(); return;
+      updateDrawPreview(event);
+      return;
     }
 
     if (drag.mode === "object") {
@@ -331,6 +396,21 @@
       } else {
         engine.move(drag.objectId, p.x, p.y);
       }
+      render();
+      return;
+    }
+
+    if (drag.mode === "pan") {
+      const start = drag.start;
+      const original = drag.bounds;
+      const dx = start.x - p.x;
+      const dy = start.y - p.y;
+      engine.renderer.bounds = {
+        xMin: original.xMin + dx,
+        xMax: original.xMax + dx,
+        yMin: original.yMin + dy,
+        yMax: original.yMax + dy
+      };
       render();
     }
   });
@@ -344,11 +424,21 @@
     crosshair.classList.remove("snapped");
 
     if (current.mode === "draw") {
-      if (!end) { engine.renderer.preview = null; render(); return; }
+      if (!end) {
+        engine.renderer.preview = null;
+        typedMeasurement = "";
+        render();
+        return;
+      }
+
       const snap = snapToPoint(end);
-      if (current.shape === "line") finishLine(current.start, snap.point);
-      if (current.shape === "circle") finishCircle(current.start, snap.point);
+      const finalEnd = measurementValue() != null ? constrainedEndpoint(current.start, snap.point) : snap.point;
+      if (current.shape === "line") finishLine(current.start, finalEnd);
+      if (current.shape === "circle") finishCircle(current.start, finalEnd);
+      typedMeasurement = "";
+      return;
     }
+
     if (current.mode === "pan") setStatus("Canvas verschoven.");
   });
 
@@ -358,18 +448,43 @@
   });
 
   document.getElementById("applyBoundsBtn").addEventListener("click", applyBounds);
-  [xMinInput, xMaxInput, yMinInput, yMaxInput].forEach((input) => input.addEventListener("keydown", (event) => { if (event.key === "Enter") applyBounds(); }));
+  [xMinInput, xMaxInput, yMinInput, yMaxInput].forEach((input) => {
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") applyBounds();
+    });
+  });
+
   titleInput.addEventListener("input", render);
   descriptionInput.addEventListener("input", render);
 
   document.getElementById("newBtn").addEventListener("click", function () {
     if (!global.confirm("Een nieuwe illustratie starten? Niet-opgeslagen wijzigingen gaan verloren.")) return;
     const r = engine.renderer;
-    engine = new MI.Engine(null, { width: r.width, height: r.height, bounds: { xMin: -5, yMin: -3, xMax: 5, yMax: 3 }, background: r.background, padding: r.padding, showAxes: r.showAxes, showGrid: r.showGrid, axisStep: r.axisStep });
-    selectedId = null; titleInput.value = ""; descriptionInput.value = ""; render(); setStatus("Nieuwe illustratie gestart.");
+    engine = new MI.Engine(null, {
+      width: r.width,
+      height: r.height,
+      bounds: { xMin: -5, yMin: -3, xMax: 5, yMax: 3 },
+      background: r.background,
+      padding: r.padding,
+      showAxes: r.showAxes,
+      showGrid: r.showGrid,
+      axisStep: r.axisStep
+    });
+    selectedId = null;
+    drag = null;
+    typedMeasurement = "";
+    titleInput.value = "";
+    descriptionInput.value = "";
+    render();
+    setStatus("Nieuwe illustratie gestart.");
   });
 
-  document.getElementById("saveBtn").addEventListener("click", () => { updateMeta(); localStorage.setItem(STORAGE_KEY, engine.toJSONString(true)); setStatus("Concept opgeslagen in deze browser."); });
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    updateMeta();
+    localStorage.setItem(STORAGE_KEY, engine.toJSONString(true));
+    setStatus("Concept opgeslagen in deze browser.");
+  });
+
   document.getElementById("loadBtn").addEventListener("click", () => document.getElementById("fileInput").click());
 
   document.getElementById("fileInput").addEventListener("change", function (event) {
@@ -379,42 +494,103 @@
     reader.onload = function () {
       try {
         engine.load(JSON.parse(reader.result));
-        titleInput.value = engine.model.meta.title || ""; descriptionInput.value = engine.model.meta.description || "";
-        selectedId = null; render(); setStatus("Illustratie geladen.");
-      } catch (error) { global.alert("JSON kon niet worden geladen: " + error.message); }
+        titleInput.value = engine.model.meta.title || "";
+        descriptionInput.value = engine.model.meta.description || "";
+        selectedId = null;
+        drag = null;
+        typedMeasurement = "";
+        render();
+        setStatus("Illustratie geladen.");
+      } catch (error) {
+        global.alert("JSON kon niet worden geladen: " + error.message);
+      }
       event.target.value = "";
     };
     reader.readAsText(file);
   });
 
-  function renderSvgForOutput() {
-    const parser = new DOMParser();
-    const documentNode = parser.parseFromString(engine.renderSVG(), "image/svg+xml");
-    engine.model.objects.forEach((object) => {
-      if (object.visible === false) {
-        const group = documentNode.querySelector('[data-object-id="' + CSS.escape(object.id) + '"]');
-        if (group) group.setAttribute("display", "none");
-      }
-    });
-    return new XMLSerializer().serializeToString(documentNode.documentElement);
-  }
-
   function download(name, content, type) {
     const blob = new Blob([content], { type: type });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement("a"); link.href = url; link.download = name; link.click();
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = name;
+    link.click();
     setTimeout(() => URL.revokeObjectURL(url), 500);
   }
 
-  document.getElementById("exportJsonBtn").addEventListener("click", () => { updateMeta(); download("illustratie.json", engine.toJSONString(true), "application/json;charset=utf-8"); setStatus("JSON geëxporteerd."); });
-  document.getElementById("exportSvgBtn").addEventListener("click", () => { updateMeta(); download("illustratie.svg", renderSvgForOutput(), "image/svg+xml;charset=utf-8"); setStatus("SVG geëxporteerd."); });
+  document.getElementById("exportJsonBtn").addEventListener("click", () => {
+    updateMeta();
+    download("illustratie.json", engine.toJSONString(true), "application/json;charset=utf-8");
+    setStatus("JSON geëxporteerd.");
+  });
+
+  document.getElementById("exportSvgBtn").addEventListener("click", () => {
+    updateMeta();
+    download("illustratie.svg", engine.renderSVG(), "image/svg+xml;charset=utf-8");
+    setStatus("SVG geëxporteerd.");
+  });
 
   global.addEventListener("keydown", function (event) {
-    if ((event.key === "Delete" || event.key === "Backspace") && selectedId && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
-      engine.remove(selectedId); selectedId = null; render(); setStatus("Object verwijderd.");
+    if (drag && drag.mode === "draw") {
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+        typedMeasurement += event.key;
+        const value = measurementValue();
+        setStatus(drag.shape === "circle" ? "Straal: " + (value == null ? typedMeasurement : value) : "Lengte: " + (value == null ? typedMeasurement : value));
+        return;
+      }
+
+      if (event.key === "." || event.key === ",") {
+        event.preventDefault();
+        if (!typedMeasurement.includes(".")) typedMeasurement = typedMeasurement || "0";
+        typedMeasurement += ".";
+        setStatus(drag.shape === "circle" ? "Straal: " + typedMeasurement : "Lengte: " + typedMeasurement);
+        return;
+      }
+
+      if (event.key === "Backspace") {
+        event.preventDefault();
+        typedMeasurement = typedMeasurement.slice(0, -1);
+        const value = measurementValue();
+        setStatus(value == null ? "Voer een positieve lengte in." : (drag.shape === "circle" ? "Straal: " + value : "Lengte: " + value));
+        return;
+      }
+
+      if (event.key === "Enter") {
+        event.preventDefault();
+        const value = measurementValue();
+        if (value != null && engine.renderer.preview) {
+          const mousePoint = pointerPosition(event);
+          const previewEnd = mousePoint ? constrainedEndpoint(drag.start, mousePoint) : engine.renderer.preview.end;
+          if (drag.shape === "line") finishLine(drag.start, previewEnd);
+          else finishCircle(drag.start, previewEnd);
+          drag = null;
+          typedMeasurement = "";
+          engine.renderer.preview = null;
+          crosshair.hidden = true;
+          crosshair.classList.remove("snapped");
+        }
+        return;
+      }
     }
+
+    if ((event.key === "Delete" || event.key === "Backspace") && selectedId &&
+        document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+      engine.remove(selectedId);
+      selectedId = null;
+      render();
+      setStatus("Object verwijderd.");
+    }
+
     if (event.key === "Escape") {
-      drag = null; engine.renderer.preview = null; crosshair.hidden = true; crosshair.classList.remove("snapped"); activateTool("select"); render();
+      drag = null;
+      typedMeasurement = "";
+      engine.renderer.preview = null;
+      crosshair.hidden = true;
+      crosshair.classList.remove("snapped");
+      activateTool("select");
+      render();
     }
   });
 
@@ -422,11 +598,13 @@
     const draft = localStorage.getItem(STORAGE_KEY);
     if (draft) {
       engine.load(JSON.parse(draft));
-      titleInput.value = engine.model.meta.title || ""; descriptionInput.value = engine.model.meta.description || "";
+      titleInput.value = engine.model.meta.title || "";
+      descriptionInput.value = engine.model.meta.description || "";
       setStatus("Opgeslagen concept geladen.");
     }
   } catch (error) {
-    localStorage.removeItem(STORAGE_KEY); setStatus("Nieuw werkvlak.");
+    localStorage.removeItem(STORAGE_KEY);
+    setStatus("Nieuw werkvlak.");
   }
 
   render();
