@@ -33,7 +33,6 @@
   }
 
   function bestSnap(engine, point, excludeId) {
-    if (engine.renderer.showSnapPoints === false) return { x: point.x, y: point.y, snapped: false, grid: false, kind: null };
     const geometric = MI.snapPoint ? MI.snapPoint(engine, point, excludeId) : null;
     if (geometric && geometric.snapped) return { x: geometric.x, y: geometric.y, snapped: true, grid: false, kind: geometric.kind };
     return gridSnap(engine, point) || { x: point.x, y: point.y, snapped: false, grid: false, kind: null };
@@ -86,18 +85,19 @@
   }
 
   function showIndicator(event) {
-    if (!activeEngine) return;
+    if (!activeEngine || activeEngine.renderer.showSnapPoints === false) { removeIndicator(); return; }
     const toolButton = document.querySelector(".tool.active");
     if (!toolButton) { removeIndicator(); return; }
     const toolName = toolButton.dataset.tool;
-    const movingObject = toolName === "select" && document.getElementById("canvasWrap")?.dataset.snapDragging === "true";
+    const canvasWrap = document.getElementById("canvasWrap");
+    const movingObject = toolName === "select" && canvasWrap?.dataset.snapDragging === "true";
     if (toolName === "select" && !movingObject) { removeIndicator(); return; }
     if (toolName !== "select" && toolName !== "line" && toolName !== "circle" && toolName !== "point" && toolName !== "text") { removeIndicator(); return; }
 
     const mouse = eventToMath(event, activeEngine);
     const svg = document.querySelector("#canvas svg");
     if (!mouse || !svg) return;
-    const excludeId = movingObject ? document.getElementById("canvasWrap").dataset.snapExcludeId || null : null;
+    const excludeId = movingObject ? canvasWrap.dataset.snapExcludeId || null : null;
     const snap = bestSnap(activeEngine, mouse, excludeId);
     removeIndicator();
     if (!snap.snapped) {
@@ -107,15 +107,46 @@
 
     const p = { x: activeEngine.renderer.mapX(snap.x), y: activeEngine.renderer.mapY(snap.y) };
     const layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    layer.setAttribute("class", "fzi-snap-indicator"); layer.setAttribute("pointer-events", "none");
-    const ring = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    ring.setAttribute("cx", p.x); ring.setAttribute("cy", p.y); ring.setAttribute("r", "8");
-    ring.setAttribute("fill", "none"); ring.setAttribute("stroke", "#2563eb"); ring.setAttribute("stroke-width", "2");
-    const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    dot.setAttribute("cx", p.x); dot.setAttribute("cy", p.y); dot.setAttribute("r", "2.5"); dot.setAttribute("fill", "#2563eb");
-    layer.appendChild(ring); layer.appendChild(dot); svg.appendChild(layer);
+    layer.setAttribute("class", "fzi-snap-indicator");
+    layer.setAttribute("pointer-events", "none");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", p.x);
+    circle.setAttribute("cy", p.y);
+    circle.setAttribute("r", "8");
+    circle.setAttribute("fill", "none");
+    circle.setAttribute("stroke", "#2563eb");
+    circle.setAttribute("stroke-width", "4");
+    layer.appendChild(circle);
+    svg.appendChild(layer);
     updateCrosshair(event, snap);
     if (activeEngine.renderer.preview && drawStart) updatePreview(snap);
+  }
+
+  function installViewToggle() {
+    const viewList = document.getElementById("viewList");
+    if (!viewList || viewList.querySelector("[data-view='snapPoints']")) return;
+    const raster = viewList.querySelector("[data-view='grid']");
+    if (!raster) return;
+    const row = document.createElement("div");
+    row.className = "view-row";
+    row.innerHTML = '<button class="view-name view-system-btn" type="button">Snappunten</button><button class="eye-btn" type="button" data-view="snapPoints" aria-label="Snappunten zichtbaar"></button>';
+    const button = row.querySelector("[data-view='snapPoints']");
+    const updateButton = function () {
+      const visible = !activeEngine || activeEngine.renderer.showSnapPoints !== false;
+      button.innerHTML = visible
+        ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.7" fill="currentColor"/></svg>'
+        : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M9.9 5.9C10.6 5.7 11.3 5.6 12 5.6c6.5 0 10 6.4 10 6.4-.8 1.2-1.8 2.4-3.1 3.4M6.1 6.1C3.5 7.7 2 12 2 12s3.5 6 10 6c1.1 0 2.1-.2 3-.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    };
+    button.addEventListener("click", function () {
+      if (!activeEngine) return;
+      activeEngine.renderer.showSnapPoints = activeEngine.renderer.showSnapPoints === false;
+      updateButton();
+      removeIndicator();
+      const crosshair = document.getElementById("crosshair");
+      if (crosshair) crosshair.classList.remove("snapped");
+    });
+    updateButton();
+    raster.closest(".view-row")?.after(row);
   }
 
   MI.Engine.prototype.renderSVG = function () {
@@ -123,7 +154,6 @@
     return originalRenderSVG.apply(this, arguments);
   };
 
-  // Final snapping uses the same priority as the visual indicator: geometric point first, grid second.
   MI.Engine.prototype.add = function (object) {
     const next = JSON.parse(JSON.stringify(object));
     const snapCoordinate = (x, y, excludeId) => bestSnap(this, { x, y }, excludeId);
@@ -175,7 +205,29 @@
     });
   }
 
-  // Run after editor.js' mousemove handler so its render() cannot erase the indicator.
+  const canvasWrap = document.getElementById("canvasWrap");
+  if (canvasWrap) {
+    canvasWrap.addEventListener("mousedown", function (event) {
+      const button = document.querySelector(".tool.active");
+      if (!button || button.dataset.tool !== "select") return;
+      const target = event.target && event.target.closest ? event.target.closest("[data-object-id]") : null;
+      if (!target) return;
+      canvasWrap.dataset.snapDragging = "true";
+      canvasWrap.dataset.snapExcludeId = target.dataset.objectId || "";
+    }, true);
+    global.addEventListener("mouseup", function () {
+      canvasWrap.dataset.snapDragging = "false";
+      canvasWrap.dataset.snapExcludeId = "";
+    });
+  }
+
+  const viewList = document.getElementById("viewList");
+  if (viewList) {
+    const observer = new MutationObserver(installViewToggle);
+    observer.observe(viewList, { childList: true });
+    installViewToggle();
+  }
+
   global.addEventListener("mousemove", showIndicator);
   global.addEventListener("mouseup", function () { drawStart = null; removeIndicator(); });
   global.addEventListener("mouseleave", removeIndicator);
