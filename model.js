@@ -34,6 +34,8 @@
       type: type,
       visible: input.visible !== false,
       showLabel: input.showLabel === true || hasLegacyLabel,
+      labelDx: finite(input.labelDx, 0),
+      labelDy: finite(input.labelDy, 0),
       style: normaliseStyle(type, input.style)
     };
 
