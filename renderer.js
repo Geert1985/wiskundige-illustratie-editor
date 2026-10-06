@@ -76,7 +76,9 @@
       if (line) { x = this.mapX((object.x1 + object.x2) / 2); y = this.mapY((object.y1 + object.y2) / 2); }
       else if (object.type === "circle") { x = this.mapX(object.cx); y = this.mapY(object.cy); }
       else { x = this.mapX(object.x); y = this.mapY(object.y); }
-      return '<text x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="#222" font-size="14" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
+      const style = object.style || {};
+      const labelColor = style.stroke && style.stroke !== "none" ? style.stroke : (style.fill || "#222");
+      return '<text x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="14" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
     }
 
     renderObject(object) {
