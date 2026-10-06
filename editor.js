@@ -31,14 +31,25 @@
 
   function setStatus(message) { status.textContent = message; }
 
+  // Convert browser coordinates to the SVG user coordinate system first,
+  // then invert the renderer's mathematical mapping. This accounts for
+  // both CSS scaling and the renderer's internal padding.
   function pointerPosition(event) {
-    const rect = canvas.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width;
-    const y = (event.clientY - rect.top) / rect.height;
-    const b = engine.renderer.bounds;
+    const svg = canvas.querySelector("svg");
+    if (!svg) return null;
+
+    const matrix = svg.getScreenCTM();
+    if (!matrix) return null;
+
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse());
+    const renderer = engine.renderer;
+    const b = renderer.bounds;
+    const drawableWidth = renderer.width - renderer.padding * 2;
+    const drawableHeight = renderer.height - renderer.padding * 2;
+
     return {
-      x: b.xMin + x * (b.xMax - b.xMin),
-      y: b.yMax - y * (b.yMax - b.yMin)
+      x: b.xMin + ((point.x - renderer.padding) / drawableWidth) * (b.xMax - b.xMin),
+      y: b.yMin + ((renderer.height - renderer.padding - point.y) / drawableHeight) * (b.yMax - b.yMin)
     };
   }
 
@@ -144,6 +155,7 @@
   canvasWrap.addEventListener("mousedown", function (event) {
     if (event.button !== 0) return;
     const p = pointerPosition(event);
+    if (!p) return;
 
     if (tool === "point") {
       selectedId = engine.add({ type: "point", x: p.x, y: p.y }).id;
@@ -185,6 +197,7 @@
   global.addEventListener("mousemove", function (event) {
     if (!drag) return;
     const p = pointerPosition(event);
+    if (!p) return;
 
     if (tool === "line" || tool === "circle") {
       crosshair.hidden = false;
@@ -206,6 +219,7 @@
     const current = drag;
     drag = null;
     crosshair.hidden = true;
+    if (!end) return;
 
     if (tool === "line") finishLine(current.start, end);
     if (tool === "circle") finishCircle(current.start, end);
