@@ -6,7 +6,7 @@
   const MI = NS.MathIllustration = NS.MathIllustration || {};
   const SVG_NS = "http://www.w3.org/2000/svg";
 
-  function esc(value) { return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;/g").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;"); }
+  function esc(value) { return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;"); }
   function number(value, digits) { return Number(Number(value).toFixed(digits == null ? 6 : digits)); }
   function axisNumber(value) { const n = Number(Number(value).toFixed(1)); return Object.is(n, -0) ? 0 : n; }
   function dash(style) { return style.dash ? ' stroke-dasharray="' + esc(style.dash) + '"' : ""; }
