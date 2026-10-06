@@ -78,8 +78,11 @@
       else { x = this.mapX(object.x); y = this.mapY(object.y); }
       const style = object.style || {};
       const labelColor = style.stroke && style.stroke !== "none" ? style.stroke : (style.fill || "#222");
-      const dx = Number.isFinite(Number(object.labelDx)) ? Number(object.labelDx) : defaultDx;
-      const dy = Number.isFinite(Number(object.labelDy)) ? Number(object.labelDy) : defaultDy;
+      const scale = this.scale();
+      const legacyDx = Number.isFinite(Number(object.labelDx)) ? Number(object.labelDx) : defaultDx;
+      const legacyDy = Number.isFinite(Number(object.labelDy)) ? Number(object.labelDy) : defaultDy;
+      const dx = Number.isFinite(Number(object.labelOffsetX)) ? Number(object.labelOffsetX) * scale : legacyDx;
+      const dy = Number.isFinite(Number(object.labelOffsetY)) ? -Number(object.labelOffsetY) * scale : legacyDy;
       return '<text class="object-label" data-label-id="' + esc(object.id) + '" x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="14" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
     }
 
