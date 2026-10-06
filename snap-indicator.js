@@ -54,11 +54,14 @@
     const wrap = document.getElementById("canvasWrap");
     if (!crosshair || !wrap || !activeEngine) return;
     const rect = wrap.getBoundingClientRect();
-    const screen = snap && snap.snapped ? screenPosition(snap, activeEngine) : null;
+    const snapped = Boolean(snap && snap.snapped);
+    const screen = snapped ? screenPosition(snap, activeEngine) : null;
     crosshair.style.left = (screen ? screen.x : event.clientX - rect.left) + "px";
     crosshair.style.top = (screen ? screen.y : event.clientY - rect.top) + "px";
-    crosshair.classList.toggle("snapped", Boolean(snap && snap.snapped));
-    crosshair.hidden = false;
+    crosshair.classList.toggle("snapped", snapped);
+    // The snap marker itself is the visual feedback. Hide the normal crosshair
+    // while snapped so the user sees one clear, bold blue circle.
+    crosshair.hidden = snapped;
   }
 
   function updatePreview(snap) {
@@ -143,7 +146,7 @@
       updateButton();
       removeIndicator();
       const crosshair = document.getElementById("crosshair");
-      if (crosshair) crosshair.classList.remove("snapped");
+      if (crosshair) { crosshair.classList.remove("snapped"); crosshair.hidden = false; }
     });
     updateButton();
     raster.closest(".view-row")?.after(row);
