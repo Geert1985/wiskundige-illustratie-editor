@@ -72,8 +72,10 @@
 
     engine.model.objects.forEach((object) => {
       const visible = object.visible !== false;
-      rows.push('<div class="view-row"><span class="view-name" title="' + MI.escapeXml(objectName(object)) + '">' +
-        MI.escapeXml(objectName(object)) + '<span class="view-type">' + MI.escapeXml(object.id) + '</span></span>' +
+      const selected = selectedId === object.id;
+      rows.push('<div class="view-row' + (selected ? ' view-row-selected' : '') + '">' +
+        '<button class="view-name view-select-btn" type="button" data-select-object="' + MI.escapeXml(object.id) + '" title="Selecteer ' + MI.escapeXml(objectName(object)) + '">' +
+        MI.escapeXml(objectName(object)) + '<span class="view-type">' + MI.escapeXml(object.id) + '</span></button>' +
         '<button class="eye-btn' + (visible ? "" : " hidden-eye") + '" type="button" data-object-visibility="' +
         MI.escapeXml(object.id) + '" aria-label="' + (visible ? "Verberg " : "Toon ") + MI.escapeXml(objectName(object)) + '">' +
         eyeIcon(visible) + '</button></div>');
@@ -316,6 +318,16 @@
   }
 
   viewList.addEventListener("click", (event) => {
+    const selectButton = event.target.closest("button[data-select-object]");
+    if (selectButton) {
+      const object = engine.get(selectButton.dataset.selectObject);
+      if (!object) return;
+      selectedId = object.id;
+      render();
+      setStatus(objectName(object) + " geselecteerd.");
+      return;
+    }
+
     const button = event.target.closest("button[data-view], button[data-object-visibility]");
     if (!button) return;
     if (button.dataset.view) {
@@ -374,7 +386,12 @@
       setStatus("Object geselecteerd.");
     } else {
       selectedId = null;
-      drag = { mode: "pan", start: p, bounds: { ...engine.renderer.bounds } };
+      drag = {
+        mode: "pan",
+        startClientX: event.clientX,
+        startClientY: event.clientY,
+        bounds: { ...engine.renderer.bounds }
+      };
       setStatus("Canvas verschuiven.");
     }
     render();
@@ -382,6 +399,28 @@
 
   global.addEventListener("mousemove", function (event) {
     if (!drag) return;
+
+    if (drag.mode === "pan") {
+      const svg = canvas.querySelector("svg");
+      const matrix = svg && svg.getScreenCTM();
+      if (!matrix) return;
+
+      const scaleX = Math.abs(matrix.a) || 1;
+      const scaleY = Math.abs(matrix.d) || 1;
+      const dxMath = (event.clientX - drag.startClientX) / scaleX;
+      const dyMath = (event.clientY - drag.startClientY) / scaleY;
+      const original = drag.bounds;
+
+      engine.renderer.bounds = {
+        xMin: original.xMin - dxMath,
+        xMax: original.xMax - dxMath,
+        yMin: original.yMin + dyMath,
+        yMax: original.yMax + dyMath
+      };
+      render();
+      return;
+    }
+
     const p = pointerPosition(event);
     if (!p) return;
 
@@ -397,21 +436,6 @@
       } else {
         engine.move(drag.objectId, p.x, p.y);
       }
-      render();
-      return;
-    }
-
-    if (drag.mode === "pan") {
-      const start = drag.start;
-      const original = drag.bounds;
-      const dx = start.x - p.x;
-      const dy = start.y - p.y;
-      engine.renderer.bounds = {
-        xMin: original.xMin + dx,
-        xMax: original.xMax + dx,
-        yMin: original.yMin + dy,
-        yMax: original.yMax + dy
-      };
       render();
     }
   });
