@@ -18,32 +18,54 @@
   </header>
   <main class="workspace">
     <aside class="sidebar">
-      <section><h2>Objecten</h2><div class="tool-grid" id="toolGrid">
-        <button data-tool="select" class="tool active">↖ <span>Selecteren</span></button><button data-tool="point" class="tool">• <span>Punt</span></button>
-        <button data-tool="line" class="tool">╱ <span>Lijnstuk</span></button><button data-tool="circle" class="tool">○ <span>Cirkel</span></button>
-        <button data-tool="text" class="tool">T <span>Tekst</span></button>
-      </div></section>
-      <section><h2>Weergave</h2>
-        <div class="button-row"><button id="axesBtn" class="secondary" type="button">Assen verbergen</button><button id="gridBtn" class="secondary" type="button">Raster tonen</button></div>
-        <p class="help-text">Scroll met het muiswiel om rond de muispositie in en uit te zoomen.</p>
-      </section>
-      <section><h2>Coördinatenbereik</h2>
-        <div class="range-grid">
-          <label>x min<input id="xMinInput" type="number" step="0.1"></label><label>x max<input id="xMaxInput" type="number" step="0.1"></label>
-          <label>y min<input id="yMinInput" type="number" step="0.1"></label><label>y max<input id="yMaxInput" type="number" step="0.1"></label>
+      <details class="sidebar-section" open>
+        <summary>Objecten</summary>
+        <div class="section-content">
+          <div class="tool-grid" id="toolGrid">
+            <button data-tool="select" class="tool active">↖ <span>Selecteren</span></button><button data-tool="point" class="tool">• <span>Punt</span></button>
+            <button data-tool="line" class="tool">╱ <span>Lijnstuk</span></button><button data-tool="circle" class="tool">○ <span>Cirkel</span></button>
+            <button data-tool="text" class="tool">T <span>Tekst</span></button>
+          </div>
         </div>
-        <button id="applyBoundsBtn" class="secondary full-width" type="button">Bereik toepassen</button>
-      </section>
-      <section><h2>Illustratie</h2>
-        <label>Titel<input id="titleInput" type="text" placeholder="Bijv. Gelijkbenige driehoek"></label>
-        <label>Beschrijving<textarea id="descriptionInput" rows="3" placeholder="Wat moet de leerling zien?"></textarea></label>
-      </section>
-      <section><h2>Geselecteerd object</h2><div id="selectionPanel" class="selection-empty">Geen object geselecteerd.</div></section>
-      <section class="help"><h2>Bediening</h2>
-        <p><strong>Selecteren:</strong> klik op een object en sleep.</p><p><strong>Punt:</strong> klik in het werkvlak.</p>
-        <p><strong>Lijnstuk:</strong> klik en sleep van begin naar eind.</p><p><strong>Cirkel:</strong> klik voor het middelpunt en sleep voor de straal.</p>
-        <p><strong>Tekst:</strong> klik en voer tekst in.</p><p><strong>Delete:</strong> verwijder het geselecteerde object.</p>
-      </section>
+      </details>
+      <details class="sidebar-section" open>
+        <summary>Weergave</summary>
+        <div class="section-content">
+          <div class="button-row"><button id="axesBtn" class="secondary" type="button">Assen verbergen</button><button id="gridBtn" class="secondary" type="button">Raster tonen</button></div>
+          <p class="help-text">Scroll met het muiswiel om rond de muispositie in en uit te zoomen.</p>
+        </div>
+      </details>
+      <details class="sidebar-section">
+        <summary>Coördinatenbereik</summary>
+        <div class="section-content">
+          <div class="range-grid">
+            <label>x min<input id="xMinInput" type="number" step="0.1"></label><label>x max<input id="xMaxInput" type="number" step="0.1"></label>
+            <label>y min<input id="yMinInput" type="number" step="0.1"></label><label>y max<input id="yMaxInput" type="number" step="0.1"></label>
+          </div>
+          <button id="applyBoundsBtn" class="secondary full-width" type="button">Bereik toepassen</button>
+        </div>
+      </details>
+      <details class="sidebar-section">
+        <summary>Illustratie</summary>
+        <div class="section-content">
+          <label>Titel<input id="titleInput" type="text" placeholder="Bijv. Gelijkbenige driehoek"></label>
+          <label>Beschrijving<textarea id="descriptionInput" rows="3" placeholder="Wat moet de leerling zien?"></textarea></label>
+        </div>
+      </details>
+      <details class="sidebar-section" open>
+        <summary>Geselecteerd object</summary>
+        <div class="section-content"><div id="selectionPanel" class="selection-empty">Geen object geselecteerd.</div></div>
+      </details>
+      <details class="sidebar-section help">
+        <summary>Bediening</summary>
+        <div class="section-content">
+          <p><strong>Selecteren:</strong> klik op een object en sleep. Klik en sleep op een lege plek om het canvas te verschuiven.</p>
+          <p><strong>Punt:</strong> klik in het werkvlak. Nabije punten worden magnetisch gevolgd.</p>
+          <p><strong>Lijnstuk:</strong> klik en sleep van begin naar eind. Begin- en eindpunt klikken automatisch vast aan bestaande punten.</p>
+          <p><strong>Cirkel:</strong> klik voor het middelpunt en sleep voor de straal.</p>
+          <p><strong>Tekst:</strong> klik en voer tekst in.</p><p><strong>Delete:</strong> verwijder het geselecteerde object.</p>
+        </div>
+      </details>
     </aside>
     <section class="canvas-area"><div class="canvas-toolbar"><span id="status">Klaar.</span><span id="objectCount">0 objecten</span></div>
       <div id="canvasWrap" class="canvas-wrap"><div id="canvas" class="canvas" aria-label="Werkvlak voor wiskundige illustraties"></div><div id="crosshair" class="crosshair" hidden></div></div>
