@@ -44,9 +44,11 @@
       const opts = options || {};
       this.width = Number(opts.width || 800);
       this.height = Number(opts.height || 500);
-      this.bounds = Object.assign({ xMin: 0, yMin: 0, xMax: 10, yMax: 6 }, opts.bounds || {});
+      this.bounds = Object.assign({ xMin: -5, yMin: -3, xMax: 5, yMax: 3 }, opts.bounds || {});
       this.background = opts.background || "transparent";
       this.padding = Number(opts.padding || 0);
+      this.showAxes = opts.showAxes !== false;
+      this.axisStep = Number(opts.axisStep || 1);
     }
 
     mapX(x) {
@@ -57,6 +59,41 @@
     mapY(y) {
       const b = this.bounds;
       return this.height - this.padding - ((y - b.yMin) / (b.yMax - b.yMin)) * (this.height - this.padding * 2);
+    }
+
+    renderAxes() {
+      if (!this.showAxes) return "";
+      const b = this.bounds;
+      const parts = [];
+      const axisStroke = "#888";
+      const tickStroke = "#aaa";
+      const labelFill = "#666";
+      const x0 = this.mapX(0);
+      const y0 = this.mapY(0);
+
+      if (b.yMin <= 0 && b.yMax >= 0) {
+        parts.push('<line x1="' + number(this.mapX(b.xMin)) + '" y1="' + number(y0) + '" x2="' + number(this.mapX(b.xMax)) + '" y2="' + number(y0) + '" stroke="' + axisStroke + '" stroke-width="1.4" />');
+        for (let x = Math.ceil(b.xMin / this.axisStep) * this.axisStep; x <= b.xMax + 1e-9; x += this.axisStep) {
+          if (Math.abs(x) < 1e-9) continue;
+          const sx = this.mapX(x);
+          parts.push('<line x1="' + number(sx) + '" y1="' + number(y0 - 4) + '" x2="' + number(sx) + '" y2="' + number(y0 + 4) + '" stroke="' + tickStroke + '" stroke-width="1" />');
+          parts.push('<text x="' + number(sx) + '" y="' + number(y0 + 18) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">' + esc(number(x)) + '</text>');
+        }
+        parts.push('<text x="' + number(this.mapX(b.xMax) - 8) + '" y="' + number(y0 - 8) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif" text-anchor="end">x</text>');
+      }
+
+      if (b.xMin <= 0 && b.xMax >= 0) {
+        parts.push('<line x1="' + number(x0) + '" y1="' + number(this.mapY(b.yMin)) + '" x2="' + number(x0) + '" y2="' + number(this.mapY(b.yMax)) + '" stroke="' + axisStroke + '" stroke-width="1.4" />');
+        for (let y = Math.ceil(b.yMin / this.axisStep) * this.axisStep; y <= b.yMax + 1e-9; y += this.axisStep) {
+          if (Math.abs(y) < 1e-9) continue;
+          const sy = this.mapY(y);
+          parts.push('<line x1="' + number(x0 - 4) + '" y1="' + number(sy) + '" x2="' + number(x0 + 4) + '" y2="' + number(sy) + '" stroke="' + tickStroke + '" stroke-width="1" />');
+          parts.push('<text x="' + number(x0 - 8) + '" y="' + number(sy + 4) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="end">' + esc(number(y)) + '</text>');
+        }
+        parts.push('<text x="' + number(x0 + 8) + '" y="' + number(this.mapY(b.yMax) + 12) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif">y</text>');
+      }
+
+      return '<g data-illustration-axes aria-hidden="true">' + parts.join("\n") + '</g>';
     }
 
     render(model) {
@@ -72,6 +109,7 @@
         '<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>',
         '<!-- mathematical bounds: ' + [b.xMin, b.yMin, b.xMax, b.yMax].map(number).join(", ") + ' -->',
         background,
+        this.renderAxes(),
         body,
         '</svg>'
       ].join("\n");
