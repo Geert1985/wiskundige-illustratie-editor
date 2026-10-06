@@ -36,6 +36,7 @@
         ? data
         : new MI.IllustrationModel(data);
       this.renderer = new MI.SvgRenderer(rendererOptions || {});
+      MI.activeEngine = this;
     }
 
     add(object) { return this.model.add(object); }
