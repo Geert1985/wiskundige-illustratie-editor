@@ -13,10 +13,6 @@
   const descriptionInput = document.getElementById("descriptionInput");
   const crosshair = document.getElementById("crosshair");
   const viewList = document.getElementById("viewList");
-  const xMinInput = document.getElementById("xMinInput");
-  const xMaxInput = document.getElementById("xMaxInput");
-  const yMinInput = document.getElementById("yMinInput");
-  const yMaxInput = document.getElementById("yMaxInput");
   const DEFAULT_BOUNDS = { xMin: -5, yMin: -3, xMax: 5, yMax: 3 };
 
   let engine = createEngine();
@@ -32,7 +28,6 @@
   function textIcon(active) { return '<span class="text-toggle' + (active ? ' active' : '') + '" aria-hidden="true">T</span>'; }
   function objectName(object) { const names = { point: "Punt", line: "Lijnstuk", circle: "Cirkel", text: "Tekst" }; return object.name || names[object.type] || object.type; }
 
-  function updateBoundsInputs() { const b = engine.renderer.bounds; xMinInput.value = fmt(b.xMin); xMaxInput.value = fmt(b.xMax); yMinInput.value = fmt(b.yMin); yMaxInput.value = fmt(b.yMax); }
   function applyVisibilityToCanvas() { engine.model.objects.forEach((object) => { const group = canvas.querySelector('[data-object-id="' + CSS.escape(object.id) + '"]'); if (group) group.style.display = object.visible === false ? "none" : ""; }); }
 
   function renderViewList() {
@@ -53,7 +48,7 @@
   function render() {
     updateMeta(); canvas.innerHTML = engine.renderSVG(); applyVisibilityToCanvas();
     objectCount.textContent = engine.model.objects.length + (engine.model.objects.length === 1 ? " object" : " objecten");
-    updateBoundsInputs(); renderViewList();
+    renderViewList();
     if (selectedId) { const selected = canvas.querySelector('[data-object-id="' + CSS.escape(selectedId) + '"]'); if (selected) selected.classList.add("selected"); }
     renderSelectionPanel();
   }
@@ -117,8 +112,8 @@
   function finishCircle(center, end) { const requestedRadius = measurementValue(), radius = requestedRadius != null ? requestedRadius : Math.hypot(end.x - center.x, end.y - center.y); if (radius < 0.05) return; engine.renderer.preview = null; selectedId = engine.add({ type: "circle", cx: center.x, cy: center.y, r: radius }).id; render(); setStatus(requestedRadius != null ? "Cirkel met straal " + requestedRadius + " toegevoegd." : "Cirkel toegevoegd."); }
 
   function updateDrawPreview(event) { if (!drag || drag.mode !== "draw") return; const mousePoint = pointerPosition(event); if (!mousePoint) return; const snap = snapToPoint(mousePoint); drag.lastPoint = snap.point; const end = constrainedEndpoint(drag.start, snap.point); engine.renderer.preview.end = end; updateCrosshair(event, measurementValue() == null ? snap : { point: end, snapped: false }); setStatus(measurementStatus() || (drag.shape === "circle" ? "Typ een straal, bijvoorbeeld 2." : "Typ een lengte, bijvoorbeeld 3.")); render(); }
-  function applyBounds() { const xmin = Number(xMinInput.value), xmax = Number(xMaxInput.value), ymin = Number(yMinInput.value), ymax = Number(yMaxInput.value); if (![xmin, xmax, ymin, ymax].every(Number.isFinite) || xmin >= xmax || ymin >= ymax) { setStatus("Ongeldig coördinatenbereik."); updateBoundsInputs(); return; } engine.renderer.bounds = { xMin: xmin, yMin: ymin, xMax: xmax, yMax: ymax }; render(); setStatus("Coördinatenbereik toegepast."); }
   function zoomAt(event) { if (drag) return; event.preventDefault(); const p = pointerPosition(event); if (!p) return; const b = engine.renderer.bounds, factor = event.deltaY < 0 ? 0.85 : 1 / 0.85, nx = (b.xMax - b.xMin) * factor, ny = (b.yMax - b.yMin) * factor, fx = (p.x - b.xMin) / (b.xMax - b.xMin), fy = (p.y - b.yMin) / (b.yMax - b.yMin); engine.renderer.bounds = { xMin: p.x - fx * nx, xMax: p.x + (1 - fx) * nx, yMin: p.y - fy * ny, yMax: p.y + (1 - fy) * ny }; render(); }
+  function resetView() { engine.renderer.bounds = { ...DEFAULT_BOUNDS }; render(); setStatus("Weergave hersteld."); }
 
   canvasWrap.addEventListener("wheel", zoomAt, { passive: false });
 
@@ -130,15 +125,26 @@
     if (!label) return;
     const object = engine.get(label.dataset.labelId);
     if (!object) return;
-    const defaultDx = object.type === "line" || object.type === "text" ? 6 : 8;
-    const defaultDy = object.type === "line" || object.type === "text" ? -6 : -8;
+    const scale = engine.renderer.scale();
+    const defaultDx = (object.type === "line" || object.type === "text" ? 6 : 8) / scale;
+    const defaultDy = (object.type === "line" || object.type === "text" ? -6 : -8) / -scale;
+    let originalOffsetX = Number(object.labelOffsetX);
+    let originalOffsetY = Number(object.labelOffsetY);
+    if (!Number.isFinite(originalOffsetX)) {
+      const legacyDx = Number.isFinite(Number(object.labelDx)) ? Number(object.labelDx) : (object.type === "line" || object.type === "text" ? 6 : 8);
+      originalOffsetX = legacyDx / scale;
+    }
+    if (!Number.isFinite(originalOffsetY)) {
+      const legacyDy = Number.isFinite(Number(object.labelDy)) ? Number(object.labelDy) : (object.type === "line" || object.type === "text" ? -6 : -8);
+      originalOffsetY = -legacyDy / scale;
+    }
     drag = {
       mode: "label",
       objectId: object.id,
       startClientX: event.clientX,
       startClientY: event.clientY,
-      originalDx: Number.isFinite(Number(object.labelDx)) ? Number(object.labelDx) : defaultDx,
-      originalDy: Number.isFinite(Number(object.labelDy)) ? Number(object.labelDy) : defaultDy
+      originalOffsetX: Number.isFinite(originalOffsetX) ? originalOffsetX : defaultDx,
+      originalOffsetY: Number.isFinite(originalOffsetY) ? originalOffsetY : defaultDy
     };
     selectedId = object.id;
     event.preventDefault();
@@ -163,9 +169,10 @@
     if (drag.mode === "label") {
       const object = engine.get(drag.objectId);
       if (!object) return;
+      const scale = engine.renderer.scale() || 1;
       engine.update(object.id, {
-        labelDx: drag.originalDx + (event.clientX - drag.startClientX),
-        labelDy: drag.originalDy + (event.clientY - drag.startClientY)
+        labelOffsetX: drag.originalOffsetX + (event.clientX - drag.startClientX) / scale,
+        labelOffsetY: drag.originalOffsetY - (event.clientY - drag.startClientY) / scale
       });
       render();
       return;
@@ -186,8 +193,7 @@
   viewList.addEventListener("click", function (event) { const system = event.target.closest("[data-view]"); if (!system) return; if (system.dataset.view === "axes") engine.renderer.showAxes = !engine.renderer.showAxes; if (system.dataset.view === "grid") engine.renderer.showGrid = !engine.renderer.showGrid; render(); });
 
   document.getElementById("toolGrid").addEventListener("click", (event) => { const button = event.target.closest("[data-tool]"); if (button) activateTool(button.dataset.tool); });
-  document.getElementById("applyBoundsBtn").addEventListener("click", applyBounds);
-  [xMinInput, xMaxInput, yMinInput, yMaxInput].forEach((input) => input.addEventListener("keydown", (event) => { if (event.key === "Enter") applyBounds(); }));
+  document.getElementById("resetViewBtn").addEventListener("click", resetView);
   titleInput.addEventListener("input", render); descriptionInput.addEventListener("input", render);
 
   document.getElementById("newBtn").addEventListener("click", function () { if (!global.confirm("Een nieuwe illustratie starten? Niet-opgeslagen wijzigingen gaan verloren.")) return; const r = engine.renderer; engine = createEngine(); engine.renderer.showAxes = r.showAxes; engine.renderer.showGrid = r.showGrid; selectedId = null; titleInput.value = ""; descriptionInput.value = ""; render(); setStatus("Nieuwe illustratie gestart."); });
