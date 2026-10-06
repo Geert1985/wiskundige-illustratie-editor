@@ -36,16 +36,6 @@
         </div>
       </details>
       <details class="sidebar-section">
-        <summary>Coördinatenbereik</summary>
-        <div class="section-content">
-          <div class="range-grid">
-            <label>x min<input id="xMinInput" type="number" step="0.1"></label><label>x max<input id="xMaxInput" type="number" step="0.1"></label>
-            <label>y min<input id="yMinInput" type="number" step="0.1"></label><label>y max<input id="yMaxInput" type="number" step="0.1"></label>
-          </div>
-          <button id="applyBoundsBtn" class="secondary full-width" type="button">Bereik toepassen</button>
-        </div>
-      </details>
-      <details class="sidebar-section">
         <summary>Illustratie</summary>
         <div class="section-content">
           <label>Titel<input id="titleInput" type="text" placeholder="Bijv. Gelijkbenige driehoek"></label>
@@ -69,7 +59,7 @@
         </div>
       </details>
     </aside>
-    <section class="canvas-area"><div class="canvas-toolbar"><span id="status">Klaar.</span><span id="objectCount">0 objecten</span></div>
+    <section class="canvas-area"><div class="canvas-toolbar"><span id="status">Klaar.</span><span id="objectCount">0 objecten</span><button id="resetViewBtn" class="secondary" type="button">Weergave herstellen</button></div>
       <div id="canvasWrap" class="canvas-wrap"><div id="canvas" class="canvas" aria-label="Werkvlak voor wiskundige illustraties"></div><div id="crosshair" class="crosshair" hidden></div></div>
     </section>
   </main>
