@@ -44,10 +44,36 @@ The first authoring editor now provides:
 - JSON import/export;
 - SVG export.
 
+## Mathematical coordinate invariant
+
+A fundamental design decision for the illustration engine is that **mathematical coordinates must retain equal scale in both directions**.
+
+One unit on the x-axis therefore represents exactly the same number of screen pixels as one unit on the y-axis. The renderer uses an equal-aspect-ratio coordinate system and centers the mathematical drawing inside the available SVG viewport when the viewport and coordinate-range aspect ratios differ.
+
+This is deliberately treated as a mathematical invariant rather than merely a visual styling choice. It ensures that:
+
+- a circle remains a true visual circle;
+- a square remains a visual square;
+- right angles remain visually correct;
+- distances are not stretched differently in x and y;
+- geometric constructions can be interpreted directly from the drawing.
+
+For example, a circle with
+
+`center = (0, 2)`
+
+and
+
+`radius = 2`
+
+must pass exactly through `(0, 0)` and `(0, 4)`. The renderer must therefore never compensate for a non-square screen coordinate scale by changing the mathematical radius. Instead, the viewport itself is fitted to the mathematical aspect ratio.
+
+This principle should be preserved when zooming, panning, changing the coordinate range, adding geometric constraints, and implementing future objects such as polygons, angles, perpendiculars, vectors and transformations.
+
 ## Files
 
 - `model.js` — mathematical data model and JSON representation.
-- `renderer.js` — SVG renderer; converts mathematical coordinates to screen coordinates.
+- `renderer.js` — SVG renderer; converts mathematical coordinates to screen coordinates while preserving equal x/y scale.
 - `index.js` — public engine facade and interaction-neutral operations.
 - `editor.html` — standalone authoring entry point for the first editor.
 - `editor.js` — authoring interaction layer.
@@ -85,4 +111,4 @@ const json = engine.toJSONString(true);
 const svg = engine.renderSVG();
 ```
 
-Coordinates are mathematical: positive `y` points upward. The renderer handles conversion to SVG's downward screen axis.
+Coordinates are mathematical: positive `y` points upward. The renderer handles conversion to SVG's downward screen axis while preserving equal scale in x and y.
