@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wiskundige Illustratie-editor — From Zero 2 Infinity</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">FROM ZERO 2 INFINITY</div>
+      <h1>Wiskundige illustratie-editor</h1>
+    </div>
+    <div class="top-actions">
+      <button id="newBtn" class="secondary">Nieuw</button>
+      <button id="saveBtn">Opslaan</button>
+      <button id="loadBtn" class="secondary">JSON laden</button>
+      <button id="exportJsonBtn" class="secondary">JSON exporteren</button>
+      <button id="exportSvgBtn" class="secondary">SVG exporteren</button>
+      <input id="fileInput" type="file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar">
+      <section>
+        <h2>Objecten</h2>
+        <div class="tool-grid" id="toolGrid">
+          <button data-tool="select" class="tool active">↖ <span>Selecteren</span></button>
+          <button data-tool="point" class="tool">• <span>Punt</span></button>
+          <button data-tool="line" class="tool">╱ <span>Lijnstuk</span></button>
+          <button data-tool="circle" class="tool">○ <span>Cirkel</span></button>
+          <button data-tool="text" class="tool">T <span>Tekst</span></button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Illustratie</h2>
+        <label>Titel<input id="titleInput" type="text" placeholder="Bijv. Gelijkbenige driehoek"></label>
+        <label>Beschrijving<textarea id="descriptionInput" rows="3" placeholder="Wat moet de leerling zien?"></textarea></label>
+      </section>
+
+      <section>
+        <h2>Geselecteerd object</h2>
+        <div id="selectionPanel" class="selection-empty">Geen object geselecteerd.</div>
+      </section>
+
+      <section class="help">
+        <h2>Bediening</h2>
+        <p><strong>Selecteren:</strong> klik op een object en sleep.</p>
+        <p><strong>Punt:</strong> klik in het werkvlak.</p>
+        <p><strong>Lijnstuk:</strong> klik en sleep van begin naar eind.</p>
+        <p><strong>Cirkel:</strong> klik voor het middelpunt en sleep voor de straal.</p>
+        <p><strong>Tekst:</strong> klik en voer tekst in.</p>
+        <p><strong>Delete:</strong> verwijder het geselecteerde object.</p>
+      </section>
+    </aside>
+
+    <section class="canvas-area">
+      <div class="canvas-toolbar">
+        <span id="status">Klaar.</span>
+        <span id="objectCount">0 objecten</span>
+      </div>
+      <div id="canvasWrap" class="canvas-wrap">
+        <div id="canvas" class="canvas" aria-label="Werkvlak voor wiskundige illustraties"></div>
+        <div id="crosshair" class="crosshair" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>Vroege editor — fase 1 van de Mathematical Illustration Engine</footer>
+
+  <script src="model.js"></script>
+  <script src="renderer.js"></script>
+  <script src="index.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>
