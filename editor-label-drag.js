@@ -47,8 +47,8 @@
   function currentOffset(object, engine) {
     const fallback = defaultOffset(object, engine);
     return {
-      x: Number.isFinite(Number(object.labelOffsetX)) ? Number(object.labelOffsetX) : fallback.x,
-      y: Number.isFinite(Number(object.labelOffsetY)) ? Number(object.labelOffsetY) : fallback.y
+      x: object.labelOffsetX != null && Number.isFinite(Number(object.labelOffsetX)) ? Number(object.labelOffsetX) : (Number.isFinite(Number(object.labelDx)) ? Number(object.labelDx) / engine.renderer.scale() : fallback.x),
+      y: object.labelOffsetY != null && Number.isFinite(Number(object.labelOffsetY)) ? Number(object.labelOffsetY) : (Number.isFinite(Number(object.labelDy)) ? -Number(object.labelDy) / engine.renderer.scale() : fallback.y)
     };
   }
 

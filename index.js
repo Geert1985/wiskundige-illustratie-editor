@@ -9,6 +9,22 @@
 
   const NS = global.FZI = global.FZI || {};
   const MI = NS.MathIllustration = NS.MathIllustration || {};
+  function presentationOptions(presentation) {
+    const options = {};
+    [...MI.PRESENTATION_FLAGS, "bounds", "background", "coordinateSystem", "axisStep"].forEach(key => {
+      if (presentation && key in presentation) options[key] = presentation[key];
+    });
+    return options;
+  }
+  function createDocumentRenderer(options) {
+    const renderer = new MI.SvgRenderer(options);
+    renderer.showSnapPoints = options.showSnapPoints !== false;
+    // Validate the presentation before the engine replaces a document. In the
+    // editor the existing adaptive-grid policy remains authoritative.
+    if (MI.adaptiveGridStep) renderer.axisStep = MI.adaptiveGridStep(renderer);
+    renderer.renderGrid(); renderer.renderAxes();
+    return renderer;
+  }
 
   function distancePointToSegment(px, py, x1, y1, x2, y2) {
     const dx = x2 - x1;
@@ -35,7 +51,7 @@
       this.model = data instanceof MI.IllustrationModel
         ? data
         : new MI.IllustrationModel(data);
-      this.renderer = new MI.SvgRenderer(rendererOptions || {});
+      this.renderer = createDocumentRenderer(Object.assign({}, presentationOptions(this.model.presentation), rendererOptions || {}));
       MI.activeEngine = this;
     }
 
@@ -75,9 +91,23 @@
       throw new Error("Verplaatsen wordt nog niet ondersteund voor: " + object.type);
     }
 
-    toJSON() { return this.model.toJSON(); }
+    toJSON() {
+      const document = this.model.toJSON(), r = this.renderer;
+      const presentation = { ...(document.presentation || {}), bounds: { ...(document.presentation && document.presentation.bounds || {}), ...r.bounds }, coordinateSystem: r.coordinateSystem, background: r.background, axisStep: r.axisStep };
+      MI.PRESENTATION_FLAGS.forEach(key => { presentation[key] = key === "showSnapPoints" ? r[key] !== false : r[key]; });
+      document.presentation = presentation;
+      return document;
+    }
     toJSONString(pretty) { return JSON.stringify(this.toJSON(), null, pretty ? 2 : 0); }
-    load(data) { this.model.load(data); return this; }
+    load(data) {
+      const model = new MI.IllustrationModel().load(data), current = this.renderer;
+      const options = { width: current.width, height: current.height, padding: current.padding, bounds: { ...current.bounds }, background: current.background, axisStep: current.axisStep, coordinateSystem: current.coordinateSystem };
+      MI.PRESENTATION_FLAGS.forEach(key => { options[key] = key === "showSnapPoints" ? current[key] !== false : current[key]; });
+      Object.assign(options, presentationOptions(model.presentation));
+      const renderer = createDocumentRenderer(options);
+      this.model = model; this.renderer = renderer;
+      return this;
+    }
     renderSVG() { return this.renderer.render(this.model); }
   }
 

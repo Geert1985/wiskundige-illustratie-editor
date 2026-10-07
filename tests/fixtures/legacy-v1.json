@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "meta": { "title": "Legacy-document", "description": "V1-import en gegevensbehoud", "source": "fixture" },
+  "external": { "notes": ["behouden"] },
+  "objects": [
+    { "id": "A", "type": "point", "name": "A", "label": "Alpha", "x": "-2", "y": "1", "labelDx": 9, "labelDy": -12, "labelOffsetX": null, "labelOffsetY": null, "extension": { "origin": "legacy" } },
+    { "id": "AB", "type": "line", "name": "Zijde", "label": "oud", "x1": -2, "y1": 1, "x2": 2, "y2": 1, "showLabel": true, "labelOffsetX": 0.1, "labelOffsetY": 0.2 },
+    { "id": "c", "type": "circle", "cx": 0, "cy": 0, "r": 1.5, "showLabel": true, "labelOffsetX": 0, "labelOffsetY": 0, "style": { "stroke": "#123456", "custom": { "value": 1 } } },
+    { "id": "t", "type": "text", "x": 2, "y": -1, "text": "Legacy < tekst", "rotation": 20 }
+  ]
+}
