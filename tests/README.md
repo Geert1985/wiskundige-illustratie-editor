@@ -40,3 +40,11 @@ The test starts a temporary loopback HTTP server, loads the full editor with all
 The optional Edge test also imports the legacy fixture through FileReader, changes as/grid settings and metadata through the UI, saves/reloads, downloads/reimports JSON, compares label positions and document state, rejects duplicate IDs without state loss, preserves a corrupt draft, and checks confirmed New followed by reload.
 
 See [DOCUMENT-FORMAT.md](../DOCUMENT-FORMAT.md) for the version-2 migration and draft/presentation policy. Snapping, pointer scaling and the feature-layer architecture remain outside 0B; these tests do not constitute full coverage of every editor interaction.
+
+## Milestone 0C snapping regressions
+
+`snapping.test.cjs` covers geometry/grid candidates, all intersection types, visibility/exclusion, deterministic tier priorities, responsive/affine screen tolerance, direct mutation without implicit snapping, exact distance, rigid translation and independent endpoints. `interactions.test.cjs` invokes actual editor listeners for keyboard-only measurements, last valid pointer direction, Enter and rejected-shape cleanup.
+
+`browser-snapping.cjs` is invoked by `browser.cjs`. It covers real line/circle drawing, marker/preview/commit agreement, exact length/radius near a competing point, rigid translation, endpoint-to-grid/point drag, all three intersection types through point placement, keyboard-only input/backspace, short-shape cleanup and tolerance at two window sizes. Existing 0A/0B browser checks remain in the same run.
+
+The VM helper loads the three new services after index.js, matching the real editor's dependency order. Existing assertions and the original geometry SVG fixture remain unchanged. See [SNAPPING.md](../SNAPPING.md) for the API, deterministic priority and constraint policy.
