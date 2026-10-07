@@ -6,7 +6,7 @@ Run from the repository root with Node.js 20 or later:
 node --test math-illustration/tests/*.test.cjs
 ```
 
-No npm install is required for the 17 default tests. They execute the actual browser scripts in isolated Node VM contexts. The wheel/pan integration harness supplies a minimal DOM and invokes the real editor handlers; it is not a replacement for browser layout/event testing.
+No npm install is required for the default tests. They execute the actual browser scripts in isolated Node VM contexts. The wheel/pan integration harness supplies a minimal DOM and invokes the real editor handlers; it is not a replacement for browser layout/event testing.
 
 The seven baseline tests passed before any production changes. `fixtures/geometry.json` includes all four supported types, styles, explicit mathematical label offsets, text rotation and escaped text. `fixtures/geometry.svg` was generated from the original branch at commit `40c2ad9ea73cfa292f4be707aba10613b230e48c` before the F01/F02 fixes and is compared byte-for-byte. Do not regenerate it to make a failing test pass. The baseline deliberately does not assert known broken behavior such as null-label migration or automatic snapping preserving exact lengths.
 
@@ -31,4 +31,12 @@ node math-illustration/tests/browser.cjs
 
 The test starts a temporary loopback HTTP server, loads the full editor with all existing feature layers, sends a real wheel input plus repeated DOM wheel events, verifies the 0.1/700 boundary and zoom-out safety, then resets the view and creates a point. It collects page errors and closes the browser/server. It does not change user browser profiles or repository files. External Google Fonts are blocked to keep the smoke test independent of font downloads.
 
-This scope does not fix F03–F17 or comprehensively test all interactions. In particular, the snapping wrappers, labels, storage policy and feature-layer architecture remain unchanged.
+## Milestone 0B document regression tests
+
+`documents.test.cjs` covers atomic import, canonical ID collisions, schema rejection, legacy name/label migration, null versus zero offsets, data preservation, presentation restore/preflight, standalone static steps and safe next-ID generation. `fixtures/legacy-v1.json` exercises all four types and unknown fields.
+
+`drafts.test.cjs` covers unchanged Storage.prototype, save/restore, retained corrupt drafts, explicit clearing and storage errors. The wheel/pan harness now loads the explicit startup script, just as the real editor does; its 0A assertions are unchanged.
+
+The optional Edge test also imports the legacy fixture through FileReader, changes as/grid settings and metadata through the UI, saves/reloads, downloads/reimports JSON, compares label positions and document state, rejects duplicate IDs without state loss, preserves a corrupt draft, and checks confirmed New followed by reload.
+
+See [DOCUMENT-FORMAT.md](../DOCUMENT-FORMAT.md) for the version-2 migration and draft/presentation policy. Snapping, pointer scaling and the feature-layer architecture remain outside 0B; these tests do not constitute full coverage of every editor interaction.
