@@ -48,3 +48,11 @@ See [DOCUMENT-FORMAT.md](../DOCUMENT-FORMAT.md) for the version-2 migration and 
 `browser-snapping.cjs` is invoked by `browser.cjs`. It covers real line/circle drawing, marker/preview/commit agreement, exact length/radius near a competing point, rigid translation, endpoint-to-grid/point drag, all three intersection types through point placement, keyboard-only input/backspace, short-shape cleanup and tolerance at two window sizes. Existing 0A/0B browser checks remain in the same run.
 
 The VM helper loads the three new services after index.js, matching the real editor's dependency order. Existing assertions and the original geometry SVG fixture remain unchanged. See [SNAPPING.md](../SNAPPING.md) for the API, deterministic priority and constraint policy.
+
+## Milestone 0D interaction/render regressions
+
+`lifecycle.test.cjs` adds 11 tests to the original 49. It exercises single pointer ownership; rollback of object, label, endpoint, draw and pan for pointercancel/blur/Escape/lost capture; label coordinates/tool gating; New and dispose/init; standalone visibility/origin; explicit engine ownership; and source checks for one canvas writer with no alternative feature handlers/trackers. Existing mouse integration harnesses now supply pointer IDs and run explicit bootstrap; their geometry/safety assertions remain intact. The old engine-tracker assertion now checks the injected app engine.
+
+`fixtures/lifecycle-v2.json` defines a labeled point/line plus a hidden circle. `browser-lifecycle.cjs`, included in the complete Edge runner, checks startup services/color/axes/geometry immediately after reload, label movement at two responsive widths and zoom, 15 cancellation combinations, native lost capture, another pointer, pointer-up outside canvas, New and dispose in all five modes, repeated init/bootstrap, staged line/label/handle/inspector consistency, selection after rendering, hidden-object color/axis changes and actual SVG download. Opaque IDs and construction/rendering of a separate engine cannot corrupt app ownership.
+
+See [INTERACTION-RENDER.md](../INTERACTION-RENDER.md) for commit/cancel policy, lifecycle and the central render contract. Node's fake DOM tests complement the Edge checks; simulated pointercancel/blur do not establish physical touch or operating-system focus coverage.
