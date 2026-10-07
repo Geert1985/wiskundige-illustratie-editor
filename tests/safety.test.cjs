@@ -90,7 +90,7 @@ function editorRuntime() {
   node('canvas').querySelector = selector => selector === 'svg' ? { getScreenCTM: () => matrix } : null;
   const document = { readyState: 'loading', getElementById: node, querySelectorAll: () => [],
     addEventListener(name, fn) { if (name === 'DOMContentLoaded') ready.push(fn); } };
-  const { MI } = runtime(['model.js', 'renderer.js', 'index.js', 'editor-adaptive-grid.js', 'editor.js'], {
+  const { MI } = runtime(['model.js', 'renderer.js', 'index.js', 'editor-startup.js', 'editor-adaptive-grid.js', 'editor.js'], {
     document, localStorage: { getItem: () => null, removeItem() {} },
     CSS: { escape: x => x }, DOMPoint: class { constructor(x, y) { this.x = x; this.y = y; } matrixTransform() { return this; } },
     addEventListener(name, fn) { (windowEvents[name] ||= []).push(fn); }

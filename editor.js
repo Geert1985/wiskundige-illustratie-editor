@@ -143,8 +143,8 @@
     const scale = engine.renderer.scale() || 1;
     const defaultDx = (object.type === "line" || object.type === "text" ? 6 : 8) / scale;
     const defaultDy = (object.type === "line" || object.type === "text" ? -6 : -8) / -scale;
-    let originalOffsetX = Number(object.labelOffsetX);
-    let originalOffsetY = Number(object.labelOffsetY);
+    let originalOffsetX = object.labelOffsetX == null ? NaN : Number(object.labelOffsetX);
+    let originalOffsetY = object.labelOffsetY == null ? NaN : Number(object.labelOffsetY);
     if (!Number.isFinite(originalOffsetX)) {
       const legacyDx = Number.isFinite(Number(object.labelDx)) ? Number(object.labelDx) : (object.type === "line" || object.type === "text" ? 6 : 8);
       originalOffsetX = legacyDx / scale;
@@ -205,8 +205,19 @@
   document.getElementById("resetViewBtn").addEventListener("click", resetView);
   titleInput.addEventListener("input", render); descriptionInput.addEventListener("input", render);
 
-  document.getElementById("newBtn").addEventListener("click", function () { if (!global.confirm("Een nieuwe illustratie starten? Niet-opgeslagen wijzigingen gaan verloren.")) return; const r = engine.renderer; engine = createEngine(); engine.renderer.showAxes = r.showAxes; engine.renderer.showGrid = r.showGrid; selectedId = null; titleInput.value = ""; descriptionInput.value = ""; render(); setStatus("Nieuwe illustratie gestart."); });
-  document.getElementById("saveBtn").addEventListener("click", () => { updateMeta(); localStorage.setItem(STORAGE_KEY, engine.toJSONString(true)); setStatus("Concept opgeslagen in deze browser."); });
+  document.getElementById("newBtn").addEventListener("click", function () {
+    if (!global.confirm("Een nieuwe illustratie starten? Het opgeslagen concept en niet-opgeslagen wijzigingen worden verwijderd.")) return;
+    let storageError = null;
+    try { MI.DraftStore.clear(localStorage); } catch (error) { storageError = error; }
+    const r = engine.renderer; engine = createEngine(); engine.renderer.showAxes = r.showAxes; engine.renderer.showGrid = r.showGrid;
+    selectedId = null; titleInput.value = ""; descriptionInput.value = ""; render();
+    setStatus(storageError ? "Nieuwe illustratie gestart. Opgeslagen concept kon niet worden gewist: " + storageError.message : "Nieuwe illustratie gestart.");
+  });
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    updateMeta();
+    try { MI.DraftStore.save(engine, localStorage); setStatus("Concept opgeslagen in deze browser."); }
+    catch (error) { setStatus("Concept kon niet worden opgeslagen: " + error.message); }
+  });
   document.getElementById("loadBtn").addEventListener("click", () => document.getElementById("fileInput").click());
   document.getElementById("fileInput").addEventListener("change", function (event) { const file = event.target.files && event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function () { try { engine.load(JSON.parse(reader.result)); titleInput.value = engine.model.meta.title || ""; descriptionInput.value = engine.model.meta.description || ""; selectedId = null; render(); setStatus("Illustratie geladen."); } catch (error) { global.alert("JSON kon niet worden geladen: " + error.message); } event.target.value = ""; }; reader.readAsText(file); });
 
@@ -222,6 +233,11 @@
     if (event.key === "Escape") { drag = null; typedMeasurement = ""; engine.renderer.preview = null; crosshair.hidden = true; crosshair.classList.remove("snapped"); activateTool("select"); render(); }
   });
 
-  try { const draft = localStorage.getItem(STORAGE_KEY); if (draft) { engine.load(JSON.parse(draft)); titleInput.value = engine.model.meta.title || ""; descriptionInput.value = engine.model.meta.description || ""; setStatus("Opgeslagen concept geladen."); } } catch (error) { localStorage.removeItem(STORAGE_KEY); setStatus("Nieuw werkvlak."); }
+  try {
+    if (MI.DraftStore.restore(engine, localStorage)) {
+      titleInput.value = engine.model.meta.title || ""; descriptionInput.value = engine.model.meta.description || "";
+      setStatus("Opgeslagen concept geladen.");
+    }
+  } catch (error) { setStatus("Concept kon niet worden geladen; opgeslagen gegevens zijn behouden: " + error.message); }
   render();
 })(window);
