@@ -1,0 +1,11 @@
+{
+  "type": "geometry",
+  "version": 1,
+  "meta": { "title": "Vier basisobjecten", "description": "Gelijke schaal en bestaande presentatie" },
+  "objects": [
+    { "id": "A", "name": "A", "type": "point", "x": -2, "y": 1, "showLabel": true, "labelOffsetX": 0.2, "labelOffsetY": 0.1, "style": { "stroke": "#123456", "fill": "#123456", "radius": 5 } },
+    { "id": "AB", "name": "AB", "type": "line", "x1": -2, "y1": 1, "x2": 2, "y2": 1, "showLabel": true, "labelOffsetX": 0.1, "labelOffsetY": 0.2, "style": { "dash": "4 2" } },
+    { "id": "c", "name": "c", "type": "circle", "cx": 0, "cy": 2, "r": 2, "showLabel": true, "labelOffsetX": 0.2, "labelOffsetY": 0.2 },
+    { "id": "t", "name": "t", "type": "text", "x": 1, "y": -1, "text": "A < B & C", "rotation": 30, "labelOffsetX": 0, "labelOffsetY": 0, "style": { "fill": "#654321", "fontSize": 18, "anchor": "middle" } }
+  ]
+}

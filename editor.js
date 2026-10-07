@@ -112,7 +112,24 @@
   function finishCircle(center, end) { const requestedRadius = measurementValue(), radius = requestedRadius != null ? requestedRadius : Math.hypot(end.x - center.x, end.y - center.y); if (radius < 0.05) return; engine.renderer.preview = null; selectedId = engine.add({ type: "circle", cx: center.x, cy: center.y, r: radius }).id; render(); setStatus(requestedRadius != null ? "Cirkel met straal " + requestedRadius + " toegevoegd." : "Cirkel toegevoegd."); }
 
   function updateDrawPreview(event) { if (!drag || drag.mode !== "draw") return; const mousePoint = pointerPosition(event); if (!mousePoint) return; const snap = snapToPoint(mousePoint); drag.lastPoint = snap.point; const end = constrainedEndpoint(drag.start, snap.point); engine.renderer.preview.end = end; updateCrosshair(event, measurementValue() == null ? snap : { point: end, snapped: false }); setStatus(measurementStatus() || (drag.shape === "circle" ? "Typ een straal, bijvoorbeeld 2." : "Typ een lengte, bijvoorbeeld 3.")); render(); }
-  function zoomAt(event) { if (drag) return; event.preventDefault(); const p = pointerPosition(event); if (!p) return; const b = engine.renderer.bounds, factor = event.deltaY < 0 ? 0.85 : 1 / 0.85, nx = (b.xMax - b.xMin) * factor, ny = (b.yMax - b.yMin) * factor, fx = (p.x - b.xMin) / (b.xMax - b.xMin), fy = (p.y - b.yMin) / (b.yMax - b.yMin); engine.renderer.bounds = { xMin: p.x - fx * nx, xMax: p.x + (1 - fx) * nx, yMin: p.y - fy * ny, yMax: p.y + (1 - fy) * ny }; render(); }
+  function zoomAt(event) {
+    if (drag) return;
+    event.preventDefault();
+    if (!Number.isFinite(event.deltaY) || event.deltaY === 0) return;
+    const p = pointerPosition(event); if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return;
+    const r = engine.renderer, b = r.bounds;
+    let factor = event.deltaY < 0 ? 0.85 : 1 / 0.85;
+    if (event.deltaY < 0 && Number.isFinite(MI.adaptiveGridMaxScale)) {
+      factor = Math.max(factor, r.scale() / MI.adaptiveGridMaxScale);
+      if (factor >= 1) return;
+    }
+    const nx = (b.xMax - b.xMin) * factor, ny = (b.yMax - b.yMin) * factor;
+    const fx = (p.x - b.xMin) / (b.xMax - b.xMin), fy = (p.y - b.yMin) / (b.yMax - b.yMin);
+    try {
+      r.setBounds({ xMin: p.x - fx * nx, xMax: p.x + (1 - fx) * nx, yMin: p.y - fy * ny, yMax: p.y + (1 - fy) * ny });
+    } catch (error) { setStatus(error.message); return; }
+    render();
+  }
   function resetView() { engine.renderer.bounds = { ...DEFAULT_BOUNDS }; render(); setStatus("Weergave hersteld."); }
 
   canvasWrap.addEventListener("wheel", zoomAt, { passive: false });
@@ -167,7 +184,12 @@
     if (drag.mode === "draw") { updateDrawPreview(event); return; }
     const delta = mathDeltaFromScreen(event.clientX - drag.startClientX, event.clientY - drag.startClientY, drag.screenPerMath);
     if (drag.mode === "object") { const o = drag.original; if (drag.objectType === "point" || drag.objectType === "text") { const target = snapToPoint({ x: o.x + delta.x, y: o.y + delta.y }, drag.objectId); engine.update(drag.objectId, { x: target.point.x, y: target.point.y }); } else if (drag.objectType === "circle") { const target = snapToPoint({ x: o.cx + delta.x, y: o.cy + delta.y }, drag.objectId); engine.update(drag.objectId, { cx: target.point.x, cy: target.point.y }); } else if (drag.objectType === "line") engine.update(drag.objectId, { x1: o.x1 + delta.x, y1: o.y1 + delta.y, x2: o.x2 + delta.x, y2: o.y2 + delta.y }); render(); return; }
-    if (drag.mode === "pan") { const original = drag.bounds, dx = delta.x, dy = delta.y; engine.renderer.bounds = { xMin: original.xMin - dx, xMax: original.xMax - dx, yMin: original.yMin - dy, yMax: original.yMax - dy }; render(); }
+    if (drag.mode === "pan") {
+      const original = drag.bounds, dx = delta.x, dy = delta.y;
+      try { engine.renderer.setBounds({ xMin: original.xMin - dx, xMax: original.xMax - dx, yMin: original.yMin - dy, yMax: original.yMax - dy }); }
+      catch (error) { setStatus(error.message); return; }
+      render();
+    }
   });
 
   global.addEventListener("mouseup", function () { if (!drag) return; const current = drag; drag = null; crosshair.hidden = true; crosshair.classList.remove("snapped"); if (current.mode === "draw") { const end = current.lastPoint || current.start, constrained = constrainedEndpoint(current.start, end); if (current.shape === "line") finishLine(current.start, constrained); if (current.shape === "circle") finishCircle(current.start, constrained); return; } if (current.mode === "pan") setStatus("Canvas verschoven."); if (current.mode === "label") setStatus("Label verplaatst."); });

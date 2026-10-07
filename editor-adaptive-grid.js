@@ -18,9 +18,9 @@
     const normalized = rawStep / magnitude;
     let nice;
 
-    if (normalized <= 1) nice = 1;
-    else if (normalized <= 2) nice = 2;
-    else if (normalized <= 5) nice = 5;
+    if (normalized <= 1 + 1e-12) nice = 1;
+    else if (normalized <= 2 + 1e-12) nice = 2;
+    else if (normalized <= 5 + 1e-12) nice = 5;
     else nice = 10;
 
     return Math.max(MIN_GRID_STEP, nice * magnitude);
@@ -44,15 +44,15 @@
     if (!canvasWrap) return;
     canvasWrap.addEventListener("wheel", function (event) {
       if (!global.FZI || !global.FZI.MathIllustration) return;
-      const engine = global.FZI.MathIllustration.__adaptiveGridEngine;
+      const engine = global.FZI.MathIllustration.adaptiveGridEngine;
       if (!engine || event.deltaY >= 0) return;
-      if (engine.renderer.scale() >= MAX_ZOOM_SCALE * 0.999 || adaptiveGridStep(engine.renderer) <= MIN_GRID_STEP) {
+      if (engine.renderer.scale() >= MAX_ZOOM_SCALE * (1 - 1e-12) || adaptiveGridStep(engine.renderer) <= MIN_GRID_STEP) {
         event.preventDefault();
         event.stopImmediatePropagation();
         const status = document.getElementById("status");
         if (status) status.textContent = "Maximale zoom bereikt (raster: 0,1).";
       }
-    }, true);
+    }, { capture: true, passive: false });
   }
 
   const originalRenderTracker = MI.Engine.prototype.renderSVG;

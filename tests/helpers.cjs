@@ -1,0 +1,16 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const root = path.join(__dirname, '..');
+function runtime(files = ['model.js', 'renderer.js', 'index.js'], additions = {}) {
+  const context = { console, setTimeout, document: {
+    readyState: 'loading', addEventListener() {}, getElementById() { return null; }, querySelector() { return null; }
+  }, addEventListener() {}, ...additions };
+  context.window = context;
+  vm.createContext(context);
+  for (const file of files) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
+  return { context, MI: context.FZI.MathIllustration };
+}
+function fixture(name) { return JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', name), 'utf8')); }
+function plain(value) { return JSON.parse(JSON.stringify(value)); }
+module.exports = { runtime, fixture, plain, root };

@@ -5,6 +5,28 @@
   const NS = global.FZI = global.FZI || {};
   const MI = NS.MathIllustration = NS.MathIllustration || {};
   const SVG_NS = "http://www.w3.org/2000/svg";
+  const MAX_TICKS_PER_AXIS = 1000;
+  const MAX_COORDINATE = 1e12;
+
+  function validateBounds(bounds) {
+    if (!bounds || ![bounds.xMin, bounds.xMax, bounds.yMin, bounds.yMax].every(value => Number.isFinite(value) && Math.abs(value) <= MAX_COORDINATE)) {
+      throw new RangeError("Ongeldige viewport: coördinaten moeten eindig zijn en binnen ±1e12 liggen.");
+    }
+    const xSpan = bounds.xMax - bounds.xMin, ySpan = bounds.yMax - bounds.yMin;
+    if (xSpan < 1e-6 || ySpan < 1e-6 || xSpan > MAX_COORDINATE || ySpan > MAX_COORDINATE) {
+      throw new RangeError("Ongeldige viewport: positieve asbereiken tussen 1e-6 en 1e12 vereist.");
+    }
+  }
+
+  function tickValues(min, max, step) {
+    if (!Number.isFinite(step) || step <= 0) throw new RangeError("Rasterstap moet positief en eindig zijn.");
+    const first = Math.ceil(min / step), last = Math.floor((max + 1e-9) / step);
+    const count = Math.max(0, last - first + 1);
+    if (!Number.isSafeInteger(first) || !Number.isSafeInteger(last) || count > MAX_TICKS_PER_AXIS) {
+      throw new RangeError("Te veel rasterlijnen of asmarkeringen; vergroot de rasterstap.");
+    }
+    return Array.from({ length: count }, (_, index) => (first + index) * step);
+  }
 
   function esc(value) { return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\"/g, "&quot;").replace(/'/g, "&#39;"); }
   function number(value, digits) { return Number(Number(value).toFixed(digits == null ? 6 : digits)); }
@@ -15,10 +37,10 @@
   class SvgRenderer {
     constructor(options) {
       const opts = options || {};
-      this.width = Number(opts.width || 800); this.height = Number(opts.height || 500);
+      this.width = Number(opts.width == null ? 800 : opts.width); this.height = Number(opts.height == null ? 500 : opts.height);
       this.bounds = Object.assign({ xMin: -5, yMin: -3, xMax: 5, yMax: 3 }, opts.bounds || {});
       this.background = opts.background || "transparent"; this.padding = Number(opts.padding || 0);
-      this.showAxes = opts.showAxes !== false; this.showGrid = opts.showGrid === true; this.axisStep = Number(opts.axisStep || 1);
+      this.showAxes = opts.showAxes !== false; this.showGrid = opts.showGrid === true; this.axisStep = Number(opts.axisStep == null ? 1 : opts.axisStep);
       this.showXAxis = opts.showXAxis !== false; this.showYAxis = opts.showYAxis !== false;
       this.showAxisLabels = opts.showAxisLabels !== false; this.showOrigin = opts.showOrigin !== false;
       this.coordinateSystem = opts.coordinateSystem || "cartesian";
@@ -26,8 +48,20 @@
     }
 
     syncAspectRatio() {
-      const b = this.bounds, xSpan = b.xMax - b.xMin, ySpan = b.yMax - b.yMin, drawableWidth = Math.max(1, this.width - this.padding * 2);
-      this.height = Math.max(1, this.padding * 2 + drawableWidth * (ySpan / xSpan));
+      validateBounds(this.bounds);
+      if (!Number.isFinite(this.width) || !Number.isFinite(this.padding) || this.padding < 0 || this.width <= this.padding * 2) throw new RangeError("Ongeldige viewportbreedte of padding.");
+      if (!Number.isFinite(this.axisStep) || this.axisStep <= 0) throw new RangeError("Rasterstap moet positief en eindig zijn.");
+      const b = this.bounds, xSpan = b.xMax - b.xMin, ySpan = b.yMax - b.yMin, drawableWidth = this.width - this.padding * 2;
+      const height = this.padding * 2 + drawableWidth * (ySpan / xSpan);
+      const scale = drawableWidth / xSpan;
+      if (!Number.isFinite(height) || !Number.isFinite(scale) || height <= 0 || scale <= 0) throw new RangeError("Viewport kan niet veilig worden afgebeeld.");
+      this.height = height;
+    }
+    setBounds(bounds) {
+      validateBounds(bounds);
+      const previous = this.bounds;
+      this.bounds = Object.assign({}, bounds);
+      try { this.syncAspectRatio(); } catch (error) { this.bounds = previous; throw error; }
     }
     scale() { return (this.width - this.padding * 2) / (this.bounds.xMax - this.bounds.xMin); }
     mapX(x) { return this.padding + (x - this.bounds.xMin) * this.scale(); }
@@ -35,20 +69,22 @@
 
     renderGrid() {
       if (!this.showGrid) return "";
+      this.syncAspectRatio();
       const b = this.bounds, parts = [], step = this.axisStep;
-      for (let x = Math.ceil(b.xMin / step) * step; x <= b.xMax + 1e-9; x += step) { const sx = this.mapX(x); parts.push('<line x1="' + number(sx) + '" y1="' + this.padding + '" x2="' + number(sx) + '" y2="' + (this.height - this.padding) + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
-      for (let y = Math.ceil(b.yMin / step) * step; y <= b.yMax + 1e-9; y += step) { const sy = this.mapY(y); parts.push('<line x1="' + this.padding + '" y1="' + number(sy) + '" x2="' + (this.width - this.padding) + '" y2="' + number(sy) + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
+      for (const x of tickValues(b.xMin, b.xMax, step)) { const sx = this.mapX(x); parts.push('<line x1="' + number(sx) + '" y1="' + this.padding + '" x2="' + number(sx) + '" y2="' + (this.height - this.padding) + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
+      for (const y of tickValues(b.yMin, b.yMax, step)) { const sy = this.mapY(y); parts.push('<line x1="' + this.padding + '" y1="' + number(sy) + '" x2="' + (this.width - this.padding) + '" y2="' + number(sy) + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
       return '<g data-illustration-grid aria-hidden="true">' + parts.join("") + '</g>';
     }
 
     renderAxes() {
       if (!this.showAxes || this.coordinateSystem !== "cartesian") return "";
+      this.syncAspectRatio();
       const b = this.bounds, parts = [], axisStroke = "#777", tickStroke = "#aaa", labelFill = "#666", x0 = this.mapX(0), y0 = this.mapY(0), step = this.axisStep;
       const canDrawX = this.showXAxis && b.yMin <= 0 && b.yMax >= 0;
       const canDrawY = this.showYAxis && b.xMin <= 0 && b.xMax >= 0;
       if (canDrawX) {
         parts.push('<line x1="' + this.mapX(b.xMin) + '" y1="' + y0 + '" x2="' + this.mapX(b.xMax) + '" y2="' + y0 + '" stroke="' + axisStroke + '" stroke-width="1.4"/>');
-        for (let x = Math.ceil(b.xMin / step) * step; x <= b.xMax + 1e-9; x += step) {
+        for (const x of tickValues(b.xMin, b.xMax, step)) {
           if (Math.abs(x) < 1e-9) continue;
           const sx = this.mapX(x);
           parts.push('<line x1="' + sx + '" y1="' + (y0 - 4) + '" x2="' + sx + '" y2="' + (y0 + 4) + '" stroke="' + tickStroke + '" stroke-width="1"/>');
@@ -58,7 +94,7 @@
       }
       if (canDrawY) {
         parts.push('<line x1="' + x0 + '" y1="' + this.mapY(b.yMin) + '" x2="' + x0 + '" y2="' + this.mapY(b.yMax) + '" stroke="' + axisStroke + '" stroke-width="1.4"/>');
-        for (let y = Math.ceil(b.yMin / step) * step; y <= b.yMax + 1e-9; y += step) {
+        for (const y of tickValues(b.yMin, b.yMax, step)) {
           if (Math.abs(y) < 1e-9) continue;
           const sy = this.mapY(y);
           parts.push('<line x1="' + (x0 - 4) + '" y1="' + sy + '" x2="' + (x0 + 4) + '" y2="' + sy + '" stroke="' + tickStroke + '" stroke-width="1"/>');
