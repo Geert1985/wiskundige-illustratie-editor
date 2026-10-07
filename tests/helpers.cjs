@@ -8,7 +8,12 @@ function runtime(files = ['model.js', 'renderer.js', 'index.js'], additions = {}
   }, addEventListener() {}, ...additions };
   context.window = context;
   vm.createContext(context);
-  for (const file of files) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
+  for (const file of files) {
+    vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
+    if (file === 'index.js') for (const service of ['coordinate-transform.js', 'snap-service.js', 'interaction-resolver.js']) {
+      vm.runInContext(fs.readFileSync(path.join(root, service), 'utf8'), context, { filename: service });
+    }
+  }
   return { context, MI: context.FZI.MathIllustration };
 }
 function fixture(name) { return JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', name), 'utf8')); }

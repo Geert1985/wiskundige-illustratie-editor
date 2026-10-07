@@ -72,46 +72,49 @@
 
   function field(label, value, key) { return '<div class="row"><span>' + label + '</span><input data-edit="' + key + '" type="number" step="0.1" value="' + fmt(value) + '"></div>'; }
   function updateMeta() { engine.model.meta.title = titleInput.value.trim(); engine.model.meta.description = descriptionInput.value.trim(); }
-  function activateTool(next) { tool = next; typedMeasurement = ""; document.querySelectorAll(".tool").forEach((button) => button.classList.toggle("active", button.dataset.tool === tool)); setStatus(tool === "select" ? "Selecteer een object of verschuif het canvas." : "Teken: " + tool + "."); }
+  function activateTool(next) { MI.publishSnapResult(engine, null); tool = next; typedMeasurement = ""; document.querySelectorAll(".tool").forEach((button) => button.classList.toggle("active", button.dataset.tool === tool)); setStatus(tool === "select" ? "Selecteer een object of verschuif het canvas." : "Teken: " + tool + "."); }
 
-  function svgScreenScale() { const svg = canvas.querySelector("svg"); if (!svg) return null; const matrix = svg.getScreenCTM(); if (!matrix) return null; const p0 = new DOMPoint(0, 0).matrixTransform(matrix), p1 = new DOMPoint(1, 0).matrixTransform(matrix); return Math.hypot(p1.x - p0.x, p1.y - p0.y) * engine.renderer.scale(); }
-  function mathDeltaFromScreen(dx, dy, screenPerMath) { const s = screenPerMath || svgScreenScale() || 1; return { x: dx / s, y: -dy / s }; }
-  function mathUnitsPerPixel() { const s = svgScreenScale(); return s ? 1 / s : 0.01; }
-
-  function snapToGrid(point) {
-    if (!engine.renderer.showGrid) return null;
-    const step = Number(engine.renderer.axisStep) || 1, gx = Math.round(point.x / step) * step, gy = Math.round(point.y / step) * step, tolerance = mathUnitsPerPixel() * 12;
-    return Math.hypot(point.x - gx, point.y - gy) <= tolerance ? { point: { x: gx, y: gy }, snapped: true, object: null, grid: true } : null;
-  }
-
-  function snapToPoint(point, excludeId) {
-    const tolerance = mathUnitsPerPixel() * 14; let best = null, bestDistance = Infinity;
-    engine.model.objects.forEach((object) => { if (object.type !== "point" || object.visible === false || object.id === excludeId) return; const distance = Math.hypot(point.x - object.x, point.y - object.y); if (distance <= tolerance && distance < bestDistance) { best = object; bestDistance = distance; } });
-    if (best) return { point: { x: best.x, y: best.y }, snapped: true, object: best, grid: false };
-    return snapToGrid(point) || { point: point, snapped: false, object: null, grid: false };
-  }
-
+  function mathDeltaFromScreen(dx, dy, transform) { return (transform || MI.CoordinateTransform.forCanvas(engine)).screenDelta(dx, dy); }
+  function snapToPoint(point, excludeId) { return MI.SnapService.resolve(engine, point, { excludeId, transform: MI.CoordinateTransform.forCanvas(engine) }); }
   function pointerPosition(event) {
-    const svg = canvas.querySelector("svg"); if (!svg) return null; const matrix = svg.getScreenCTM(); if (!matrix) return null;
-    const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse()), r = engine.renderer, b = r.bounds, dw = r.width - r.padding * 2;
-    return { x: b.xMin + ((p.x - r.padding) / dw) * (b.xMax - b.xMin), y: b.yMin + ((r.height - r.padding - p.y) / dw) * (b.xMax - b.xMin) };
+    const transform = MI.CoordinateTransform.forCanvas(engine);
+    return transform && transform.screenToMath({ x: event.clientX, y: event.clientY });
   }
-
   function screenPosition(point) {
-    const svg = canvas.querySelector("svg"); if (!svg) return null; const matrix = svg.getScreenCTM(); if (!matrix) return null;
-    const r = engine.renderer, b = r.bounds, scale = r.scale(), svgX = r.padding + (point.x - b.xMin) * scale, svgY = r.height - r.padding - (point.y - b.yMin) * scale, p = new DOMPoint(svgX, svgY).matrixTransform(matrix), wrap = canvasWrap.getBoundingClientRect();
-    return { x: p.x - wrap.left, y: p.y - wrap.top };
+    const transform = MI.CoordinateTransform.forCanvas(engine); if (!transform) return null;
+    const screen = transform.mathToScreen(point), wrap = canvasWrap.getBoundingClientRect();
+    return { x: screen.x - wrap.left, y: screen.y - wrap.top };
   }
-  function updateCrosshair(event, snap) { const r = canvasWrap.getBoundingClientRect(); let position = { x: event.clientX - r.left, y: event.clientY - r.top }; if (snap && snap.snapped) position = screenPosition(snap.point) || position; crosshair.style.left = position.x + "px"; crosshair.style.top = position.y + "px"; crosshair.classList.toggle("snapped", Boolean(snap && snap.snapped)); }
+  function updateCrosshair(result) {
+    const position = screenPosition(result.point); if (!position) return;
+    crosshair.style.left = position.x + "px"; crosshair.style.top = position.y + "px";
+    crosshair.classList.toggle("snapped", result.snapped);
+    crosshair.hidden = result.snapped && engine.renderer.showSnapPoints !== false;
+  }
 
   function measurementValue() { if (!typedMeasurement) return null; const value = Number(typedMeasurement.replace(",", ".")); return Number.isFinite(value) && value > 0 ? value : null; }
-  function constrainedEndpoint(start, mousePoint) { const value = measurementValue(); if (value == null) return mousePoint; let dx = mousePoint.x - start.x, dy = mousePoint.y - start.y, length = Math.hypot(dx, dy); if (length < 1e-9) { dx = 1; dy = 0; } else { dx /= length; dy /= length; } return { x: start.x + dx * value, y: start.y + dy * value }; }
+
   function measurementStatus() { const value = measurementValue(); if (value == null) return null; return drag && drag.shape === "circle" ? "Straal: " + value : "Lengte: " + value; }
 
-  function finishLine(start, end) { if (Math.hypot(end.x - start.x, end.y - start.y) < 0.05) return; const requestedLength = measurementValue(); engine.renderer.preview = null; selectedId = engine.add({ type: "line", x1: start.x, y1: start.y, x2: end.x, y2: end.y }).id; render(); setStatus(requestedLength != null ? "Lijnstuk met lengte " + requestedLength + " toegevoegd." : "Lijnstuk toegevoegd."); }
-  function finishCircle(center, end) { const requestedRadius = measurementValue(), radius = requestedRadius != null ? requestedRadius : Math.hypot(end.x - center.x, end.y - center.y); if (radius < 0.05) return; engine.renderer.preview = null; selectedId = engine.add({ type: "circle", cx: center.x, cy: center.y, r: radius }).id; render(); setStatus(requestedRadius != null ? "Cirkel met straal " + requestedRadius + " toegevoegd." : "Cirkel toegevoegd."); }
+  function finishDrawing(current) {
+    const resolved = current.resolved;
+    engine.renderer.preview = null; typedMeasurement = ""; crosshair.hidden = true; crosshair.classList.remove("snapped");
+    MI.publishSnapResult(engine, null);
+    if (!resolved || resolved.length < 0.05) { render(); setStatus("Vorm te kort; geen object toegevoegd."); return; }
+    selectedId = engine.add(resolved.object).id;
+    render();
+    setStatus(resolved.result.constraint ? (current.shape === "circle" ? "Cirkel met straal " : "Lijnstuk met lengte ") + resolved.length + " toegevoegd." : (current.shape === "circle" ? "Cirkel toegevoegd." : "Lijnstuk toegevoegd."));
+  }
+  function updateDrawPreview(event) {
+    if (!drag || drag.mode !== "draw") return;
+    const point = event ? pointerPosition(event) : null;
+    if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) drag.lastRawPoint = point;
+    drag.resolved = MI.InteractionResolver.draw(engine, drag.shape, drag.start, drag.lastRawPoint, { exactDistance: measurementValue(), transform: MI.CoordinateTransform.forCanvas(engine) });
+    engine.renderer.preview = drag.resolved.preview;
+    setStatus(measurementStatus() || (drag.shape === "circle" ? "Typ een straal, bijvoorbeeld 2." : "Typ een lengte, bijvoorbeeld 3."));
+    render(); updateCrosshair(drag.resolved.result); MI.publishSnapResult(engine, drag.resolved.result);
+  }
 
-  function updateDrawPreview(event) { if (!drag || drag.mode !== "draw") return; const mousePoint = pointerPosition(event); if (!mousePoint) return; const snap = snapToPoint(mousePoint); drag.lastPoint = snap.point; const end = constrainedEndpoint(drag.start, snap.point); engine.renderer.preview.end = end; updateCrosshair(event, measurementValue() == null ? snap : { point: end, snapped: false }); setStatus(measurementStatus() || (drag.shape === "circle" ? "Typ een straal, bijvoorbeeld 2." : "Typ een lengte, bijvoorbeeld 3.")); render(); }
   function zoomAt(event) {
     if (drag) return;
     event.preventDefault();
@@ -161,18 +164,27 @@
   }, true);
 
   canvasWrap.addEventListener("mousedown", function (event) {
-    if (event.button !== 0) return; event.preventDefault(); const p = pointerPosition(event); if (!p) return; const screenPerMath = svgScreenScale();
+    if (event.button !== 0) return; event.preventDefault(); const p = pointerPosition(event); if (!p) return; const transform = MI.CoordinateTransform.forCanvas(engine);
     if (tool === "point") { const snap = snapToPoint(p); selectedId = engine.add({ type: "point", x: snap.point.x, y: snap.point.y }).id; render(); setStatus(snap.snapped ? (snap.grid ? "Punt vastgeklikt op rasterpunt." : "Punt vastgeklikt aan bestaand punt.") : "Punt toegevoegd."); return; }
     if (tool === "text") { const text = global.prompt("Tekst voor de illustratie:", "A"); if (text !== null && text.trim()) { const snap = snapToPoint(p); selectedId = engine.add({ type: "text", x: snap.point.x, y: snap.point.y, text: text.trim() }).id; render(); setStatus("Tekst toegevoegd."); } return; }
-    if (tool === "line" || tool === "circle") { const snap = snapToPoint(p); drag = { mode: "draw", shape: tool, start: snap.point, screenPerMath: screenPerMath, lastPoint: snap.point }; engine.renderer.preview = { type: tool, start: snap.point, end: snap.point }; crosshair.hidden = false; updateCrosshair(event, snap); render(); return; }
+    if (tool === "line" || tool === "circle") {
+      const snap = snapToPoint(p); typedMeasurement = "";
+      drag = { mode: "draw", shape: tool, start: snap.point, transform, lastRawPoint: { ...snap.point }, resolved: null };
+      updateDrawPreview(); return;
+    }
     const hit = engine.selectAt(p.x, p.y, 0.18);
-    if (hit) { const object = engine.get(hit.object.id); drag = { mode: "object", objectId: object.id, objectType: object.type, startClientX: event.clientX, startClientY: event.clientY, screenPerMath: screenPerMath, original: JSON.parse(JSON.stringify(object)) }; selectedId = object.id; setStatus("Object geselecteerd."); }
-    else { drag = { mode: "pan", startClientX: event.clientX, startClientY: event.clientY, screenPerMath: screenPerMath, bounds: { ...engine.renderer.bounds } }; selectedId = null; setStatus("Canvas verschuiven."); }
+    if (hit) { const object = engine.get(hit.object.id); drag = { mode: "object", objectId: object.id, objectType: object.type, startClientX: event.clientX, startClientY: event.clientY, transform: transform, original: JSON.parse(JSON.stringify(object)) }; selectedId = object.id; setStatus("Object geselecteerd."); }
+    else { drag = { mode: "pan", startClientX: event.clientX, startClientY: event.clientY, transform: transform, bounds: { ...engine.renderer.bounds } }; selectedId = null; setStatus("Canvas verschuiven."); }
     render();
   });
 
   global.addEventListener("mousemove", function (event) {
-    if (!drag) return;
+    if (!drag) {
+      if (tool !== "select" && (!event.target || canvasWrap.contains(event.target))) {
+        const point = pointerPosition(event); if (point) MI.publishSnapResult(engine, snapToPoint(point));
+      }
+      return;
+    }
     if (drag.mode === "label") {
       const object = engine.get(drag.objectId);
       if (!object) return;
@@ -182,8 +194,19 @@
       return;
     }
     if (drag.mode === "draw") { updateDrawPreview(event); return; }
-    const delta = mathDeltaFromScreen(event.clientX - drag.startClientX, event.clientY - drag.startClientY, drag.screenPerMath);
-    if (drag.mode === "object") { const o = drag.original; if (drag.objectType === "point" || drag.objectType === "text") { const target = snapToPoint({ x: o.x + delta.x, y: o.y + delta.y }, drag.objectId); engine.update(drag.objectId, { x: target.point.x, y: target.point.y }); } else if (drag.objectType === "circle") { const target = snapToPoint({ x: o.cx + delta.x, y: o.cy + delta.y }, drag.objectId); engine.update(drag.objectId, { cx: target.point.x, cy: target.point.y }); } else if (drag.objectType === "line") engine.update(drag.objectId, { x1: o.x1 + delta.x, y1: o.y1 + delta.y, x2: o.x2 + delta.x, y2: o.y2 + delta.y }); render(); return; }
+    const delta = mathDeltaFromScreen(event.clientX - drag.startClientX, event.clientY - drag.startClientY, drag.transform);
+    if (drag.mode === "object") {
+      const o = drag.original; let result;
+      if (o.type === "line") {
+        const resolved = MI.InteractionResolver.translateLine(engine, o, delta, { transform: MI.CoordinateTransform.forCanvas(engine) });
+        engine.update(drag.objectId, resolved.patch); result = resolved.result;
+      } else {
+        const raw = o.type === "circle" ? { x: o.cx + delta.x, y: o.cy + delta.y } : { x: o.x + delta.x, y: o.y + delta.y };
+        result = snapToPoint(raw, drag.objectId);
+        engine.update(drag.objectId, o.type === "circle" ? { cx: result.point.x, cy: result.point.y } : { x: result.point.x, y: result.point.y });
+      }
+      render(); MI.publishSnapResult(engine, result); return;
+    }
     if (drag.mode === "pan") {
       const original = drag.bounds, dx = delta.x, dy = delta.y;
       try { engine.renderer.setBounds({ xMin: original.xMin - dx, xMax: original.xMax - dx, yMin: original.yMin - dy, yMax: original.yMax - dy }); }
@@ -192,7 +215,15 @@
     }
   });
 
-  global.addEventListener("mouseup", function () { if (!drag) return; const current = drag; drag = null; crosshair.hidden = true; crosshair.classList.remove("snapped"); if (current.mode === "draw") { const end = current.lastPoint || current.start, constrained = constrainedEndpoint(current.start, end); if (current.shape === "line") finishLine(current.start, constrained); if (current.shape === "circle") finishCircle(current.start, constrained); return; } if (current.mode === "pan") setStatus("Canvas verschoven."); if (current.mode === "label") setStatus("Label verplaatst."); });
+  global.addEventListener("mouseup", function () {
+    if (!drag) { MI.publishSnapResult(engine, null); return; }
+    const current = drag; drag = null; crosshair.hidden = true; crosshair.classList.remove("snapped");
+    if (current.mode === "draw") { finishDrawing(current); return; }
+    MI.publishSnapResult(engine, null);
+    if (current.mode === "pan") setStatus("Canvas verschoven.");
+    if (current.mode === "label") setStatus("Label verplaatst.");
+  });
+  global.addEventListener("fzi:geometry-changed", render);
 
   viewList.addEventListener("click", function (event) {
     const eye = event.target.closest("[data-object-visibility]"); if (eye) { const object = engine.get(eye.dataset.objectVisibility); if (object) { engine.update(object.id, { visible: object.visible === false }); render(); } return; }
@@ -226,11 +257,11 @@
   document.getElementById("exportSvgBtn").addEventListener("click", () => { updateMeta(); download("illustratie.svg", engine.renderSVG(), "image/svg+xml;charset=utf-8"); setStatus("SVG geëxporteerd."); });
 
   global.addEventListener("keydown", function (event) {
-    if (drag && drag.mode === "draw" && /^[0-9.,]$/.test(event.key)) { typedMeasurement += event.key === "," ? "." : event.key; updateDrawPreview({ clientX: event.clientX, clientY: event.clientY }); event.preventDefault(); return; }
-    if (drag && drag.mode === "draw" && event.key === "Backspace") { typedMeasurement = typedMeasurement.slice(0, -1); updateDrawPreview({ clientX: event.clientX, clientY: event.clientY }); event.preventDefault(); return; }
-    if (drag && drag.mode === "draw" && event.key === "Enter") { global.dispatchEvent(new MouseEvent("mouseup", { clientX: event.clientX, clientY: event.clientY })); event.preventDefault(); return; }
+    if (drag && drag.mode === "draw" && /^[0-9.,]$/.test(event.key)) { typedMeasurement += event.key === "," ? "." : event.key; updateDrawPreview(); event.preventDefault(); return; }
+    if (drag && drag.mode === "draw" && event.key === "Backspace") { typedMeasurement = typedMeasurement.slice(0, -1); updateDrawPreview(); event.preventDefault(); return; }
+    if (drag && drag.mode === "draw" && event.key === "Enter") { const current = drag; drag = null; finishDrawing(current); event.preventDefault(); return; }
     if ((event.key === "Delete" || event.key === "Backspace") && selectedId && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") { engine.remove(selectedId); selectedId = null; render(); setStatus("Object verwijderd."); }
-    if (event.key === "Escape") { drag = null; typedMeasurement = ""; engine.renderer.preview = null; crosshair.hidden = true; crosshair.classList.remove("snapped"); activateTool("select"); render(); }
+    if (event.key === "Escape") { drag = null; typedMeasurement = ""; engine.renderer.preview = null; crosshair.hidden = true; crosshair.classList.remove("snapped"); MI.publishSnapResult(engine, null); activateTool("select"); render(); }
   });
 
   try {
