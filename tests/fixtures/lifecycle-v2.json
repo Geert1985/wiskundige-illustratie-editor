@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "type": "geometry",
+  "meta": { "title": "Interaction lifecycle" },
+  "objects": [
+    { "id": "p", "type": "point", "name": "P", "x": 0, "y": -1, "showLabel": true, "labelOffsetX": 0.3, "labelOffsetY": 0.2 },
+    { "id": "l", "type": "line", "name": "Line", "x1": -1, "y1": 1, "x2": 1, "y2": 1, "showLabel": true, "labelOffsetX": 0.2, "labelOffsetY": 0.3 },
+    { "id": "hidden", "type": "circle", "name": "Hidden", "cx": 2, "cy": 2, "r": 0.5, "visible": false, "showLabel": true }
+  ],
+  "presentation": {
+    "bounds": { "xMin": -5, "xMax": 5, "yMin": -3, "yMax": 3 },
+    "showAxes": true, "showXAxis": true, "showYAxis": true, "showOrigin": true,
+    "showGrid": false, "showSnapPoints": true
+  }
+}
