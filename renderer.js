@@ -102,7 +102,7 @@
         }
         if (this.showAxisLabels) parts.push('<text x="' + (x0 + 8) + '" y="' + (this.mapY(b.yMax) + 12) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif">y</text>');
       }
-      if (this.showOrigin && canDrawX && canDrawY) {
+      if (this.showOrigin && (canDrawX || canDrawY)) {
         parts.push('<text x="' + (x0 + 7) + '" y="' + (y0 + 16) + '" fill="' + labelFill + '" font-size="11" font-family="Source Sans 3, sans-serif">0</text>');
       }
       return '<g data-illustration-axes aria-hidden="true">' + parts.join("") + '</g>';
@@ -141,6 +141,7 @@
     }
 
     renderObject(object) {
+      if (object.visible === false) return "";
       const style = object.style || {}; let svg = "";
       if (object.type === "point") {
         svg = '<circle cx="' + number(this.mapX(object.x)) + '" cy="' + number(this.mapY(object.y)) + '" r="' + number(style.radius || 4) + '" ' + strokeAttrs(style) + ' fill="' + esc(style.fill || style.stroke) + '"/>';

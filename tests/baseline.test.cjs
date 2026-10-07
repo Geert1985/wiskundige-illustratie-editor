@@ -42,12 +42,8 @@ test('adaptive grid follows the existing 1-2-5 ladder and minimum 0.1', () => {
     assert.equal(MI.adaptiveGridStep({ scale: () => scale }), step);
   }
 });
-test('origin remains visible with only one axis enabled by the current feature layer', () => {
-  let start;
-  const document = { readyState: 'loading', addEventListener(n, fn) { if (n === 'DOMContentLoaded') start = fn; },
-    getElementById() { return null; }, createElement() { return {}; }, head: { appendChild() {} } };
-  const { MI } = runtime(['model.js', 'renderer.js', 'index.js', 'editor-axis-settings.js'], { document });
-  start();
+test('origin remains visible with only one axis enabled by the core renderer', () => {
+  const { MI } = runtime();
   const r = new MI.SvgRenderer({ showYAxis: false });
   assert.match(r.renderAxes(), />0<\/text>/);
   r.showOrigin = false;

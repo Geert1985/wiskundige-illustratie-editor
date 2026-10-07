@@ -18,14 +18,14 @@ function editor() {
     DOMPoint: class { constructor(x, y) { this.x = x; this.y = y; } matrixTransform() { return this; } },
     addEventListener(name, fn) { (windowEvents[name] ||= []).push(fn); }
   });
-  ready.forEach(fn => fn());
+  ready.forEach(fn => fn({ pointerId: 1 }));
   const e = MI.activeEngine;
   const call = (name, value) => (windowEvents[name] || []).forEach(fn => fn(value));
   const tool = value => make('toolGrid').events.click.forEach(fn => fn({ target: { closest: () => ({ dataset: { tool: value } }) } }));
-  const down = (x, y) => make('canvasWrap').events.mousedown.forEach(fn => fn({ button: 0, clientX: e.renderer.mapX(x), clientY: e.renderer.mapY(y), preventDefault() {} }));
-  const move = (x, y) => call('mousemove', { clientX: e.renderer.mapX(x), clientY: e.renderer.mapY(y) });
+  const down = (x, y) => make('canvasWrap').events.pointerdown.forEach(fn => fn({ pointerId: 1, button: 0, clientX: e.renderer.mapX(x), clientY: e.renderer.mapY(y), preventDefault() {} }));
+  const move = (x, y) => call('pointermove', { pointerId: 1, clientX: e.renderer.mapX(x), clientY: e.renderer.mapY(y) });
   const key = value => call('keydown', { key: value, preventDefault() {} });
-  return { e, tool, down, move, key, up: () => call('mouseup', {}) };
+  return { e, tool, down, move, key, up: () => call('pointerup', { pointerId: 1 }) };
 }
 test('keyboard length and radius without another mouse sample retain valid preview and exact commit', () => {
   for (const shape of ['line', 'circle']) {

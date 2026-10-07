@@ -95,7 +95,7 @@ function editorRuntime() {
     CSS: { escape: x => x }, DOMPoint: class { constructor(x, y) { this.x = x; this.y = y; } matrixTransform() { return this; } },
     addEventListener(name, fn) { (windowEvents[name] ||= []).push(fn); }
   });
-  ready.forEach(fn => fn());
+  ready.forEach(fn => fn({ pointerId: 1 }));
   function wheel(deltaY, clientX = 500, clientY = 312) {
     const event = { deltaY, clientX, clientY, prevented: false, stopped: false,
       preventDefault() { this.prevented = true; }, stopImmediatePropagation() { this.stopped = true; } };
@@ -106,9 +106,9 @@ function editorRuntime() {
   }
   return { MI, engine: MI.activeEngine, wheel, node, windowEvents };
 }
-test('wheel uses tracked engine, clamps crossing step to 700, blocks further zoom and permits zoom-out', () => {
+test('wheel uses injected engine, clamps crossing step to 700, blocks further zoom and permits zoom-out', () => {
   const { MI, engine: e, wheel, node } = editorRuntime();
-  assert.equal(MI.adaptiveGridEngine, e);
+  assert.equal(MI.editor.engine, e);
   const capture = node('canvasWrap').events.wheel.find(h => h.capture);
   assert.equal(capture.options.passive, false);
   for (let i = 0; i < 30; i++) wheel(-1);
@@ -142,12 +142,12 @@ test('repeated zoom-out stops safely without corrupting viewport or generating a
 test('pan retains ordinary displacement and rejects an extreme movement atomically', () => {
   const { engine: e, node, windowEvents } = editorRuntime();
   const before = plain(e.renderer.bounds), scale = e.renderer.scale();
-  const down = { button: 0, clientX: 500, clientY: 312, preventDefault() {} };
-  node('canvasWrap').events.mousedown.forEach(h => h.fn(down));
-  windowEvents.mousemove.forEach(fn => fn({ clientX: 594, clientY: 312 }));
+  const down = { pointerId: 1, button: 0, clientX: 500, clientY: 312, preventDefault() {} };
+  node('canvasWrap').events.pointerdown.forEach(h => h.fn(down));
+  windowEvents.pointermove.forEach(fn => fn({ pointerId: 1, clientX: 594, clientY: 312 }));
   assert.ok(Math.abs(e.renderer.bounds.xMin - (before.xMin - 94 / scale)) < 1e-10);
   const valid = plain(e.renderer.bounds);
-  windowEvents.mousemove.forEach(fn => fn({ clientX: 1e20, clientY: 312 }));
+  windowEvents.pointermove.forEach(fn => fn({ pointerId: 1, clientX: 1e20, clientY: 312 }));
   assert.deepEqual(plain(e.renderer.bounds), valid);
-  windowEvents.mouseup.forEach(fn => fn());
+  windowEvents.pointerup.forEach(fn => fn({ pointerId: 1 }));
 });

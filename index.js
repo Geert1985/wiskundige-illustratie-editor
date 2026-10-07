@@ -52,7 +52,6 @@
         ? data
         : new MI.IllustrationModel(data);
       this.renderer = createDocumentRenderer(Object.assign({}, presentationOptions(this.model.presentation), rendererOptions || {}));
-      MI.activeEngine = this;
     }
 
     add(object) { return this.model.add(object); }
@@ -108,7 +107,10 @@
       this.model = model; this.renderer = renderer;
       return this;
     }
-    renderSVG() { return this.renderer.render(this.model); }
+    renderSVG() {
+      if (MI.adaptiveGridStep) this.renderer.axisStep = MI.adaptiveGridStep(this.renderer);
+      return this.renderer.render(this.model);
+    }
   }
 
   MI.Engine = Engine;

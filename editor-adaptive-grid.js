@@ -3,7 +3,7 @@
   "use strict";
 
   const MI = global.FZI && global.FZI.MathIllustration;
-  if (!MI || !MI.Engine || MI.Engine.prototype.__fziAdaptiveGridInstalled) return;
+  if (!MI) return;
 
   const TARGET_SCREEN_SPACING = 70;
   const MIN_GRID_STEP = 0.1;
@@ -30,40 +30,5 @@
   MI.adaptiveGridMinStep = MIN_GRID_STEP;
   MI.adaptiveGridMaxScale = MAX_ZOOM_SCALE;
 
-  const originalRenderSVG = MI.Engine.prototype.renderSVG;
-  MI.Engine.prototype.renderSVG = function () {
-    this.renderer.axisStep = adaptiveGridStep(this.renderer);
-    return originalRenderSVG.apply(this, arguments);
-  };
 
-  // Stop zooming in once the finest intended educational grid is reached.
-  // We do this in the capture phase so the editor's normal wheel handler
-  // never receives a blocked zoom event.
-  function installZoomLimit() {
-    const canvasWrap = document.getElementById("canvasWrap");
-    if (!canvasWrap) return;
-    canvasWrap.addEventListener("wheel", function (event) {
-      if (!global.FZI || !global.FZI.MathIllustration) return;
-      const engine = global.FZI.MathIllustration.adaptiveGridEngine;
-      if (!engine || event.deltaY >= 0) return;
-      if (engine.renderer.scale() >= MAX_ZOOM_SCALE * (1 - 1e-12) || adaptiveGridStep(engine.renderer) <= MIN_GRID_STEP) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        const status = document.getElementById("status");
-        if (status) status.textContent = "Maximale zoom bereikt (raster: 0,1).";
-      }
-    }, { capture: true, passive: false });
-  }
-
-  const originalRenderTracker = MI.Engine.prototype.renderSVG;
-  MI.Engine.prototype.renderSVG = function () {
-    MI.adaptiveGridEngine = this;
-    MI.Engine.prototype.__fziAdaptiveGridActiveEngine = this;
-    return originalRenderTracker.apply(this, arguments);
-  };
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", installZoomLimit);
-  else installZoomLimit();
-
-  MI.Engine.prototype.__fziAdaptiveGridInstalled = true;
 })(window);

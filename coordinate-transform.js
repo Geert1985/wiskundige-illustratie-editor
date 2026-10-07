@@ -29,9 +29,10 @@
       return next ? { x: next.x - origin.x, y: next.y - origin.y } : null;
     }
     distance(a, b) { const p = this.mathToScreen(a), q = this.mathToScreen(b); return Math.hypot(p.x - q.x, p.y - q.y); }
-    static forCanvas(engine) {
-      if (typeof document === "undefined") return null;
-      const canvas = document.getElementById("canvas"), svg = canvas && canvas.querySelector("svg"), matrix = svg && svg.getScreenCTM();
+    static forCanvas(engine, ownerDocument) {
+      if (!ownerDocument && typeof document === "undefined") return null;
+      const source = ownerDocument || document;
+      const canvas = source.getElementById("canvas"), svg = canvas && canvas.querySelector("svg"), matrix = svg && svg.getScreenCTM();
       if (!matrix) return null;
       try { return new CoordinateTransform(engine.renderer, matrix); } catch (_) { return null; }
     }
