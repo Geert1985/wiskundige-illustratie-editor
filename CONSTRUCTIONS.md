@@ -1,4 +1,4 @@
-﻿# Linked geometric constructions
+# Linked geometric constructions
 
 Six tools create ordinary rendered point/straight/ray objects with explicit construction references. Select sources by clicking existing geometry:
 
@@ -21,3 +21,7 @@ Persistence: plain illustrations continue to export version 2. Documents with co
 Numerical policy: collapsed arms/lines below 1e-9 are invalid; straight angles use a perpendicular bisector ray. Tangency uses a scale-aware 1e-9 tolerance. Derived coordinates must remain finite and within ±1e12. No symbolic arithmetic, arbitrary constraint solver, auto-generated free source points or tangent to non-circular curves is included.
 
 Verification: Node regression tests cover six constructions, transitive updates, tangent orthogonality/degeneracy/recovery, graph validation/atomicity, cascade deletion, polygon references, snap exclusions and controller cancellation. Real Edge probes click all six tools, change source coordinates, undo/redo, reject direct derived manipulation, cancel source selection, save/reload/import, cascade-delete and SVG export. Full pre-existing suites remain enabled.
+
+Bissectrice also accepts a direct click on an existing angle (arm, arc or right-angle mark). All three vertices are referenced, so the bisector follows subsequent angle edits. Three-point selection remains available with specific instructions after each click.
+
+For a triangle or polygon, clicking a vertex with Bissectrice constructs the bisector of its two neighboring sides. The neighboring vertex references remain linked.
