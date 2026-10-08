@@ -72,3 +72,7 @@ Two additional Node lifecycle tests (67 total) cover dragging the painted circle
 `mutation-selection.test.cjs` adds six tests (73 total) for detached reads/deeply immutable storage, recursive style patches, atomic invalid-mutation rejection and ID counter preservation, screen-space point/line selection at different scales, circle-center/visibility/overlap/legacy API and affine ellipse tolerance. The previous cache test instrumentation now uses an injected service-input view; snapshot writes are checked to have no effect. All previous 67 test cases remain.
 
 `browser-audit-final.cjs` adds 24 real selection clicks at different widths/zoom ranges, text-body drag, negative and blank inspector input rollback, nested style import/export and detached get. The editor's fallback is now 8 CSS pixels; the numeric standalone selectAt API remains mathematical. See [MUTATION-SELECTION.md](../MUTATION-SELECTION.md) for the intentional get/style API changes and validation policy.
+
+## New linear objects
+
+`linear-objects.test.cjs` adds seven cases (80 total), preserving all 73 stabilization cases and the original SVG fixture. `browser-linear.cjs` is included in the full Edge runner and tests each new tool's preview/commit, exact keyboard distance, rigid translation, Escape, endpoint-grid/inspector, labeldrag, SVG download and save/reload/import. The VM helper loads linear-geometry.js after model.js, matching the real script order. See [LINEAR-OBJECTS.md](../LINEAR-OBJECTS.md) and the small `fixtures/linear-objects-v2.json` demo.

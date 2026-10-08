@@ -6,7 +6,7 @@ The editor imports legacy version 1 and exports version 2. A missing version is 
 
 - Root: a JSON object with an `objects` array. `type` may be omitted in a legacy file, otherwise it must be `geometry`. `version` is 1 or 2 (legacy numeric strings are accepted).
 - `meta` is an optional object; `title` and `description`, when non-null, must be strings. Other metadata fields are retained.
-- Each object has a supported type (`point`, `line`, `circle`, `text`) and a nonblank string ID or finite legacy numeric ID. IDs are canonicalized to strings and must be unique after canonicalization. Numeric ID `1` and string ID `"1"` conflict. Missing geometry fields retain the existing defaults; supplied coordinates must be finite numbers or nonempty numeric strings. A supplied circle radius cannot be negative.
+- Each object has a supported type (`point`, `line`, `circle`, `text`, `straight`, `ray`, `vector`) and a nonblank string ID or finite legacy numeric ID. IDs are canonicalized to strings and must be unique after canonicalization. Numeric ID `1` and string ID `"1"` conflict. Missing geometry fields retain the existing defaults; supplied coordinates must be finite numbers or nonempty numeric strings. A supplied circle radius cannot be negative. Straight/ray require distinct definition points; the new linear types require finite direction length.
 - Optional visibility/label flags are booleans or legacy null. Label offsets are finite numbers/numeric strings or null. Styles are objects. Names, labels and text are strings or finite legacy numbers, which retain their textual meaning.
 - Unknown JSON fields at root, metadata, object, style and presentation level survive roundtrips. Unknown fields are retained as data, not executed as editor options. Unsupported object types and future versions are rejected, not discarded.
 - `IllustrationModel.load` stages validation, migrations, cloned data, unique IDs and the next ID before one state commit. `Engine.load` additionally stages a renderer and checks whether the presentation can be rendered within the 0A safety contract. Neither a parse/schema error nor a rejected presentation changes the old model or renderer.
@@ -49,3 +49,7 @@ The draft key remains `fzi.mathIllustration.draft`.
 ## F16 validation follow-up
 
 Version 2 is unchanged. Supplied numeric object/style values are now validated before normalization/commit; invalid styles formerly accepted silently are rejected atomically. Valid numeric strings and opaque JSON extensions remain compatible. Style patches merge recursively and retain unspecified fields. See [MUTATION-SELECTION.md](MUTATION-SELECTION.md) for numeric ranges, detached get and immutable stored objects.
+
+## New linear types
+
+`straight`, `ray` and `vector` use the existing x1/y1/x2/y2 fields; version 2 and earlier four-type documents remain unchanged. Older builds without these type values reject documents containing them instead of dropping their geometry. See [LINEAR-OBJECTS.md](LINEAR-OBJECTS.md) for domains, zero-vector policy and clipping/arrow semantics.

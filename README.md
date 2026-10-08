@@ -14,7 +14,7 @@ The same model is intended to become the source for:
 - animations;
 - game components.
 
-## Current v0.2 scope
+## Current object scope
 
 Supported mathematical objects:
 
@@ -22,6 +22,9 @@ Supported mathematical objects:
 - line segment;
 - circle;
 - text label.
+- straight line (`straight`);
+- ray (`ray`);
+- vector (`vector`).
 
 Supported engine operations:
 
@@ -73,6 +76,7 @@ This principle should be preserved when zooming, panning, changing the coordinat
 ## Files
 
 - `model.js` — mathematical data model and JSON representation.
+- `linear-geometry.js` — shared domains, clipping and intersections for two-point linear objects.
 - `renderer.js` — SVG renderer; converts mathematical coordinates to screen coordinates while preserving equal x/y scale.
 - `index.js` — public engine facade and interaction-neutral operations.
 - `editor.html` — standalone authoring entry point for the first editor.
@@ -84,7 +88,7 @@ This principle should be preserved when zooming, panning, changing the coordinat
 - `editor-label-drag.js`, `editor-enhancements.js`, `snap-indicator.js`, `editor-color.js`, `editor-axis-settings.js` — passive label/overlay/feedback/color/axis helpers.
 - `editor-bootstrap.js` — constructs/restores the engine and injects all services into the application.
 
-The exact editor script order is: model → renderer → index → coordinate-transform → snap-service → interaction-resolver → editor-startup → editor-adaptive-grid → editor-label-drag → editor-enhancements → snap-indicator → editor-color → editor-axis-settings → editor → editor-bootstrap. The bootstrap runs last. Helpers do not install competing event/render owners.
+The exact editor script order is: model → linear-geometry → renderer → index → coordinate-transform → snap-service → interaction-resolver → editor-startup → editor-adaptive-grid → editor-label-drag → editor-enhancements → snap-indicator → editor-color → editor-axis-settings → editor → editor-bootstrap. The bootstrap runs last. Helpers do not install competing event/render owners. See [LINEAR-OBJECTS.md](LINEAR-OBJECTS.md) for new-type semantics and older-reader compatibility.
 
 ## Opening the editor
 
