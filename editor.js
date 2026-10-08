@@ -8,7 +8,7 @@
     constructor({ engine, services, document, window, storage }) {
       this.engine = engine; this.services = services; this.document = document; this.window = window; this.storage = storage;
       this.tool = "select"; this.selectedId = null; this.interaction = null; this.feedback = null;
-      this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null;
+      this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
       this.nodes = {};
       for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn"]) this.nodes[id] = document.getElementById(id);
     }
@@ -115,7 +115,7 @@
       if (!this.initialized) return;
       const state = this.interaction;
       if (!state) {
-        if (this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(); } }
+        if (this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
         return;
       }
       if (event.pointerId !== state.pointerId) return;
@@ -130,7 +130,7 @@
         else { const result = this.snap(o.type === "circle" ? { x: o.cx + delta.x, y: o.cy + delta.y } : { x: o.x + delta.x, y: o.y + delta.y }, state.id); this.engine.update(state.id, o.type === "circle" ? { cx: result.point.x, cy: result.point.y } : { x: result.point.x, y: result.point.y }); this.feedback = result; }
       }
       if (state.mode === "pan") try { this.engine.renderer.setBounds({ xMin: state.bounds.xMin - delta.x, xMax: state.bounds.xMax - delta.x, yMin: state.bounds.yMin - delta.y, yMax: state.bounds.yMax - delta.y }); } catch (e) { this.status(e.message); return; }
-      this.invalidate();
+      this.invalidate(true);
     }
     pointerUp(event) {
       if (this.interaction && event.pointerId === this.interaction.pointerId) this.commit();
@@ -210,7 +210,15 @@
       if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.engine.renderer[key] = !this.engine.renderer[key]; this.invalidate(); } }
     }
     viewObject(id) { const object = this.engine.get(id), state = this.interaction; return object && state && state.mode === "endpoint" && state.id === id && state.resolved ? { ...object, ...state.resolved.patch } : object; }
-    invalidate() { if (this.initialized) this.render(); }
+    invalidate(defer = false) {
+      if (!this.initialized) return;
+      if (defer && this.window.requestAnimationFrame && this.window.cancelAnimationFrame) {
+        if (this.renderFrame === null) this.renderFrame = this.window.requestAnimationFrame(() => { this.renderFrame = null; if (this.initialized) this.render(); });
+        return;
+      }
+      if (this.renderFrame !== null) { this.window.cancelAnimationFrame(this.renderFrame); this.renderFrame = null; }
+      this.render();
+    }
     render() {
       const e = this.engine, r = e.renderer, n = this.nodes;
       if (this.services.grid) r.axisStep = this.services.grid.step(r);

@@ -56,8 +56,16 @@
     return result;
   }
 
+  const geometryCache = new WeakMap();
   function snapCandidates(engine, excludeId) {
-    const objects = engine.model.objects.filter(function (o) { return o.visible !== false && o.id !== excludeId; }).slice().sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+    const objects = engine.model.objects.filter(o => o.visible !== false && o.id !== excludeId);
+    // Public get() still permits live mutation: inspect geometry, rather than
+    // trusting a revision counter that external callers could bypass.
+    // One entry per model bounds cache lifetime even when exclusions change.
+    const key = JSON.stringify(objects.map(o => [o.id, o.type, o.x, o.y, o.x1, o.y1, o.x2, o.y2, o.cx, o.cy, o.r]));
+    const cached = geometryCache.get(engine.model);
+    if (cached && cached.key === key) return cached.candidates;
+    objects.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
     const candidates = [];
 
     objects.forEach(function (o) {
@@ -87,6 +95,7 @@
         }
       }
     }
+    geometryCache.set(engine.model, { key, candidates });
     return candidates;
   }
 
@@ -107,15 +116,20 @@
       if (!valid(point)) throw new Error("Ongeldige pointercoördinaat.");
       return { point: { x: point.x, y: point.y }, snapped: false, kind: null, ids: [], grid: false, priority: Infinity, distancePx: Infinity, constraint };
     },
-    candidates(engine, excludeId) { return snapCandidates(engine, excludeId); },
+    candidates(engine, excludeId) { return snapCandidates(engine, excludeId).map(c => ({ ...c, ids: c.ids.slice() })); },
     resolve(engine, point, options = {}) {
       if (!valid(point)) throw new Error("Ongeldige pointercoördinaat.");
       const transform = options.transform || MI.CoordinateTransform.forCanvas(engine) || new MI.CoordinateTransform(engine.renderer);
       const candidates = snapCandidates(engine, options.excludeId);
+      const results = [], screen = transform.mathToScreen(point);
+      const consider = candidate => {
+        const target = transform.mathToScreen(candidate), distancePx = Math.hypot(screen.x - target.x, screen.y - target.y);
+        if (Number.isFinite(distancePx) && distancePx <= SnapService.tolerancePx + 1e-9) results.push({ point: { x: candidate.x, y: candidate.y }, snapped: true, kind: candidate.kind, ids: candidate.ids.slice(), grid: candidate.kind === "grid", priority: PRIORITY[candidate.kind], distancePx, constraint: null });
+      };
+      candidates.forEach(consider);
       const step = engine.renderer.axisStep;
-      if (engine.renderer.showGrid && Number.isFinite(step) && step > 0) addCandidate(candidates, Math.round(point.x / step) * step, Math.round(point.y / step) * step, "grid", []);
-      const results = candidates.map(candidate => ({ point: { x: candidate.x, y: candidate.y }, snapped: true, kind: candidate.kind, ids: candidate.ids, grid: candidate.kind === "grid", priority: PRIORITY[candidate.kind], distancePx: transform.distance(point, candidate), constraint: null }))
-        .filter(result => Number.isFinite(result.distancePx) && result.distancePx <= SnapService.tolerancePx + 1e-9).sort(compare);
+      if (engine.renderer.showGrid && Number.isFinite(step) && step > 0) consider({ x: Math.round(point.x / step) * step, y: Math.round(point.y / step) * step, kind: "grid", ids: [] });
+      results.sort(compare);
       return results[0] || SnapService.free(point);
     }
   };
