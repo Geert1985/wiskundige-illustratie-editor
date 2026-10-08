@@ -56,3 +56,9 @@ The VM helper loads the three new services after index.js, matching the real edi
 `fixtures/lifecycle-v2.json` defines a labeled point/line plus a hidden circle. `browser-lifecycle.cjs`, included in the complete Edge runner, checks startup services/color/axes/geometry immediately after reload, label movement at two responsive widths and zoom, 15 cancellation combinations, native lost capture, another pointer, pointer-up outside canvas, New and dispose in all five modes, repeated init/bootstrap, staged line/label/handle/inspector consistency, selection after rendering, hidden-object color/axis changes and actual SVG download. Opaque IDs and construction/rendering of a separate engine cannot corrupt app ownership.
 
 See [INTERACTION-RENDER.md](../INTERACTION-RENDER.md) for commit/cancel policy, lifecycle and the central render contract. Node's fake DOM tests complement the Edge checks; simulated pointercancel/blur do not establish physical touch or operating-system focus coverage.
+
+## Milestone 0E measured performance regressions
+
+`performance.test.cjs` adds five tests (65 total): candidate construction reuse, geometry/live-mutation/import cache invalidation, detached public results, one render per pointer burst and cleanup/immediate keyboard/commit with a queued frame. No wall-clock assertions are used. `benchmark.cjs` emits Node timings with deterministic mixed fixtures at 10/100/500 objects. Run it separately with `node math-illustration/tests/benchmark.cjs`.
+
+The complete Edge runner invokes `browser-performance.cjs`: cold/warm timing, 20 moves in one task, one-render assertion, preview=commit, keyboard exact length before a scheduled frame and canceled-frame cleanup. See [PERFORMANCE.md](../PERFORMANCE.md) for before/after samples and what the measured burst time excludes. This suite retains all previous functional browser checks; benchmark timing alone is not a correctness test or an FPS guarantee.

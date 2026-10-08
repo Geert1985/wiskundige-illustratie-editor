@@ -1,6 +1,6 @@
 # Mathematical Illustration Engine
 
-First technical slice of the From Zero 2 Infinity mathematical illustration system.
+Stabilized standalone mathematical illustration editor (Milestones 0A–0E).
 
 ## Purpose
 
@@ -78,6 +78,13 @@ This principle should be preserved when zooming, panning, changing the coordinat
 - `editor.html` — standalone authoring entry point for the first editor.
 - `editor.js` — authoring interaction layer.
 - `editor.css` — editor presentation.
+- `coordinate-transform.js`, `snap-service.js`, `interaction-resolver.js` — shared screen transforms, explicit snap results and invariant-preserving constraints.
+- `editor-startup.js` — explicit draft save/restore policy.
+- `editor-adaptive-grid.js` — passive adaptive-grid utility.
+- `editor-label-drag.js`, `editor-enhancements.js`, `snap-indicator.js`, `editor-color.js`, `editor-axis-settings.js` — passive label/overlay/feedback/color/axis helpers.
+- `editor-bootstrap.js` — constructs/restores the engine and injects all services into the application.
+
+The exact editor script order is: model → renderer → index → coordinate-transform → snap-service → interaction-resolver → editor-startup → editor-adaptive-grid → editor-label-drag → editor-enhancements → snap-indicator → editor-color → editor-axis-settings → editor → editor-bootstrap. The bootstrap runs last. Helpers do not install competing event/render owners.
 
 ## Opening the editor
 
@@ -102,8 +109,8 @@ const engine = new FZI.MathIllustration.Engine(null, {
   bounds: { xMin: 0, yMin: 0, xMax: 10, yMax: 6 }
 });
 
-engine.add({ id: "A", type: "point", x: 2, y: 2, label: "A" });
-engine.add({ id: "B", type: "point", x: 8, y: 2, label: "B" });
+engine.add({ id: "A", type: "point", x: 2, y: 2, name: "A" });
+engine.add({ id: "B", type: "point", x: 8, y: 2, name: "B" });
 engine.add({ id: "AB", type: "line", x1: 2, y1: 2, x2: 8, y2: 2 });
 engine.add({ id: "c1", type: "circle", cx: 5, cy: 3, r: 2 });
 
@@ -112,3 +119,13 @@ const svg = engine.renderSVG();
 ```
 
 Coordinates are mathematical: positive `y` points upward. The renderer handles conversion to SVG's downward screen axis while preserving equal scale in x and y.
+
+## Public contracts and verification
+
+- `Engine.add/update/remove/get/move/selectAt/load`, `toJSON/toJSONString/renderSVG` remain the facade. Add/update never implicitly snap; use SnapService/InteractionResolver explicitly. Load validates atomically. Version-2 presentation and legacy migration are described in [DOCUMENT-FORMAT.md](DOCUMENT-FORMAT.md).
+- `get()` still returns a live object. Prefer `update()` for mutations. A partial `style` update replaces the style payload with normalizer defaults; merge the existing style if retaining custom fields, as EditorColor does. Broader mutation/style validation and selection tolerance (F16/F17) remain separate work.
+- `CoordinateTransform.forCanvas(engine, document?)` is the shared browser transform. SnapService `resolve/candidates/free/compare` preserve [SNAPPING.md](SNAPPING.md)'s priorities and screen tolerance. Candidate/result objects are detached from the private cache.
+- `MI.bootstrapEditor({ engine?, services?, document?, window?, storage?, restoreDraft? })` creates one app and disposes the previous app. `MI.editor` exposes `init/dispose`, `setTool`, `loadDocument`, `newDocument` and `invalidate`. The app uses its injected engine; `MI.activeEngine` is only a bootstrap compatibility reference.
+- Pointer moves update the mathematical result synchronously and coalesce visual invalidation until the next animation frame. Commands, keyboard measurement, commit and cancel render immediately and clear any pending frame. See [INTERACTION-RENDER.md](INTERACTION-RENDER.md).
+
+Run `node --test math-illustration/tests/*.test.cjs`. With Playwright and Edge installed, run `node math-illustration/tests/browser.cjs`; it includes the complete functional suite and 10/100/500-object pointer benchmarks. See [PERFORMANCE.md](PERFORMANCE.md) and [tests/README.md](tests/README.md) for methodology, measured limits and regression gates. No new mathematical object types were added during stabilization.

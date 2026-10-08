@@ -20,7 +20,7 @@ Pointer capture is held by the stable `canvasWrap`, which survives SVG replaceme
 
 ## One render owner
 
-All application invalidations call `EditorApp.render` synchronously. This is the only canvas.innerHTML writer. It uses the current model plus any staged endpoint patch to create a single view, then updates:
+All application invalidations use `EditorApp.render`, the only canvas.innerHTML writer. Since 0E, high-frequency pointer moves schedule one animation-frame render; their mathematical state/resolver updates stay synchronous. Commands, keyboard input, commit and cancel clear a pending frame and render immediately. Disposal leaves no pending callback. Rendering uses the current model plus any staged endpoint patch to create a single view, then updates:
 
 1. SVG geometry/labels and renderer-owned axes/grid/visibility;
 2. selection highlight, endpoint handles and snap feedback from that view;
@@ -38,4 +38,4 @@ The original 49 Node test cases and geometry SVG fixture are retained. Harness e
 
 The complete Edge runner also covers restored startup, actual mouse capture/release outside canvas, three cancellation reasons across all five modes, lost capture, New/dispose across all five modes, repeated init/bootstrap, responsive and zoomed labels, staged endpoint consistency, hidden-object color/axis changes and downloaded SVG.
 
-Rendering remains synchronous and replaces the full SVG and panels. Batching, incremental rendering and large-document performance belong to 0E. Pointercancel and blur are dispatched in a real Edge document; this does not simulate operating-system focus changes or physical multi-touch hardware. Responsive window sizes and zoom are tested between gestures; resizing during a gesture is not a new supported interaction in this milestone.
+Each rendered frame still replaces the full SVG and panels. 0E adds frame coalescing and measured geometric candidate reuse; it does not introduce incremental rendering or spatial indexes. See PERFORMANCE.md for remaining cold/dense costs. Pointercancel and blur are dispatched in a real Edge document; this does not simulate operating-system focus changes or physical multi-touch hardware. Responsive window sizes and zoom are tested between gestures; resizing during a gesture is not a new supported interaction in this milestone.
