@@ -158,7 +158,8 @@
 
     renderObject(object) {
       if (object.visible === false) return "";
-      const style = object.style || {}; let svg = "";
+      const opacity=object.style && object.style.opacity != null ? object.style.opacity : 1;
+      const style = {...(object.style || {}),opacity:1}; let svg = "";
       if (object.type === "point") {
         svg = '<circle cx="' + number(this.mapX(object.x)) + '" cy="' + number(this.mapY(object.y)) + '" r="' + number(style.radius || 4) + '" ' + strokeAttrs(style) + ' fill="' + esc(style.fill || style.stroke) + '"/>';
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.label || object.id, 8, -8);
@@ -168,7 +169,7 @@
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.label || object.id, 6, -6, true);
       }
       if (['straight', 'ray', 'vector'].includes(object.type)) {
-        svg = this.renderDirected(object);
+        svg = this.renderDirected({...object,style});
         if (svg && object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6, true);
       }
       if (object.type === "circle") {
@@ -186,7 +187,7 @@
         svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(object.text) + '</text>';
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6);
       }
-      return '<g data-object-id="' + esc(object.id) + '" data-object-type="' + esc(object.type) + '" aria-label="' + esc(object.name || object.id) + '">' + svg + '</g>';
+      return '<g data-object-id="' + esc(object.id) + '" data-object-type="' + esc(object.type) + '" aria-label="' + esc(object.name || object.id) + '"'+(opacity!==1?' opacity="'+esc(number(opacity))+'"':'')+'>' + svg + '</g>';
     }
   }
 
