@@ -44,7 +44,10 @@
       this.on(this.document, "click", e => { if (this.axisMenuOpen && !e.target.closest('[data-view-select="axes"], [data-axis-settings]')) { this.axisMenuOpen = false; this.invalidate(); } });
       this.on(n.selectionPanel, "change", e => {
         const input = e.target.closest("[data-edit]"); if (!input || !this.selectedId) return;
-        this.cancel(); this.engine.update(this.selectedId, { [input.dataset.edit]: input.type === "number" ? Number(input.value) : input.value }); this.invalidate();
+        this.cancel();
+        try { this.engine.update(this.selectedId, { [input.dataset.edit]: input.type === "number" ? input.valueAsNumber : input.value }); }
+        catch (error) { this.status(error.message); }
+        this.invalidate();
       });
       this.on(n.selectionPanel, "click", e => { if (e.target.closest("[data-delete-selected]") && this.selectedId) { this.cancel(); this.engine.remove(this.selectedId); this.selectedId = null; this.invalidate(); } });
       for (const input of [n.titleInput, n.descriptionInput]) this.on(input, "input", () => { this.updateMeta(); this.invalidate(); });
@@ -98,7 +101,7 @@
       }
       const group = event.target && event.target.closest && event.target.closest('[data-object-id]');
       const painted = group && this.nodes.canvas.contains(group) && this.engine.get(group.getAttribute('data-object-id'));
-      const hit = painted && painted.visible !== false ? { object: painted } : this.engine.selectAt(point.x, point.y, .18);
+      const hit = painted && painted.visible !== false ? { object: painted } : this.engine.selectAt(point.x, point.y, { transform: this.transform(), tolerancePx: 8 });
       this.begin(hit ? { mode: "object", id: hit.object.id, original: clone(this.engine.get(hit.object.id)) } : { mode: "pan", bounds: { ...this.engine.renderer.bounds } }, event);
       this.selectedId = hit ? hit.object.id : null; this.invalidate();
     }

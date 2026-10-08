@@ -5,15 +5,17 @@ const { runtime, plain } = require('./helpers.cjs');
 test('unchanged geometry reuses candidate construction, including rigid-drag exclusion', () => {
   const { MI } = runtime();
   const e = new MI.Engine({ objects: Array.from({ length: 10 }, (_, i) => ({ id: `l${i}`, type: 'line', x1: -2, y1: -i / 10, x2: 2, y2: i / 10 })) });
-  let reads = 0; Object.defineProperty(e.get('l0'), 'x1', { get() { reads++; return -2; }, enumerable: true });
+  // Instrument a service-input view; production model/get are now immutable/detached.
+  const objects = e.model.all(); e.model = { objects };
+  let reads = 0; Object.defineProperty(objects[0], 'x1', { get() { reads++; return -2; }, enumerable: true });
   MI.SnapService.resolve(e, { x: 0, y: 0 }, { excludeId: 'l9' }); const coldReads = reads;
   reads = 0; MI.SnapService.resolve(e, { x: .01, y: 0 }, { excludeId: 'l9' });
   assert.ok(coldReads > reads * 2); assert.equal(reads, 1);
-  e.update('l9', { x1: -3 }); reads = 0;
+  objects[9].x1 = -3; reads = 0;
   MI.SnapService.resolve(e, { x: .01, y: 0 }, { excludeId: 'l9' }); assert.equal(reads, 1);
 });
 
-test('cached snaps invalidate for geometry, visibility, IDs, add/remove and import, including live get mutation', () => {
+test('cached snaps invalidate for geometry, visibility, add/remove and import; snapshot mutation has no effect', () => {
   const { MI } = runtime();
   const e = new MI.Engine({ objects: [{ id: 'p', type: 'point', x: 0, y: 0 }, { id: 'l', type: 'line', x1: -2, y1: 0, x2: 2, y2: 0 }] });
   const check = () => {
@@ -22,8 +24,9 @@ test('cached snaps invalidate for geometry, visibility, IDs, add/remove and impo
       assert.deepEqual(plain(MI.SnapService.resolve(e, point, { excludeId })), plain(MI.SnapService.resolve(fresh, point, { excludeId })));
   };
   check(); e.update('p', { x: 1 }); check(); e.update('p', { visible: false }); check();
-  e.get('p').visible = true; e.get('p').x = .1; check();
-  e.get('p').id = 'renamed'; check();
+  e.get('p').visible = true; e.get('p').x = .1; assert.equal(e.get('p').visible, false); check();
+  e.update('p', { visible: true, x: .1 }); check();
+  e.get('p').id = 'renamed'; assert.equal(e.get('renamed'), null); check();
   e.add({ id: 'c', type: 'circle', cx: 0, cy: 0, r: 1 }); check(); e.remove('c'); check();
   e.renderer.showGrid = true; e.renderer.axisStep = .5; check(); e.renderer.setBounds({ xMin: -1, xMax: 1, yMin: -1, yMax: 1 }); check();
   e.load({ objects: [{ id: 'new', type: 'point', x: .1, y: .1 }] }); check();

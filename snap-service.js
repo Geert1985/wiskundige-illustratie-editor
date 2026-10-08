@@ -59,8 +59,8 @@
   const geometryCache = new WeakMap();
   function snapCandidates(engine, excludeId) {
     const objects = engine.model.objects.filter(o => o.visible !== false && o.id !== excludeId);
-    // Public get() still permits live mutation: inspect geometry, rather than
-    // trusting a revision counter that external callers could bypass.
+    // Inspect geometry rather than trusting a revision counter: injected
+    // service-input views may differ from the immutable production model.
     // One entry per model bounds cache lifetime even when exclusions change.
     const key = JSON.stringify(objects.map(o => [o.id, o.type, o.x, o.y, o.x1, o.y1, o.x2, o.y2, o.cx, o.cy, o.r]));
     const cached = geometryCache.get(engine.model);

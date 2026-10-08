@@ -46,6 +46,27 @@
     return Infinity;
   }
 
+  function screenHit(object, point, transform) {
+    const map = (x, y) => transform.mathToScreen({ x, y });
+    if (object.type === 'point' || object.type === 'text') { const p = map(object.x, object.y); return Math.hypot(point.x - p.x, point.y - p.y); }
+    if (object.type === 'line') { const a = map(object.x1, object.y1), b = map(object.x2, object.y2); return distancePointToSegment(point.x, point.y, a.x, a.y, b.x, b.y); }
+    if (object.type === 'circle') {
+      const center = map(object.cx, object.cy);
+      const a = map(object.cx + object.r, object.cy), b = map(object.cx, object.cy + object.r);
+      const ax = a.x - center.x, ay = a.y - center.y, bx = b.x - center.x, by = b.y - center.y;
+      const radius = Math.hypot(ax, ay), other = Math.hypot(bx, by), centerDistance = Math.hypot(point.x - center.x, point.y - center.y);
+      if (Math.abs(radius - other) <= 1e-9 * Math.max(1, radius) && Math.abs(ax * bx + ay * by) <= 1e-9 * Math.max(1, radius * other)) return Math.min(centerDistance, Math.abs(centerDistance - radius));
+      const distance = angle => { const p = map(object.cx + Math.cos(angle) * object.r, object.cy + Math.sin(angle) * object.r); return Math.hypot(point.x - p.x, point.y - p.y); };
+      // Find/refine the nearest point on the transformed circle, including affine SVG transforms.
+      const step = Math.PI * 2 / 32; let best = 0;
+      for (let i = 1; i < 32; i++) if (distance(i * step) < distance(best)) best = i * step;
+      let low = best - step, high = best + step;
+      for (let i = 0; i < 48; i++) { const a = low + (high - low) / 3, b = high - (high - low) / 3; if (distance(a) < distance(b)) high = b; else low = a; }
+      return Math.min(centerDistance, distance((low + high) / 2));
+    }
+    return Infinity;
+  }
+
   class Engine {
     constructor(data, rendererOptions) {
       this.model = data instanceof MI.IllustrationModel
@@ -60,14 +81,18 @@
     get(id) { return this.model.get(id); }
 
     selectAt(x, y, tolerance) {
-      const maxDistance = Number.isFinite(Number(tolerance)) ? Number(tolerance) : 0.25;
+      const options = tolerance && typeof tolerance === 'object' ? tolerance : null;
+      const maxDistance = options ? (options.tolerancePx == null ? 8 : options.tolerancePx) : Number.isFinite(Number(tolerance)) ? Number(tolerance) : 0.25;
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(maxDistance) || maxDistance < 0) return null;
+      if (options && (!options.transform || !options.transform.mathToScreen)) throw new Error('Schermselectie vereist CoordinateTransform.');
+      const screen = options && options.transform.mathToScreen({ x, y });
       let best = null;
       let bestDistance = Infinity;
 
       this.model.objects.forEach((object) => {
         if (object.visible === false) return;
-        const distance = hitDistance(object, x, y);
-        if (distance <= maxDistance && distance < bestDistance) {
+        const distance = options ? screenHit(object, screen, options.transform) : hitDistance(object, x, y);
+        if (distance <= maxDistance + (options ? 1e-9 : 0) && (options ? distance <= bestDistance + 1e-9 : distance < bestDistance)) {
           best = object;
           bestDistance = distance;
         }

@@ -14,6 +14,10 @@
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
   function finite(value, fallback) { return Number.isFinite(Number(value)) ? Number(value) : fallback; }
   function record(value) { return value != null && Object.prototype.toString.call(value) === "[object Object]"; }
+  function freeze(value) { if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); } return value; }
+  function mergeStyle(base, patch) {
+    return Object.fromEntries([...new Set([...Object.keys(base), ...Object.keys(patch)])].map(key => [key, Object.prototype.hasOwnProperty.call(patch, key) ? (record(base[key]) && record(patch[key]) ? mergeStyle(base[key], patch[key]) : patch[key]) : base[key]]));
+  }
   function optionalNumber(value) { return value == null ? null : finite(value, null); }
   const PRESENTATION_FLAGS = ["showAxes", "showGrid", "showXAxis", "showYAxis", "showAxisLabels", "showOrigin", "showSnapPoints"];
 
@@ -72,9 +76,20 @@
     if (type === "text") return Object.assign(base, { fill: "#222", stroke: "none", fontSize: 16, fontFamily: "Source Sans 3, sans-serif", anchor: "start" });
     return base;
   }
-  function normaliseStyle(type, style) { return { ...defaultStyle(type), ...clone(style || {}) }; }
+  function normaliseStyle(type, style) {
+    if (style != null && !record(style)) throw new Error('Ongeldige objectstijl.');
+    const input = style || {};
+    for (const key of ['strokeWidth', 'radius', 'fontSize', 'opacity']) if (key in input) {
+      const value = Number(input[key]);
+      if (!numeric(input[key]) || value < 0 || ((key === 'radius' || key === 'fontSize') && value === 0) || (key === 'opacity' && value > 1)) throw new Error('Ongeldige stijlwaarde: ' + key);
+    }
+    const result = { ...defaultStyle(type), ...clone(input) };
+    for (const key of ['strokeWidth', 'radius', 'fontSize', 'opacity']) if (key in result) result[key] = Number(result[key]);
+    return result;
+  }
 
   function normaliseObject(input) {
+    validateImportedObject(input);
     if (!input || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
     const type = input.type;
     const id = String(input.id == null ? "" : input.id);
@@ -103,14 +118,32 @@
   }
 
   class IllustrationModel {
-    constructor(data) { this.version = MODEL_VERSION; this.type = "geometry"; this.objects = []; this.meta = {}; this.presentation = null; this._extra = {}; this._nextId = 1; if (data != null) this.load(data); }
+    #objects = Object.freeze([]);
+    get objects() { return this.#objects; }
+    constructor(data) { this.version = MODEL_VERSION; this.type = "geometry"; this.meta = {}; this.presentation = null; this._extra = {}; this._nextId = 1; if (data != null) this.load(data); }
     _generateId(type) { let id; do { id = (type || "object") + "-" + this._nextId; this._nextId = this._nextId >= Number.MAX_SAFE_INTEGER - 1 ? 1 : this._nextId + 1; } while (this.get(id)); return id; }
-    add(input) { const data = clone(input || {}); if (data.id == null || data.id === "") data.id = this._generateId(data.type); const object = normaliseObject(data); if (this.get(object.id)) throw new Error("Object-id bestaat al: " + object.id); this.objects.push(object); return clone(object); }
-    update(id, patch) { const index = this.objects.findIndex((object) => object.id === id); if (index === -1) throw new Error("Object niet gevonden: " + id); const next = normaliseObject({ ...this.objects[index], ...(patch || {}), id: id, type: this.objects[index].type }); this.objects[index] = next; return clone(next); }
-    remove(id) { const before = this.objects.length; this.objects = this.objects.filter((object) => object.id !== id); return this.objects.length !== before; }
-    get(id) { return this.objects.find((object) => object.id === id) || null; }
+    add(input) {
+      if (!record(input)) throw new Error('Ongeldig illustratie-object.');
+      const nextId = this._nextId;
+      try {
+        const data = { ...input }; if (data.id == null || data.id === '') data.id = this._generateId(data.type);
+        const object = freeze(normaliseObject(data)); if (this.#objects.some(o => o.id === object.id)) throw new Error('Object-id bestaat al: ' + object.id);
+        this.#objects = Object.freeze([...this.#objects, object]); return clone(object);
+      } catch (error) { this._nextId = nextId; throw error; }
+    }
+    update(id, patch) {
+      const index = this.#objects.findIndex(o => o.id === id); if (index === -1) throw new Error('Object niet gevonden: ' + id);
+      if (patch != null && !record(patch)) throw new Error('Ongeldige objectupdate.'); patch = patch || {};
+      const current = this.#objects[index];
+      if (('id' in patch && patch.id !== id) || ('type' in patch && patch.type !== current.type)) throw new Error('ID en objecttype kunnen niet worden gewijzigd.');
+      if ('style' in patch && !record(patch.style)) throw new Error('Ongeldige objectstijl.');
+      const next = freeze(normaliseObject({ ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style }));
+      const objects = this.#objects.slice(); objects[index] = next; this.#objects = Object.freeze(objects); return clone(next);
+    }
+    remove(id) { const before = this.#objects.length; this.#objects = Object.freeze(this.#objects.filter(o => o.id !== id)); return this.#objects.length !== before; }
+    get(id) { const object = this.#objects.find(o => o.id === id); return object ? clone(object) : null; }
     all() { return clone(this.objects); }
-    clear() { this.objects = []; }
+    clear() { this.#objects = Object.freeze([]); }
     toJSON() { return { ...clone(this._extra), type: this.type, version: MODEL_VERSION, meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
     load(data) {
       if (!record(data) || !Array.isArray(data.objects)) throw new Error("Ongeldig illustratiemodel: objects-array vereist.");
@@ -139,7 +172,7 @@
       });
       // Commit only after every object, migration and document field has succeeded.
       this.type = "geometry"; this.version = MODEL_VERSION; this.meta = meta;
-      this.objects = objects; this.presentation = presentation; this._extra = extra; this._nextId = nextId;
+      this.#objects = freeze(objects); this.presentation = presentation; this._extra = extra; this._nextId = nextId;
       return this;
     }
   }
