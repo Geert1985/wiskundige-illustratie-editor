@@ -95,6 +95,24 @@ test('empty text is not committed and New clears a pending text form', () => {
   assert.equal(engine.model.objects.length, 2); assert.equal(app.history.canUndo, false);
   app.newDocument(); assert.equal(app.pendingText, null); assert.equal(app.nodes.textDialog.open, false); assert.equal(engine.model.objects.length, 0);
 });
+test('triangle and multi-click polygon use one owner and one undo step; Enter and Escape clean up',()=>{
+  for(const tool of ['triangle','polygon']) {
+    const {app,engine,down,emit,win}=appRuntime(); app.setTool(tool);
+    for(const p of [{x:-2,y:-2},{x:0,y:-2},{x:-1,y:-1}]) { down(p); emit(win,'pointerup'); }
+    if(tool==='polygon') { assert.equal(app.interaction.mode,'polygon'); emit(win,'keydown',{key:'Enter'}); }
+    assert.equal(app.interaction,null); assert.equal(engine.model.objects.at(-1).type,'polygon'); assert.equal(engine.model.objects.at(-1).vertices.length,3);
+    assert.equal(app.history.entries.length,1); app.travelHistory(); assert.equal(engine.model.objects.length,2); app.travelHistory(true); assert.equal(engine.model.objects.length,3);
+    down({x:3,y:2}); emit(win,'pointerup'); emit(win,'keydown',{key:'Escape'}); assert.equal(app.interaction,null); assert.equal(app.history.entries.length,1);
+  }
+});
+test('unfinished polygons roll back on blur, pointercancel, New and dispose without a history step',()=>{
+  for(const end of ['blur','pointercancel','New','dispose']) {
+    const {app,engine,down,emit,win}=appRuntime();app.setTool('polygon');down({x:3,y:2});
+    if(end==='New') app.newDocument();else if(end==='dispose')app.dispose();else emit(win,end);
+    assert.equal(app.interaction,null);assert.equal(engine.renderer.preview,null);assert.equal(app.history.canUndo,false);
+    assert.equal(engine.model.objects.length,end==='New'?0:2);
+  }
+});
 test('draw/delete history, shortcuts, new/import reset and failed import retain a usable history', () => {
   const { app, engine, down, move, emit, win, doc } = appRuntime();
   app.setTool('line'); down({ x: -2, y: -2 }); move({ x: -1, y: -2 }); emit(win, 'pointerup');

@@ -66,7 +66,11 @@
       this.on(n.selectionPanel, "change", e => {
         const input = e.target.closest("[data-edit]"); if (!input || !this.selectedId) return;
         this.cancel();
-        try { this.changeDocument(() => this.engine.update(this.selectedId, { [input.dataset.edit]: input.type === "number" ? input.valueAsNumber : input.value })); }
+        try { this.changeDocument(() => {
+          const value=input.type === "number" ? input.valueAsNumber : input.value;
+          const patch=input.dataset.vertex != null ? {vertices:this.engine.get(this.selectedId).vertices.map((p,i)=>i===Number(input.dataset.vertex) ? {...p,[input.dataset.edit]:value} : p)} : {[input.dataset.edit]:value};
+          this.engine.update(this.selectedId,patch);
+        }); }
         catch (error) { this.status(error.message); }
         this.invalidate();
       });
@@ -121,9 +125,46 @@
       if (this.nodes.canvasWrap.setPointerCapture) try { this.nodes.canvasWrap.setPointerCapture(event.pointerId); } catch (_) {}
     }
     release(state) { if (state && this.nodes.canvasWrap.hasPointerCapture && this.nodes.canvasWrap.hasPointerCapture(state.pointerId)) try { this.nodes.canvasWrap.releasePointerCapture(state.pointerId); } catch (_) {} }
+    polygonResult(point) {
+      const state=this.interaction, result=this.snap(point);
+      if(state.vertices.length>=3) {
+        const a=this.transform().mathToScreen(state.vertices[0]),b=this.transform().mathToScreen(point);
+        if(Math.hypot(a.x-b.x,a.y-b.y)<=this.services.snap.tolerancePx) return {...this.services.snap.free(state.vertices[0]),snapped:true,kind:'line-endpoint',priority:2,ids:[],distancePx:Math.hypot(a.x-b.x,a.y-b.y),close:true};
+      }
+      return result;
+    }
+    polygonPreview() {
+      const state=this.interaction; this.feedback=state.result;
+      this.engine.renderer.preview={type:'polygon',vertices:[...state.vertices,state.result.point]}; this.invalidate();
+    }
+    polygonClick(point,event) {
+      const state=this.interaction; state.pointerId=event.pointerId; state.result=this.polygonResult(point);
+      if(this.nodes.canvasWrap.setPointerCapture) try { this.nodes.canvasWrap.setPointerCapture(event.pointerId); } catch (_) {}
+      if(state.result.close) { this.finishPolygon(); return; }
+      if(state.vertices.some(p=>Math.hypot(p.x-state.result.point.x,p.y-state.result.point.y)<.05)) { this.status('Kies een verschillend hoekpunt (afstand minstens 0,05).'); return; }
+      if(state.vertices.length>=256) { this.status('Maximaal 256 hoekpunten; sluit af met Enter.'); return; }
+      state.vertices.push({...state.result.point}); this.polygonPreview();
+      if(state.shape==='triangle' && state.vertices.length===3) this.finishPolygon();
+    }
+    finishPolygon() {
+      const state=this.interaction; if(!state || state.mode!=='polygon') return;
+      try { MI.PolygonGeometry.validate(state.vertices); }
+      catch(error) { this.status(error.message); return; }
+      this.selectedId=this.engine.add({type:'polygon',vertices:state.vertices}).id;
+      this.interaction=null; this.release(state); this.engine.renderer.preview=null; this.feedback=null;
+      this.history.record(state.historyBefore); this.invalidate(); this.status('Veelhoek toegevoegd.');
+    }
     pointerDown(event) {
-      if (!this.initialized || this.interaction || event.button !== 0 || event.isPrimary === false) return;
+      if (!this.initialized || (this.interaction && this.interaction.mode!=='polygon') || event.button !== 0 || event.isPrimary === false) return;
       const point = this.pointer(event); if (!point) return; event.preventDefault();
+      if(this.interaction && this.interaction.mode==='polygon') { this.polygonClick(point,event); return; }
+      const vertex=event.target && event.target.closest && event.target.closest('.fzi-polygon-vertex');
+      if(this.tool==='select' && vertex) {
+        const id=vertex.getAttribute('data-polygon-id'),object=this.engine.get(id);
+        if(!object || object.visible===false) return;
+        this.begin({mode:'vertex',id,original:clone(object),vertex:Number(vertex.getAttribute('data-vertex')),resolved:null},event);
+        this.selectedId=id; this.invalidate(); return;
+      }
       const label = event.target && event.target.closest && event.target.closest(".object-label"), handle = event.target && event.target.closest && event.target.closest(".fzi-line-endpoint");
       if (this.tool === "select" && (label || handle)) {
         const id = (label || handle).getAttribute(label ? "data-label-id" : "data-line-id"), object = this.engine.get(id);
@@ -143,6 +184,10 @@
         const result = this.snap(point);
         this.begin({ mode: "draw", shape: this.tool, start: result.point, lastRawPoint: { ...result.point }, resolved: null }, event);
         this.resolveDraw(); this.invalidate(); return;
+      }
+      if(this.tool==='triangle' || this.tool==='polygon') {
+        const result=this.snap(point); this.begin({mode:'polygon',shape:this.tool,vertices:[{...result.point}],result},event);
+        this.polygonPreview(); this.status('Klik voor hoekpunten; Enter sluit af, Backspace verwijdert het laatste punt, Escape annuleert.'); return;
       }
       if (this.tool !== 'select') { this.status('Deze tekentool is niet beschikbaar. Vernieuw de editor.'); return; }
       const group = event.target && event.target.closest && event.target.closest('[data-object-id]');
@@ -169,21 +214,25 @@
         if (this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
         return;
       }
+      if (state.mode==='polygon') { if(event.isPrimary===false || (state.pointerId!=null && event.pointerId!==state.pointerId)) return; const point=this.pointer(event); if(point) { state.result=this.polygonResult(point); this.polygonPreview(); } return; }
       if (event.pointerId !== state.pointerId) return;
       const point = this.pointer(event); if (!point) return;
       const delta = state.transform.screenDelta(event.clientX - state.startScreen.x, event.clientY - state.startScreen.y); if (!delta) return;
       if (state.mode === "draw") { state.lastRawPoint = point; this.resolveDraw(); }
       if (state.mode === "label") this.engine.update(state.id, { labelOffsetX: state.offset.x + delta.x, labelOffsetY: state.offset.y + delta.y });
       if (state.mode === "endpoint") { state.resolved = this.services.resolver.endpoint(this.engine, state.original, state.endpoint, point, { transform: this.transform() }); this.feedback = state.resolved.result; }
+      if(state.mode==='vertex') { state.resolved=this.services.resolver.polygonVertex(this.engine,state.original,state.vertex,point,{transform:this.transform()}); this.feedback=state.resolved.result; }
       if (state.mode === "object") {
         const o = state.original;
-        if (MI.LinearGeometry.isLinear(o)) { state.resolved = this.services.resolver.translateLine(this.engine, o, delta, { transform: this.transform() }); this.engine.update(state.id, state.resolved.patch); this.feedback = state.resolved.result; }
+        if(o.type==='polygon') { state.resolved=this.services.resolver.translatePolygon(this.engine,o,delta,{transform:this.transform()}); try { this.engine.update(state.id,state.resolved.patch); this.feedback=state.resolved.result; } catch(error) { this.status(error.message); } }
+        else if (MI.LinearGeometry.isLinear(o)) { state.resolved = this.services.resolver.translateLine(this.engine, o, delta, { transform: this.transform() }); this.engine.update(state.id, state.resolved.patch); this.feedback = state.resolved.result; }
         else { const result = this.snap(o.type === "circle" ? { x: o.cx + delta.x, y: o.cy + delta.y } : { x: o.x + delta.x, y: o.y + delta.y }, state.id); this.engine.update(state.id, o.type === "circle" ? { cx: result.point.x, cy: result.point.y } : { x: result.point.x, y: result.point.y }); this.feedback = result; }
       }
       if (state.mode === "pan") try { this.engine.renderer.setBounds({ xMin: state.bounds.xMin - delta.x, xMax: state.bounds.xMax - delta.x, yMin: state.bounds.yMin - delta.y, yMax: state.bounds.yMax - delta.y }); } catch (e) { this.status(e.message); return; }
       this.invalidate(true);
     }
     pointerUp(event) {
+      if(this.interaction && this.interaction.mode==='polygon' && event.pointerId===this.interaction.pointerId) { const state=this.interaction,id=state.pointerId; state.pointerId=null; this.release({...state,pointerId:id}); return; }
       if (this.interaction && event.pointerId === this.interaction.pointerId) this.commit();
       else if (!this.interaction && this.feedback && (!event.target || this.nodes.canvasWrap.contains(event.target))) { this.feedback = null; this.invalidate(); }
     }
@@ -194,7 +243,7 @@
         if (state.resolved && state.resolved.length >= .05) this.selectedId = this.engine.add(state.resolved.object).id;
         else this.status("Vorm te kort; geen object toegevoegd.");
       }
-      if (state.mode === "endpoint" && state.resolved) { try { this.engine.update(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }
+      if ((state.mode === "endpoint" || state.mode==='vertex') && state.resolved) { try { this.engine.update(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }
       this.history.record(state.historyBefore); this.invalidate();
     }
     cancel() {
@@ -216,6 +265,11 @@
         event.preventDefault(); this.travelHistory(event.key.toLowerCase() === "y" || event.shiftKey); return;
       }
       if (event.key === "Escape") { this.cancel(); this.tool = "select"; this.axisMenuOpen = false; this.invalidate(); return; }
+      if(state && state.mode==='polygon') {
+        if(event.key==='Enter') { event.preventDefault(); this.finishPolygon(); }
+        if(event.key==='Backspace') { event.preventDefault(); if(state.vertices.length>1) { state.vertices.pop(); this.polygonPreview(); } else this.cancel(); }
+        return;
+      }
       if (state && state.mode === "draw") {
         if (/^[0-9.,]$/.test(event.key)) state.typed += event.key === "," ? "." : event.key;
         else if (event.key === "Backspace") state.typed = state.typed.slice(0, -1);
@@ -267,7 +321,7 @@
       if ((button = find("[data-toggle-label]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.toggleLabel); this.engine.update(object.id, { showLabel: !object.showLabel }); }); return; }
       if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.changeDocument(() => { this.engine.renderer[key] = !this.engine.renderer[key]; }); } }
     }
-    viewObject(id) { const object = this.engine.get(id), state = this.interaction; return object && state && state.mode === "endpoint" && state.id === id && state.resolved ? { ...object, ...state.resolved.patch } : object; }
+    viewObject(id) { const object = this.engine.get(id), state = this.interaction; return object && state && (state.mode === "endpoint" || state.mode==='vertex') && state.id === id && state.resolved ? { ...object, ...state.resolved.patch } : object; }
     invalidate(defer = false) {
       if (!this.initialized) return;
       if (defer && this.window.requestAnimationFrame && this.window.cancelAnimationFrame) {
@@ -311,7 +365,8 @@
       panel.className = "selection-panel";
       let html = '<strong>' + MI.escapeXml(object.name) + '</strong><code>' + MI.escapeXml(object.id) + '</code><label>Naam<input data-edit="name" value="' + MI.escapeXml(object.name) + '"></label>';
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
-      for (const key of keys) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.1" value="' + MI.escapeXml(object[key]) + '"></label>';
+      for (const key of keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.1" value="' + MI.escapeXml(object[key]) + '"></label>';
+      if(object.type==='polygon') object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.1" value="'+MI.escapeXml(p[key])+'"></label>'; });
       if (object.type === "text") html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
       panel.innerHTML = html + '<button class="delete-btn" data-delete-selected>Verwijder object</button>';
     }
@@ -320,7 +375,7 @@
   // Existing presentation helpers, copied without their old event/render owners.
     function eyeIcon(visible) { if (visible) return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.7" fill="currentColor"/></svg>'; return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M9.9 5.9C10.6 5.7 11.3 5.6 12 5.6c6.5 0 10 6.4 10 6.4-.8 1.2-1.8 2.4-3.1 3.4M6.1 6.1C3.5 7.7 2 12 2 12s3.5 6 10 6c1.1 0 2.1-.2 3-.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
   function textIcon(active) { return '<span class="text-toggle' + (active ? ' active' : '') + '" aria-hidden="true">T</span>'; }
-  function objectName(object) { const names = { point: "Punt", line: "Lijnstuk", circle: "Cirkel", text: "Tekst", straight: "Rechte", ray: "Halfrechte", vector: "Vector" }; return object.name || names[object.type] || object.type; }
+  function objectName(object) { const names = { point: "Punt", line: "Lijnstuk", circle: "Cirkel", text: "Tekst", straight: "Rechte", ray: "Halfrechte", vector: "Vector", polygon: "Veelhoek" }; return object.name || names[object.type] || object.type; }
 
 
   MI.EditorApp = EditorApp;
