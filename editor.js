@@ -96,7 +96,9 @@
         this.begin({ mode: "draw", shape: this.tool, start: result.point, lastRawPoint: { ...result.point }, resolved: null }, event);
         this.resolveDraw(); this.invalidate(); return;
       }
-      const hit = this.engine.selectAt(point.x, point.y, .18);
+      const group = event.target && event.target.closest && event.target.closest('[data-object-id]');
+      const painted = group && this.nodes.canvas.contains(group) && this.engine.get(group.getAttribute('data-object-id'));
+      const hit = painted && painted.visible !== false ? { object: painted } : this.engine.selectAt(point.x, point.y, .18);
       this.begin(hit ? { mode: "object", id: hit.object.id, original: clone(this.engine.get(hit.object.id)) } : { mode: "pan", bounds: { ...this.engine.renderer.bounds } }, event);
       this.selectedId = hit ? hit.object.id : null; this.invalidate();
     }
@@ -204,7 +206,7 @@
       if ((button = find('[data-view-select="axes"]'))) { this.axisMenuOpen = !this.axisMenuOpen; this.invalidate(); return; }
       if ((button = find('[data-axis-system]')) && !button.disabled) { this.cancel(); this.engine.renderer.coordinateSystem = button.dataset.axisSystem; this.axisMenuOpen = false; this.invalidate(); return; }
       if ((button = find("[data-color-object]"))) { this.colorId = button.dataset.colorObject; const object = this.engine.get(this.colorId); if (object && this.colorInput) { const color = this.services.color.value(object); this.colorInput.value = /^#[0-9a-f]{6}$/i.test(color) ? color : "#222222"; this.colorInput.click(); } return; }
-      if ((button = find("[data-select-object]"))) { this.cancel(); this.selectedId = button.dataset.selectObject; this.invalidate(); return; }
+      if ((button = find("[data-select-object]"))) { this.cancel(); this.tool = "select"; this.selectedId = button.dataset.selectObject; this.invalidate(); return; }
       if ((button = find("[data-object-visibility]"))) { this.cancel(); const object = this.engine.get(button.dataset.objectVisibility); this.engine.update(object.id, { visible: object.visible === false }); this.invalidate(); return; }
       if ((button = find("[data-toggle-label]"))) { this.cancel(); const object = this.engine.get(button.dataset.toggleLabel); this.engine.update(object.id, { showLabel: !object.showLabel }); this.invalidate(); return; }
       if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.engine.renderer[key] = !this.engine.renderer[key]; this.invalidate(); } }

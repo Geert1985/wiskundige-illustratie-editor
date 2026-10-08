@@ -62,3 +62,7 @@ See [INTERACTION-RENDER.md](../INTERACTION-RENDER.md) for commit/cancel policy, 
 `performance.test.cjs` adds five tests (65 total): candidate construction reuse, geometry/live-mutation/import cache invalidation, detached public results, one render per pointer burst and cleanup/immediate keyboard/commit with a queued frame. No wall-clock assertions are used. `benchmark.cjs` emits Node timings with deterministic mixed fixtures at 10/100/500 objects. Run it separately with `node math-illustration/tests/benchmark.cjs`.
 
 The complete Edge runner invokes `browser-performance.cjs`: cold/warm timing, 20 moves in one task, one-render assertion, preview=commit, keyboard exact length before a scheduled frame and canceled-frame cleanup. See [PERFORMANCE.md](../PERFORMANCE.md) for before/after samples and what the measured burst time excludes. This suite retains all previous functional browser checks; benchmark timing alone is not a correctness test or an FPS guarantee.
+
+## Selection follow-up
+
+Two additional Node lifecycle tests (67 total) cover dragging the painted circle center and sidebar selection after drawing. `browser-selection.cjs` checks actual selection/drag in a 500-object document, including circle centers, topmost overlapping objects and switching from drawing to selection through the object list. Visible DOM object targets take precedence over the existing mathematical fallback; label and endpoint handlers retain priority. The mathematical fallback tolerance is unchanged.

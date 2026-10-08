@@ -102,3 +102,22 @@ test('New cancels an active drag; dispose/init does not duplicate listeners', ()
   app.init(); app.setTool('point'); down({ x: 0, y: 0 }); emit(win, 'pointerup');
   assert.equal(engine.model.objects.length, 1);
 });
+
+test('painted object target selects and moves a circle center despite mathematical hit-test missing it', () => {
+  const { app, engine, down, move, emit, win } = appRuntime();
+  engine.add({ id: 'circle', type: 'circle', cx: -2, cy: -1, r: .5 });
+  const group = { getAttribute: () => 'circle' };
+  down({ x: -2, y: -1 }, { closest: selector => selector === '[data-object-id]' ? group : null });
+  assert.equal(app.selectedId, 'circle'); assert.equal(app.interaction.mode, 'object');
+  move({ x: -1, y: -1 }); emit(win, 'pointerup');
+  assert.ok(Math.abs(engine.get('circle').cx + 1) < 1e-10);
+});
+
+test('selecting an object in the sidebar after drawing activates selection and subsequent drag adds no shape', () => {
+  const { app, engine, down, move, emit, win } = appRuntime(); app.setTool('point');
+  app.viewClick({ target: { closest: selector => selector === '[data-select-object]' ? { dataset: { selectObject: 'p' } } : null } });
+  assert.equal(app.tool, 'select'); assert.equal(app.selectedId, 'p');
+  const count = engine.model.objects.length;
+  down({ x: 0, y: 0 }); move({ x: 1, y: 0 }); emit(win, 'pointerup');
+  assert.equal(engine.model.objects.length, count); assert.equal(engine.get('p').x, 1);
+});
