@@ -98,7 +98,8 @@ const server = http.createServer((req, res) => {
     const auditFinal = await require('./browser-audit-final.cjs')(page);
     const linear = await require('./browser-linear.cjs')(page);
     const assetCompat = await require('./browser-asset-compat.cjs')(page);
+    const history = await require('./browser-history.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -61,6 +61,33 @@ function appRuntime() {
   const move = (point, pointerId = 1) => { const p = screen(point); emit(win, 'pointermove', { clientX: p.x, clientY: p.y, pointerId }); };
   return { MI, engine, app, doc, win, emit, down, move };
 }
+
+test('history records a whole drag once, restores selection and ignores cancelled/noop gestures', () => {
+  const { app, engine, down, move, emit, win } = appRuntime();
+  down({ x: 0, y: 0 }); move({ x: 1, y: 0 }); move({ x: 2, y: 0 }); emit(win, 'pointerup');
+  assert.equal(app.history.entries.length, 1);
+  app.travelHistory(); assert.equal(engine.get('p').x, 0); assert.equal(app.selectedId, null);
+  app.travelHistory(true); assert.equal(engine.get('p').x, 2); assert.equal(app.selectedId, 'p');
+  down({ x: 2, y: 0 }); move({ x: 3, y: 0 }); emit(win, 'pointercancel');
+  assert.equal(engine.get('p').x, 2); assert.equal(app.history.entries.length, 1);
+  down({ x: 2, y: 0 }); emit(win, 'pointerup'); assert.equal(app.history.entries.length, 1);
+});
+test('draw/delete history, shortcuts, new/import reset and failed import retain a usable history', () => {
+  const { app, engine, down, move, emit, win, doc } = appRuntime();
+  app.setTool('line'); down({ x: -2, y: -2 }); move({ x: -1, y: -2 }); emit(win, 'pointerup');
+  const id = app.selectedId; assert.ok(engine.get(id));
+  emit(win, 'keydown', { key: 'z', ctrlKey: true }); assert.equal(engine.get(id), null);
+  emit(win, 'keydown', { key: 'Z', ctrlKey: true, shiftKey: true }); assert.ok(engine.get(id));
+  doc.activeElement = { tagName: 'INPUT' };
+  emit(win, 'keydown', { key: 'z', ctrlKey: true }); assert.ok(engine.get(id));
+  doc.activeElement = { tagName: 'BODY' };
+  app.setTool('select'); emit(win, 'keydown', { key: 'Delete' }); assert.equal(engine.get(id), null);
+  app.travelHistory(); assert.ok(engine.get(id));
+  assert.throws(() => app.loadDocument({ objects: [{ type: 'bogus' }] })); assert.equal(app.history.canUndo, true);
+  app.loadDocument({ objects: [] }); assert.equal(app.history.canUndo, false); assert.equal(app.history.canRedo, false);
+  app.setTool('point'); down({ x: 0, y: 0 }); assert.equal(app.history.canUndo, true);
+  app.newDocument(); assert.equal(app.history.canUndo, false);
+});
 test('one pointer owner commits outside canvas; other pointers cannot replace a drag', () => {
   const { app, engine, down, move, emit, win } = appRuntime();
   down({ x: 0, y: 0 }); down({ x: 4, y: 2 }, null, 2); move({ x: 1, y: 0 }, 2);

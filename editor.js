@@ -9,8 +9,9 @@
       this.engine = engine; this.services = services; this.document = document; this.window = window; this.storage = storage;
       this.tool = "select"; this.selectedId = null; this.interaction = null; this.feedback = null;
       this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
+      this.history = new (services.history || MI.EditorHistory)(this); this.editBefore = null;
       this.nodes = {};
-      for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn"]) this.nodes[id] = document.getElementById(id);
+      for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn"]) this.nodes[id] = document.getElementById(id);
     }
     on(target, type, fn, options) {
       if (!target) return;
@@ -20,6 +21,17 @@
     status(text) { this.nodes.status.textContent = text; }
     hydrate() { this.nodes.titleInput.value = this.engine.model.meta.title || ""; this.nodes.descriptionInput.value = this.engine.model.meta.description || ""; }
     updateMeta() { this.engine.model.meta.title = this.nodes.titleInput.value.trim(); this.engine.model.meta.description = this.nodes.descriptionInput.value.trim(); }
+    flushEdits() { if (this.editBefore) { this.history.record(this.editBefore); this.editBefore = null; } }
+    changeDocument(fn) {
+      this.cancel(); this.flushEdits(); const before = this.history.capture();
+      try { fn(); } finally { this.history.record(before); this.invalidate(); }
+    }
+    travelHistory(redo = false) {
+      this.cancel(); this.flushEdits();
+      try { if (redo) this.history.redo(); else this.history.undo(); this.hydrate(); }
+      catch (error) { this.status(error.message); }
+      this.invalidate();
+    }
     transform() { return this.services.transform.forCanvas(this.engine, this.document); }
     pointer(event) { const transform = this.transform(); return transform && transform.screenToMath({ x: event.clientX, y: event.clientY }); }
     snap(point, excludeId) { return this.services.snap.resolve(this.engine, point, { transform: this.transform(), excludeId }); }
@@ -27,6 +39,8 @@
       if (this.initialized) return this;
       this.initialized = true; this.hydrate();
       const n = this.nodes;
+      this.on(n.undoBtn, "click", () => this.travelHistory());
+      this.on(n.redoBtn, "click", () => this.travelHistory(true));
       this.on(n.canvasWrap, "pointerdown", e => this.pointerDown(e));
       this.on(this.window, "pointermove", e => this.pointerMove(e));
       this.on(this.window, "pointerup", e => this.pointerUp(e));
@@ -39,35 +53,38 @@
       this.on(n.viewList, "click", e => this.viewClick(e));
       this.on(n.viewList, "change", e => {
         const input = e.target.closest("[data-axis-setting]");
-        if (input) { this.cancel(); this.engine.renderer[input.dataset.axisSetting] = input.checked; this.invalidate(); }
+        if (input) { this.changeDocument(() => { this.engine.renderer[input.dataset.axisSetting] = input.checked; }); }
       });
       this.on(this.document, "click", e => { if (this.axisMenuOpen && !e.target.closest('[data-view-select="axes"], [data-axis-settings]')) { this.axisMenuOpen = false; this.invalidate(); } });
       this.on(n.selectionPanel, "change", e => {
         const input = e.target.closest("[data-edit]"); if (!input || !this.selectedId) return;
         this.cancel();
-        try { this.engine.update(this.selectedId, { [input.dataset.edit]: input.type === "number" ? input.valueAsNumber : input.value }); }
+        try { this.changeDocument(() => this.engine.update(this.selectedId, { [input.dataset.edit]: input.type === "number" ? input.valueAsNumber : input.value })); }
         catch (error) { this.status(error.message); }
         this.invalidate();
       });
-      this.on(n.selectionPanel, "click", e => { if (e.target.closest("[data-delete-selected]") && this.selectedId) { this.cancel(); this.engine.remove(this.selectedId); this.selectedId = null; this.invalidate(); } });
-      for (const input of [n.titleInput, n.descriptionInput]) this.on(input, "input", () => { this.updateMeta(); this.invalidate(); });
-      this.on(n.resetViewBtn, "click", () => { this.cancel(); this.engine.renderer.setBounds({ ...DEFAULT_BOUNDS }); this.invalidate(); });
+      this.on(n.selectionPanel, "click", e => { if (e.target.closest("[data-delete-selected]") && this.selectedId) { this.changeDocument(() => { this.engine.remove(this.selectedId); this.selectedId = null; }); } });
+      for (const input of [n.titleInput, n.descriptionInput]) {
+        this.on(input, "input", () => { if (!this.editBefore) this.editBefore = this.history.capture(); this.updateMeta(); this.invalidate(); });
+        this.on(input, "change", () => { this.flushEdits(); this.invalidate(); });
+      }
+      this.on(n.resetViewBtn, "click", () => { this.changeDocument(() => this.engine.renderer.setBounds({ ...DEFAULT_BOUNDS })); });
       this.on(n.newBtn, "click", () => { if (this.window.confirm("Een nieuwe illustratie starten? Het opgeslagen concept en niet-opgeslagen wijzigingen worden verwijderd.")) this.newDocument(); });
-      this.on(n.saveBtn, "click", () => { this.cancel(); this.updateMeta(); try { this.services.draft.save(this.engine, this.storage); this.status("Concept opgeslagen in deze browser."); } catch (e) { this.status("Concept kon niet worden opgeslagen: " + e.message); } });
+      this.on(n.saveBtn, "click", () => { this.cancel(); this.flushEdits(); this.updateMeta(); try { this.services.draft.save(this.engine, this.storage); this.status("Concept opgeslagen in deze browser."); } catch (e) { this.status("Concept kon niet worden opgeslagen: " + e.message); } });
       this.on(n.loadBtn, "click", () => n.fileInput.click());
       this.on(n.fileInput, "change", e => this.importFile(e));
-      this.on(n.exportJsonBtn, "click", () => { this.cancel(); this.updateMeta(); this.download("illustratie.json", this.engine.toJSONString(true), "application/json;charset=utf-8"); });
-      this.on(n.exportSvgBtn, "click", () => { this.cancel(); this.updateMeta(); this.download("illustratie.svg", this.engine.renderSVG(), "image/svg+xml;charset=utf-8"); });
+      this.on(n.exportJsonBtn, "click", () => { this.cancel(); this.flushEdits(); this.updateMeta(); this.download("illustratie.json", this.engine.toJSONString(true), "application/json;charset=utf-8"); });
+      this.on(n.exportSvgBtn, "click", () => { this.cancel(); this.flushEdits(); this.updateMeta(); this.download("illustratie.svg", this.engine.renderSVG(), "image/svg+xml;charset=utf-8"); });
       if (this.document.createElement && this.document.body) {
         this.colorInput = this.document.createElement("input"); this.colorInput.type = "color"; this.colorInput.dataset.editorColor = "true";
         this.colorInput.style.position = "fixed"; this.colorInput.style.left = "-1000px"; this.document.body.appendChild(this.colorInput);
         this.on(this.colorInput, "input", () => this.setColor(this.colorId, this.colorInput.value));
-        this.on(this.colorInput, "change", () => { this.colorId = null; });
+        this.on(this.colorInput, "change", () => { this.flushEdits(); this.colorId = null; this.invalidate(); });
       }
       this.invalidate(); return this;
     }
     dispose() {
-      this.cancel(); this.initialized = false; this.importSerial++;
+      this.cancel(); this.flushEdits(); this.initialized = false; this.importSerial++;
       if (this.reader && this.reader.readyState === 1) this.reader.abort(); this.reader = null;
       for (const remove of this.listeners.splice(0)) remove();
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
@@ -75,7 +92,8 @@
     }
     setTool(tool) { this.cancel(); this.tool = tool; this.invalidate(); }
     begin(state, event) {
-      this.interaction = { ...state, pointerId: event.pointerId, selectionBefore: this.selectedId, startScreen: { x: event.clientX, y: event.clientY }, transform: this.transform(), typed: "" };
+      this.flushEdits();
+      this.interaction = { ...state, historyBefore: this.history.capture(), pointerId: event.pointerId, selectionBefore: this.selectedId, startScreen: { x: event.clientX, y: event.clientY }, transform: this.transform(), typed: "" };
       if (this.nodes.canvasWrap.setPointerCapture) try { this.nodes.canvasWrap.setPointerCapture(event.pointerId); } catch (_) {}
     }
     release(state) { if (state && this.nodes.canvasWrap.hasPointerCapture && this.nodes.canvasWrap.hasPointerCapture(state.pointerId)) try { this.nodes.canvasWrap.releasePointerCapture(state.pointerId); } catch (_) {} }
@@ -92,7 +110,7 @@
       if (this.tool === "point" || this.tool === "text") {
         const result = this.snap(point); const object = { type: this.tool, x: result.point.x, y: result.point.y };
         if (this.tool === "text") { const text = this.window.prompt("Tekst voor de illustratie:", "A"); if (!text || !text.trim()) return; object.text = text.trim(); }
-        this.selectedId = this.engine.add(object).id; this.feedback = result; this.invalidate(); return;
+        this.changeDocument(() => { this.selectedId = this.engine.add(object).id; }); this.feedback = result; this.invalidate(); return;
       }
       if (MI.LinearGeometry.isLinear({ type: this.tool }) || this.tool === "circle") {
         const result = this.snap(point);
@@ -150,7 +168,7 @@
         else this.status("Vorm te kort; geen object toegevoegd.");
       }
       if (state.mode === "endpoint" && state.resolved) { try { this.engine.update(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }
-      this.invalidate();
+      this.history.record(state.historyBefore); this.invalidate();
     }
     cancel() {
       const state = this.interaction; this.interaction = null;
@@ -164,6 +182,11 @@
     }
     keyDown(event) {
       const state = this.interaction;
+      const active = this.document.activeElement;
+      const editable = active && (/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable);
+      if (!editable && (event.ctrlKey || event.metaKey) && ["z", "y"].includes(event.key.toLowerCase())) {
+        event.preventDefault(); this.travelHistory(event.key.toLowerCase() === "y" || event.shiftKey); return;
+      }
       if (event.key === "Escape") { this.cancel(); this.tool = "select"; this.axisMenuOpen = false; this.invalidate(); return; }
       if (state && state.mode === "draw") {
         if (/^[0-9.,]$/.test(event.key)) state.typed += event.key === "," ? "." : event.key;
@@ -173,28 +196,29 @@
         this.resolveDraw(); this.invalidate(); event.preventDefault(); return;
       }
       const focused = this.document.activeElement && this.document.activeElement.tagName;
-      if ((event.key === "Delete" || event.key === "Backspace") && this.selectedId && focused !== "INPUT" && focused !== "TEXTAREA") { this.cancel(); this.engine.remove(this.selectedId); this.selectedId = null; this.invalidate(); }
+      if ((event.key === "Delete" || event.key === "Backspace") && this.selectedId && focused !== "INPUT" && focused !== "TEXTAREA") { this.changeDocument(() => { this.engine.remove(this.selectedId); this.selectedId = null; }); }
     }
     zoom(event) {
       if (this.interaction) return; event.preventDefault();
       if (!Number.isFinite(event.deltaY) || event.deltaY === 0) return;
+      this.flushEdits(); const before = this.history.capture();
       const r = this.engine.renderer, grid = this.services.grid, point = this.pointer(event); if (!point) return;
       if (event.deltaY < 0 && grid && (r.scale() >= grid.maxScale * (1 - 1e-12) || grid.step(r) <= .1)) { event.stopImmediatePropagation(); this.status("Maximale zoom bereikt (raster: 0,1)."); return; }
       let factor = event.deltaY < 0 ? .85 : 1 / .85;
       if (event.deltaY < 0 && grid) factor = Math.max(factor, r.scale() / grid.maxScale);
       const b = r.bounds, nx = (b.xMax - b.xMin) * factor, ny = (b.yMax - b.yMin) * factor, fx = (point.x - b.xMin) / (b.xMax - b.xMin), fy = (point.y - b.yMin) / (b.yMax - b.yMin);
       try { r.setBounds({ xMin: point.x - fx * nx, xMax: point.x + (1 - fx) * nx, yMin: point.y - fy * ny, yMax: point.y + (1 - fy) * ny }); } catch (e) { this.status(e.message); return; }
-      this.feedback = null; this.invalidate();
+      this.feedback = null; this.history.record(before); this.invalidate();
     }
     newDocument() {
-      this.cancel(); this.importSerial++;
+      this.cancel(); this.flushEdits(); this.importSerial++;
       if (this.reader && this.reader.readyState === 1) this.reader.abort(); this.reader = null;
       let failure = null; if (this.services.draft) try { this.services.draft.clear(this.storage); } catch (e) { failure = e; }
       const r = this.engine.renderer;
       this.engine.load({ version: 2, type: "geometry", meta: {}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: r.showGrid, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } });
-      this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");
+      this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");
     }
-    loadDocument(data) { this.cancel(); this.engine.load(data); this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen."); }
+    loadDocument(data) { this.cancel(); this.flushEdits(); this.engine.load(data); this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen."); }
     importFile(event) {
       const file = event.target.files && event.target.files[0]; if (!file) return;
       this.cancel(); const serial = ++this.importSerial;
@@ -204,16 +228,16 @@
       reader.onerror = () => { if (this.initialized && serial === this.importSerial) this.status("JSON kon niet worden gelezen."); };
       reader.readAsText(file);
     }
-    setColor(id, color) { const object = this.engine.get(id); if (!object) return; this.cancel(); this.engine.update(id, this.services.color.patch(object, color)); this.invalidate(); }
+    setColor(id, color) { const object = this.engine.get(id); if (!object) return; this.cancel(); if (!this.editBefore) this.editBefore = this.history.capture(); this.engine.update(id, this.services.color.patch(object, color)); this.invalidate(); }
     viewClick(event) {
       const target = event.target, find = selector => target.closest(selector); let button;
       if ((button = find('[data-view-select="axes"]'))) { this.axisMenuOpen = !this.axisMenuOpen; this.invalidate(); return; }
-      if ((button = find('[data-axis-system]')) && !button.disabled) { this.cancel(); this.engine.renderer.coordinateSystem = button.dataset.axisSystem; this.axisMenuOpen = false; this.invalidate(); return; }
-      if ((button = find("[data-color-object]"))) { this.colorId = button.dataset.colorObject; const object = this.engine.get(this.colorId); if (object && this.colorInput) { const color = this.services.color.value(object); this.colorInput.value = /^#[0-9a-f]{6}$/i.test(color) ? color : "#222222"; this.colorInput.click(); } return; }
+      if ((button = find('[data-axis-system]')) && !button.disabled) { this.changeDocument(() => { this.engine.renderer.coordinateSystem = button.dataset.axisSystem; this.axisMenuOpen = false; }); return; }
+      if ((button = find("[data-color-object]"))) { this.flushEdits(); this.colorId = button.dataset.colorObject; const object = this.engine.get(this.colorId); if (object && this.colorInput) { const color = this.services.color.value(object); this.colorInput.value = /^#[0-9a-f]{6}$/i.test(color) ? color : "#222222"; this.colorInput.click(); } return; }
       if ((button = find("[data-select-object]"))) { this.cancel(); this.tool = "select"; this.selectedId = button.dataset.selectObject; this.invalidate(); return; }
-      if ((button = find("[data-object-visibility]"))) { this.cancel(); const object = this.engine.get(button.dataset.objectVisibility); this.engine.update(object.id, { visible: object.visible === false }); this.invalidate(); return; }
-      if ((button = find("[data-toggle-label]"))) { this.cancel(); const object = this.engine.get(button.dataset.toggleLabel); this.engine.update(object.id, { showLabel: !object.showLabel }); this.invalidate(); return; }
-      if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.engine.renderer[key] = !this.engine.renderer[key]; this.invalidate(); } }
+      if ((button = find("[data-object-visibility]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.objectVisibility); this.engine.update(object.id, { visible: object.visible === false }); }); return; }
+      if ((button = find("[data-toggle-label]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.toggleLabel); this.engine.update(object.id, { showLabel: !object.showLabel }); }); return; }
+      if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.changeDocument(() => { this.engine.renderer[key] = !this.engine.renderer[key]; }); } }
     }
     viewObject(id) { const object = this.engine.get(id), state = this.interaction; return object && state && state.mode === "endpoint" && state.id === id && state.resolved ? { ...object, ...state.resolved.patch } : object; }
     invalidate(defer = false) {
@@ -238,6 +262,8 @@
       }
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
       this.renderViewList(); this.renderInspector(object);
+      if (n.undoBtn) n.undoBtn.disabled = !this.history.canUndo && !this.editBefore;
+      if (n.redoBtn) n.redoBtn.disabled = !this.history.canRedo || !!this.editBefore;
       this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool));
       n.crosshair.hidden = !this.interaction || this.interaction.mode !== "draw" || (this.feedback && this.feedback.snapped && r.showSnapPoints !== false);
       if (this.feedback && this.interaction && this.interaction.mode === "draw") { const p = this.transform().mathToScreen(this.feedback.point), rect = n.canvasWrap.getBoundingClientRect(); n.crosshair.style.left = p.x - rect.left + "px"; n.crosshair.style.top = p.y - rect.top + "px"; }

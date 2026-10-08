@@ -41,3 +41,5 @@ label{display:block;margin:10px 0;color:var(--muted);font-size:13px}input[type="
 .axis-setting-toggle input{margin:0;accent-color:var(--accent)}
 .axis-settings-current{margin-top:7px;padding:6px 8px;border:1px solid var(--border);border-radius:5px;background:#202020;color:#ddd;font-size:12px}
 .axis-settings-help{margin:7px 1px 0;color:#777;font-size:11px;line-height:1.35}
+
+button:disabled { opacity: .45; cursor: default; filter: none; }
