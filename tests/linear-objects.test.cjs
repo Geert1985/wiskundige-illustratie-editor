@@ -1,5 +1,12 @@
 const test = require('node:test'); const assert = require('node:assert/strict');
 const { runtime, plain } = require('./helpers.cjs');
+test('linear tools remain classified when a cached model lacks the optional family export', () => {
+  const { MI, context } = runtime(); delete MI.LINEAR_OBJECT_TYPES;
+  const fs = require('node:fs'), path = require('node:path'), vm = require('node:vm');
+  vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'linear-geometry.js'), 'utf8'), context);
+  for (const type of ['line', 'straight', 'ray', 'vector']) assert.equal(MI.LinearGeometry.isLinear({ type }), true, type);
+  assert.equal(MI.LinearGeometry.isLinear({ type: 'circle' }), false);
+});
 for (const type of ['straight', 'ray', 'vector']) test(`${type}: roundtrip, rigid translation, endpoint edit and exact drawing`, () => {
   const { MI } = runtime(); const e = new MI.Engine(); e.add({ id: 'a', type, x1: 0, y1: 0, x2: 1, y2: 0, showLabel: true, name: type });
   assert.deepEqual(plain(new MI.Engine(e.toJSON()).toJSON()), plain(e.toJSON()));

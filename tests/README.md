@@ -76,3 +76,7 @@ Two additional Node lifecycle tests (67 total) cover dragging the painted circle
 ## New linear objects
 
 `linear-objects.test.cjs` adds seven cases (80 total), preserving all 73 stabilization cases and the original SVG fixture. `browser-linear.cjs` is included in the full Edge runner and tests each new tool's preview/commit, exact keyboard distance, rigid translation, Escape, endpoint-grid/inspector, labeldrag, SVG download and save/reload/import. The VM helper loads linear-geometry.js after model.js, matching the real script order. See [LINEAR-OBJECTS.md](../LINEAR-OBJECTS.md) and the small `fixtures/linear-objects-v2.json` demo.
+
+## Drawing-tool asset compatibility follow-up
+
+82 Node cases include recognition when a cached model omits the optional linear-family export and prevention of unsupported drawing-tool fallback into pan. `browser-asset-compat.cjs` intercepts model.js with that missing-export variant, then checks all four linear drawing tools create the correct type without changing bounds. All editor script URLs have one release cache token; bump it together when scripts change. This supplements the fresh-profile Edge suite with a mixed-version regression. Actual in-app pointer drawing of line/straight/ray/vector was also verified.

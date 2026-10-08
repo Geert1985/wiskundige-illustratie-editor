@@ -121,3 +121,9 @@ test('selecting an object in the sidebar after drawing activates selection and s
   down({ x: 0, y: 0 }); move({ x: 1, y: 0 }); emit(win, 'pointerup');
   assert.equal(engine.model.objects.length, count); assert.equal(engine.get('p').x, 1);
 });
+
+test('unrecognized drawing tools never fall through into canvas pan', () => {
+  const { app, engine, down } = appRuntime(); const before = plain(engine.renderer.bounds);
+  app.setTool('unsupported-tool'); down({ x: 4, y: 2 });
+  assert.equal(app.interaction, null); assert.deepEqual(plain(engine.renderer.bounds), before);
+});

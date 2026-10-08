@@ -99,6 +99,7 @@
         this.begin({ mode: "draw", shape: this.tool, start: result.point, lastRawPoint: { ...result.point }, resolved: null }, event);
         this.resolveDraw(); this.invalidate(); return;
       }
+      if (this.tool !== 'select') { this.status('Deze tekentool is niet beschikbaar. Vernieuw de editor.'); return; }
       const group = event.target && event.target.closest && event.target.closest('[data-object-id]');
       const painted = group && this.nodes.canvas.contains(group) && this.engine.get(group.getAttribute('data-object-id'));
       const hit = painted && painted.visible !== false ? { object: painted } : this.engine.selectAt(point.x, point.y, { transform: this.transform(), tolerancePx: 8 });
