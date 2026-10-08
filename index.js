@@ -40,16 +40,24 @@
 
   function hitDistance(object, x, y) {
     if (object.type === "point") return Math.hypot(x - object.x, y - object.y);
-    if (object.type === "line") return distancePointToSegment(x, y, object.x1, object.y1, object.x2, object.y2);
+    if (MI.LinearGeometry.isLinear(object)) return linearDistance(object, { x, y });
     if (object.type === "circle") return Math.abs(Math.hypot(x - object.cx, y - object.cy) - object.r);
     if (object.type === "text") return Math.hypot(x - object.x, y - object.y);
     return Infinity;
+  }
+  function linearDistance(object, point, transform) {
+    const a = transform ? transform.mathToScreen({ x: object.x1, y: object.y1 }) : { x: object.x1, y: object.y1 };
+    const b = transform ? transform.mathToScreen({ x: object.x2, y: object.y2 }) : { x: object.x2, y: object.y2 };
+    const dx = b.x - a.x, dy = b.y - a.y, length = dx * dx + dy * dy;
+    if (!length) return Math.hypot(point.x - a.x, point.y - a.y);
+    const [low, high] = MI.LinearGeometry.domain(object), t = Math.max(low, Math.min(high, ((point.x - a.x) * dx + (point.y - a.y) * dy) / length));
+    return Math.hypot(point.x - a.x - t * dx, point.y - a.y - t * dy);
   }
 
   function screenHit(object, point, transform) {
     const map = (x, y) => transform.mathToScreen({ x, y });
     if (object.type === 'point' || object.type === 'text') { const p = map(object.x, object.y); return Math.hypot(point.x - p.x, point.y - p.y); }
-    if (object.type === 'line') { const a = map(object.x1, object.y1), b = map(object.x2, object.y2); return distancePointToSegment(point.x, point.y, a.x, a.y, b.x, b.y); }
+    if (MI.LinearGeometry.isLinear(object)) return linearDistance(object, point, transform);
     if (object.type === 'circle') {
       const center = map(object.cx, object.cy);
       const a = map(object.cx + object.r, object.cy), b = map(object.cx, object.cy + object.r);
@@ -107,7 +115,7 @@
 
       if (object.type === "point" || object.type === "text") return this.update(id, { x: x, y: y });
       if (object.type === "circle") return this.update(id, { cx: x, cy: y });
-      if (object.type === "line") {
+      if (MI.LinearGeometry.isLinear(object)) {
         const dx = x - object.x1;
         const dy = y - object.y1;
         return this.update(id, { x1: x, y1: y, x2: object.x2 + dx, y2: object.y2 + dy });

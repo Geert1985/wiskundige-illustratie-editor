@@ -2,7 +2,7 @@
 (function(global) {
   global.FZI.MathIllustration.EditorOverlays = {
     render(svg, renderer, object, tool, document) {
-      if (!svg || !object || object.visible === false || object.type !== "line" || tool !== "select") return;
+      if (!svg || !object || object.visible === false || !global.FZI.MathIllustration.LinearGeometry.isLinear(object) || tool !== "select") return;
       const ns = "http://www.w3.org/2000/svg", layer = document.createElementNS(ns, "g");
       layer.setAttribute("class", "fzi-line-endpoint-layer");
       for (const [x, y, endpoint] of [["x1", "y1", "start"], ["x2", "y2", "end"]]) {

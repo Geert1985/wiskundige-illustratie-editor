@@ -94,7 +94,7 @@
         if (this.tool === "text") { const text = this.window.prompt("Tekst voor de illustratie:", "A"); if (!text || !text.trim()) return; object.text = text.trim(); }
         this.selectedId = this.engine.add(object).id; this.feedback = result; this.invalidate(); return;
       }
-      if (this.tool === "line" || this.tool === "circle") {
+      if (MI.LinearGeometry.isLinear({ type: this.tool }) || this.tool === "circle") {
         const result = this.snap(point);
         this.begin({ mode: "draw", shape: this.tool, start: result.point, lastRawPoint: { ...result.point }, resolved: null }, event);
         this.resolveDraw(); this.invalidate(); return;
@@ -131,7 +131,7 @@
       if (state.mode === "endpoint") { state.resolved = this.services.resolver.endpoint(this.engine, state.original, state.endpoint, point, { transform: this.transform() }); this.feedback = state.resolved.result; }
       if (state.mode === "object") {
         const o = state.original;
-        if (o.type === "line") { state.resolved = this.services.resolver.translateLine(this.engine, o, delta, { transform: this.transform() }); this.engine.update(state.id, state.resolved.patch); this.feedback = state.resolved.result; }
+        if (MI.LinearGeometry.isLinear(o)) { state.resolved = this.services.resolver.translateLine(this.engine, o, delta, { transform: this.transform() }); this.engine.update(state.id, state.resolved.patch); this.feedback = state.resolved.result; }
         else { const result = this.snap(o.type === "circle" ? { x: o.cx + delta.x, y: o.cy + delta.y } : { x: o.x + delta.x, y: o.y + delta.y }, state.id); this.engine.update(state.id, o.type === "circle" ? { cx: result.point.x, cy: result.point.y } : { x: result.point.x, y: result.point.y }); this.feedback = result; }
       }
       if (state.mode === "pan") try { this.engine.renderer.setBounds({ xMin: state.bounds.xMin - delta.x, xMax: state.bounds.xMax - delta.x, yMin: state.bounds.yMin - delta.y, yMax: state.bounds.yMax - delta.y }); } catch (e) { this.status(e.message); return; }
@@ -148,7 +148,7 @@
         if (state.resolved && state.resolved.length >= .05) this.selectedId = this.engine.add(state.resolved.object).id;
         else this.status("Vorm te kort; geen object toegevoegd.");
       }
-      if (state.mode === "endpoint" && state.resolved) this.engine.update(state.id, state.resolved.patch);
+      if (state.mode === "endpoint" && state.resolved) { try { this.engine.update(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }
       this.invalidate();
     }
     cancel() {
@@ -255,7 +255,7 @@
       if (!object) { panel.className = "selection-empty"; panel.textContent = "Geen object geselecteerd."; return; }
       panel.className = "selection-panel";
       let html = '<strong>' + MI.escapeXml(object.name) + '</strong><code>' + MI.escapeXml(object.id) + '</code><label>Naam<input data-edit="name" value="' + MI.escapeXml(object.name) + '"></label>';
-      const keys = { point: ["x", "y"], line: ["x1", "y1", "x2", "y2"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
+      const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
       for (const key of keys) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.1" value="' + MI.escapeXml(object[key]) + '"></label>';
       if (object.type === "text") html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
       panel.innerHTML = html + '<button class="delete-btn" data-delete-selected>Verwijder object</button>';
@@ -265,7 +265,7 @@
   // Existing presentation helpers, copied without their old event/render owners.
     function eyeIcon(visible) { if (visible) return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.7" fill="currentColor"/></svg>'; return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M9.9 5.9C10.6 5.7 11.3 5.6 12 5.6c6.5 0 10 6.4 10 6.4-.8 1.2-1.8 2.4-3.1 3.4M6.1 6.1C3.5 7.7 2 12 2 12s3.5 6 10 6c1.1 0 2.1-.2 3-.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'; }
   function textIcon(active) { return '<span class="text-toggle' + (active ? ' active' : '') + '" aria-hidden="true">T</span>'; }
-  function objectName(object) { const names = { point: "Punt", line: "Lijnstuk", circle: "Cirkel", text: "Tekst" }; return object.name || names[object.type] || object.type; }
+  function objectName(object) { const names = { point: "Punt", line: "Lijnstuk", circle: "Cirkel", text: "Tekst", straight: "Rechte", ray: "Halfrechte", vector: "Vector" }; return object.name || names[object.type] || object.type; }
 
 
   MI.EditorApp = EditorApp;

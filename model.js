@@ -9,7 +9,8 @@
   const NS = global.FZI = global.FZI || {};
   const MI = NS.MathIllustration = NS.MathIllustration || {};
   const MODEL_VERSION = 2;
-  const TYPES = new Set(["point", "line", "circle", "text"]);
+  const TYPES = new Set(["point", "line", "circle", "text", "straight", "ray", "vector"]);
+  const LINEAR = new Set(['line', 'straight', 'ray', 'vector']);
 
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
   function finite(value, fallback) { return Number.isFinite(Number(value)) ? Number(value) : fallback; }
@@ -53,7 +54,7 @@
   function validateImportedObject(input) {
     if (!record(input) || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
     if (!((typeof input.id === "string" && input.id.trim() !== "") || (typeof input.id === "number" && Number.isFinite(input.id)))) throw new Error("Elk illustratie-object heeft een geldige id nodig.");
-    const fields = { point: ["x", "y"], line: ["x1", "y1", "x2", "y2"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
+    const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
     fields.forEach(key => {
       if (key in input && !numeric(input[key])) throw new Error("Ongeldige objectcoördinaat: " + key);
     });
@@ -95,7 +96,7 @@
     const id = String(input.id == null ? "" : input.id);
     if (!id) throw new Error("Elk illustratie-object heeft een id nodig.");
     const hasLegacyLabel = input.showLabel == null && input.label != null;
-    const offset = type === "line" || type === "text" ? 6 : 8;
+    const offset = LINEAR.has(type) || type === "text" ? 6 : 8;
     const object = {
       ...clone(input),
       id: id,
@@ -111,7 +112,9 @@
     };
 
     if (type === "point") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); if (input.label != null) object.label = String(input.label); }
-    if (type === "line") { object.x1 = finite(input.x1, 0); object.y1 = finite(input.y1, 0); object.x2 = finite(input.x2, 1); object.y2 = finite(input.y2, 0); if (input.label != null) object.label = String(input.label); }
+    if (LINEAR.has(type)) { object.x1 = finite(input.x1, 0); object.y1 = finite(input.y1, 0); object.x2 = finite(input.x2, 1); object.y2 = finite(input.y2, 0); if (input.label != null) object.label = String(input.label); }
+    if (['straight', 'ray', 'vector'].includes(type) && !Number.isFinite(Math.hypot(object.x2 - object.x1, object.y2 - object.y1))) throw new Error('Ongeldige richting: afstand tussen de punten moet eindig zijn.');
+    if ((type === 'straight' || type === 'ray') && Math.hypot(object.x2 - object.x1, object.y2 - object.y1) === 0) throw new Error('Een rechte of halfrechte vereist twee verschillende punten.');
     if (type === "circle") { object.cx = finite(input.cx, 0); object.cy = finite(input.cy, 0); object.r = Math.max(0, finite(input.r, 1)); if (input.label != null) object.label = String(input.label); }
     if (type === "text") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); object.text = String(input.text == null ? "" : input.text); object.rotation = finite(input.rotation, 0); }
     return object;
@@ -179,6 +182,7 @@
 
   MI.MODEL_VERSION = MODEL_VERSION;
   MI.OBJECT_TYPES = Array.from(TYPES);
+  MI.LINEAR_OBJECT_TYPES = Object.freeze(Array.from(LINEAR));
   MI.IllustrationModel = IllustrationModel;
   MI.normaliseObject = normaliseObject;
   MI.PRESENTATION_FLAGS = PRESENTATION_FLAGS;

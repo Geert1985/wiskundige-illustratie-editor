@@ -113,6 +113,7 @@
       const sx = this.mapX(preview.start.x), sy = this.mapY(preview.start.y), ex = this.mapX(preview.end.x), ey = this.mapY(preview.end.y), dx = preview.end.x - preview.start.x, dy = preview.end.y - preview.start.y, length = Math.hypot(dx, dy);
       if (length < 1e-9) return "";
       const mx = (sx + ex) / 2, my = (sy + ey) / 2 - 10, label = esc(axisNumber(length));
+      if (["straight", "ray", "vector"].includes(preview.type)) return '<g data-drawing-preview>' + this.renderDirected({ type: preview.type, x1: preview.start.x, y1: preview.start.y, x2: preview.end.x, y2: preview.end.y, style: { stroke: "#9a7a32", strokeWidth: 2, opacity: 1, dash: "7 5" } }) + '<text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12">' + label + '</text></g>';
       if (preview.type === "line") return '<g data-drawing-preview><line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/><circle cx="' + sx + '" cy="' + sy + '" r="3" fill="#9a7a32"/><circle cx="' + ex + '" cy="' + ey + '" r="3" fill="#9a7a32"/><text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">' + label + '</text></g>';
       if (preview.type === "circle") return '<g data-drawing-preview><circle cx="' + sx + '" cy="' + sy + '" r="' + (length * this.scale()) + '" fill="none" stroke="#9a7a32" stroke-width="1.5" stroke-dasharray="7 5"/><line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="#9a7a32" stroke-width="2"/><circle cx="' + sx + '" cy="' + sy + '" r="3" fill="#9a7a32"/><circle cx="' + ex + '" cy="' + ey + '" r="3" fill="#9a7a32"/><text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">r = ' + label + '</text></g>';
       return "";
@@ -140,6 +141,20 @@
       return '<text class="object-label" data-label-id="' + esc(object.id) + '" x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="14" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
     }
 
+    renderDirected(object) {
+      const clipped = global.FZI.MathIllustration.LinearGeometry.clip(object, this.bounds); if (!clipped) return '';
+      const style = object.style || {}, sx = this.mapX(clipped.start.x), sy = this.mapY(clipped.start.y), ex = this.mapX(clipped.end.x), ey = this.mapY(clipped.end.y);
+      const dx = ex - sx, dy = ey - sy, length = Math.hypot(dx, dy);
+      if (!length) return '<circle cx="' + number(sx) + '" cy="' + number(sy) + '" r="3" ' + strokeAttrs(style) + ' fill="' + esc(style.stroke) + '"/>';
+      const ux = dx / length, uy = dy / length;
+      const head = Math.min(10, length * .7), wing = head * .4;
+      const arrow = (x, y, direction) => '<path data-direction-arrow d="M ' + number(x) + ' ' + number(y) + ' L ' + number(x - direction * ux * head - uy * wing) + ' ' + number(y - direction * uy * head + ux * wing) + ' L ' + number(x - direction * ux * head + uy * wing) + ' ' + number(y - direction * uy * head - ux * wing) + ' Z" fill="' + esc(style.stroke) + '" opacity="' + esc(style.opacity) + '"/>';
+      let svg = '<line x1="' + number(sx) + '" y1="' + number(sy) + '" x2="' + number(ex) + '" y2="' + number(ey) + '" ' + strokeAttrs(style) + ' fill="none"/>';
+      if (object.type === 'straight') svg += arrow(sx, sy, -1);
+      if (object.type !== 'vector' || Math.abs(clipped.high - 1) < 1e-12) svg += arrow(ex, ey, 1);
+      return svg;
+    }
+
     renderObject(object) {
       if (object.visible === false) return "";
       const style = object.style || {}; let svg = "";
@@ -150,6 +165,10 @@
       if (object.type === "line") {
         svg = '<line x1="' + number(this.mapX(object.x1)) + '" y1="' + number(this.mapY(object.y1)) + '" x2="' + number(this.mapX(object.x2)) + '" y2="' + number(this.mapY(object.y2)) + '" ' + strokeAttrs(style) + ' fill="none"/>';
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.label || object.id, 6, -6, true);
+      }
+      if (['straight', 'ray', 'vector'].includes(object.type)) {
+        svg = this.renderDirected(object);
+        if (svg && object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6, true);
       }
       if (object.type === "circle") {
         const cx = this.mapX(object.cx), cy = this.mapY(object.cy), r = object.r * this.scale();

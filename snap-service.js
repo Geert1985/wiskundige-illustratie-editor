@@ -9,18 +9,6 @@
     list.push({ x, y, kind, ids: ids || [] });
   }
 
-  function segmentIntersection(a, b, c, d) {
-    const r = { x: b.x - a.x, y: b.y - a.y };
-    const s = { x: d.x - c.x, y: d.y - c.y };
-    const cross = r.x * s.y - r.y * s.x;
-    if (Math.abs(cross) < 1e-10) return null;
-    const q = { x: c.x - a.x, y: c.y - a.y };
-    const t = (q.x * s.y - q.y * s.x) / cross;
-    const u = (q.x * r.y - q.y * r.x) / cross;
-    if (t < -1e-9 || t > 1 + 1e-9 || u < -1e-9 || u > 1 + 1e-9) return null;
-    return { x: a.x + t * r.x, y: a.y + t * r.y };
-  }
-
   function circleCircleIntersections(a, b) {
     const dx = b.cx - a.cx, dy = b.cy - a.cy, d = Math.hypot(dx, dy);
     if (d < 1e-10 || d > a.r + b.r + 1e-10 || d < Math.abs(a.r - b.r) - 1e-10) return [];
@@ -49,7 +37,7 @@
     const ts = [(-bb - root) / (2 * aa), (-bb + root) / (2 * aa)];
     const result = [];
     ts.forEach(function (t) {
-      if (t < -1e-9 || t > 1 + 1e-9) return;
+      if (!MI.LinearGeometry.accepts(line, t)) return;
       const p = { x: line.x1 + t * dx, y: line.y1 + t * dy };
       if (!result.some(function (q) { return distance(p, q) < 1e-8; })) result.push(p);
     });
@@ -70,7 +58,7 @@
 
     objects.forEach(function (o) {
       if (o.type === "point") addCandidate(candidates, o.x, o.y, "point", [o.id]);
-      if (o.type === "line") {
+      if (MI.LinearGeometry.isLinear(o)) {
         addCandidate(candidates, o.x1, o.y1, "line-endpoint", [o.id]);
         addCandidate(candidates, o.x2, o.y2, "line-endpoint", [o.id]);
       }
@@ -80,17 +68,17 @@
     for (let i = 0; i < objects.length; i += 1) {
       for (let j = i + 1; j < objects.length; j += 1) {
         const a = objects[i], b = objects[j];
-        if (a.type === "line" && b.type === "line") {
-          const p = segmentIntersection({ x: a.x1, y: a.y1 }, { x: a.x2, y: a.y2 }, { x: b.x1, y: b.y1 }, { x: b.x2, y: b.y2 });
+        if (MI.LinearGeometry.isLinear(a) && MI.LinearGeometry.isLinear(b)) {
+          const p = MI.LinearGeometry.intersect(a, b);
           if (p) addCandidate(candidates, p.x, p.y, "line-line-intersection", [a.id, b.id]);
         }
         if (a.type === "circle" && b.type === "circle") {
           circleCircleIntersections(a, b).forEach(function (p) { addCandidate(candidates, p.x, p.y, "circle-circle-intersection", [a.id, b.id]); });
         }
-        if (a.type === "line" && b.type === "circle") {
+        if (MI.LinearGeometry.isLinear(a) && b.type === "circle") {
           lineCircleIntersections(a, b).forEach(function (p) { addCandidate(candidates, p.x, p.y, "line-circle-intersection", [a.id, b.id]); });
         }
-        if (a.type === "circle" && b.type === "line") {
+        if (a.type === "circle" && MI.LinearGeometry.isLinear(b)) {
           lineCircleIntersections(b, a).forEach(function (p) { addCandidate(candidates, p.x, p.y, "line-circle-intersection", [a.id, b.id]); });
         }
       }

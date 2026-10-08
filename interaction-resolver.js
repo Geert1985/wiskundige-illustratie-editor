@@ -11,7 +11,7 @@
         result = MI.SnapService.free({ x: start.x + (length > 1e-12 ? dx / length : 1) * exact, y: start.y + (length > 1e-12 ? dy / length : 0) * exact }, "exact-distance");
       } else result = MI.SnapService.resolve(engine, raw, options);
       const end = result.point, radius = Number.isFinite(exact) && exact > 0 ? exact : Math.hypot(end.x - start.x, end.y - start.y);
-      const object = shape === "line" ? { type: "line", x1: start.x, y1: start.y, x2: end.x, y2: end.y } : { type: "circle", cx: start.x, cy: start.y, r: radius };
+      const object = shape !== "circle" ? { type: shape, x1: start.x, y1: start.y, x2: end.x, y2: end.y } : { type: "circle", cx: start.x, cy: start.y, r: radius };
       return { result, preview: { type: shape, start: { ...start }, end: { ...end } }, object, length: radius };
     },
     translateLine(engine, line, delta, options = {}) {
@@ -24,6 +24,13 @@
     },
     endpoint(engine, line, endpoint, raw, options = {}) {
       const result = MI.SnapService.resolve(engine, raw, { ...options, excludeId: line.id });
+      if (line.type === 'straight' || line.type === 'ray') {
+        const other = endpoint === 'start' ? { x: line.x2, y: line.y2 } : { x: line.x1, y: line.y1 };
+        if (result.point.x === other.x && result.point.y === other.y) {
+          const original = endpoint === 'start' ? { x: line.x1, y: line.y1 } : { x: line.x2, y: line.y2 };
+          return { result: MI.SnapService.free(original, 'nonzero-direction'), patch: endpoint === 'start' ? { x1: original.x, y1: original.y } : { x2: original.x, y2: original.y } };
+        }
+      }
       return { result, patch: endpoint === "start" ? { x1: result.point.x, y1: result.point.y } : { x2: result.point.x, y2: result.point.y } };
     }
   };
