@@ -8,6 +8,13 @@ module.exports=async page=>{
   let o=(await doc()).objects[0];assert.equal(o.type,'dimension');assert.ok(Math.abs(Math.hypot(o.x2-o.x1,o.y2-o.y1)-1)<1e-9);assert.equal(await page.locator('[data-measurement-label]').textContent(),'1');
   await page.locator('[data-edit="measurementMode"]').selectOption('text');await page.locator('[data-edit="measurementText"]').fill('a < b');await page.locator('[data-edit="measurementText"]').press('Tab');assert.equal(await page.locator('[data-measurement-label]').textContent(),'a < b');
   await page.locator('#undoBtn').click();assert.equal(await page.locator('[data-measurement-label]').textContent(),'');await page.locator('#redoBtn').click();assert.equal(await page.locator('[data-measurement-label]').textContent(),'a < b');
+  await page.locator('[data-edit="measurementLabelOnly"]').check();
+  assert.equal(await page.locator('#canvas [data-object-type="dimension"] line').count(),0);
+  await page.locator('[data-tool="select"]').click();
+  const labelBox=await page.locator('#canvas [data-measurement-label] text').boundingBox();
+  await page.mouse.move(labelBox.x+labelBox.width/2,labelBox.y+labelBox.height/2);await page.mouse.down();await page.mouse.move(labelBox.x+labelBox.width/2+30,labelBox.y+labelBox.height/2+20);await page.mouse.up();
+  assert.ok((await doc()).objects[0].labelOffsetX!==null);await page.locator('#undoBtn').click();assert.equal((await doc()).objects[0].labelOffsetX,null);await page.locator('#redoBtn').click();
+  await reset();await page.locator('[data-tool="triangle"]').click();await click(1,0);await move(0,0);assert.equal(await page.locator('[data-preview-length]').textContent(),'1');await click(0,0);await move(0,1);assert.equal(await page.locator('[data-preview-angle]').textContent(),'90°');await click(0,1);assert.equal(await page.locator('[data-preview-length]').count(),0);
   for(const tool of ['angle','rightAngle']) {
     await reset();await page.locator(`[data-tool="${tool}"]`).click();await click(1,0);await click(0,0);await move(.2,1);
     assert.equal(await page.locator('[data-drawing-preview]').count(),1);await page.mouse.down();await page.mouse.up();o=(await doc()).objects[0];assert.equal(o.type,'angle');

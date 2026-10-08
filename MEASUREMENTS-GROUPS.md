@@ -1,4 +1,4 @@
-﻿# Measurements and multiple selection
+# Measurements and multiple selection
 
 Tools: Lengtemaat draws a finite dimension with endpoint ticks. Typing a length during its drag retains the exact mathematical distance. Hoek takes three clicks in order: first arm endpoint, vertex, second arm endpoint. Rechte hoek projects the third point onto the perpendicular arm and preserves exactly 90 degrees. Angles are minor angles from 0 to 180 degrees.
 
@@ -13,3 +13,7 @@ Batch updates and duplication stage a model and commit atomically. The existing 
 Document version stays 2. New types are dimension (finite linear endpoints) and angle (three vertices plus angleMark arc/right). Optional measurementMode computed/text, measurementText, showMeasurement and locked survive roundtrip. Existing documents remain compatible. Builds predating these types reject documents containing them rather than silently losing them. A right-angle vertex edit that breaks 90 degrees is rejected.
 
 Verification: complete Node suite (115 passing) and complete real Edge suite including exact dimension length, angle/right-angle preview and drawing, free text, radius annotations, multiple selection, rigid movement, cancellation, duplicate/lock/delete, history, SVG export and save/reload/import. No Edge page errors.
+
+The angle/dimension inspector offers Alleen meetlabel tonen. The optional boolean measurementLabelOnly hides arms, arcs, right-angle squares, dimension lines and ticks in canvas and SVG export while retaining geometry, value, label offsets and label dragging. Default remains the full drawing. It persists with version 2 and undo/redo.
+
+Triangle drawing previews show the active side length (two decimals) and, from the third point, the minor angle at the preceding vertex. These values follow the resolved snap point, are temporary and disappear on commit/cancel. They do not add stored annotations to the polygon.

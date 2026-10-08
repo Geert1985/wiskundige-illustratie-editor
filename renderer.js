@@ -111,7 +111,7 @@
     renderPreview() {
       const preview = this.preview; if (!preview) return "";
       if(preview.type==='angle' && preview.vertices.length===3) { try { MI.MeasurementGeometry.validateAngle(preview.vertices,preview.angleMark); return '<g data-drawing-preview>'+this.renderObject({type:'angle',angleMark:preview.angleMark,vertices:preview.vertices,id:'preview',style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5'}})+'</g>'; } catch(_) {} }
-      if (preview.type === "polygon" || preview.type==='angle') return '<g data-drawing-preview><polyline points="'+preview.vertices.map(p=>this.mapX(p.x)+','+this.mapY(p.y)).join(' ')+'" fill="none" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/>'+preview.vertices.map(p=>'<circle cx="'+this.mapX(p.x)+'" cy="'+this.mapY(p.y)+'" r="4" fill="#9a7a32"/>').join('')+'</g>';
+      if (preview.type === "polygon" || preview.type==='angle') return '<g data-drawing-preview><polyline points="'+preview.vertices.map(p=>this.mapX(p.x)+','+this.mapY(p.y)).join(' ')+'" fill="none" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/>'+this.renderPolygonMeasurements(preview)+preview.vertices.map(p=>'<circle cx="'+this.mapX(p.x)+'" cy="'+this.mapY(p.y)+'" r="4" fill="#9a7a32"/>').join('')+'</g>';
       const sx = this.mapX(preview.start.x), sy = this.mapY(preview.start.y), ex = this.mapX(preview.end.x), ey = this.mapY(preview.end.y), dx = preview.end.x - preview.start.x, dy = preview.end.y - preview.start.y, length = Math.hypot(dx, dy);
       if(preview.type==='dimension') return '<g data-drawing-preview>'+this.renderObject({type:'dimension',id:'preview',name:'',x1:preview.start.x,y1:preview.start.y,x2:preview.end.x,y2:preview.end.y,style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5',fill:'none'}})+'</g>';
       if (length < 1e-9) return "";
@@ -192,8 +192,19 @@
         svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(object.text) + '</text>';
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6);
       }
+      if(object.measurementLabelOnly && ['dimension','angle'].includes(object.type)) svg='';
       if(object.type==='angle'||object.type==='dimension'||(object.showMeasurement && (MI.LinearGeometry.isLinear(object)||object.type==='circle'))) svg+=this.renderMeasurement({...object,style});
       return '<g data-object-id="' + esc(object.id) + '" data-object-type="' + esc(object.type) + '" aria-label="' + esc(object.name || object.id) + '"'+(opacity!==1?' opacity="'+esc(number(opacity))+'"':'')+'>' + svg + '</g>';
+    }
+    renderPolygonMeasurements(preview) {
+      if(!preview.showMeasurements || preview.vertices.length<2)return '';
+      const points=preview.vertices,a=points[points.length-2],b=points[points.length-1];
+      const text=(attribute,x,y,label)=>'<text '+attribute+' x="'+number(this.mapX(x))+'" y="'+number(this.mapY(y)-10)+'" fill="#6f5925" font-size="12" text-anchor="middle">'+esc(label)+'</text>';
+      let svg=text('data-preview-length',(a.x+b.x)/2,(a.y+b.y)/2,Number(Math.hypot(b.x-a.x,b.y-a.y).toFixed(2)));
+      if(points.length>=3 && Math.hypot(b.x-a.x,b.y-a.y)>1e-9) {
+        const c=points[points.length-3];if(Math.hypot(c.x-a.x,c.y-a.y)>1e-9)svg+=text('data-preview-angle',a.x,a.y,MI.MeasurementGeometry.label({type:'angle',vertices:[c,a,b]}));
+      }
+      return svg;
     }
     renderMeasurement(object) {
       const style=object.style||{},label=MI.MeasurementGeometry.label(object);let svg='',anchor;
@@ -212,7 +223,7 @@
           for(const [x,y] of [[this.mapX(object.x1),this.mapY(object.y1)],[this.mapX(object.x2),this.mapY(object.y2)]]) svg+='<line data-dimension-tick x1="'+number(x-dy/l*6)+'" y1="'+number(y+dx/l*6)+'" x2="'+number(x+dy/l*6)+'" y2="'+number(y-dx/l*6)+'" '+strokeAttrs(style)+'/>';
         }
       }
-      return svg+'<g data-measurement-label>'+this.renderLabel({...object,...anchor,type:'text'},label,6,-6)+'</g>';
+      return (object.measurementLabelOnly?'':svg)+'<g data-measurement-label>'+this.renderLabel({...object,...anchor,type:'text'},label,6,-6)+'</g>';
     }
   }
 

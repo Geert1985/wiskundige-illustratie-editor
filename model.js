@@ -63,7 +63,7 @@
       if (key in input && !numeric(input[key])) throw new Error("Ongeldige objectcoördinaat: " + key);
     });
     if (input.type === "circle" && input.r != null && Number(input.r) < 0) throw new Error("Straal mag niet negatief zijn.");
-    ["visible", "showLabel", "locked", "showMeasurement"].forEach(key => {
+    ["visible", "showLabel", "locked", "showMeasurement", "measurementLabelOnly"].forEach(key => {
       if (input[key] != null && typeof input[key] !== "boolean") throw new Error("Ongeldige objectinstelling: " + key);
     });
     ["labelDx", "labelDy", "labelOffsetX", "labelOffsetY"].forEach(key => {

@@ -27,3 +27,12 @@ test('angle coordinate strings normalize without freezing or aliasing input exte
   assert.throws(()=>e.update('a',{angleMark:'right',vertices:[{x:1,y:0},{x:0,y:0},{x:1,y:1}]}));
   e.update('a',{vertices:[{x:1,y:0},{x:0,y:0},{x:-1,y:0}]});assert.equal(MI.MeasurementGeometry.value(e.get('a')),180);assert.doesNotMatch(e.renderSVG(),/NaN|Infinity/);
 });
+
+test('label-only measurements preserve geometry and labels without construction strokes',()=>{
+ const {MI}=runtime();for(const object of [{id:'d',type:'dimension',x1:0,y1:0,x2:3,y2:4},{id:'a',type:'angle',vertices:[{x:1,y:0},{x:0,y:0},{x:0,y:1}]}]) {
+ const e=new MI.Engine({objects:[{...object,measurementLabelOnly:true}]});const svg=e.renderer.renderObject(e.get(object.id));assert.match(svg,/data-measurement-label/);assert.doesNotMatch(svg,/<line|<path/);assert.equal(new MI.Engine(e.toJSON()).get(object.id).measurementLabelOnly,true);
+ }
+});
+test('triangle preview shows current side length and angle without persisting annotations',()=>{
+ const {MI}=runtime();const e=new MI.Engine({objects:[]});e.renderer.preview={type:'polygon',showMeasurements:true,vertices:[{x:1,y:0},{x:0,y:0},{x:0,y:1}]};const svg=e.renderSVG();assert.match(svg,/data-preview-length/);assert.match(svg,/data-preview-angle[^>]*>90°/);assert.equal(e.toJSON().objects.length,0);
+});
