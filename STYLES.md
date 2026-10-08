@@ -1,4 +1,4 @@
-﻿# Object styles
+# Object styles
 
 The selected-object inspector includes a Stijl fieldset. Non-text objects offer line color, nonnegative line width and solid/dashed/dotted/dash-dot patterns. Points, circles and polygons additionally offer fill visibility and an independent fill color. Text objects offer text color and positive font size. All types offer coverage (Dekking) from 0–100%.
 
@@ -11,4 +11,3 @@ Fill defaults to the current stroke color when newly enabled, or #222222 if ther
 Opacity applies once to the whole rendered object group, including text, labels, arrowheads and a circle's center marker. Editor selection handles remain visible separately, allowing a 0%-coverage object to be edited after selection in the sidebar. SVG export uses the same presentation. Fully opaque SVG fixtures retain their previous output.
 
 Font size and line width use the existing SVG units; they are presentation values, not mathematical distances. There is no font picker, rich text, separate fill/stroke opacity, dependent geometry or new coordinate system in this change.
-

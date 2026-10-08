@@ -1,4 +1,4 @@
-﻿# Illustration documents — version 2
+# Illustration documents — version 2
 
 The editor imports legacy version 1 and exports version 2. A missing version is treated as legacy version 1. Future versions, unsupported document/object types and malformed known fields are rejected before replacing existing state. Older engines intentionally reject version 2 instead of silently dropping newer data.
 
@@ -61,4 +61,3 @@ Version 2 additionally supports `polygon` with an ordered `vertices` array of 3�
 ## Measurements and editor locks
 
 See MEASUREMENTS-GROUPS.md. Version 2 retains optional locked, showMeasurement, measurementMode and measurementText fields. Angle objects have three normalized vertices and angleMark arc/right; polygons retain normalized vertices. Locking protects editor commands; direct model operations remain available for import and history. Selection is transient.
-
