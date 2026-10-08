@@ -72,6 +72,29 @@ test('history records a whole drag once, restores selection and ignores cancelle
   assert.equal(engine.get('p').x, 2); assert.equal(app.history.entries.length, 1);
   down({ x: 2, y: 0 }); emit(win, 'pointerup'); assert.equal(app.history.entries.length, 1);
 });
+test('text form commits the captured snap position once and Escape discards pending text', () => {
+  const { app, engine, down, emit, win } = appRuntime();
+  app.nodes.textDialog.showModal = function() { this.open = true; };
+  app.nodes.textDialog.close = function() { this.open = false; };
+  app.nodes.textValue.focus = () => {};
+  app.setTool('text'); down({ x: 2, y: 2 });
+  const position = plain(app.pendingText.point); assert.equal(app.interaction, null);
+  app.nodes.textValue.value = '  Testtekst  '; app.submitText();
+  const object = engine.get(app.selectedId); assert.equal(object.text, 'Testtekst');
+  assert.equal(object.x, position.x); assert.equal(object.y, position.y); assert.equal(app.history.entries.length, 1);
+  app.travelHistory(); assert.equal(engine.get(object.id), null); app.travelHistory(true); assert.ok(engine.get(object.id));
+  down({ x: 3, y: 2 }); emit(win, 'keydown', { key: 'Escape' });
+  assert.equal(app.pendingText, null); assert.equal(app.nodes.textDialog.open, false); assert.equal(app.history.entries.length, 1);
+});
+test('empty text is not committed and New clears a pending text form', () => {
+  const { app, engine, down } = appRuntime();
+  app.nodes.textDialog.showModal = function() { this.open = true; };
+  app.nodes.textDialog.close = function() { this.open = false; };
+  app.nodes.textValue.focus = () => {};
+  app.setTool('text'); down({ x: 2, y: 2 }); app.nodes.textValue.value = '   '; app.submitText();
+  assert.equal(engine.model.objects.length, 2); assert.equal(app.history.canUndo, false);
+  app.newDocument(); assert.equal(app.pendingText, null); assert.equal(app.nodes.textDialog.open, false); assert.equal(engine.model.objects.length, 0);
+});
 test('draw/delete history, shortcuts, new/import reset and failed import retain a usable history', () => {
   const { app, engine, down, move, emit, win, doc } = appRuntime();
   app.setTool('line'); down({ x: -2, y: -2 }); move({ x: -1, y: -2 }); emit(win, 'pointerup');

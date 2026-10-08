@@ -43,3 +43,9 @@ label{display:block;margin:10px 0;color:var(--muted);font-size:13px}input[type="
 .axis-settings-help{margin:7px 1px 0;color:#777;font-size:11px;line-height:1.35}
 
 button:disabled { opacity: .45; cursor: default; filter: none; }
+.editor-dialog { width: min(380px, calc(100vw - 32px)); padding: 22px; border: 1px solid var(--border); border-radius: 10px; color: #eee; background: #202020; }
+.editor-dialog::backdrop { background: rgba(0,0,0,.45); }
+.editor-dialog h2 { margin: 0 0 16px; font-size: 18px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.color-palette { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+.color-palette button { width: 32px; height: 32px; padding: 0; border: 2px solid #aaa; border-radius: 50%; }

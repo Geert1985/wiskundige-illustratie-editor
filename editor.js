@@ -11,7 +11,7 @@
       this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
       this.history = new (services.history || MI.EditorHistory)(this); this.editBefore = null;
       this.nodes = {};
-      for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn"]) this.nodes[id] = document.getElementById(id);
+      for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel"]) this.nodes[id] = document.getElementById(id);
     }
     on(target, type, fn, options) {
       if (!target) return;
@@ -27,7 +27,7 @@
       try { fn(); } finally { this.history.record(before); this.invalidate(); }
     }
     travelHistory(redo = false) {
-      this.cancel(); this.flushEdits();
+      this.closeDialogs(true); this.cancel(); this.flushEdits();
       try { if (redo) this.history.redo(); else this.history.undo(); this.hydrate(); }
       catch (error) { this.status(error.message); }
       this.invalidate();
@@ -39,6 +39,13 @@
       if (this.initialized) return this;
       this.initialized = true; this.hydrate();
       const n = this.nodes;
+      this.on(n.textForm, "submit", e => { e.preventDefault(); this.submitText(); });
+      this.on(n.textCancel, "click", () => this.closeText());
+      this.on(n.textDialog, "cancel", e => { e.preventDefault(); this.closeText(); });
+      this.on(n.colorForm, "submit", e => { e.preventDefault(); if (this.validColor()) { this.setColor(this.colorId, this.colorInput.value); this.closeColor(); } });
+      this.on(n.colorCancel, "click", () => this.closeColor(true));
+      this.on(n.colorDialog, "cancel", e => { e.preventDefault(); this.closeColor(true); });
+      this.on(n.colorPalette, "click", e => { const button = e.target.closest("[data-color]"); if (button) { this.colorInput.value = button.dataset.color; this.setColor(this.colorId, this.colorInput.value); } });
       this.on(n.undoBtn, "click", () => this.travelHistory());
       this.on(n.redoBtn, "click", () => this.travelHistory(true));
       this.on(n.canvasWrap, "pointerdown", e => this.pointerDown(e));
@@ -76,21 +83,38 @@
       this.on(n.exportJsonBtn, "click", () => { this.cancel(); this.flushEdits(); this.updateMeta(); this.download("illustratie.json", this.engine.toJSONString(true), "application/json;charset=utf-8"); });
       this.on(n.exportSvgBtn, "click", () => { this.cancel(); this.flushEdits(); this.updateMeta(); this.download("illustratie.svg", this.engine.renderSVG(), "image/svg+xml;charset=utf-8"); });
       if (this.document.createElement && this.document.body) {
-        this.colorInput = this.document.createElement("input"); this.colorInput.type = "color"; this.colorInput.dataset.editorColor = "true";
-        this.colorInput.style.position = "fixed"; this.colorInput.style.left = "-1000px"; this.document.body.appendChild(this.colorInput);
-        this.on(this.colorInput, "input", () => this.setColor(this.colorId, this.colorInput.value));
-        this.on(this.colorInput, "change", () => { this.flushEdits(); this.colorId = null; this.invalidate(); });
+        this.colorInput = this.document.createElement("input"); this.colorInput.type = "text"; this.colorInput.dataset.editorColor = "true";
+        this.colorInput.id = "colorValue"; this.colorInput.required = true; this.colorInput.pattern = "#[0-9a-fA-F]{6}"; this.colorInput.maxLength = 7;
+        (n.colorField || this.document.body).appendChild(this.colorInput);
+        this.on(this.colorInput, "input", () => { if (this.validColor()) this.setColor(this.colorId, this.colorInput.value); });
+        this.on(this.colorInput, "change", () => { if (!n.colorDialog || !n.colorDialog.open) { this.flushEdits(); this.colorId = null; this.invalidate(); } });
       }
       this.invalidate(); return this;
     }
     dispose() {
-      this.cancel(); this.flushEdits(); this.initialized = false; this.importSerial++;
+      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.initialized = false; this.importSerial++;
       if (this.reader && this.reader.readyState === 1) this.reader.abort(); this.reader = null;
       for (const remove of this.listeners.splice(0)) remove();
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
       this.engine.renderer.preview = null; this.feedback = null;
     }
-    setTool(tool) { this.cancel(); this.tool = tool; this.invalidate(); }
+    closeText() { this.pendingText = null; if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close(); }
+    submitText() {
+      const text = this.nodes.textValue.value.trim(), pending = this.pendingText;
+      if (!pending || !text) return;
+      this.closeText(); this.changeDocument(() => { this.selectedId = this.engine.add({ type: "text", x: pending.point.x, y: pending.point.y, text }).id; });
+    }
+    validColor() { return this.colorInput && /^#[0-9a-f]{6}$/i.test(this.colorInput.value); }
+    closeColor(cancel = false) {
+      if (this.colorId) {
+        if (cancel && this.editBefore) { this.history.restore(this.editBefore); this.editBefore = null; this.hydrate(); }
+        else this.flushEdits();
+      }
+      this.colorId = null; if (this.nodes.colorDialog && this.nodes.colorDialog.open) this.nodes.colorDialog.close();
+      this.invalidate();
+    }
+    closeDialogs(cancel = false) { this.closeText(); if (this.colorId) this.closeColor(cancel); }
+    setTool(tool) { this.closeDialogs(true); this.cancel(); this.tool = tool; this.invalidate(); }
     begin(state, event) {
       this.flushEdits();
       this.interaction = { ...state, historyBefore: this.history.capture(), pointerId: event.pointerId, selectionBefore: this.selectedId, startScreen: { x: event.clientX, y: event.clientY }, transform: this.transform(), typed: "" };
@@ -109,7 +133,10 @@
       }
       if (this.tool === "point" || this.tool === "text") {
         const result = this.snap(point); const object = { type: this.tool, x: result.point.x, y: result.point.y };
-        if (this.tool === "text") { const text = this.window.prompt("Tekst voor de illustratie:", "A"); if (!text || !text.trim()) return; object.text = text.trim(); }
+        if (this.tool === "text") {
+          this.flushEdits(); this.pendingText = result; this.nodes.textValue.value = "";
+          this.nodes.textDialog.showModal(); this.nodes.textValue.focus(); return;
+        }
         this.changeDocument(() => { this.selectedId = this.engine.add(object).id; }); this.feedback = result; this.invalidate(); return;
       }
       if (MI.LinearGeometry.isLinear({ type: this.tool }) || this.tool === "circle") {
@@ -182,6 +209,7 @@
     }
     keyDown(event) {
       const state = this.interaction;
+      if (event.key === "Escape" && (this.pendingText || this.colorId)) { event.preventDefault(); this.closeDialogs(true); return; }
       const active = this.document.activeElement;
       const editable = active && (/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable);
       if (!editable && (event.ctrlKey || event.metaKey) && ["z", "y"].includes(event.key.toLowerCase())) {
@@ -211,14 +239,14 @@
       this.feedback = null; this.history.record(before); this.invalidate();
     }
     newDocument() {
-      this.cancel(); this.flushEdits(); this.importSerial++;
+      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.importSerial++;
       if (this.reader && this.reader.readyState === 1) this.reader.abort(); this.reader = null;
       let failure = null; if (this.services.draft) try { this.services.draft.clear(this.storage); } catch (e) { failure = e; }
       const r = this.engine.renderer;
       this.engine.load({ version: 2, type: "geometry", meta: {}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: r.showGrid, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } });
       this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");
     }
-    loadDocument(data) { this.cancel(); this.flushEdits(); this.engine.load(data); this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen."); }
+    loadDocument(data) { this.closeDialogs(true); this.cancel(); this.flushEdits(); this.engine.load(data); this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen."); }
     importFile(event) {
       const file = event.target.files && event.target.files[0]; if (!file) return;
       this.cancel(); const serial = ++this.importSerial;
@@ -233,7 +261,7 @@
       const target = event.target, find = selector => target.closest(selector); let button;
       if ((button = find('[data-view-select="axes"]'))) { this.axisMenuOpen = !this.axisMenuOpen; this.invalidate(); return; }
       if ((button = find('[data-axis-system]')) && !button.disabled) { this.changeDocument(() => { this.engine.renderer.coordinateSystem = button.dataset.axisSystem; this.axisMenuOpen = false; }); return; }
-      if ((button = find("[data-color-object]"))) { this.flushEdits(); this.colorId = button.dataset.colorObject; const object = this.engine.get(this.colorId); if (object && this.colorInput) { const color = this.services.color.value(object); this.colorInput.value = /^#[0-9a-f]{6}$/i.test(color) ? color : "#222222"; this.colorInput.click(); } return; }
+      if ((button = find("[data-color-object]"))) { this.cancel(); this.flushEdits(); this.colorId = button.dataset.colorObject; const object = this.engine.get(this.colorId); if (object && this.colorInput) { const color = this.services.color.value(object); this.colorInput.value = /^#[0-9a-f]{6}$/i.test(color) ? color : "#222222"; this.nodes.colorDialog.showModal(); this.colorInput.focus(); } return; }
       if ((button = find("[data-select-object]"))) { this.cancel(); this.tool = "select"; this.selectedId = button.dataset.selectObject; this.invalidate(); return; }
       if ((button = find("[data-object-visibility]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.objectVisibility); this.engine.update(object.id, { visible: object.visible === false }); }); return; }
       if ((button = find("[data-toggle-label]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.toggleLabel); this.engine.update(object.id, { showLabel: !object.showLabel }); }); return; }

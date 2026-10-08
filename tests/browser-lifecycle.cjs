@@ -31,6 +31,7 @@ module.exports = async function verifyLifecycle(page) {
   assert.equal(await app(() => !!FZI.MathIllustration.editor.services.axis && !!FZI.MathIllustration.editor.services.resolver), true);
   await page.locator('[data-color-object="p"]').evaluate(button => button.click());
   await page.locator('[data-editor-color]').evaluate(input => { input.value = '#123456'; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); });
+  await page.locator('#colorApply').click();
   assert.equal(await app(() => FZI.MathIllustration.editor.engine.get('p').style.fill), '#123456');
   await page.locator('[data-view-select="axes"]').click();
   await page.locator('[data-axis-setting="showXAxis"]').uncheck();
@@ -121,6 +122,7 @@ module.exports = async function verifyLifecycle(page) {
   // Color/as changes go through full rendering, preserving hidden state and selection overlays.
   await page.locator('[data-color-object="hidden"]').evaluate(button => button.click());
   await page.locator('[data-editor-color]').evaluate(input => { input.value = '#abcdef'; input.dispatchEvent(new Event('input')); input.dispatchEvent(new Event('change')); });
+  await page.locator('#colorApply').click();
   await page.locator('[data-view-select="axes"]').click(); await page.locator('[data-axis-setting="showXAxis"]').uncheck();
   assert.equal(await page.locator('[data-object-id="hidden"]').count(), 0);
   assert.equal(await page.locator('[data-object-id="l"].selected').count(), 1);
