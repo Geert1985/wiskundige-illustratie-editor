@@ -45,3 +45,7 @@ The draft key remains `fzi.mathIllustration.draft`.
 - Corrupt JSON, rejected schema or unavailable storage produces a status message and does not delete recovery data.
 - New confirms deletion of both the saved draft and current unsaved work, then starts a new illustration. If draft deletion fails, the editor reports it explicitly.
 - Storage/quota errors are reported in the existing status area. No `Storage.prototype` methods are replaced.
+
+## F16 validation follow-up
+
+Version 2 is unchanged. Supplied numeric object/style values are now validated before normalization/commit; invalid styles formerly accepted silently are rejected atomically. Valid numeric strings and opaque JSON extensions remain compatible. Style patches merge recursively and retain unspecified fields. See [MUTATION-SELECTION.md](MUTATION-SELECTION.md) for numeric ranges, detached get and immutable stored objects.
