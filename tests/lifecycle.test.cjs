@@ -238,3 +238,6 @@ for(const cancellation of ['pointercancel','blur','Escape','lostpointercapture']
   emit(cancellation==='lostpointercapture'?doc.getElementById('canvasWrap'):win,cancellation==='Escape'?'keydown':cancellation,{key:'Escape'});
   assert.equal(app.interaction,null);assert.deepEqual(plain(engine.toJSON()),before);assert.deepEqual(plain(app.selectedIds),['p','l']);
 });
+
+test('selection containing only derived constructions refuses group drag without throwing',()=>{const {app,engine,down,move}=appRuntime();const m=engine.construct('midpoint',[{objectId:'l',part:'start'},{objectId:'l',part:'end'}])[0];const n=engine.construct('midpoint',[{objectId:m.id},{objectId:'p'}])[0];app.selectObject(m.id);app.selectObject(n.id,true);down({x:m.x,y:m.y});move({x:2,y:2});assert.equal(app.interaction,null);});
+for(const cancellation of ['Escape','blur','pointercancel'])test(`construction source selection ${cancellation} cleans up without adding an object`,()=>{const {app,engine,down,emit,win}=appRuntime();app.setTool('construct:parallel');down({x:.5,y:1});assert.equal(app.interaction.mode,'construction');emit(win,cancellation==='Escape'?'keydown':cancellation,{key:'Escape'});assert.equal(app.interaction,null);assert.equal(engine.model.objects.length,2);});

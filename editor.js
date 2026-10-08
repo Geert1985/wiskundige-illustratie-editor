@@ -30,7 +30,7 @@
     }
     deleteSelection() {
       if(!this.selectedIds.length)return;if(!this.editableSelection()){this.status('Ontgrendel de selectie eerst.');return;}
-      this.changeDocument(()=>{const remove=new Set(this.selectedIds);const data=this.engine.toJSON();data.objects=data.objects.filter(o=>!remove.has(o.id));this.engine.load(data);this.selectedId=null;});
+      this.changeDocument(()=>{const remove=MI.ConstructionService.descendants(this.engine.model.objects,this.selectedIds);const data=this.engine.toJSON();data.objects=data.objects.filter(o=>!remove.has(o.id));this.engine.load(data);this.selectedId=null;});
     }
     on(target, type, fn, options) {
       if (!target) return;
@@ -154,7 +154,41 @@
       this.invalidate();
     }
     closeDialogs(cancel = false) { this.closeText(); if (this.colorId) this.closeColor(cancel); }
-    setTool(tool) { this.closeDialogs(true); this.cancel(); this.tool = tool; this.invalidate(); }
+    constructionRole(kind,index) { return ['parallel','perpendicular'].includes(kind)&&index===0?'line':kind==='tangent'&&index===0?'circle':'point'; }
+    constructionHint(kind,index=0) { return ({midpoint:'Middenpunt: kies twee punten, of klik een lijnstuk.',perpendicularBisector:'Middelloodlijn: kies twee punten, of klik een lijnstuk.',parallel:index?'Kies het punt waar de evenwijdige rechte doorheen gaat.':'Kies een lijn of zijde.',perpendicular:index?'Kies het punt waar de loodlijn doorheen gaat.':'Kies een lijn of zijde.',bisector:'Bissectrice: kies arm, hoekpunt, tweede arm.',tangent:index?'Kies een punt op of buiten de cirkel.':'Kies een cirkel.'})[kind]; }
+    constructionPick(point,role) {
+      const transform=this.transform(),screen=transform.mathToScreen(point),candidates=[];
+      const distance=p=>{const q=transform.mathToScreen(p);return Math.hypot(q.x-screen.x,q.y-screen.y);};
+      const segment=(o,s)=>{const l=MI.ConstructionService.line(o,s),a=transform.mathToScreen({x:l.x1,y:l.y1}),b=transform.mathToScreen({x:l.x2,y:l.y2}),dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy;if(!length)return distance({x:l.x1,y:l.y1});const domain=o.type==='polygon'?[0,1]:MI.LinearGeometry.domain(o),t=Math.max(domain[0],Math.min(domain[1],((screen.x-a.x)*dx+(screen.y-a.y)*dy)/length));return Math.hypot(screen.x-a.x-t*dx,screen.y-a.y-t*dy);};
+      for(const o of this.engine.model.objects) {
+        if(o.visible===false||(o.construction && o.constructionValid===false))continue;
+        const add=(s,d)=>{if(d<=12)candidates.push({source:{objectId:o.id,...s},distance:d,priority:o.type==='point'?0:1});};
+        if(role==='point') {
+          if(o.type==='point')add({},distance(o));
+          if(MI.LinearGeometry.isLinear(o))for(const part of ['start','end'])add({part},distance(MI.ConstructionService.point(o,{part})));
+          if(o.vertices)o.vertices.forEach((v,index)=>add({part:'vertex',index},distance(v)));
+        } else if(role==='line') {
+          if(MI.LinearGeometry.isLinear(o))add({},segment(o,{}));
+          if(o.type==='polygon')o.vertices.forEach((v,index)=>add({part:'edge',index},segment(o,{part:'edge',index})));
+        } else if(o.type==='circle') {const radial=Math.hypot(point.x-o.cx,point.y-o.cy);const edge=radial?{x:o.cx+(point.x-o.cx)*o.r/radial,y:o.cy+(point.y-o.cy)*o.r/radial}:{x:o.cx+o.r,y:o.cy};add({},distance(edge));}
+      }
+      candidates.sort((a,b)=>a.distance-b.distance || a.priority-b.priority || a.source.objectId.localeCompare(b.source.objectId));return candidates[0]&&candidates[0].source;
+    }
+    constructionClick(point,event) {
+      const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
+      let source=this.constructionPick(point,this.constructionRole(kind,state.sources.length));
+      if(!source && !state.sources.length && ['midpoint','perpendicularBisector'].includes(kind)) {const line=this.constructionPick(point,'line');if(line){const o=this.engine.get(line.objectId);state.sources=o.type==='polygon'?[{objectId:o.id,part:'vertex',index:line.index},{objectId:o.id,part:'vertex',index:(line.index+1)%o.vertices.length}]:[{objectId:o.id,part:'start'},{objectId:o.id,part:'end'}];}}
+      else if(source)state.sources.push(source);
+      else {this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}
+      state.pointerId=event.pointerId; this.interaction=state;
+      if(this.nodes.canvasWrap.setPointerCapture)try{this.nodes.canvasWrap.setPointerCapture(event.pointerId);}catch(_){}
+      if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));return;}
+      this.interaction=null;this.release(state);
+      try {this.changeDocument(()=>{this.selectedIds=this.engine.construct(kind,state.sources).map(o=>o.id);});this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}
+      catch(error){this.status(error.message);}
+      this.invalidate();
+    }
+    setTool(tool) { this.closeDialogs(true); this.cancel(); this.tool = tool; if(tool.startsWith('construct:'))this.status(this.constructionHint(tool.slice(10))); this.invalidate(); }
     begin(state, event) {
       this.flushEdits();
       this.interaction = { ...state, historyBefore: this.history.capture(), pointerId: event.pointerId, selectionBefore: this.selectedId, selectionIdsBefore:this.selectedIds.slice(), startScreen: { x: event.clientX, y: event.clientY }, transform: this.transform(), typed: "" };
@@ -193,8 +227,9 @@
       this.history.record(state.historyBefore); this.invalidate(); this.status(angle?'Hoek toegevoegd.':'Veelhoek toegevoegd.');
     }
     pointerDown(event) {
-      if (!this.initialized || (this.interaction && this.interaction.mode!=='polygon') || event.button !== 0 || event.isPrimary === false) return;
+      if (!this.initialized || (this.interaction && !['polygon','construction'].includes(this.interaction.mode)) || event.button !== 0 || event.isPrimary === false) return;
       const point = this.pointer(event); if (!point) return; event.preventDefault();
+      if(this.tool.startsWith('construct:')) {this.constructionClick(point,event);return;}
       if(this.interaction && this.interaction.mode==='polygon') { this.polygonClick(point,event); return; }
       const vertex=event.target && event.target.closest && event.target.closest('.fzi-polygon-vertex');
       if(this.tool==='select' && vertex) {
@@ -234,9 +269,10 @@
       if(hit && (event.shiftKey || event.ctrlKey || event.metaKey)) { this.selectObject(hit.object.id,true);return; }
       if(hit && this.selectedIds.includes(hit.object.id) && this.selectedIds.length>1) {
         if(!this.editableSelection()){this.status('Ontgrendel de selectie eerst.');return;}
-        this.begin({mode:'group',originals:this.selectedObjects()},event);this.invalidate();return;
+        const originals=this.selectedObjects().filter(o=>!o.construction);if(!originals.length){this.status('Gekoppelde constructies: verplaats de bronobjecten.');return;}this.begin({mode:'group',originals},event);this.invalidate();return;
       }
       if(hit && hit.object.locked) { this.selectObject(hit.object.id);this.status('Object is vergrendeld.');return; }
+      if(hit && hit.object.construction) {this.selectObject(hit.object.id);this.status('Gekoppelde constructie: verplaats de bronobjecten.');return;}
       this.begin(hit ? { mode: "object", id: hit.object.id, original: clone(this.engine.get(hit.object.id)) } : { mode: "pan", bounds: { ...this.engine.renderer.bounds } }, event);
       this.selectedId = hit ? hit.object.id : null; this.invalidate();
     }
@@ -258,6 +294,7 @@
         if (this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
         return;
       }
+      if(state.mode==='construction')return;
       if (state.mode==='polygon') { if(event.isPrimary===false || (state.pointerId!=null && event.pointerId!==state.pointerId)) return; const point=this.pointer(event); if(point) { state.result=this.polygonResult(point); this.polygonPreview(); } return; }
       if (event.pointerId !== state.pointerId) return;
       const point = this.pointer(event); if (!point) return;
@@ -278,7 +315,7 @@
       this.invalidate(true);
     }
     pointerUp(event) {
-      if(this.interaction && this.interaction.mode==='polygon' && event.pointerId===this.interaction.pointerId) { const state=this.interaction,id=state.pointerId; state.pointerId=null; this.release({...state,pointerId:id}); return; }
+      if(this.interaction && ['polygon','construction'].includes(this.interaction.mode) && event.pointerId===this.interaction.pointerId) { const state=this.interaction,id=state.pointerId; state.pointerId=null; this.release({...state,pointerId:id}); return; }
       if (this.interaction && event.pointerId === this.interaction.pointerId) this.commit();
       else if (!this.interaction && this.feedback && (!event.target || this.nodes.canvasWrap.contains(event.target))) { this.feedback = null; this.invalidate(); }
     }
@@ -424,8 +461,9 @@
       const actions='<div class="selection-actions"><button type="button" data-duplicate-selection>Dupliceren</button><button type="button" class="secondary" data-lock-selection>'+ (this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen')+'</button></div>';
       if(this.selectedIds.length>1 || object.locked) {panel.innerHTML='<strong>'+ (this.selectedIds.length>1?this.selectedIds.length+' objecten geselecteerd':MI.escapeXml(object.name))+'</strong><p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+actions+'<button class="delete-btn" data-delete-selected'+(!this.editableSelection()?' disabled':'')+'>Verwijder selectie</button>';return;}
       let html = '<strong>' + MI.escapeXml(object.name) + '</strong><code>' + MI.escapeXml(object.id) + '</code><label>Naam<input data-edit="name" value="' + MI.escapeXml(object.name) + '"></label>';
+      if(object.construction) html+='<p class="help-text">Gekoppeld aan: '+object.construction.sources.map(s=>MI.escapeXml(s.objectId)).join(', ')+'.</p>'+((object.construction && object.constructionValid===false)?'<p>Constructie bestaat momenteel niet; wijzig de bronobjecten om te herstellen.</p>':'');
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
-      for (const key of keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.1" value="' + MI.escapeXml(object[key]) + '"></label>';
+      for (const key of object.construction?[]:keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.1" value="' + MI.escapeXml(object[key]) + '"></label>';
       if(object.type==='polygon' || object.type==='angle') object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.1" value="'+MI.escapeXml(p[key])+'"></label>'; });
       if (object.type === "text") html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
       if(MI.LinearGeometry.isLinear(object)||['circle','angle'].includes(object.type)) {

@@ -2,7 +2,7 @@
 (function(global) {
   global.FZI.MathIllustration.EditorOverlays = {
     render(svg, renderer, object, tool, document) {
-      if (!svg || !object || object.visible === false || object.locked || tool !== "select") return;
+      if (!svg || !object || object.visible === false || object.locked || object.construction || (object.construction && object.constructionValid===false) || tool !== "select") return;
       if(object.type === 'polygon' || object.type === 'angle') {
         const layer=document.createElementNS('http://www.w3.org/2000/svg','g'); layer.setAttribute('class','fzi-polygon-handles');
         object.vertices.forEach((p,index)=>{ const handle=document.createElementNS('http://www.w3.org/2000/svg','circle');

@@ -61,3 +61,7 @@ Version 2 additionally supports `polygon` with an ordered `vertices` array of 3â
 ## Measurements and editor locks
 
 See MEASUREMENTS-GROUPS.md. Version 2 retains optional locked, showMeasurement, measurementMode and measurementText fields. Angle objects have three normalized vertices and angleMark arc/right; polygons retain normalized vertices. Locking protects editor commands; direct model operations remain available for import and history. Selection is transient.
+
+## Linked construction documents (version 3)
+
+Documents containing construction definitions export version 3 and constructionSchema:1. The editor still reads v1/v2 illustrations and writes v2 when no constructions are present. This feature declaration makes older builds reject linked documents rather than silently losing dependencies. See CONSTRUCTIONS.md for references, validation, recalculation, deletion and duplication policy.
