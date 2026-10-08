@@ -95,7 +95,8 @@ const server = http.createServer((req, res) => {
     const lifecycle = await require('./browser-lifecycle.cjs')(page);
     const performance = await require('./browser-performance.cjs')(page, true);
     const selection = await require('./browser-selection.cjs')(page);
+    const auditFinal = await require('./browser-audit-final.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
