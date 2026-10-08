@@ -3,6 +3,12 @@
   "use strict";
   const MI = global.FZI.MathIllustration;
   MI.InteractionResolver = {
+    translateGroup(engine,objects,delta,options={}) {
+      const ids=objects.map(o=>o.id), candidates=objects.flatMap(o=>MI.MeasurementGeometry.anchors(o)).map((p,index)=>{const start={x:p.x+delta.x,y:p.y+delta.y};return {index,start,result:MI.SnapService.resolve(engine,start,{...options,excludeIds:ids})};});
+      candidates.sort((a,b)=>MI.SnapService.compare(a.result,b.result)||a.index-b.index);
+      const winner=candidates[0],correction=winner.result.snapped?{x:winner.result.point.x-winner.start.x,y:winner.result.point.y-winner.start.y}:{x:0,y:0};
+      const vector={x:delta.x+correction.x,y:delta.y+correction.y};return {result:winner.result,delta:vector,patches:objects.map(o=>({id:o.id,patch:MI.MeasurementGeometry.translate(o,vector)}))};
+    },
     translatePolygon(engine, polygon, delta, options = {}) {
       const starts=polygon.vertices.map(p=>({x:p.x+delta.x,y:p.y+delta.y}));
       const resolved=starts.map((point,index)=>({index,result:MI.SnapService.resolve(engine,point,{...options,excludeId:polygon.id})}));
@@ -14,8 +20,8 @@
     polygonVertex(engine, polygon, index, raw, options = {}) {
       const result=MI.SnapService.resolve(engine,raw,{...options,excludeId:polygon.id});
       const vertices=polygon.vertices.map((p,i)=>i===index ? {...p,...result.point} : {...p});
-      try { MI.PolygonGeometry.validate(vertices); }
-      catch (_) { return {result:MI.SnapService.free(polygon.vertices[index],'valid-polygon'),patch:{vertices:polygon.vertices.map(p=>({...p}))}}; }
+      try { if(polygon.type==='angle') MI.MeasurementGeometry.validateAngle(vertices,polygon.angleMark); else MI.PolygonGeometry.validate(vertices); }
+      catch (_) { return {result:MI.SnapService.free(polygon.vertices[index],polygon.type==='angle'?'valid-angle':'valid-polygon'),patch:{vertices:polygon.vertices.map(p=>({...p}))}}; }
       return {result,patch:{vertices}};
     },
     draw(engine, shape, start, raw, options = {}) {

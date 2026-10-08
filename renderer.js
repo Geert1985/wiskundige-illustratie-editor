@@ -110,8 +110,10 @@
 
     renderPreview() {
       const preview = this.preview; if (!preview) return "";
-      if (preview.type === "polygon") return '<g data-drawing-preview><polyline points="'+preview.vertices.map(p=>this.mapX(p.x)+','+this.mapY(p.y)).join(' ')+'" fill="none" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/>'+preview.vertices.map(p=>'<circle cx="'+this.mapX(p.x)+'" cy="'+this.mapY(p.y)+'" r="4" fill="#9a7a32"/>').join('')+'</g>';
+      if(preview.type==='angle' && preview.vertices.length===3) { try { MI.MeasurementGeometry.validateAngle(preview.vertices,preview.angleMark); return '<g data-drawing-preview>'+this.renderObject({type:'angle',angleMark:preview.angleMark,vertices:preview.vertices,id:'preview',style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5'}})+'</g>'; } catch(_) {} }
+      if (preview.type === "polygon" || preview.type==='angle') return '<g data-drawing-preview><polyline points="'+preview.vertices.map(p=>this.mapX(p.x)+','+this.mapY(p.y)).join(' ')+'" fill="none" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/>'+preview.vertices.map(p=>'<circle cx="'+this.mapX(p.x)+'" cy="'+this.mapY(p.y)+'" r="4" fill="#9a7a32"/>').join('')+'</g>';
       const sx = this.mapX(preview.start.x), sy = this.mapY(preview.start.y), ex = this.mapX(preview.end.x), ey = this.mapY(preview.end.y), dx = preview.end.x - preview.start.x, dy = preview.end.y - preview.start.y, length = Math.hypot(dx, dy);
+      if(preview.type==='dimension') return '<g data-drawing-preview>'+this.renderObject({type:'dimension',id:'preview',name:'',x1:preview.start.x,y1:preview.start.y,x2:preview.end.x,y2:preview.end.y,style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5',fill:'none'}})+'</g>';
       if (length < 1e-9) return "";
       const mx = (sx + ex) / 2, my = (sy + ey) / 2 - 10, label = esc(axisNumber(length));
       if (["straight", "ray", "vector"].includes(preview.type)) return '<g data-drawing-preview>' + this.renderDirected({ type: preview.type, x1: preview.start.x, y1: preview.start.y, x2: preview.end.x, y2: preview.end.y, style: { stroke: "#9a7a32", strokeWidth: 2, opacity: 1, dash: "7 5" } }) + '<text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12">' + label + '</text></g>';
@@ -164,7 +166,7 @@
         svg = '<circle cx="' + number(this.mapX(object.x)) + '" cy="' + number(this.mapY(object.y)) + '" r="' + number(style.radius || 4) + '" ' + strokeAttrs(style) + ' fill="' + esc(style.fill || style.stroke) + '"/>';
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.label || object.id, 8, -8);
       }
-      if (object.type === "line") {
+      if (object.type === "line" || object.type==='dimension') {
         svg = '<line x1="' + number(this.mapX(object.x1)) + '" y1="' + number(this.mapY(object.y1)) + '" x2="' + number(this.mapX(object.x2)) + '" y2="' + number(this.mapY(object.y2)) + '" ' + strokeAttrs(style) + ' fill="none"/>';
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.label || object.id, 6, -6, true);
       }
@@ -182,12 +184,35 @@
         svg = '<polygon points="'+object.vertices.map(p=>number(this.mapX(p.x))+','+number(this.mapY(p.y))).join(' ')+'" fill="'+esc(style.fill)+'" '+strokeAttrs(style)+'/>';
         if (object.showLabel) { const anchor=MI.PolygonGeometry.anchor(object); svg += this.renderLabel({...object,...anchor},object.name || object.id,8,-8); }
       }
+      if(object.type==='angle') {
+        svg=MI.MeasurementGeometry.edges(object).map(edge=>'<line x1="'+number(this.mapX(edge.x1))+'" y1="'+number(this.mapY(edge.y1))+'" x2="'+number(this.mapX(edge.x2))+'" y2="'+number(this.mapY(edge.y2))+'" '+strokeAttrs(style)+'/>').join('');
+      }
       if (object.type === "text") {
         const transform = object.rotation ? ' transform="rotate(' + number(object.rotation) + ' ' + number(this.mapX(object.x)) + ' ' + number(this.mapY(object.y)) + ')"' : "";
         svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(object.text) + '</text>';
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6);
       }
+      if(object.type==='angle'||object.type==='dimension'||(object.showMeasurement && (MI.LinearGeometry.isLinear(object)||object.type==='circle'))) svg+=this.renderMeasurement({...object,style});
       return '<g data-object-id="' + esc(object.id) + '" data-object-type="' + esc(object.type) + '" aria-label="' + esc(object.name || object.id) + '"'+(opacity!==1?' opacity="'+esc(number(opacity))+'"':'')+'>' + svg + '</g>';
+    }
+    renderMeasurement(object) {
+      const style=object.style||{},label=MI.MeasurementGeometry.label(object);let svg='',anchor;
+      if(object.type==='angle') {
+        const [a,v,b]=object.vertices,map=p=>({x:this.mapX(p.x),y:this.mapY(p.y)}),c=map(v),pa=map(a),pb=map(b),la=Math.hypot(pa.x-c.x,pa.y-c.y),lb=Math.hypot(pb.x-c.x,pb.y-c.y);
+        const ua={x:(pa.x-c.x)/la,y:(pa.y-c.y)/la},ub={x:(pb.x-c.x)/lb,y:(pb.y-c.y)/lb},r=Math.min(28,la*.35,lb*.35);
+        const p={x:c.x+ua.x*r,y:c.y+ua.y*r},q={x:c.x+ub.x*r,y:c.y+ub.y*r};
+        const path=object.angleMark==='right'?'M '+number(p.x)+' '+number(p.y)+' L '+number(p.x+ub.x*r)+' '+number(p.y+ub.y*r)+' L '+number(q.x)+' '+number(q.y):'M '+number(p.x)+' '+number(p.y)+' A '+number(r)+' '+number(r)+' 0 0 '+(ua.x*ub.y-ua.y*ub.x>=0?1:0)+' '+number(q.x)+' '+number(q.y);
+        svg='<path '+(object.angleMark==='right'?'data-right-angle':'data-angle-arc')+' d="'+path+'" fill="none" '+strokeAttrs(style)+'/>';
+        let ux=ua.x+ub.x,uy=ua.y+ub.y,l=Math.hypot(ux,uy);if(l<1e-9){ux=-ua.y;uy=ua.x;l=1;}
+        anchor={x:v.x+ux/l*(r+16)/this.scale(),y:v.y-uy/l*(r+16)/this.scale()};
+      } else if(object.type==='circle') anchor={x:object.cx+object.r,y:object.cy};
+      else {
+        anchor={x:(object.x1+object.x2)/2,y:(object.y1+object.y2)/2};
+        if(object.type==='dimension') {const dx=this.mapX(object.x2)-this.mapX(object.x1),dy=this.mapY(object.y2)-this.mapY(object.y1),l=Math.hypot(dx,dy)||1;
+          for(const [x,y] of [[this.mapX(object.x1),this.mapY(object.y1)],[this.mapX(object.x2),this.mapY(object.y2)]]) svg+='<line data-dimension-tick x1="'+number(x-dy/l*6)+'" y1="'+number(y+dx/l*6)+'" x2="'+number(x+dy/l*6)+'" y2="'+number(y-dx/l*6)+'" '+strokeAttrs(style)+'/>';
+        }
+      }
+      return svg+'<g data-measurement-label>'+this.renderLabel({...object,...anchor,type:'text'},label,6,-6)+'</g>';
     }
   }
 

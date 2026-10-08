@@ -46,7 +46,7 @@
 
   const geometryCache = new WeakMap();
   function snapCandidates(engine, excludeId) {
-    const objects = engine.model.objects.filter(o => o.visible !== false && o.id !== excludeId);
+    const objects = engine.model.objects.filter(o => o.visible !== false && !(Array.isArray(excludeId) ? excludeId.includes(o.id) : o.id === excludeId));
     // Inspect geometry rather than trusting a revision counter: injected
     // service-input views may differ from the immutable production model.
     // One entry per model bounds cache lifetime even when exclusions change.
@@ -62,11 +62,11 @@
         addCandidate(candidates, o.x1, o.y1, "line-endpoint", [o.id]);
         addCandidate(candidates, o.x2, o.y2, "line-endpoint", [o.id]);
       }
-      if (o.type === "polygon") o.vertices.forEach(p=>addCandidate(candidates,p.x,p.y,"line-endpoint",[o.id]));
+      if (o.type === "polygon" || o.type === "angle") o.vertices.forEach(p=>addCandidate(candidates,p.x,p.y,"line-endpoint",[o.id]));
       if (o.type === "circle") addCandidate(candidates, o.cx, o.cy, "circle-center", [o.id]);
     });
 
-    const shapes = objects.flatMap(o=>o.type === "polygon" ? MI.PolygonGeometry.edges(o) : [o]);
+    const shapes = objects.flatMap(o=>MI.MeasurementGeometry.edges(o));
     for (let i = 0; i < shapes.length; i += 1) {
       for (let j = i + 1; j < shapes.length; j += 1) {
         const a = shapes[i], b = shapes[j];
@@ -111,7 +111,7 @@
     resolve(engine, point, options = {}) {
       if (!valid(point)) throw new Error("Ongeldige pointercoördinaat.");
       const transform = options.transform || MI.CoordinateTransform.forCanvas(engine) || new MI.CoordinateTransform(engine.renderer);
-      const candidates = snapCandidates(engine, options.excludeId);
+      const candidates = snapCandidates(engine, options.excludeIds || options.excludeId);
       const results = [], screen = transform.mathToScreen(point);
       const consider = candidate => {
         const target = transform.mathToScreen(candidate), distancePx = Math.hypot(screen.x - target.x, screen.y - target.y);

@@ -9,8 +9,8 @@
   const NS = global.FZI = global.FZI || {};
   const MI = NS.MathIllustration = NS.MathIllustration || {};
   const MODEL_VERSION = 2;
-  const TYPES = new Set(["point", "line", "circle", "text", "straight", "ray", "vector", "polygon"]);
-  const LINEAR = new Set(['line', 'straight', 'ray', 'vector']);
+  const TYPES = new Set(["point", "line", "circle", "text", "straight", "ray", "vector", "polygon", "dimension", "angle"]);
+  const LINEAR = new Set(['line', 'straight', 'ray', 'vector', 'dimension']);
 
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
   function finite(value, fallback) { return Number.isFinite(Number(value)) ? Number(value) : fallback; }
@@ -56,11 +56,14 @@
     if (!((typeof input.id === "string" && input.id.trim() !== "") || (typeof input.id === "number" && Number.isFinite(input.id)))) throw new Error("Elk illustratie-object heeft een geldige id nodig.");
     const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
     if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices);
+    if (input.type === "angle") MI.MeasurementGeometry.validateAngle(input.vertices,input.angleMark || "arc");
+    if(input.measurementMode!=null && !["computed","text"].includes(input.measurementMode)) throw Error("Ongeldige meetmodus.");
+    if(input.measurementText!=null && typeof input.measurementText!=="string") throw Error("Ongeldige maattekst.");
     (fields || []).forEach(key => {
       if (key in input && !numeric(input[key])) throw new Error("Ongeldige objectcoördinaat: " + key);
     });
     if (input.type === "circle" && input.r != null && Number(input.r) < 0) throw new Error("Straal mag niet negatief zijn.");
-    ["visible", "showLabel"].forEach(key => {
+    ["visible", "showLabel", "locked", "showMeasurement"].forEach(key => {
       if (input[key] != null && typeof input[key] !== "boolean") throw new Error("Ongeldige objectinstelling: " + key);
     });
     ["labelDx", "labelDy", "labelOffsetX", "labelOffsetY"].forEach(key => {
@@ -114,10 +117,12 @@
 
     if (type === "point") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); if (input.label != null) object.label = String(input.label); }
     if (LINEAR.has(type)) { object.x1 = finite(input.x1, 0); object.y1 = finite(input.y1, 0); object.x2 = finite(input.x2, 1); object.y2 = finite(input.y2, 0); if (input.label != null) object.label = String(input.label); }
-    if (['straight', 'ray', 'vector'].includes(type) && !Number.isFinite(Math.hypot(object.x2 - object.x1, object.y2 - object.y1))) throw new Error('Ongeldige richting: afstand tussen de punten moet eindig zijn.');
+    if (['straight', 'ray', 'vector','dimension'].includes(type) && !Number.isFinite(Math.hypot(object.x2 - object.x1, object.y2 - object.y1))) throw new Error('Ongeldige richting: afstand tussen de punten moet eindig zijn.');
     if ((type === 'straight' || type === 'ray') && Math.hypot(object.x2 - object.x1, object.y2 - object.y1) === 0) throw new Error('Een rechte of halfrechte vereist twee verschillende punten.');
     if (type === "circle") { object.cx = finite(input.cx, 0); object.cy = finite(input.cy, 0); object.r = Math.max(0, finite(input.r, 1)); if (input.label != null) object.label = String(input.label); }
     if (type === "text") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); object.text = String(input.text == null ? "" : input.text); object.rotation = finite(input.rotation, 0); }
+    if (type === 'polygon') object.vertices = MI.PolygonGeometry.validate(object.vertices);
+    if (type === 'angle') { object.angleMark = input.angleMark || 'arc'; object.vertices = MI.MeasurementGeometry.validateAngle(object.vertices, object.angleMark); }
     return object;
   }
 

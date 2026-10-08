@@ -39,6 +39,7 @@
   }
 
   function hitDistance(object, x, y) {
+    if(object.type === "angle") return Math.min(...MI.MeasurementGeometry.edges(object).map(edge=>linearDistance(edge,{x,y})));
     if (object.type === "polygon") return MI.PolygonGeometry.contains(object.vertices,{x,y}) ? 0 : Math.min(...MI.PolygonGeometry.edges(object).map(edge=>linearDistance(edge,{x,y})));
     if (object.type === "point") return Math.hypot(x - object.x, y - object.y);
     if (MI.LinearGeometry.isLinear(object)) return linearDistance(object, { x, y });
@@ -57,6 +58,7 @@
 
   function screenHit(object, point, transform) {
     const map = (x, y) => transform.mathToScreen({ x, y });
+    if(object.type === 'angle') return Math.min(...MI.MeasurementGeometry.edges(object).map(edge=>linearDistance(edge,point,transform)));
     if (object.type === 'polygon') return MI.PolygonGeometry.contains(object.vertices.map(p=>map(p.x,p.y)), point) ? 0 : Math.min(...MI.PolygonGeometry.edges(object).map(edge=>linearDistance(edge,point,transform)));
     if (object.type === 'point' || object.type === 'text') { const p = map(object.x, object.y); return Math.hypot(point.x - p.x, point.y - p.y); }
     if (MI.LinearGeometry.isLinear(object)) return linearDistance(object, point, transform);
@@ -85,6 +87,15 @@
       this.renderer = createDocumentRenderer(Object.assign({}, presentationOptions(this.model.presentation), rendererOptions || {}));
     }
 
+    updateMany(updates) {
+      const model=new MI.IllustrationModel(this.model.toJSON());
+      updates.forEach(({id,patch})=>model.update(id,patch)); this.model=model; return updates.map(({id})=>model.get(id));
+    }
+    duplicateMany(ids,delta={x:.5,y:.5}) {
+      const model=new MI.IllustrationModel(this.model.toJSON());
+      const copies=ids.map(id=>{const original=model.get(id);if(!original)throw Error('Object niet gevonden: '+id);const {id:ignored,...data}=original;return model.add({...data,...MI.MeasurementGeometry.translate(original,delta),name:original.name+' (kopie)',locked:false});});
+      this.model=model;return copies;
+    }
     add(object) { return this.model.add(object); }
     update(id, patch) { return this.model.update(id, patch); }
     remove(id) { return this.model.remove(id); }
@@ -122,6 +133,7 @@
         const dy = y - object.y1;
         return this.update(id, { x1: x, y1: y, x2: object.x2 + dx, y2: object.y2 + dy });
       }
+      if (object.type === "angle") return this.update(id,MI.MeasurementGeometry.translate(object,{x:x-object.vertices[1].x,y:y-object.vertices[1].y}));
       if (object.type === "polygon") { const delta={x:x-object.vertices[0].x,y:y-object.vertices[0].y}; return this.update(id,{vertices:object.vertices.map(p=>({...p,x:p.x+delta.x,y:p.y+delta.y}))}); }
       throw new Error("Verplaatsen wordt nog niet ondersteund voor: " + object.type);
     }

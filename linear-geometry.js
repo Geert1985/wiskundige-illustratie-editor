@@ -1,7 +1,7 @@
 /* Domain and viewport operations shared by all two-point linear objects. */
 (function(global) {
   const MI = global.FZI.MathIllustration;
-  const types = new Set(MI.LINEAR_OBJECT_TYPES || ['line', 'straight', 'ray', 'vector']);
+  const types = new Set(MI.LINEAR_OBJECT_TYPES || ['line', 'straight', 'ray', 'vector', 'dimension']);
   function domain(object) { return object.type === 'straight' ? [-Infinity, Infinity] : object.type === 'ray' ? [0, Infinity] : [0, 1]; }
   function accepts(object, t) { const [low, high] = domain(object); return t >= low - 1e-9 && t <= high + 1e-9; }
   function clip(object, bounds) {
