@@ -110,6 +110,7 @@
 
     renderPreview() {
       const preview = this.preview; if (!preview) return "";
+      if (preview.type === "polygon") return '<g data-drawing-preview><polyline points="'+preview.vertices.map(p=>this.mapX(p.x)+','+this.mapY(p.y)).join(' ')+'" fill="none" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/>'+preview.vertices.map(p=>'<circle cx="'+this.mapX(p.x)+'" cy="'+this.mapY(p.y)+'" r="4" fill="#9a7a32"/>').join('')+'</g>';
       const sx = this.mapX(preview.start.x), sy = this.mapY(preview.start.y), ex = this.mapX(preview.end.x), ey = this.mapY(preview.end.y), dx = preview.end.x - preview.start.x, dy = preview.end.y - preview.start.y, length = Math.hypot(dx, dy);
       if (length < 1e-9) return "";
       const mx = (sx + ex) / 2, my = (sy + ey) / 2 - 10, label = esc(axisNumber(length));
@@ -175,6 +176,10 @@
         svg = '<circle cx="' + number(cx) + '" cy="' + number(cy) + '" r="' + number(r) + '" ' + strokeAttrs(style) + ' fill="' + esc(style.fill || "none") + '"/>';
         svg += '<circle cx="' + number(cx) + '" cy="' + number(cy) + '" r="3.2" fill="#222" stroke="#fff" stroke-width="1.2"/>';
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.label || object.id, 8, -8);
+      }
+      if (object.type === "polygon") {
+        svg = '<polygon points="'+object.vertices.map(p=>number(this.mapX(p.x))+','+number(this.mapY(p.y))).join(' ')+'" fill="'+esc(style.fill)+'" '+strokeAttrs(style)+'/>';
+        if (object.showLabel) { const anchor=MI.PolygonGeometry.anchor(object); svg += this.renderLabel({...object,...anchor},object.name || object.id,8,-8); }
       }
       if (object.type === "text") {
         const transform = object.rotation ? ' transform="rotate(' + number(object.rotation) + ' ' + number(this.mapX(object.x)) + ' ' + number(this.mapY(object.y)) + ')"' : "";

@@ -53,3 +53,7 @@ Version 2 is unchanged. Supplied numeric object/style values are now validated b
 ## New linear types
 
 `straight`, `ray` and `vector` use the existing x1/y1/x2/y2 fields; version 2 and earlier four-type documents remain unchanged. Older builds without these type values reject documents containing them instead of dropping their geometry. See [LINEAR-OBJECTS.md](LINEAR-OBJECTS.md) for domains, zero-vector policy and clipping/arrow semantics.
+
+## Polygons
+
+Version 2 additionally supports `polygon` with an ordered `vertices` array of 3–256 finite `{x, y}` objects. A triangle is a polygon with three vertices. Vertices must be distinct, coordinates remain within ±1e12, the polygon must have nonzero area, and its boundary must not cross or overlap itself. Concave polygons and both winding directions are supported. No closing duplicate is stored. Vertex extension fields, style and label offsets survive roundtrip. Older builds without this object type reject new polygon documents. Existing document types and migration rules retain their meaning. See [POLYGONS.md](POLYGONS.md).

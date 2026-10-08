@@ -50,7 +50,7 @@
     // Inspect geometry rather than trusting a revision counter: injected
     // service-input views may differ from the immutable production model.
     // One entry per model bounds cache lifetime even when exclusions change.
-    const key = JSON.stringify(objects.map(o => [o.id, o.type, o.x, o.y, o.x1, o.y1, o.x2, o.y2, o.cx, o.cy, o.r]));
+    const key = JSON.stringify(objects.map(o => [o.id, o.type, o.x, o.y, o.x1, o.y1, o.x2, o.y2, o.cx, o.cy, o.r, o.vertices]));
     const cached = geometryCache.get(engine.model);
     if (cached && cached.key === key) return cached.candidates;
     objects.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
@@ -62,12 +62,15 @@
         addCandidate(candidates, o.x1, o.y1, "line-endpoint", [o.id]);
         addCandidate(candidates, o.x2, o.y2, "line-endpoint", [o.id]);
       }
+      if (o.type === "polygon") o.vertices.forEach(p=>addCandidate(candidates,p.x,p.y,"line-endpoint",[o.id]));
       if (o.type === "circle") addCandidate(candidates, o.cx, o.cy, "circle-center", [o.id]);
     });
 
-    for (let i = 0; i < objects.length; i += 1) {
-      for (let j = i + 1; j < objects.length; j += 1) {
-        const a = objects[i], b = objects[j];
+    const shapes = objects.flatMap(o=>o.type === "polygon" ? MI.PolygonGeometry.edges(o) : [o]);
+    for (let i = 0; i < shapes.length; i += 1) {
+      for (let j = i + 1; j < shapes.length; j += 1) {
+        const a = shapes[i], b = shapes[j];
+        if (a.id === b.id) continue;
         if (MI.LinearGeometry.isLinear(a) && MI.LinearGeometry.isLinear(b)) {
           const p = MI.LinearGeometry.intersect(a, b);
           if (p) addCandidate(candidates, p.x, p.y, "line-line-intersection", [a.id, b.id]);

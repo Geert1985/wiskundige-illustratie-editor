@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "type": "geometry",
+  "meta": {"title": "Driehoek en concave veelhoek"},
+  "objects": [
+    {"id": "triangle", "type": "polygon", "vertices": [{"x": -3, "y": 0}, {"x": -1, "y": 0}, {"x": -2, "y": 2}], "showLabel": true, "labelOffsetX": 0, "labelOffsetY": 0, "style": {"stroke": "#457b9d", "fill": "none"}},
+    {"id": "concave", "type": "polygon", "vertices": [{"x": 0, "y": 0}, {"x": 3, "y": 0}, {"x": 1, "y": 1}, {"x": 3, "y": 2}, {"x": 0, "y": 2}], "style": {"stroke": "#e63946", "fill": "#abcdef", "opacity": 0.6}}
+  ]
+}

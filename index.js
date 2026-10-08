@@ -39,6 +39,7 @@
   }
 
   function hitDistance(object, x, y) {
+    if (object.type === "polygon") return MI.PolygonGeometry.contains(object.vertices,{x,y}) ? 0 : Math.min(...MI.PolygonGeometry.edges(object).map(edge=>linearDistance(edge,{x,y})));
     if (object.type === "point") return Math.hypot(x - object.x, y - object.y);
     if (MI.LinearGeometry.isLinear(object)) return linearDistance(object, { x, y });
     if (object.type === "circle") return Math.abs(Math.hypot(x - object.cx, y - object.cy) - object.r);
@@ -56,6 +57,7 @@
 
   function screenHit(object, point, transform) {
     const map = (x, y) => transform.mathToScreen({ x, y });
+    if (object.type === 'polygon') return MI.PolygonGeometry.contains(object.vertices.map(p=>map(p.x,p.y)), point) ? 0 : Math.min(...MI.PolygonGeometry.edges(object).map(edge=>linearDistance(edge,point,transform)));
     if (object.type === 'point' || object.type === 'text') { const p = map(object.x, object.y); return Math.hypot(point.x - p.x, point.y - p.y); }
     if (MI.LinearGeometry.isLinear(object)) return linearDistance(object, point, transform);
     if (object.type === 'circle') {
@@ -120,6 +122,7 @@
         const dy = y - object.y1;
         return this.update(id, { x1: x, y1: y, x2: object.x2 + dx, y2: object.y2 + dy });
       }
+      if (object.type === "polygon") { const delta={x:x-object.vertices[0].x,y:y-object.vertices[0].y}; return this.update(id,{vertices:object.vertices.map(p=>({...p,x:p.x+delta.x,y:p.y+delta.y}))}); }
       throw new Error("Verplaatsen wordt nog niet ondersteund voor: " + object.type);
     }
 

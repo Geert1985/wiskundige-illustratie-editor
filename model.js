@@ -9,7 +9,7 @@
   const NS = global.FZI = global.FZI || {};
   const MI = NS.MathIllustration = NS.MathIllustration || {};
   const MODEL_VERSION = 2;
-  const TYPES = new Set(["point", "line", "circle", "text", "straight", "ray", "vector"]);
+  const TYPES = new Set(["point", "line", "circle", "text", "straight", "ray", "vector", "polygon"]);
   const LINEAR = new Set(['line', 'straight', 'ray', 'vector']);
 
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
@@ -55,7 +55,8 @@
     if (!record(input) || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
     if (!((typeof input.id === "string" && input.id.trim() !== "") || (typeof input.id === "number" && Number.isFinite(input.id)))) throw new Error("Elk illustratie-object heeft een geldige id nodig.");
     const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
-    fields.forEach(key => {
+    if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices);
+    (fields || []).forEach(key => {
       if (key in input && !numeric(input[key])) throw new Error("Ongeldige objectcoördinaat: " + key);
     });
     if (input.type === "circle" && input.r != null && Number(input.r) < 0) throw new Error("Straal mag niet negatief zijn.");

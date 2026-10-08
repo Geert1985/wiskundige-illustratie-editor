@@ -3,6 +3,21 @@
   "use strict";
   const MI = global.FZI.MathIllustration;
   MI.InteractionResolver = {
+    translatePolygon(engine, polygon, delta, options = {}) {
+      const starts=polygon.vertices.map(p=>({x:p.x+delta.x,y:p.y+delta.y}));
+      const resolved=starts.map((point,index)=>({index,result:MI.SnapService.resolve(engine,point,{...options,excludeId:polygon.id})}));
+      resolved.sort((a,b)=>MI.SnapService.compare(a.result,b.result)||a.index-b.index);
+      const winner=resolved[0], correction=winner.result.snapped ? {x:winner.result.point.x-starts[winner.index].x,y:winner.result.point.y-starts[winner.index].y} : {x:0,y:0};
+      const dx=delta.x+correction.x,dy=delta.y+correction.y;
+      return {result:winner.result,patch:{vertices:polygon.vertices.map(p=>({...p,x:p.x+dx,y:p.y+dy}))},delta:{x:dx,y:dy}};
+    },
+    polygonVertex(engine, polygon, index, raw, options = {}) {
+      const result=MI.SnapService.resolve(engine,raw,{...options,excludeId:polygon.id});
+      const vertices=polygon.vertices.map((p,i)=>i===index ? {...p,...result.point} : {...p});
+      try { MI.PolygonGeometry.validate(vertices); }
+      catch (_) { return {result:MI.SnapService.free(polygon.vertices[index],'valid-polygon'),patch:{vertices:polygon.vertices.map(p=>({...p}))}}; }
+      return {result,patch:{vertices}};
+    },
     draw(engine, shape, start, raw, options = {}) {
       let result;
       const exact = options.exactDistance;

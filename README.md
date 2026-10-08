@@ -25,6 +25,7 @@ Supported mathematical objects:
 - straight line (`straight`);
 - ray (`ray`);
 - vector (`vector`).
+- simple closed polygon (`polygon`), including the three-click triangle tool.
 
 Supported engine operations:
 
@@ -77,6 +78,7 @@ This principle should be preserved when zooming, panning, changing the coordinat
 
 - `model.js` — mathematical data model and JSON representation.
 - `linear-geometry.js` — shared domains, clipping and intersections for two-point linear objects.
+- `polygon-geometry.js` — validation, boundary segments, interior selection and label anchors; see [POLYGONS.md](POLYGONS.md).
 - `renderer.js` — SVG renderer; converts mathematical coordinates to screen coordinates while preserving equal x/y scale.
 - `index.js` — public engine facade and interaction-neutral operations.
 - `editor.html` — standalone authoring entry point for the first editor.
