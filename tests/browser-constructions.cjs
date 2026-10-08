@@ -1,4 +1,4 @@
-﻿const assert=require('node:assert/strict'),fs=require('node:fs');
+const assert=require('node:assert/strict'),fs=require('node:fs');
 module.exports=async page=>{
  const doc=()=>page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
  const click=async(x,y)=>{const p=await page.evaluate(p=>FZI.MathIllustration.editor.transform().mathToScreen(p),{x,y});await page.mouse.click(p.x,p.y);};
@@ -19,4 +19,3 @@ module.exports=async page=>{
  await reset();await page.locator('[data-tool="construct:parallel"]').click();const q=await page.evaluate(()=>FZI.MathIllustration.editor.transform().mathToScreen({x:0,y:0}));await page.mouse.move(q.x,q.y);await page.mouse.down();assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.interaction.mode),'construction');await page.evaluate(()=>{const a=FZI.MathIllustration.editor;window.dispatchEvent(new PointerEvent('pointercancel',{pointerId:a.interaction.pointerId}));});await page.mouse.up();assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.interaction),null);assert.equal((await doc()).objects.length,5);
  await page.evaluate(()=>localStorage.removeItem(FZI.MathIllustration.DraftStore.key));return {sixTools:'passed',linkedUpdate:'passed',noDerivedHandles:'passed',Escape:'passed',history:'passed',cascadeDelete:'passed',saveReloadImportExport:'passed'};
 };
-
