@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "type": "geometry",
+  "meta": { "title": "Rechte, halfrechte en vector" },
+  "objects": [
+    { "id": "s", "name": "Rechte", "type": "straight", "x1": -2, "y1": 1, "x2": 0, "y2": 2, "showLabel": true, "style": { "stroke": "#2463a0" } },
+    { "id": "r", "name": "Halfrechte", "type": "ray", "x1": -2, "y1": -1, "x2": 1, "y2": 0.5, "showLabel": true, "style": { "stroke": "#9a6131" } },
+    { "id": "v", "name": "Vector", "type": "vector", "x1": -3, "y1": -2, "x2": 2, "y2": -1, "showLabel": true, "style": { "stroke": "#328159" } }
+  ],
+  "presentation": { "bounds": { "xMin": -5, "xMax": 5, "yMin": -3, "yMax": 3 }, "showGrid": true }
+}
