@@ -8,7 +8,7 @@
     capture() {
       const document = this.app.engine.toJSON(), grid = this.app.services && this.app.services.grid;
       if (grid) document.presentation.axisStep = grid.step(this.app.engine.renderer);
-      return { document: JSON.stringify(document), selectedId: this.app.selectedId };
+      return { document: JSON.stringify(document), selectedId: this.app.selectedId, selectedIds: this.app.selectedIds && this.app.selectedIds.slice() };
     }
     record(before) {
       const after = this.capture();
@@ -26,6 +26,7 @@
     get canRedo() { return this.cursor < this.entries.length; }
     restore(snapshot) {
       this.app.engine.load(JSON.parse(snapshot.document));
+      if(this.app.selectedIds) { this.app.selectedIds=(snapshot.selectedIds || [snapshot.selectedId]).filter(id=>id&&this.app.engine.get(id)); return; }
       this.app.selectedId = snapshot.selectedId && this.app.engine.get(snapshot.selectedId) ? snapshot.selectedId : null;
     }
     undo() { if (!this.canUndo) return false; this.restore(this.entries[this.cursor - 1].before); this.cursor--; return true; }

@@ -1,4 +1,4 @@
-# Illustration documents — version 2
+﻿# Illustration documents — version 2
 
 The editor imports legacy version 1 and exports version 2. A missing version is treated as legacy version 1. Future versions, unsupported document/object types and malformed known fields are rejected before replacing existing state. Older engines intentionally reject version 2 instead of silently dropping newer data.
 
@@ -6,7 +6,7 @@ The editor imports legacy version 1 and exports version 2. A missing version is 
 
 - Root: a JSON object with an `objects` array. `type` may be omitted in a legacy file, otherwise it must be `geometry`. `version` is 1 or 2 (legacy numeric strings are accepted).
 - `meta` is an optional object; `title` and `description`, when non-null, must be strings. Other metadata fields are retained.
-- Each object has a supported type (`point`, `line`, `circle`, `text`, `straight`, `ray`, `vector`) and a nonblank string ID or finite legacy numeric ID. IDs are canonicalized to strings and must be unique after canonicalization. Numeric ID `1` and string ID `"1"` conflict. Missing geometry fields retain the existing defaults; supplied coordinates must be finite numbers or nonempty numeric strings. A supplied circle radius cannot be negative. Straight/ray require distinct definition points; the new linear types require finite direction length.
+- Each object has a supported type (`point`, `line`, `circle`, `text`, `straight`, `ray`, `vector`, `polygon`, `dimension`, `angle`) and a nonblank string ID or finite legacy numeric ID. IDs are canonicalized to strings and must be unique after canonicalization. Numeric ID `1` and string ID `"1"` conflict. Missing geometry fields retain the existing defaults; supplied coordinates must be finite numbers or nonempty numeric strings. A supplied circle radius cannot be negative. Straight/ray require distinct definition points; the new linear types require finite direction length.
 - Optional visibility/label flags are booleans or legacy null. Label offsets are finite numbers/numeric strings or null. Styles are objects. Names, labels and text are strings or finite legacy numbers, which retain their textual meaning.
 - Unknown JSON fields at root, metadata, object, style and presentation level survive roundtrips. Unknown fields are retained as data, not executed as editor options. Unsupported object types and future versions are rejected, not discarded.
 - `IllustrationModel.load` stages validation, migrations, cloned data, unique IDs and the next ID before one state commit. `Engine.load` additionally stages a renderer and checks whether the presentation can be rendered within the 0A safety contract. Neither a parse/schema error nor a rejected presentation changes the old model or renderer.
@@ -57,3 +57,8 @@ Version 2 is unchanged. Supplied numeric object/style values are now validated b
 ## Polygons
 
 Version 2 additionally supports `polygon` with an ordered `vertices` array of 3–256 finite `{x, y}` objects. A triangle is a polygon with three vertices. Vertices must be distinct, coordinates remain within ±1e12, the polygon must have nonzero area, and its boundary must not cross or overlap itself. Concave polygons and both winding directions are supported. No closing duplicate is stored. Vertex extension fields, style and label offsets survive roundtrip. Older builds without this object type reject new polygon documents. Existing document types and migration rules retain their meaning. See [POLYGONS.md](POLYGONS.md).
+
+## Measurements and editor locks
+
+See MEASUREMENTS-GROUPS.md. Version 2 retains optional locked, showMeasurement, measurementMode and measurementText fields. Angle objects have three normalized vertices and angleMark arc/right; polygons retain normalized vertices. Locking protects editor commands; direct model operations remain available for import and history. Selection is transient.
+

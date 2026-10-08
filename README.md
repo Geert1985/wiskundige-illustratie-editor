@@ -137,3 +137,5 @@ Coordinates are mathematical: positive `y` points upward. The renderer handles c
 - Pointer moves update the mathematical result synchronously and coalesce visual invalidation until the next animation frame. Commands, keyboard measurement, commit and cancel render immediately and clear any pending frame. See [INTERACTION-RENDER.md](INTERACTION-RENDER.md).
 
 Run `node --test math-illustration/tests/*.test.cjs`. With Playwright and Edge installed, run `node math-illustration/tests/browser.cjs`; it includes the complete functional suite and 10/100/500-object pointer benchmarks. See [PERFORMANCE.md](PERFORMANCE.md) and [tests/README.md](tests/README.md) for methodology, measured limits and regression gates. No new mathematical object types were added during stabilization.
+
+Measurements, right-angle marks and multiple selection: see [MEASUREMENTS-GROUPS.md](MEASUREMENTS-GROUPS.md). Object style fields apply automatically; no separate apply button is needed.

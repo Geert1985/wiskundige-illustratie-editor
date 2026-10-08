@@ -70,11 +70,32 @@ test('style inspector edits font size and stroke without replacing other style f
   input.valueAsNumber=0;emit(doc.getElementById('selectionPanel'),'change',{target:input});assert.equal(engine.get(o.id).style.fontSize,30);
   assert.equal(app.history.entries.length,1);
 });
-test('explicit style apply commits pending fields together and retains an existing fill',()=>{
+test('style patches retain existing fill when editing multiple presentation fields',()=>{
   const {app,engine,doc}=appRuntime();const o=engine.add({type:'circle',cx:0,cy:0,r:1,style:{fill:'#abcdef'}});app.selectedId=o.id;
   doc.getElementById('selectionPanel').querySelectorAll=()=>[{dataset:{style:'fillEnabled'},type:'checkbox',checked:true},{dataset:{style:'strokeWidth'},type:'number',valueAsNumber:5},{dataset:{style:'opacity'},type:'number',valueAsNumber:75}];
-  app.applyStylePanel();assert.equal(engine.get(o.id).style.fill,'#abcdef');assert.equal(engine.get(o.id).style.strokeWidth,5);assert.equal(engine.get(o.id).style.opacity,.75);
+  app.changeDocument(()=>engine.update(o.id,{style:Object.assign({},...doc.getElementById('selectionPanel').querySelectorAll().map(input=>app.stylePatch(input)))}));assert.equal(engine.get(o.id).style.fill,'#abcdef');assert.equal(engine.get(o.id).style.strokeWidth,5);assert.equal(engine.get(o.id).style.opacity,.75);
   assert.equal(app.history.entries.length,1);app.travelHistory();assert.equal(engine.get(o.id).style.strokeWidth,2);
+});
+test('multi-selection moves rigidly as one history step and undo restores every selected ID',()=>{
+  const {app,engine,down,move,emit,win}=appRuntime();app.selectObject('p');app.selectObject('l',true);
+  assert.deepEqual(Array.from(app.selectedIds),['p','l']);down({x:0,y:0});move({x:1,y:0});emit(win,'pointerup');
+  assert.equal(engine.get('p').x,1);assert.equal(engine.get('l').x1,1);assert.equal(engine.get('l').x2,2);assert.equal(app.history.entries.length,1);
+  app.travelHistory();assert.equal(engine.get('p').x,0);assert.deepEqual(Array.from(app.selectedIds),['p','l']);app.travelHistory(true);assert.equal(engine.get('p').x,1);
+});
+test('duplicate and lock are atomic commands; locked selections refuse dragging and deletion',()=>{
+  const {app,engine,down,move,emit,win}=appRuntime();app.selectObject('p');app.selectObject('l',true);app.duplicateSelection();
+  assert.equal(engine.model.objects.length,4);assert.equal(app.selectedIds.length,2);assert.equal(app.history.entries.length,1);
+  app.toggleLockSelection();assert.ok(app.selectedIds.every(id=>engine.get(id).locked));const before=plain(engine.toJSON());
+  down({x:.5,y:.5});move({x:2,y:2});emit(win,'pointerup');assert.deepEqual(plain(engine.toJSON()),before);app.deleteSelection();assert.deepEqual(plain(engine.toJSON()),before);
+  app.toggleLockSelection();app.deleteSelection();assert.equal(engine.model.objects.length,2);
+});
+test('angle tools create measured and exact right angles as one complete interaction',()=>{
+  for(const tool of ['angle','rightAngle']) {
+    const {app,engine,down,emit,win}=appRuntime();app.setTool(tool);
+    for(const p of [{x:1,y:0},{x:0,y:0},{x:.1,y:1}]){down(p);emit(win,'pointerup');}
+    const angle=engine.model.objects.at(-1);assert.equal(angle.type,'angle');if(tool==='rightAngle')assert.ok(Math.abs(app.services.resolver ? app.engine.get(angle.id).vertices[2].x : 1)<1e-9);
+    assert.equal(app.interaction,null);assert.equal(app.history.entries.length,1);
+  }
 });
 
 test('history records a whole drag once, restores selection and ignores cancelled/noop gestures', () => {
@@ -209,4 +230,11 @@ test('unrecognized drawing tools never fall through into canvas pan', () => {
   const { app, engine, down } = appRuntime(); const before = plain(engine.renderer.bounds);
   app.setTool('unsupported-tool'); down({ x: 4, y: 2 });
   assert.equal(app.interaction, null); assert.deepEqual(plain(engine.renderer.bounds), before);
+});
+
+for(const cancellation of ['pointercancel','blur','Escape','lostpointercapture']) test(`group ${cancellation} rolls back every member and selection`,()=>{
+  const {app,engine,down,move,emit,win,doc}=appRuntime();app.selectObject('p');app.selectObject('l',true);
+  const before=plain(engine.toJSON());down({x:0,y:0});move({x:2,y:2});assert.equal(app.interaction.mode,'group');
+  emit(cancellation==='lostpointercapture'?doc.getElementById('canvasWrap'):win,cancellation==='Escape'?'keydown':cancellation,{key:'Escape'});
+  assert.equal(app.interaction,null);assert.deepEqual(plain(engine.toJSON()),before);assert.deepEqual(plain(app.selectedIds),['p','l']);
 });

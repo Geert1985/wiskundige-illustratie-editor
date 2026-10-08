@@ -29,7 +29,8 @@ module.exports=async page=>{
   await roundtrip(()=>edit('fontSize',32));await roundtrip(()=>edit('opacity',50));
   assert.equal(await page.locator('[data-object-id="t"] text').getAttribute('font-size'),'32');assert.equal(await page.locator('[data-object-id="t"]').getAttribute('opacity'),'0.5');
   assert.equal((await doc()).objects.find(o=>o.id==='t').style.extension.keep,true);
-  await roundtrip(async()=>{await page.locator('[data-style="fontSize"]').evaluate(input=>{input.value='36';});await page.locator('[data-style="opacity"]').evaluate(input=>{input.value='60';});await page.locator('[data-style-apply]').click();});
+  assert.equal(await page.locator('[data-style-apply]').count(),0);
+  await roundtrip(()=>edit('fontSize',36));await roundtrip(()=>edit('opacity',60));
   assert.equal(await page.locator('[data-object-id="t"] text').getAttribute('font-size'),'36');
   const valid=await doc();await edit('fontSize',0);assert.deepEqual(await doc(),valid);await edit('opacity',101);assert.deepEqual(await doc(),valid);
   const download=page.waitForEvent('download');await page.locator('#exportSvgBtn').click();const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/font-size="36"/);assert.match(svg,/stroke-dasharray="8 5"/);assert.match(svg,/opacity="0.6"/);
