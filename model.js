@@ -97,6 +97,7 @@
     validateImportedObject(input);
     if (!input || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
     const type = input.type;
+    if(input.construction) MI.ConstructionService.validate(input.construction);
     const id = String(input.id == null ? "" : input.id);
     if (!id) throw new Error("Elk illustratie-object heeft een id nodig.");
     const hasLegacyLabel = input.showLabel == null && input.label != null;
@@ -137,7 +138,7 @@
       try {
         const data = { ...input }; if (data.id == null || data.id === '') data.id = this._generateId(data.type);
         const object = freeze(normaliseObject(data)); if (this.#objects.some(o => o.id === object.id)) throw new Error('Object-id bestaat al: ' + object.id);
-        this.#objects = Object.freeze([...this.#objects, object]); return clone(object);
+        this.#objects = freeze(MI.ConstructionService.resolve([...this.#objects, object])); return this.get(object.id);
       } catch (error) { this._nextId = nextId; throw error; }
     }
     update(id, patch) {
@@ -147,17 +148,17 @@
       if (('id' in patch && patch.id !== id) || ('type' in patch && patch.type !== current.type)) throw new Error('ID en objecttype kunnen niet worden gewijzigd.');
       if ('style' in patch && !record(patch.style)) throw new Error('Ongeldige objectstijl.');
       const next = freeze(normaliseObject({ ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style }));
-      const objects = this.#objects.slice(); objects[index] = next; this.#objects = Object.freeze(objects); return clone(next);
+      const objects = this.#objects.slice(); objects[index] = next; this.#objects = freeze(MI.ConstructionService.resolve(objects)); return this.get(id);
     }
-    remove(id) { const before = this.#objects.length; this.#objects = Object.freeze(this.#objects.filter(o => o.id !== id)); return this.#objects.length !== before; }
+    remove(id) { const before = this.#objects.length; const removed=MI.ConstructionService.descendants(this.#objects,[id]); this.#objects = Object.freeze(this.#objects.filter(o => !removed.has(o.id))); return this.#objects.length !== before; }
     get(id) { const object = this.#objects.find(o => o.id === id); return object ? clone(object) : null; }
     all() { return clone(this.objects); }
     clear() { this.#objects = Object.freeze([]); }
-    toJSON() { return { ...clone(this._extra), type: this.type, version: MODEL_VERSION, meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
+    toJSON() { return { ...clone(this._extra), type: this.type, version: this.#objects.some(o=>o.construction)?3:MODEL_VERSION, ...(this.#objects.some(o=>o.construction)?{constructionSchema:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
     load(data) {
       if (!record(data) || !Array.isArray(data.objects)) throw new Error("Ongeldig illustratiemodel: objects-array vereist.");
       const version = data.version == null ? 1 : Number(data.version);
-      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || version > MODEL_VERSION) throw new Error("Niet-ondersteunde illustratiemodelversie.");
+      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || (version > MODEL_VERSION && !(version===3 && data.constructionSchema===1))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
       if (data.type != null && data.type !== "geometry") throw new Error("Niet-ondersteund documenttype.");
       if (data.meta != null && !record(data.meta)) throw new Error("Ongeldige documentmetadata.");
       const meta = clone(data.meta || {}), presentation = normalisePresentation(data.presentation);
@@ -179,9 +180,10 @@
         if (Number.isSafeInteger(suffix) && suffix < Number.MAX_SAFE_INTEGER - 1) nextId = Math.max(nextId, suffix + 1);
         return object;
       });
+      const resolved = MI.ConstructionService.resolve(objects);
       // Commit only after every object, migration and document field has succeeded.
       this.type = "geometry"; this.version = MODEL_VERSION; this.meta = meta;
-      this.#objects = freeze(objects); this.presentation = presentation; this._extra = extra; this._nextId = nextId;
+      this.#objects = freeze(resolved); this.presentation = presentation; this._extra = extra; this._nextId = nextId;
       return this;
     }
   }

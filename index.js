@@ -93,8 +93,14 @@
     }
     duplicateMany(ids,delta={x:.5,y:.5}) {
       const model=new MI.IllustrationModel(this.model.toJSON());
-      const copies=ids.map(id=>{const original=model.get(id);if(!original)throw Error('Object niet gevonden: '+id);const {id:ignored,...data}=original;return model.add({...data,...MI.MeasurementGeometry.translate(original,delta),name:original.name+' (kopie)',locked:false});});
+      const copies=ids.map(id=>{const original=model.get(id);if(!original)throw Error('Object niet gevonden: '+id);const {id:ignored,construction:ignoredConstruction,constructionValid:ignoredValidity,...data}=original;return model.add({...data,...MI.MeasurementGeometry.translate(original,delta),name:original.name+' (kopie)',locked:false});});
       this.model=model;return copies;
+    }
+    construct(kind,sources) {
+      const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.calculate({kind,sources},map);
+      if(!first)throw Error('Deze constructie bestaat niet voor de gekozen geometrie.');
+      const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&Math.abs(Math.hypot(first.x1-map.get(sources[0].objectId).cx,first.y1-map.get(sources[0].objectId).cy)-map.get(sources[0].objectId).r)>1e-9?2:1;
+      const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,construction:{kind,sources, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
     }
     add(object) { return this.model.add(object); }
     update(id, patch) { return this.model.update(id, patch); }
@@ -111,7 +117,7 @@
       let bestDistance = Infinity;
 
       this.model.objects.forEach((object) => {
-        if (object.visible === false) return;
+        if (object.visible === false || (object.construction && object.constructionValid===false)) return;
         const distance = options ? screenHit(object, screen, options.transform) : hitDistance(object, x, y);
         if (distance <= maxDistance + (options ? 1e-9 : 0) && (options ? distance <= bestDistance + 1e-9 : distance < bestDistance)) {
           best = object;

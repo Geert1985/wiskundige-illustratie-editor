@@ -159,7 +159,7 @@
     }
 
     renderObject(object) {
-      if (object.visible === false) return "";
+      if ((object.visible === false || (object.construction && object.constructionValid===false))) return "";
       const opacity=object.style && object.style.opacity != null ? object.style.opacity : 1;
       const style = {...(object.style || {}),opacity:1}; let svg = "";
       if (object.type === "point") {
