@@ -61,6 +61,21 @@ function appRuntime() {
   const move = (point, pointerId = 1) => { const p = screen(point); emit(win, 'pointermove', { clientX: p.x, clientY: p.y, pointerId }); };
   return { MI, engine, app, doc, win, emit, down, move };
 }
+test('style inspector edits font size and stroke without replacing other style fields',()=>{
+  const {app,engine,emit,doc}=appRuntime();const o=engine.add({type:'text',x:1,y:1,text:'T',style:{fontSize:16,extension:{keep:true}}});app.selectedId=o.id;app.invalidate();
+  assert.match(doc.getElementById('selectionPanel').innerHTML,/data-style="fontSize"/);
+  const input={dataset:{style:'fontSize'},type:'number',valueAsNumber:30};input.closest=()=>input;
+  emit(doc.getElementById('selectionPanel'),'change',{target:input});assert.equal(engine.get(o.id).style.fontSize,30);assert.equal(engine.get(o.id).style.extension.keep,true);
+  app.travelHistory();assert.equal(engine.get(o.id).style.fontSize,16);app.travelHistory(true);assert.equal(engine.get(o.id).style.fontSize,30);
+  input.valueAsNumber=0;emit(doc.getElementById('selectionPanel'),'change',{target:input});assert.equal(engine.get(o.id).style.fontSize,30);
+  assert.equal(app.history.entries.length,1);
+});
+test('explicit style apply commits pending fields together and retains an existing fill',()=>{
+  const {app,engine,doc}=appRuntime();const o=engine.add({type:'circle',cx:0,cy:0,r:1,style:{fill:'#abcdef'}});app.selectedId=o.id;
+  doc.getElementById('selectionPanel').querySelectorAll=()=>[{dataset:{style:'fillEnabled'},type:'checkbox',checked:true},{dataset:{style:'strokeWidth'},type:'number',valueAsNumber:5},{dataset:{style:'opacity'},type:'number',valueAsNumber:75}];
+  app.applyStylePanel();assert.equal(engine.get(o.id).style.fill,'#abcdef');assert.equal(engine.get(o.id).style.strokeWidth,5);assert.equal(engine.get(o.id).style.opacity,.75);
+  assert.equal(app.history.entries.length,1);app.travelHistory();assert.equal(engine.get(o.id).style.strokeWidth,2);
+});
 
 test('history records a whole drag once, restores selection and ignores cancelled/noop gestures', () => {
   const { app, engine, down, move, emit, win } = appRuntime();

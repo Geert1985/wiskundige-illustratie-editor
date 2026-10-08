@@ -22,6 +22,19 @@
     hydrate() { this.nodes.titleInput.value = this.engine.model.meta.title || ""; this.nodes.descriptionInput.value = this.engine.model.meta.description || ""; }
     updateMeta() { this.engine.model.meta.title = this.nodes.titleInput.value.trim(); this.engine.model.meta.description = this.nodes.descriptionInput.value.trim(); }
     flushEdits() { if (this.editBefore) { this.history.record(this.editBefore); this.editBefore = null; } }
+    stylePatch(input) {
+      let key=input.dataset.style,value=input.type==='number' ? input.valueAsNumber : input.value;
+      if(key==='opacity') { const current=this.engine.get(this.selectedId).style.opacity; value=value===current*100 ? current : value/100; }
+      if(key==='fillEnabled') { key='fill'; const object=this.engine.get(this.selectedId),stroke=object.style.stroke;
+        value=input.checked ? (object.style.fill && object.style.fill!=='none' ? object.style.fill : stroke && stroke!=='none' ? stroke : '#222222') : 'none';
+      }
+      return {[key]:value};
+    }
+    applyStylePanel() {
+      if(!this.selectedId) return;
+      const style=Object.assign({},...Array.from(this.nodes.selectionPanel.querySelectorAll('[data-style]'),input=>this.stylePatch(input)));
+      try { this.changeDocument(()=>this.engine.update(this.selectedId,{style})); } catch(error) { this.status(error.message); }
+    }
     changeDocument(fn) {
       this.cancel(); this.flushEdits(); const before = this.history.capture();
       try { fn(); } finally { this.history.record(before); this.invalidate(); }
@@ -64,17 +77,25 @@
       });
       this.on(this.document, "click", e => { if (this.axisMenuOpen && !e.target.closest('[data-view-select="axes"], [data-axis-settings]')) { this.axisMenuOpen = false; this.invalidate(); } });
       this.on(n.selectionPanel, "change", e => {
-        const input = e.target.closest("[data-edit]"); if (!input || !this.selectedId) return;
+        const input = e.target.closest("[data-edit], [data-style]"); if (!input || !this.selectedId) return;
         this.cancel();
         try { this.changeDocument(() => {
           const value=input.type === "number" ? input.valueAsNumber : input.value;
-          const patch=input.dataset.vertex != null ? {vertices:this.engine.get(this.selectedId).vertices.map((p,i)=>i===Number(input.dataset.vertex) ? {...p,[input.dataset.edit]:value} : p)} : {[input.dataset.edit]:value};
+          let patch;
+          if(input.dataset.style) {
+            patch={style:this.stylePatch(input)};
+          } else patch=input.dataset.vertex != null ? {vertices:this.engine.get(this.selectedId).vertices.map((p,i)=>i===Number(input.dataset.vertex) ? {...p,[input.dataset.edit]:value} : p)} : {[input.dataset.edit]:value};
           this.engine.update(this.selectedId,patch);
         }); }
         catch (error) { this.status(error.message); }
         this.invalidate();
       });
-      this.on(n.selectionPanel, "click", e => { if (e.target.closest("[data-delete-selected]") && this.selectedId) { this.changeDocument(() => { this.engine.remove(this.selectedId); this.selectedId = null; }); } });
+      this.on(n.selectionPanel, "click", e => {
+        if(e.target.closest('[data-style-apply]')) { this.applyStylePanel(); return; }
+        const color=e.target.closest('[data-style-color], [data-fill-object]');
+        if(color) { const id=color.dataset.fillObject || color.dataset.styleColor; this.openColor(id,color.dataset.fillObject ? 'fill' : this.engine.get(id).type==='text' ? null : 'stroke'); return; }
+        if (e.target.closest("[data-delete-selected]") && this.selectedId) { this.changeDocument(() => { this.engine.remove(this.selectedId); this.selectedId = null; }); }
+      });
       for (const input of [n.titleInput, n.descriptionInput]) {
         this.on(input, "input", () => { if (!this.editBefore) this.editBefore = this.history.capture(); this.updateMeta(); this.invalidate(); });
         this.on(input, "change", () => { this.flushEdits(); this.invalidate(); });
@@ -114,7 +135,7 @@
         if (cancel && this.editBefore) { this.history.restore(this.editBefore); this.editBefore = null; this.hydrate(); }
         else this.flushEdits();
       }
-      this.colorId = null; if (this.nodes.colorDialog && this.nodes.colorDialog.open) this.nodes.colorDialog.close();
+      this.colorId = null; this.colorProperty=null; if (this.nodes.colorDialog && this.nodes.colorDialog.open) this.nodes.colorDialog.close();
       this.invalidate();
     }
     closeDialogs(cancel = false) { this.closeText(); if (this.colorId) this.closeColor(cancel); }
@@ -310,12 +331,20 @@
       reader.onerror = () => { if (this.initialized && serial === this.importSerial) this.status("JSON kon niet worden gelezen."); };
       reader.readAsText(file);
     }
-    setColor(id, color) { const object = this.engine.get(id); if (!object) return; this.cancel(); if (!this.editBefore) this.editBefore = this.history.capture(); this.engine.update(id, this.services.color.patch(object, color)); this.invalidate(); }
+    openColor(id,property=null) {
+      this.cancel(); this.flushEdits(); const object=this.engine.get(id); if(!object || !this.colorInput) return;
+      this.colorId=id; this.colorProperty=property;
+      let color=property ? object.style[property] : this.services.color.value(object);
+      if(/^#[0-9a-f]{3}$/i.test(color)) color='#'+color.slice(1).split('').map(c=>c+c).join('');
+      this.colorInput.value=/^#[0-9a-f]{6}$/i.test(color) ? color : '#222222';
+      this.nodes.colorDialog.showModal(); this.colorInput.focus();
+    }
+    setColor(id, color) { const object = this.engine.get(id); if (!object) return; this.cancel(); if (!this.editBefore) this.editBefore = this.history.capture(); this.engine.update(id, this.colorProperty ? {style:{[this.colorProperty]:color}} : this.services.color.patch(object, color)); this.invalidate(); }
     viewClick(event) {
       const target = event.target, find = selector => target.closest(selector); let button;
       if ((button = find('[data-view-select="axes"]'))) { this.axisMenuOpen = !this.axisMenuOpen; this.invalidate(); return; }
       if ((button = find('[data-axis-system]')) && !button.disabled) { this.changeDocument(() => { this.engine.renderer.coordinateSystem = button.dataset.axisSystem; this.axisMenuOpen = false; }); return; }
-      if ((button = find("[data-color-object]"))) { this.cancel(); this.flushEdits(); this.colorId = button.dataset.colorObject; const object = this.engine.get(this.colorId); if (object && this.colorInput) { const color = this.services.color.value(object); this.colorInput.value = /^#[0-9a-f]{6}$/i.test(color) ? color : "#222222"; this.nodes.colorDialog.showModal(); this.colorInput.focus(); } return; }
+      if ((button = find("[data-color-object]"))) { this.openColor(button.dataset.colorObject); return; }
       if ((button = find("[data-select-object]"))) { this.cancel(); this.tool = "select"; this.selectedId = button.dataset.selectObject; this.invalidate(); return; }
       if ((button = find("[data-object-visibility]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.objectVisibility); this.engine.update(object.id, { visible: object.visible === false }); }); return; }
       if ((button = find("[data-toggle-label]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.toggleLabel); this.engine.update(object.id, { showLabel: !object.showLabel }); }); return; }
@@ -368,6 +397,17 @@
       for (const key of keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.1" value="' + MI.escapeXml(object[key]) + '"></label>';
       if(object.type==='polygon') object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.1" value="'+MI.escapeXml(p[key])+'"></label>'; });
       if (object.type === "text") html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
+      const style=object.style,esc=MI.escapeXml;
+      html+='<fieldset class="object-style"><legend>Stijl</legend><button type="button" class="secondary" data-style-color="'+esc(object.id)+'">'+(object.type==='text'?'Tekstkleur':'Lijnkleur')+'</button>';
+      if(object.type==='text') html+='<label>Tekstgrootte<input data-style="fontSize" type="number" min="1" step="1" value="'+esc(style.fontSize)+'"></label>';
+      else {
+        html+='<label>Lijndikte<input data-style="strokeWidth" type="number" min="0" step="0.5" value="'+esc(style.strokeWidth)+'"></label>';
+        const options=[['','Doorgetrokken'],['8 5','Gestreept'],['2 5','Gestippeld'],['8 4 2 4','Streep-punt']];
+        if(!options.some(o=>o[0]===style.dash)) options.push([style.dash,'Eigen patroon']);
+        html+='<label>Lijnpatroon<select data-style="dash">'+options.map(([value,label])=>'<option value="'+esc(value)+'"'+(style.dash===value?' selected':'')+'>'+label+'</option>').join('')+'</select></label>';
+        if(['point','circle','polygon'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-style="fillEnabled"'+(style.fill && style.fill!=='none'?' checked':'')+'>Vulling</label><button type="button" class="secondary" data-fill-object="'+esc(object.id)+'">Vulkleur kiezen</button>';
+      }
+      html+='<label>Dekking (%)<input data-style="opacity" type="number" min="0" max="100" step="1" value="'+esc(style.opacity*100)+'"></label><p class="help-text">0% is onzichtbaar, 100% is volledig zichtbaar.</p><button type="button" data-style-apply>Stijl toepassen</button></fieldset>';
       panel.innerHTML = html + '<button class="delete-btn" data-delete-selected>Verwijder object</button>';
     }
     download(name, content, type) { const blob = new this.window.Blob([content], { type }), url = this.window.URL.createObjectURL(blob), link = this.document.createElement("a"); link.href = url; link.download = name; link.click(); this.window.setTimeout(() => this.window.URL.revokeObjectURL(url), 500); }

@@ -49,3 +49,8 @@ button:disabled { opacity: .45; cursor: default; filter: none; }
 .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 .color-palette { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
 .color-palette button { width: 32px; height: 32px; padding: 0; border: 2px solid #aaa; border-radius: 50%; }
+.object-style { margin: 18px 0; padding: 12px; border: 1px solid var(--border); border-radius: 6px; }
+.object-style legend { color: var(--accent); padding: 0 5px; }
+.object-style select { display: block; width: 100%; padding: 8px; margin-top: 5px; color: #eee; background: #111; border: 1px solid var(--border); border-radius: 6px; }
+.style-toggle { display: flex; align-items: center; gap: 8px; }
+.style-toggle input { accent-color: var(--accent); }

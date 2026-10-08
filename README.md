@@ -47,6 +47,7 @@ The first authoring editor now provides:
 - browser-local draft saving;
 - JSON import/export;
 - SVG export.
+- object styles and text size; see [STYLES.md](STYLES.md).
 
 ## Mathematical coordinate invariant
 
