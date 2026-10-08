@@ -7,13 +7,13 @@ module.exports = async function verifySnapping(page) {
     const data = { version: 2, type: 'geometry', meta: { title }, objects, presentation: { bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, showGrid, showSnapPoints: true } };
     await page.locator('#fileInput').setInputFiles({ name: '0c.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(data)) });
     await page.waitForFunction(title => FZI.MathIllustration.activeEngine.model.meta.title === title, title);
-    await page.locator('[data-tool="select"]').click();
+    await require('./browser-tool-menu.cjs').choose(page,'[data-tool="select"]');
   };
   const screen = point => page.evaluate(point => FZI.MathIllustration.CoordinateTransform.forCanvas(FZI.MathIllustration.activeEngine).mathToScreen(point), point);
   const move = async (x, y) => { const p = await screen({ x, y }); await page.mouse.move(p.x, p.y); };
   const preview = () => page.evaluate(() => FZI.MathIllustration.activeEngine.renderer.preview);
   const objects = () => page.evaluate(() => FZI.MathIllustration.activeEngine.model.all());
-  const begin = async (shape, x = 0, y = 0) => { await page.locator(`[data-tool="${shape}"]`).click(); await move(x, y); await page.mouse.down(); };
+  const begin = async (shape, x = 0, y = 0) => { await require('./browser-tool-menu.cjs').choose(page,`[data-tool="${shape}"]`); await move(x, y); await page.mouse.down(); };
   const marker = () => page.evaluate(() => {
     const circle = document.querySelector('#canvas .fzi-snap-indicator circle');
     if (!circle) return null;
@@ -64,7 +64,7 @@ module.exports = async function verifySnapping(page) {
     [[{ id: 'l', type: 'line', x1: -3, y1: 0, x2: 3, y2: 0 }, { id: 'c', type: 'circle', cx: 0, cy: 0, r: 2 }], { x: -2, y: 0 }],
     [[{ id: 'a', type: 'circle', cx: 0, cy: 0, r: 2 }, { id: 'b', type: 'circle', cx: 2, cy: 0, r: 2 }], { x: 1, y: Math.sqrt(3) }]
   ]) {
-    await load(source); await page.locator('[data-tool="point"]').click(); await move(target.x + .02, target.y + .02);
+    await load(source); await require('./browser-tool-menu.cjs').choose(page,'[data-tool="point"]'); await move(target.x + .02, target.y + .02);
     const indication = await marker(); close(indication.x, target.x); close(indication.y, target.y);
     await page.mouse.down(); await page.mouse.up(); const point = (await objects()).find(o => o.type === 'point');
     close(point.x, indication.x); close(point.y, indication.y);
@@ -90,7 +90,7 @@ module.exports = async function verifySnapping(page) {
   // Responsive tolerance uses actual CSS pixels, not SVG user units.
   for (const width of [900, 1500]) {
     await page.setViewportSize({ width, height: 900 }); await load([{ id: 'p', type: 'point', x: 0, y: 0 }]);
-    await page.locator('[data-tool="point"]').click(); const origin = await screen({ x: 0, y: 0 });
+    await require('./browser-tool-menu.cjs').choose(page,'[data-tool="point"]'); const origin = await screen({ x: 0, y: 0 });
     await page.mouse.move(origin.x + 11, origin.y); assert.ok(await marker());
     await page.mouse.move(origin.x + 13, origin.y); assert.equal(await marker(), null);
   }

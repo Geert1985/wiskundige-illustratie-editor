@@ -14,10 +14,10 @@ module.exports = async page => {
     checks.push(name);
   }
   await page.evaluate(() => FZI.MathIllustration.editor.loadDocument({ objects: [], presentation: { bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, showGrid: false } }));
-  await check('point', async () => { await page.locator('[data-tool="point"]').click(); await move(-3, -2); await page.mouse.click(...Object.values(await page.evaluate(() => FZI.MathIllustration.editor.transform().mathToScreen({ x: -3, y: -2 })))); });
+  await check('point', async () => { await require('./browser-tool-menu.cjs').choose(page,'[data-tool="point"]'); await move(-3, -2); await page.mouse.click(...Object.values(await page.evaluate(() => FZI.MathIllustration.editor.transform().mathToScreen({ x: -3, y: -2 })))); });
   for (const type of ['line', 'straight', 'ray', 'vector', 'circle']) {
     await page.evaluate(() => FZI.MathIllustration.editor.loadDocument({ objects: [], presentation: { showGrid: false } }));
-    await check(type, async () => { await page.locator(`[data-tool="${type}"]`).click(); await drag([0, 0], [1, 0]); });
+    await check(type, async () => { await require('./browser-tool-menu.cjs').choose(page,`[data-tool="${type}"]`); await drag([0, 0], [1, 0]); });
   }
   await page.evaluate(() => FZI.MathIllustration.editor.loadDocument({ objects: [{ id: 'l', type: 'line', x1: -1, y1: 0, x2: 1, y2: 0, showLabel: true, labelOffsetX: .2, labelOffsetY: .3 }], presentation: { showGrid: false } }));
   await page.locator('[data-select-object="l"]').click();

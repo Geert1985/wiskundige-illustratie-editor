@@ -5,13 +5,13 @@ module.exports = async page => {
   const move = async (x, y) => { const p = await page.evaluate(p => FZI.MathIllustration.editor.transform().mathToScreen(p), { x, y }); await page.mouse.move(p.x, p.y); };
   for (const type of ['straight', 'ray', 'vector']) {
     await page.evaluate(() => { const app = FZI.MathIllustration.editor; app.loadDocument({ objects: [], presentation: { bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, showGrid: false } }); });
-    await page.locator(`[data-tool="${type}"]`).click(); await move(0, 0); await page.mouse.down(); await move(1.1, 0); await page.keyboard.press('1');
+    await require('./browser-tool-menu.cjs').choose(page,`[data-tool="${type}"]`); await move(0, 0); await page.mouse.down(); await move(1.1, 0); await page.keyboard.press('1');
     const preview = await page.evaluate(() => FZI.MathIllustration.editor.engine.renderer.preview);
     assert.equal(preview.type, type); assert.equal(await page.locator('[data-drawing-preview]').count(), 1);
     await page.mouse.up(); let object = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects[0]);
     assert.equal(object.type, type); assert.equal(object.x2, preview.end.x); assert.equal(object.y2, preview.end.y);
     assert.ok(Math.abs(Math.hypot(object.x2 - object.x1, object.y2 - object.y1) - 1) < 1e-9);
-    await page.locator('[data-tool="select"]').click(); await move(.5, 0); await page.mouse.down(); await move(.8, .4); await page.mouse.up();
+    await require('./browser-tool-menu.cjs').choose(page,'[data-tool="select"]'); await move(.5, 0); await page.mouse.down(); await move(.8, .4); await page.mouse.up();
     object = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects[0]);
     assert.ok(Math.abs(object.x2 - object.x1 - 1) < 1e-9); assert.ok(Math.abs(object.y2 - object.y1) < 1e-9);
     const beforeCancel = await page.evaluate(() => FZI.MathIllustration.editor.engine.toJSON());
@@ -40,10 +40,10 @@ module.exports = async page => {
   for (const type of ['straight', 'ray', 'vector']) {
     const target = type === 'vector' ? .5 : 2;
     await page.evaluate(({ type, target }) => { const app = FZI.MathIllustration.editor; app.loadDocument({ objects: [{ id: 'a', type, x1: 0, y1: 0, x2: 1, y2: 0 }, { id: 'b', type: 'line', x1: target, y1: -1, x2: target, y2: 1 }], presentation: { bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, showGrid: false } }); }, { type, target });
-    await page.locator('[data-tool="point"]').click(); await move(target + .02, .02); await page.mouse.down(); await page.mouse.up();
+    await require('./browser-tool-menu.cjs').choose(page,'[data-tool="point"]'); await move(target + .02, .02); await page.mouse.down(); await page.mouse.up();
     const p = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.at(-1)); assert.equal(p.x, target); assert.equal(p.y, 0);
     await page.evaluate(() => FZI.MathIllustration.editor.loadDocument({ objects: [], presentation: { showGrid: false } }));
-    await page.locator(`[data-tool="${type}"]`).click(); await move(0, 0); await page.mouse.down(); await move(.01, 0); await page.mouse.up();
+    await require('./browser-tool-menu.cjs').choose(page,`[data-tool="${type}"]`); await move(0, 0); await page.mouse.down(); await move(.01, 0); await page.mouse.up();
     assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.length), 0);
     assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.renderer.preview), null);
   }

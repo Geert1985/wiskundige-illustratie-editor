@@ -65,3 +65,5 @@ See MEASUREMENTS-GROUPS.md. Version 2 retains optional locked, showMeasurement, 
 ## Linked construction documents (version 3)
 
 Documents containing construction definitions export version 3 and constructionSchema:1. The editor still reads v1/v2 illustrations and writes v2 when no constructions are present. This feature declaration makes older builds reject linked documents rather than silently losing dependencies. See CONSTRUCTIONS.md for references, validation, recalculation, deletion and duplication policy.
+
+Version-3 construction kinds area/perimeter create linked text labels from one circle/polygon source. Text is recomputed on source edits/import; label offsets and style remain persistent.

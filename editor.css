@@ -54,3 +54,5 @@ button:disabled { opacity: .45; cursor: default; filter: none; }
 .object-style select { display: block; width: 100%; padding: 8px; margin-top: 5px; color: #eee; background: #111; border: 1px solid var(--border); border-radius: 6px; }
 .style-toggle { display: flex; align-items: center; gap: 8px; }
 .style-toggle input { accent-color: var(--accent); }
+
+.tool-menu>button{width:100%;margin-bottom:8px}.tool-menu details{border-top:1px solid var(--border);margin-top:4px}.tool-menu details summary{padding:9px 4px;cursor:pointer;font-size:13px}.tool-menu .tool-grid{padding-bottom:8px}.tool-menu [data-active-tool]{font-size:11px;color:var(--accent)}

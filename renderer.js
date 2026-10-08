@@ -141,7 +141,8 @@
       const legacyDy = Number.isFinite(Number(object.labelDy)) ? Number(object.labelDy) : defaultDy;
       const dx = object.labelOffsetX != null && Number.isFinite(Number(object.labelOffsetX)) ? Number(object.labelOffsetX) * scale : legacyDx;
       const dy = object.labelOffsetY != null && Number.isFinite(Number(object.labelOffsetY)) ? -Number(object.labelOffsetY) * scale : legacyDy;
-      return '<text class="object-label" data-label-id="' + esc(object.id) + '" x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="14" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
+      const fontSize=object.type==='text' && object.construction && ['area','perimeter'].includes(object.construction.kind)?style.fontSize||16:14;
+      return '<text class="object-label" data-label-id="' + esc(object.id) + '" x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="'+number(fontSize)+'" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
     }
 
     renderDirected(object) {
@@ -190,7 +191,8 @@
       if (object.type === "text") {
         const transform = object.rotation ? ' transform="rotate(' + number(object.rotation) + ' ' + number(this.mapX(object.x)) + ' ' + number(this.mapY(object.y)) + ')"' : "";
         svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(object.text) + '</text>';
-        if (object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6);
+        if(object.construction && ['area','perimeter'].includes(object.construction.kind)) svg=this.renderLabel(object,object.text,6,-6);
+        else if (object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6);
       }
       if(object.measurementLabelOnly && ['dimension','angle'].includes(object.type)) svg='';
       if(object.type==='angle'||object.type==='dimension'||(object.showMeasurement && (MI.LinearGeometry.isLinear(object)||object.type==='circle'))) svg+=this.renderMeasurement({...object,style});

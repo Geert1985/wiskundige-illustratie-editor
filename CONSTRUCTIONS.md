@@ -25,3 +25,13 @@ Verification: Node regression tests cover six constructions, transitive updates,
 Bissectrice also accepts a direct click on an existing angle (arm, arc or right-angle mark). All three vertices are referenced, so the bisector follows subsequent angle edits. Three-point selection remains available with specific instructions after each click.
 
 For a triangle or polygon, clicking a vertex with Bissectrice constructs the bisector of its two neighboring sides. The neighboring vertex references remain linked.
+
+## Tool categories and whole-figure measurements
+
+Selecteren stays outside the four tool accordions. Basisobjecten is initially open; Figuren, Meten and Constructies start closed. Native details/name grouping allows at most one open category. The central render updates the active tool suffix even when that category is collapsed. Category state is transient; no extra editor listeners or document fields are needed.
+
+Meten includes Omtrek and Oppervlakte. Click inside/on a circle or polygon (including triangles); a 12-CSS-pixel boundary tolerance is accepted. A directly clicked figure wins when overlapping figures are painted; other candidates follow deterministic distance/ID ordering. The tool creates one linked text object, construction kind perimeter/area, with the figure's objectId as its sole source. Source geometry changes recompute the value automatically. Labels can be dragged, styled, resized, hidden and undone without detaching the reference. Text/coordinates are computed and are not editable as free text.
+
+Circle formulas: perimeter 2πr, area πr². Polygon perimeter sums all closed sides; area is the absolute shoelace sum computed relative to the first vertex, preserving orientation independence and reducing large-coordinate cancellation. Concave simple polygons are supported; holes/self-crossing polygons are outside the existing model. Values are displayed to two decimals in the document's mathematical units (squared units for area). No physical-unit picker is added. Label anchors use circle center or the existing polygon mean-vertex anchor and preserve mathematical drag offsets.
+
+The existing declared version-3 construction document schema remains unchanged. Older builds that do not know the new kinds reject these linked definitions. Save/reload and SVG use the same current label state. Source deletion and duplicate snapshot rules remain as described above.

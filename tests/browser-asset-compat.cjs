@@ -8,7 +8,7 @@ module.exports = async page => {
     const versions = await page.evaluate(() => Array.from(document.scripts, script => new URL(script.src).searchParams.get('v')));
     assert.ok(versions.every(Boolean)); assert.equal(new Set(versions).size, 1);
     for (const type of ['line', 'straight', 'ray', 'vector']) {
-      await page.locator(`[data-tool="${type}"]`).click();
+      await require('./browser-tool-menu.cjs').choose(page,`[data-tool="${type}"]`);
       const start = await page.evaluate(() => FZI.MathIllustration.editor.transform().mathToScreen({ x: -2, y: -1 }));
       const end = await page.evaluate(() => FZI.MathIllustration.editor.transform().mathToScreen({ x: 1, y: 1 }));
       const bounds = await page.evaluate(() => FZI.MathIllustration.editor.engine.renderer.bounds);

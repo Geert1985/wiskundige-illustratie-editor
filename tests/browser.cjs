@@ -45,7 +45,7 @@ const server = http.createServer((req, res) => {
     assert.ok(result.blocked); assert.ok(result.outScale < 700); assert.ok(result.finite); assert.ok(result.lines < 1000);
     // Reset and verify ordinary authoring still works with all feature scripts loaded.
     await page.locator('#resetViewBtn').click();
-    await page.locator('[data-tool="point"]').click();
+    await require('./browser-tool-menu.cjs').choose(page,'[data-tool="point"]');
     await page.locator('#canvasWrap').click({ position: { x: 200, y: 200 } });
     assert.equal(await page.evaluate(() => FZI.MathIllustration.activeEngine.model.objects.length), 1);
     const legacy = fs.readFileSync(path.join(__dirname, 'fixtures', 'legacy-v1.json'));
@@ -104,7 +104,8 @@ const server = http.createServer((req, res) => {
     const styles = await require('./browser-styles.cjs')(page);
     const measurementsGroups = await require('./browser-measurements-groups.cjs')(page);
     const constructions = await require('./browser-constructions.cjs')(page);
+    const areaMenu=await require('./browser-area-menu.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

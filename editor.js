@@ -154,8 +154,8 @@
       this.invalidate();
     }
     closeDialogs(cancel = false) { this.closeText(); if (this.colorId) this.closeColor(cancel); }
-    constructionRole(kind,index) { return ['parallel','perpendicular'].includes(kind)&&index===0?'line':kind==='tangent'&&index===0?'circle':'point'; }
-    constructionHint(kind,index=0) { return ({midpoint:'Middenpunt: kies twee punten, of klik een lijnstuk.',perpendicularBisector:'Middelloodlijn: kies twee punten, of klik een lijnstuk.',parallel:index?'Kies het punt waar de evenwijdige rechte doorheen gaat.':'Kies een lijn of zijde.',perpendicular:index?'Kies het punt waar de loodlijn doorheen gaat.':'Kies een lijn of zijde.',bisector:['Bissectrice: klik een bestaande hoek of een veelhoekhoekpunt, of kies een bestaand punt op de eerste arm.','Kies nu het hoekpunt (waar beide armen samenkomen).','Kies nu een bestaand punt op de tweede arm.'][index],tangent:index?'Kies een punt op of buiten de cirkel.':'Kies een cirkel.'})[kind]; }
+    constructionRole(kind,index) { return ['area','perimeter'].includes(kind)?'figure':['parallel','perpendicular'].includes(kind)&&index===0?'line':kind==='tangent'&&index===0?'circle':'point'; }
+    constructionHint(kind,index=0) { return ({area:'Klik een cirkel, driehoek of veelhoek voor de oppervlakte.',perimeter:'Klik een cirkel, driehoek of veelhoek voor de omtrek.',midpoint:'Middenpunt: kies twee punten, of klik een lijnstuk.',perpendicularBisector:'Middelloodlijn: kies twee punten, of klik een lijnstuk.',parallel:index?'Kies het punt waar de evenwijdige rechte doorheen gaat.':'Kies een lijn of zijde.',perpendicular:index?'Kies het punt waar de loodlijn doorheen gaat.':'Kies een lijn of zijde.',bisector:['Bissectrice: klik een bestaande hoek of een veelhoekhoekpunt, of kies een bestaand punt op de eerste arm.','Kies nu het hoekpunt (waar beide armen samenkomen).','Kies nu een bestaand punt op de tweede arm.'][index],tangent:index?'Kies een punt op of buiten de cirkel.':'Kies een cirkel.'})[kind]; }
     constructionPick(point,role) {
       const transform=this.transform(),screen=transform.mathToScreen(point),candidates=[];
       const distance=p=>{const q=transform.mathToScreen(p);return Math.hypot(q.x-screen.x,q.y-screen.y);};
@@ -163,7 +163,11 @@
       for(const o of this.engine.model.objects) {
         if(o.visible===false||(o.construction && o.constructionValid===false))continue;
         const add=(s,d)=>{if(d<=12)candidates.push({source:{objectId:o.id,...s},distance:d,priority:o.type==='point'?0:1});};
-        if(role==='point') {
+        if(role==='figure') {
+          if(o.type==='polygon')add({},MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
+          if(o.type==='circle'){const radial=Math.hypot(point.x-o.cx,point.y-o.cy),edge=radial?{x:o.cx+(point.x-o.cx)*o.r/radial,y:o.cy+(point.y-o.cy)*o.r/radial}:{x:o.cx+o.r,y:o.cy};add({},radial<=o.r?0:distance(edge));}
+        }
+        else if(role==='point') {
           if(o.type==='point')add({},distance(o));
           if(MI.LinearGeometry.isLinear(o))for(const part of ['start','end'])add({part},distance(MI.ConstructionService.point(o,{part})));
           if(o.vertices)o.vertices.forEach((v,index)=>add({part:'vertex',index},distance(v)));
@@ -177,6 +181,7 @@
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
       const target=event.target&&event.target.closest&&event.target.closest('[data-object-id]'),painted=target&&this.engine.get(target.getAttribute('data-object-id'));
+      if(['area','perimeter'].includes(kind)&&painted&&['polygon','circle'].includes(painted.type))state.sources=[{objectId:painted.id}];
       const angle=!state.sources.length&&kind==='bisector'&&(painted&&painted.type==='angle'?painted:(this.engine.selectAt(point.x,point.y,{transform:this.transform(),tolerancePx:12})||{}).object);
       if(angle&&angle.type==='angle'&&angle.visible!==false)state.sources=[0,1,2].map(index=>({objectId:angle.id,part:'vertex',index}));
       let source=this.constructionPick(point,this.constructionRole(kind,state.sources.length));
@@ -446,6 +451,7 @@
       this.renderViewList(); this.renderInspector(object);
       if (n.undoBtn) n.undoBtn.disabled = !this.history.canUndo && !this.editBefore;
       if (n.redoBtn) n.redoBtn.disabled = !this.history.canRedo || !!this.editBefore;
+      this.document.querySelectorAll('[data-tool-category]').forEach(category=>{const active=Array.from(category.querySelectorAll('[data-tool]')).find(button=>button.dataset.tool===this.tool),label=category.querySelector('[data-active-tool]');if(label)label.textContent=active?' · '+active.textContent.trim():'';});
       this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool));
       n.crosshair.hidden = !this.interaction || this.interaction.mode !== "draw" || (this.feedback && this.feedback.snapped && r.showSnapPoints !== false);
       if (this.feedback && this.interaction && this.interaction.mode === "draw") { const p = this.transform().mathToScreen(this.feedback.point), rect = n.canvasWrap.getBoundingClientRect(); n.crosshair.style.left = p.x - rect.left + "px"; n.crosshair.style.top = p.y - rect.top + "px"; }
@@ -470,7 +476,7 @@
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
       for (const key of object.construction?[]:keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.1" value="' + MI.escapeXml(object[key]) + '"></label>';
       if(object.type==='polygon' || object.type==='angle') object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.1" value="'+MI.escapeXml(p[key])+'"></label>'; });
-      if (object.type === "text") html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
+      if (object.type === "text" && !object.construction) html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
       if(MI.LinearGeometry.isLinear(object)||['circle','angle'].includes(object.type)) {
         if(['dimension','angle'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-edit="measurementLabelOnly"'+(object.measurementLabelOnly?' checked':'')+'>Alleen meetlabel tonen</label>';
         if(!['dimension','angle'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-edit="showMeasurement"'+(object.showMeasurement?' checked':'')+'>Maat tonen</label>';

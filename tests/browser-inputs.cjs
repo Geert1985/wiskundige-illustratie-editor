@@ -5,7 +5,7 @@ module.exports = async page => {
   const unexpected = async dialog => { nativeDialogs++; await dialog.dismiss(); };
   page.on('dialog', unexpected);
   try {
-    await page.locator('[data-tool="text"]').click();
+    await require('./browser-tool-menu.cjs').choose(page,'[data-tool="text"]');
     const p = await page.evaluate(() => FZI.MathIllustration.editor.transform().mathToScreen({ x: 2, y: 1 }));
     await page.mouse.click(p.x, p.y);
     await page.locator('#textDialog').waitFor({ state: 'visible', timeout: 2000 });

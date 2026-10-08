@@ -6,7 +6,7 @@ module.exports = async function verifyLifecycle(page) {
   const close = (actual, expected, tolerance = 1e-9) => assert.ok(Math.abs(actual - expected) < tolerance, `${actual} != ${expected}`);
   const app = fn => page.evaluate(fn);
   // Keep the helper argument explicit rather than depending on page globals.
-  const reset = async () => { await page.mouse.up(); await page.evaluate(data => FZI.MathIllustration.editor.loadDocument(data), fixture); await page.locator('[data-tool="select"]').click(); };
+  const reset = async () => { await page.mouse.up(); await page.evaluate(data => FZI.MathIllustration.editor.loadDocument(data), fixture); await require('./browser-tool-menu.cjs').choose(page,'[data-tool="select"]'); };
   const doc = () => app(() => FZI.MathIllustration.editor.engine.toJSON());
   const screen = point => page.evaluate(point => FZI.MathIllustration.CoordinateTransform.forCanvas(FZI.MathIllustration.editor.engine).mathToScreen(point), point);
   const move = async point => { const p = await screen(point); await page.mouse.move(p.x, p.y); };
@@ -14,7 +14,7 @@ module.exports = async function verifyLifecycle(page) {
   const center = async locator => { const b = await locator.boundingBox(); assert.ok(b); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
   const begin = async mode => {
     if (mode === 'endpoint') await select('l'); else await select('p');
-    if (mode === 'draw') await page.locator('[data-tool="line"]').click();
+    if (mode === 'draw') await require('./browser-tool-menu.cjs').choose(page,'[data-tool="line"]');
     if (mode === 'label' || mode === 'endpoint') {
       const p = await center(page.locator(mode === 'label' ? '[data-label-id="p"]' : '.fzi-line-endpoint[data-endpoint="end"]'));
       await page.mouse.move(p.x, p.y);
@@ -37,7 +37,7 @@ module.exports = async function verifyLifecycle(page) {
   await page.locator('[data-axis-setting="showXAxis"]').uncheck();
   assert.equal(await app(() => FZI.MathIllustration.editor.engine.renderer.showXAxis), false);
   await page.locator('[data-view-select="axes"]').click();
-  await page.locator('[data-tool="point"]').click(); await move({ x: -2, y: -2 }); await page.mouse.down(); await page.mouse.up();
+  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="point"]'); await move({ x: -2, y: -2 }); await page.mouse.down(); await page.mouse.up();
   assert.equal((await doc()).objects.length, 4);
   // CSS/SVG scaling and viewport zoom use the same CoordinateTransform for label deltas.
   for (const [width, zoom] of [[1280, false], [820, false], [1280, true]]) {
@@ -51,7 +51,7 @@ module.exports = async function verifyLifecycle(page) {
     assert.equal(await page.locator('#selectionPanel [data-edit="x"]').inputValue(), '0');
     assert.equal(await page.locator('[data-object-id="p"].selected').count(), 1);
     const saved = await doc();
-    await page.locator('[data-tool="line"]').click();
+    await require('./browser-tool-menu.cjs').choose(page,'[data-tool="line"]');
     const label = await center(page.locator('[data-label-id="p"]'));
     await page.mouse.move(label.x, label.y); await page.mouse.down();
     assert.equal(await app(() => FZI.MathIllustration.editor.interaction.mode), 'draw');
@@ -99,7 +99,7 @@ module.exports = async function verifyLifecycle(page) {
   }
   await reset();
   await app(() => { const MI = FZI.MathIllustration, engine = MI.editor.engine; MI.bootstrapEditor({ engine, restoreDraft: false }); MI.editor.init(); });
-  await page.locator('[data-tool="point"]').click(); await move({ x: -2, y: -2 }); await page.mouse.down(); await page.mouse.up();
+  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="point"]'); await move({ x: -2, y: -2 }); await page.mouse.down(); await page.mouse.up();
   assert.equal((await doc()).objects.length, 4);
   assert.equal(await page.locator('[data-editor-color]').count(), 1);
   // Endpoint preview renders one consistent transient state without mutating the document early.

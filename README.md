@@ -141,3 +141,5 @@ Run `node --test math-illustration/tests/*.test.cjs`. With Playwright and Edge i
 Measurements, right-angle marks and multiple selection: see [MEASUREMENTS-GROUPS.md](MEASUREMENTS-GROUPS.md). Object style fields apply automatically; no separate apply button is needed.
 
 Linked geometric construction tools: see [CONSTRUCTIONS.md](CONSTRUCTIONS.md). Load construction-service.js after geometry helpers and before index.js; it is required by the model's mutation paths.
+
+Tool menu: collapsible Basisobjecten, Figuren, Meten and Constructies. Meten includes linked whole-circle/polygon Omtrek and Oppervlakte labels; see CONSTRUCTIONS.md.
