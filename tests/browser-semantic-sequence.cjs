@@ -1,0 +1,8 @@
+const assert=require('node:assert/strict');
+module.exports=async page=>{
+ await page.reload();await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.loadDocument({objects:[{id:'A',type:'point',x:0,y:0},{id:'B',type:'point',x:4,y:0},{id:'C',type:'point',x:0,y:4}]});const m=a.engine.construct('midpoint',[{objectId:'A'},{objectId:'B'}])[0];window.m4bId=m.id;a.selectObject(m.id);});
+ const second=page.locator('[data-construction-input="1"]');assert.equal(await second.count(),1);await second.selectOption(JSON.stringify({objectId:'C'}));assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.get(window.m4bId).y),2);await page.locator('#undoBtn').click();assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.get(window.m4bId).x),2);await page.locator('#redoBtn').click();assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.get(window.m4bId).y),2);
+ await page.locator('[data-lock-selection]').click();assert.equal(await page.locator('[data-construction-input="1"]').isDisabled(),true);await page.locator('[data-lock-selection]').click();
+ const replay=await page.evaluate(()=>{const MI=FZI.MathIllustration,before=JSON.stringify(MI.editor.engine.toJSON()),s=new MI.SemanticSequence({objects:[]});s.execute('object.create',{toolId:'create:point',object:{type:'point',x:1,y:2}});const artifact=JSON.parse(JSON.stringify(s.toJSON())),result=MI.SemanticSequence.replay(artifact);return {equal:JSON.stringify(result)===JSON.stringify(s.document),isolated:JSON.stringify(MI.editor.engine.toJSON())===before};});assert.ok(replay.equal&&replay.isolated);
+ return {sourceInputUndoRedo:'passed',lockedInput:'passed',deterministicReplay:'passed',liveEditorIsolation:'passed'};
+};

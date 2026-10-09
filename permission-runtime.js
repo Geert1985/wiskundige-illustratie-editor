@@ -86,7 +86,7 @@
     'layer.create':['name'],'layer.assign':['ids','layerId'],'layer.rename':['id','name'],'layer.setVisibility':['id','value'],'layer.reorder':['ids'],'layer.delete':['id'],
     'group.create':['members','name'],'group.ungroup':['ids'],
     'object.select':['ids','source'],'object.translate':['ids','delta'],'object.setGeometry':['id','fields'],'object.setProperties':['ids','fields'],'object.patchBatch':['updates'],
-    'object.create':['toolId','object'],'construction.detach':['ids'],'construction.create':['toolId','sources'],'object.duplicate':['ids','delta'],'object.delete':['ids'],
+    'object.create':['toolId','object'],'construction.setInputs':['id','sources'],'construction.detach':['ids'],'construction.create':['toolId','sources'],'object.duplicate':['ids','delta'],'object.delete':['ids'],
     'parameter.set':['parameterId','value'],'history.undo':[],'history.redo':[],'document.reset':[],'document.exportSVG':[],'document.exportJSON':[],
     'document.setMeta':['fields'],'document.setPresentation':['fields'],'view.pan':['bounds'],'view.zoom':['bounds'],'view.configure':['fields'],
     'document.replace':['document'],'document.clear':[],'policy.configure':[],'document.draftSave':[],'document.draftResume':[],
@@ -111,9 +111,10 @@
   }
   function authorizeCommand(s,input) {
     const c=normalize(s,input),p=c.payload,op=c.operation,direct=new Set(),e=newKernel(s);let result=null,view=null,selection=null,historyAction=null,relatedCommandId=null;
-    if(!s.author&&['document.replace','document.clear','policy.configure','document.draftSave','document.draftResume','object.setLock','object.setVisibility','group.create','group.ungroup','layer.create','layer.assign','layer.rename','layer.setVisibility','layer.reorder','layer.delete','construction.detach'].includes(op))fail('MODE_DENIED');
+    if(!s.author&&['document.replace','document.clear','policy.configure','document.draftSave','document.draftResume','object.setLock','object.setVisibility','group.create','group.ungroup','layer.create','layer.assign','layer.rename','layer.setVisibility','layer.reorder','layer.delete','construction.detach','construction.setInputs'].includes(op))fail('MODE_DENIED');
     const docGrant=k=>{if(!s.author&&!s.policy.document[k])fail('PERMISSION_DENIED');};
-    if(op==='construction.detach'){const ids=idsOf(s,p.ids);for(const id of ids){requireObject(s,id,{visible:false,unlocked:true});direct.add(id);}result=e.detachConstructions(ids);}
+    if(op==='construction.setInputs'){const o=requireObject(s,p.id,{visible:false,unlocked:true});if(!o.construction)fail('INVALID_COMMAND');if(!Array.isArray(p.sources))fail('INVALID_COMMAND');for(const ref of p.sources){keys(ref,['objectId','part','index']);requireObject(s,ref.objectId,{visible:false});}MI.ConstructionService.validateReferences({...o.construction,sources:p.sources},new Map(e.model.objects.map(object=>[object.id,object])));direct.add(o.id);result=e.update(o.id,{construction:{...o.construction,sources:p.sources.map((ref,i)=>{const prior=o.construction.sources[i];return prior.objectId===ref.objectId&&prior.part===ref.part&&prior.index===ref.index?clone(prior):clone(ref);})}});}
+    else if(op==='construction.detach'){const ids=idsOf(s,p.ids);for(const id of ids){requireObject(s,id,{visible:false,unlocked:true});direct.add(id);}result=e.detachConstructions(ids);}
     else if(op==='layer.create'){result=e.createLayer(p.name);}
     else if(op==='layer.assign'){result=e.assignLayer(idsOf(s,p.ids),identifier(p.layerId));}
     else if(op==='layer.rename'){e.renameLayer(identifier(p.id),p.name);}
