@@ -15,7 +15,7 @@
       this.nodes = {};
       for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose"]) this.nodes[id] = document.getElementById(id);
     }
-    selectAxes() { this.closeDialogs(true);this.cancel();this.flushEdits();this.selectedIds=[];this.inspectorTarget='axes';this.axisMenuOpen=true;this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');this.invalidate(); }
+    selectAxes() { this.closeDialogs(true);this.cancel();this.flushEdits();this.selectedIds=[];this.inspectorTarget='axes';this.axisMenuOpen=true;this.document.body?.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');this.invalidate(); }
     setNavigation(mode) { this.setTool('select');this.navigationMode=mode==='pan'?'pan':'select';this.clearHover();this.invalidate(); }
     setPresentationFlag(path,value) {
       if(!MI.PRESENTATION_FLAGS.includes(path)||typeof value!=='boolean')throw new MI.PermissionError('INVALID_COMMAND');
@@ -260,7 +260,7 @@
       this.on(n.navigationTools,"click",e=>{const button=e.target.closest('[data-tool]');if(button)this.setTool(button.dataset.tool);});
       this.on(n.panBtn,"click",()=>this.setNavigation('pan'));
       this.on(n.zoomInBtn,"click",()=>this.zoomBy(-1));this.on(n.zoomOutBtn,"click",()=>this.zoomBy(1));
-      for(const [node,cls] of [[n.toolsToggle,'tools-open'],[n.propertiesToggle,'properties-open']])this.on(node,'click',()=>{this.cancel();this.document.body?.classList.toggle(cls);node.setAttribute?.('aria-expanded',String(this.document.body?.classList.contains(cls)));});
+      for(const [node,cls] of [[n.toolsToggle,'tools-open'],[n.propertiesToggle,'properties-open']])this.on(node,'click',()=>{this.cancel();const other=cls==='tools-open'?'properties-open':'tools-open',otherControl=cls==='tools-open'?n.propertiesToggle:n.toolsToggle;this.document.body?.classList.remove(other);otherControl?.setAttribute?.('aria-expanded','false');this.document.body?.classList.toggle(cls);node.setAttribute?.('aria-expanded',String(this.document.body?.classList.contains(cls)));});
       this.on(n.propertiesClose,'click',()=>{this.cancel();this.document.body?.classList.remove('properties-open');n.propertiesToggle.setAttribute?.('aria-expanded','false');n.propertiesToggle.focus?.();});
       this.on(n.selectionPanel,'toggle',e=>{if(e.target.isConnected!==false && e.target.dataset?.propertySection)this.sectionState.set(this.inspectorTarget+':'+e.target.dataset.propertySection,e.target.open);},{capture:true});
       this.on(n.selectionPanel,'focusin',e=>{this.inspectorFocus=e.target;});this.on(n.selectionPanel,'focusout',()=>{this.inspectorFocus=null;});
