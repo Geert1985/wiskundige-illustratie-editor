@@ -403,3 +403,14 @@ test('M3c author layer controls and inspector assignment share existing document
 test('M3c layer edits cancel active group interaction before history changes',()=>{
   const h=appRuntime();h.engine.group(['p','l']);const layer=h.engine.createLayer('Top');h.engine.assignLayer(['p','l'],layer.id);const before=plain(h.engine.model.objects);h.down({x:0,y:0});h.move({x:1,y:1});h.app.changeDocument(()=>h.app.execute('layer.setVisibility',{id:layer.id,value:false}));assert.equal(h.app.interaction,null);assert.deepEqual(plain(h.engine.model.objects),before);assert.equal(h.app.history.entries.length,1);
 });
+
+
+test('M4a inspector detach preserves groups and layers and is fully undoable',()=>{
+  const h=appRuntime();h.engine.add({id:'q',type:'point',x:2,y:0});const m=h.engine.construct('midpoint',[{objectId:'p'},{objectId:'q'}])[0],l=h.engine.createLayer('Constructies');h.engine.group([m.id,'q']);h.engine.assignLayer([m.id,'q'],l.id);h.app.selectObject(m.id);const before=plain(h.engine.toJSON());assert.match(h.doc.getElementById('selectionPanel').innerHTML,/data-detach-construction/);h.app.detachSelection();assert.equal(h.engine.get(m.id).construction,undefined);assert.equal(h.app.history.entries.length,1);h.app.travelHistory();assert.deepEqual(plain(h.engine.toJSON()),before);h.app.travelHistory(true);assert.equal(h.engine.get(m.id).construction,undefined);
+});
+test('M4a inspector explains invalid construction and refuses detachment',()=>{
+  const h=appRuntime();h.engine.add({id:'q',type:'point',x:2,y:0});h.engine.add({id:'c',type:'circle',cx:0,cy:0,r:1});const t=h.engine.construct('tangent',[{objectId:'c'},{objectId:'q'}])[0];h.engine.update('q',{x:.5});h.app.selectObject(t.id);assert.match(h.doc.getElementById('selectionPanel').innerHTML,/binnen de cirkel/);assert.match(h.doc.getElementById('selectionPanel').innerHTML,/data-detach-construction disabled/);const before=plain(h.engine.toJSON());h.app.detachSelection();assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+});
+test('M4a inspector source navigation uses existing selection and has no document mutation',()=>{
+  const h=appRuntime();h.engine.add({id:'q',type:'point',x:2,y:0});const m=h.engine.construct('midpoint',[{objectId:'p'},{objectId:'q'}])[0];h.app.selectObject(m.id);assert.match(h.doc.getElementById('selectionPanel').innerHTML,/data-construction-source="p"/);const before=plain(h.engine.toJSON()),node={dataset:{constructionSource:'p'}},target={closest:s=>s==='[data-construction-source]'?node:null};h.emit(h.doc.getElementById('selectionPanel'),'click',{target});assert.equal(h.app.selectedId,'p');assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+});
