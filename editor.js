@@ -8,12 +8,36 @@
     constructor({ engine, services, document, window, storage }) {
       this.engine = engine; this.services = services; this.document = document; this.window = window; this.storage = storage;
       this.runtime=services.runtime || null; if(this.runtime && (!MI.RuntimeSession.isSession(this.runtime) || engine!==this.runtime.engine))throw new MI.PermissionError("INVALID_POLICY"); this.commands=this.runtime || MI.AuthorCommands(engine);
-      this.tool = "select"; this.selectedIds = []; this.interaction = null; this.feedback = null;
+      this.inspectorTarget="objects";this.navigationMode="select";this.sectionState=new Map();this.tool = "select"; this.selectedIds = []; this.interaction = null; this.feedback = null;
       this.hoverId=null; this.hoverHit=null; this.hoverFrame=null; this.hoverPointer=null; this.presentationKey=null;
       this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
       this.history = new (this.runtime ? MI.RuntimeHistory : services.history || MI.EditorHistory)(this); this.editBefore = null;
       this.nodes = {};
-      for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel"]) this.nodes[id] = document.getElementById(id);
+      for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose"]) this.nodes[id] = document.getElementById(id);
+    }
+    selectAxes() { this.closeDialogs(true);this.cancel();this.flushEdits();this.selectedIds=[];this.inspectorTarget='axes';this.axisMenuOpen=true;this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');this.invalidate(); }
+    setNavigation(mode) { this.setTool('select');this.navigationMode=mode==='pan'?'pan':'select';this.clearHover();this.invalidate(); }
+    setPresentationFlag(path,value) {
+      if(!MI.PRESENTATION_FLAGS.includes(path)||typeof value!=='boolean')throw new MI.PermissionError('INVALID_COMMAND');
+      this.changeDocument(()=>this.execute(this.runtime?'view.configure':'document.setPresentation',{fields:[{path,value}]}));
+    }
+    setCommonProperty(path,value) {
+      if(!['style.stroke','style.fill','style.strokeWidth','style.dash','style.opacity','showLabel'].includes(path))throw new MI.PermissionError('INVALID_COMMAND');
+      this.changeDocument(()=>this.execute('object.setProperties',{ids:this.selectedIds.slice(),fields:[{path,value}]}));
+    }
+    commonInspector() {
+      const objects=this.selectedObjects(),esc=MI.escapeXml,fields=[['style.stroke','Lijnkleur','text'],['style.fill','Vulkleur','text'],['style.strokeWidth','Lijndikte','number'],['style.dash','Lijnpatroon','text'],['style.opacity','Dekking (%)','number']];
+      const html=fields.filter(([path])=>objects.every(o=>path==='style.fill'?['point','circle','polygon','text'].includes(o.type):['style.stroke','style.strokeWidth','style.dash'].includes(path)?o.type!=='text':true)).map(([path,label,type])=>{
+        const values=objects.map(o=>path.split('.').reduce((v,k)=>v?.[k],o)),same=values.every(v=>v===values[0]),value=same?(path==='style.opacity'?values[0]*100:values[0]):'';
+        const enabled=this.allowed('object.setProperties',{ids:this.selectedIds,fields:[{path,value:values[0]}]});
+        return '<label>'+label+'<input data-common="'+path+'" type="'+type+'" value="'+esc(value)+'" placeholder="Verschillend"'+(path==='style.opacity'?' min="0" max="100"':path==='style.strokeWidth'?' min="0" step="0.5"':'')+(!enabled?' disabled':'')+'></label>';
+      }).join('');const labelAllowed=this.allowed('object.setProperties',{ids:this.selectedIds,fields:[{path:'showLabel',value:true}]}),labels=objects.map(o=>o.showLabel),mixed=labels.some(v=>v!==labels[0]);return '<details data-property-section="common" open><summary>Gemeenschappelijk uiterlijk</summary>'+html+'<label class="style-toggle"><input type="checkbox" data-common="showLabel"'+(labels.every(Boolean)?' checked':'')+(mixed?' data-mixed="true"':'')+(!labelAllowed?' disabled':'')+'>Labels tonen'+(mixed?' (verschillend)':'')+'</label></details>';
+    }
+    zoomBy(direction) { const b=this.engine.renderer.bounds,screen=this.transform().mathToScreen({x:(b.xMin+b.xMax)/2,y:(b.yMin+b.yMax)/2});this.zoom({deltaY:direction,clientX:screen.x,clientY:screen.y,preventDefault(){},stopImmediatePropagation(){}}); }
+    closeFileMenu(returnFocus=false) { if(this.nodes.fileMenu){this.nodes.fileMenu.open=false;if(returnFocus)this.nodes.moreBtn?.focus?.();} }
+    decorateInspector() {
+      const panel=this.nodes.selectionPanel;if(!panel?.querySelectorAll)return;
+      for(const node of panel.querySelectorAll('[data-property-section]')){const key=this.inspectorTarget+':'+node.dataset.propertySection;if(this.sectionState.has(key))node.open=this.sectionState.get(key);}
     }
     command(operation,payload={}) { return this.commands.createCommand(operation,payload); }
     execute(operation,payload={}) { return this.commands.execute(this.command(operation,payload)); }
@@ -38,6 +62,7 @@
         control.disabled=!caps || ![...(caps.geometryFields||[]),...(caps.propertyFields||[])].includes(path);
       }
       for(const button of this.document.querySelectorAll('[data-object-lock], [data-object-visibility], [data-lock-selection], [data-axis-setting], [data-axis-system], [data-view]'))button.disabled=true;
+      for(const control of this.document.querySelectorAll('[data-axis-setting], [data-view]')){const key=control.dataset.axisSetting || {axes:'showAxes',grid:'showGrid'}[control.dataset.view];if(key)control.disabled=!this.allowed('view.configure',{fields:[{path:key,value:!this.engine.renderer[key]}]});}
       for(const button of this.document.querySelectorAll('[data-select-object]'))button.disabled=!this.capabilities(button.dataset.selectObject).selectList;
       for(const button of this.document.querySelectorAll('[data-toggle-label], [data-color-object]'))button.disabled=!this.capabilities(button.dataset.toggleLabel||button.dataset.colorObject).propertyFields?.includes(button.dataset.toggleLabel?'showLabel':this.engine.get(button.dataset.colorObject)?.type==='text'?'style.fill':'style.stroke');
       for(const [selector,operation] of [['[data-delete-selected]','object.delete'],['[data-duplicate-selection]','object.duplicate']])for(const button of this.document.querySelectorAll(selector))button.disabled=!this.selectedIds.length || !this.allowed(operation,{ids:this.selectedIds});
@@ -83,7 +108,7 @@
     }
     ungroupSelection() {const ids=this.selectedGroups();if(ids.length)this.changeDocument(()=>this.execute('group.ungroup',{ids}));}
     selectObject(id,additive=false,source='list') {
-      this.cancel(); this.tool='select';
+      this.cancel(); this.inspectorTarget="objects";this.navigationMode="select";this.tool='select';
       const leaves=this.groupLeaves(id);if(source==='canvas'&&!leaves.every(id=>this.canvasSelectable(this.engine.get(id))))return;
       if(additive)this.selectedIds=leaves.every(id=>this.selectedIds.includes(id))?this.selectedIds.filter(id=>!leaves.includes(id)):[...new Set([...this.selectedIds,...leaves])];else this.selectedIds=leaves;
       if(this.runtime)this.selectedIds=this.execute("object.select",{ids:this.selectedIds,source}).selectedIds;
@@ -117,6 +142,7 @@
     }
     cursorFor(hit) {
       const state=this.interaction;
+      if(!state && this.navigationMode==='pan')return this.allowed('view.pan',{bounds:{...this.engine.renderer.bounds}})?'grab':'default';
       if(state)return ['object','group','label','pan'].includes(state.mode)?'grabbing':'crosshair';
       if(this.tool!=='select')return 'crosshair';
       if(!hit || !this.canvasSelectable(hit.object))return 'default';
@@ -132,7 +158,7 @@
         const object=this.engine.get(this.hoverId);
         if(!this.canvasSelectable(object)||!this.groupCanvasSelectable(object.id)){this.hoverId=null;this.hoverHit=null;}else this.hoverHit={...this.hoverHit,object};
       }
-      if(force && this.hoverPointer && !this.interaction && this.tool==='select' && this.document.elementFromPoint) {
+      if(force && this.hoverPointer && !this.interaction && this.tool==='select' && this.navigationMode!=='pan' && this.document.elementFromPoint) {
         this.hoverHit=this.hitAt({...this.hoverPointer,target:this.document.elementFromPoint(this.hoverPointer.clientX,this.hoverPointer.clientY)});if(this.hoverHit&&!this.groupCanvasSelectable(this.hoverHit.object.id))this.hoverHit=null;this.hoverId=this.hoverHit?.object.id||null;
       }
       this.nodes.canvasWrap.style.cursor=this.cursorFor(this.hoverHit);
@@ -143,7 +169,7 @@
     }
     updateHover(event) {
       this.hoverPointer=event?{clientX:event.clientX,clientY:event.clientY,target:event.target}:null;
-      let hit=this.tool==='select' && !this.interaction?this.hitAt(event):null;
+      let hit=this.tool==='select' && this.navigationMode!=='pan' && !this.interaction?this.hitAt(event):null;
       if(hit && this.groupRoot(hit.object.id)!==hit.object.id && !this.groupCanvasSelectable(hit.object.id))hit=null;
       this.hoverHit=hit;this.hoverId=hit?.object.id||null;this.renderPresentation();
     }
@@ -230,14 +256,25 @@
       this.on(n.canvasWrap, "wheel", e => this.zoom(e), { capture: true, passive: false });
       this.on(n.toolGrid, "click", e => { const button = e.target.closest("[data-tool]"); if (button) this.setTool(button.dataset.tool); });
       this.on(n.viewList, "click", e => this.viewClick(e));
+      this.on(n.viewControls,"click",e=>this.viewClick(e));
+      this.on(n.navigationTools,"click",e=>{const button=e.target.closest('[data-tool]');if(button)this.setTool(button.dataset.tool);});
+      this.on(n.panBtn,"click",()=>this.setNavigation('pan'));
+      this.on(n.zoomInBtn,"click",()=>this.zoomBy(-1));this.on(n.zoomOutBtn,"click",()=>this.zoomBy(1));
+      for(const [node,cls] of [[n.toolsToggle,'tools-open'],[n.propertiesToggle,'properties-open']])this.on(node,'click',()=>{this.cancel();this.document.body?.classList.toggle(cls);node.setAttribute?.('aria-expanded',String(this.document.body?.classList.contains(cls)));});
+      this.on(n.propertiesClose,'click',()=>{this.cancel();this.document.body?.classList.remove('properties-open');n.propertiesToggle.setAttribute?.('aria-expanded','false');n.propertiesToggle.focus?.();});
+      this.on(n.selectionPanel,'toggle',e=>{if(e.target.isConnected!==false && e.target.dataset?.propertySection)this.sectionState.set(this.inspectorTarget+':'+e.target.dataset.propertySection,e.target.open);},{capture:true});
+      this.on(n.selectionPanel,'focusin',e=>{this.inspectorFocus=e.target;});this.on(n.selectionPanel,'focusout',()=>{this.inspectorFocus=null;});
+      this.on(this.window,'resize',()=>{this.cancel();this.invalidate();});
       this.on(n.viewList, "change", e => {
         const layer=e.target.closest('[data-layer-name]');if(layer&&layer.dataset.layerName!=null){this.changeDocument(()=>this.execute('layer.rename',{id:layer.dataset.layerName,name:layer.value}));return;}
         const input = e.target.closest("[data-axis-setting]");
-        if (input) { this.changeDocument(() => { this.execute('document.setPresentation',{fields:[{path:input.dataset.axisSetting,value:input.checked}]}); }); }
+        if (input) { this.setPresentationFlag(input.dataset.axisSetting,input.checked); }
       });
-      this.on(this.document, "click", e => { if (this.axisMenuOpen && !e.target.closest('[data-view-select="axes"], [data-axis-settings]')) { this.axisMenuOpen = false; this.invalidate(); } });
+      this.on(this.document,"click",e=>{if(n.fileMenu?.open && !e.target.closest('#fileMenu'))this.closeFileMenu();if(e.target.closest('#fileMenu button'))this.closeFileMenu();});
       this.on(n.selectionPanel, "change", e => {
         const layer=e.target.closest('[data-layer-assign]');if(layer&&layer.dataset.layerAssign!=null){this.assignSelectionLayer(layer.value);return;}
+        const axis=e.target.closest('[data-axis-setting]');if(axis?.dataset.axisSetting){try{this.setPresentationFlag(axis.dataset.axisSetting,axis.checked);}catch(error){this.status(error.message);this.invalidate();}return;}
+        const common=e.target.closest('[data-common]');if(common?.dataset.common){try{this.setCommonProperty(common.dataset.common,common.type==='checkbox'?common.checked:common.type==='number'?(common.dataset.common==='style.opacity'?common.valueAsNumber/100:common.valueAsNumber):common.value);}catch(error){this.status(error.message);this.invalidate();}return;}
         const input = e.target.closest("[data-edit], [data-style]"); if (!input || !this.selectedId || !this.editableSelection()) return;
         this.cancel();
         try { this.changeDocument(() => {
@@ -253,6 +290,7 @@
       });
       this.on(n.selectionPanel, "click", e => {
         const source=e.target.closest('[data-construction-source]');if(source){this.selectObject(source.dataset.constructionSource);return;}
+        if(e.target.closest('[data-visibility-selection]')){this.changeDocument(()=>this.execute('object.setVisibility',{ids:this.selectedIds,value:!this.selectedObjects().every(o=>o.visible!==false)}));return;}
         if(e.target.closest('[data-detach-construction]')){this.detachSelection();return;}
         if(e.target.closest('[data-group-selection]')) {this.groupSelection();return;}
         if(e.target.closest('[data-ungroup-selection]')) {this.ungroupSelection();return;}
@@ -268,7 +306,7 @@
       }
       this.on(n.resetViewBtn, "click", () => { this.changeDocument(() => this.execute('view.zoom',{bounds:{...DEFAULT_BOUNDS}})); });
       this.on(n.newBtn, "click", () => {if(this.runtime){this.newDocument();return;} if (this.window.confirm("Een nieuwe illustratie starten? Het opgeslagen concept en niet-opgeslagen wijzigingen worden verwijderd.")) this.newDocument(); });
-      this.on(n.saveBtn, "click", () => { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.cancel(); this.flushEdits(); this.updateMeta(); try { if(this.runtime)this.execute('document.draftSave');else this.services.draft.save(this.engine, this.storage); this.status("Concept opgeslagen in deze browser."); } catch (e) { this.status("Concept kon niet worden opgeslagen: " + e.message); } });
+      this.on(n.saveBtn, "click", () => { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.cancel(); this.flushEdits(); this.updateMeta(); try { if(this.runtime)this.execute('document.draftSave');else this.services.draft.save(this.engine, this.storage);this.savedDocument=JSON.stringify(this.engine.toJSON()); this.status("Concept opgeslagen in deze browser."); } catch (e) { this.status("Concept kon niet worden opgeslagen: " + e.message); } });
       this.on(n.loadBtn, "click", () => {if(this.runtime)throw new MI.PermissionError("MODE_DENIED");n.fileInput.click();});
       this.on(n.fileInput, "change", e => this.importFile(e));
       this.on(n.exportJsonBtn, "click", () => {if(this.runtime && !this.allowed("document.exportJSON"))throw new MI.PermissionError("PERMISSION_DENIED"); this.cancel(); this.flushEdits(); if(!this.runtime)this.updateMeta(); this.download("illustratie.json", this.engine.toJSONString(true), "application/json;charset=utf-8"); });
@@ -284,7 +322,7 @@
         if(event.type==='context-changed'||event.type==='disposed'){this.closeDialogs(true);}if(event.type==='context-changed'||event.type==='disposed'||this.interaction?.transaction){this.cancel();if(!this.toolAllowed(this.tool))this.tool='select';}
         this.selectedIds=this.selectedIds.filter(id=>this.capabilities(id).selectCanvas||this.capabilities(id).selectList);this.invalidate();
       }));
-      this.invalidate(); return this;
+      this.invalidate();if(!this.runtime)this.savedDocument=JSON.stringify(this.engine.toJSON()); return this;
     }
     dispose() {
       this.closeDialogs(true); this.cancel(); this.flushEdits(); this.initialized = false; this.invalidateImport();
@@ -347,7 +385,7 @@
       catch(error){this.status(error.message);}
       this.invalidate();
     }
-    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.tool = tool; if(tool.startsWith('construct:'))this.status(this.constructionHint(tool.slice(10))); this.invalidate(); }
+    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.tool = tool; if(tool.startsWith('construct:'))this.status(this.constructionHint(tool.slice(10))); this.invalidate(); }
     begin(state, event) {
       this.clearHover();
       this.flushEdits();
@@ -387,7 +425,7 @@
     }
     startKeyboardRectangle(event={}) {
       if(this.tool!=='select' || this.interaction)return;
-      this.clearHover();
+      this.navigationMode='select';this.inspectorTarget='objects';this.clearHover();
       const b=this.engine.renderer.bounds,t=this.transform();if(!t)return;
       const p=t.mathToScreen({x:(b.xMin+b.xMax)/2,y:(b.yMin+b.yMax)/2});
       this.flushEdits();this.interaction={mode:'marquee',keyboard:true,phase:'anchor',pointerId:null,active:true,rule:'contain',transform:t,startScreen:p,end:{...p},selectionIdsBefore:this.selectedIds.slice(),operation:this.rectangleService().operation(event),textGeometry:this.textSelectionGeometry()};
@@ -436,7 +474,7 @@
       this.history.record(state.historyBefore); this.invalidate(); this.status(angle?'Hoek toegevoegd.':'Veelhoek toegevoegd.');
     }
     pointerDown(event) {
-      if(this.initialized && !this.interaction && this.tool==='select' && event.button===2 && event.isPrimary!==false) {
+      if(this.initialized && !this.interaction && this.tool==='select' && this.navigationMode!=='pan' && event.button===2 && event.isPrimary!==false) {
         if(!this.pointer(event))return;
         this.suppressMarqueeMenu=false;
         this.begin({mode:'marquee',operation:this.rectangleService().operation(event),active:false,end:{x:event.clientX,y:event.clientY},textGeometry:this.textSelectionGeometry()},event);return;
@@ -444,6 +482,8 @@
       if(!this.interaction)this.suppressMarqueeMenu=false;
       if (!this.initialized || (this.interaction && !['polygon','construction'].includes(this.interaction.mode)) || event.button !== 0 || event.isPrimary === false) return;
       const point = this.pointer(event); if (!point || !this.toolAllowed(this.tool)) return; event.preventDefault();
+      if(this.navigationMode==='pan'){if(!this.allowed('view.pan',{bounds:{...this.engine.renderer.bounds}}))return;this.begin({mode:'pan',bounds:{...this.engine.renderer.bounds}},event);this.invalidate();return;}
+      this.inspectorTarget='objects';this.axisMenuOpen=false;
       if(this.tool.startsWith('construct:')) {this.constructionClick(point,event);return;}
       if(this.interaction && this.interaction.mode==='polygon') { this.polygonClick(point,event); return; }
       if(this.tool==='select') {
@@ -590,7 +630,10 @@
       if (this.initialized) this.invalidate();
     }
     keyDown(event) {
+      if(event.key==='Escape' && this.nodes.fileMenu?.open){event.preventDefault();this.closeFileMenu(true);return;}
       const state = this.interaction;
+      if(event.key==='Escape' && !state && this.document.body?.classList.contains('properties-open') && this.window.innerWidth<1000){this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.propertiesToggle?.focus?.();return;}
+      if(event.key==='Escape' && !state && this.document.body?.classList.contains('tools-open') && this.window.innerWidth<760){this.document.body.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.nodes.toolsToggle?.focus?.();return;}
       if (event.key === "Escape" && (this.pendingText || this.colorId)) { event.preventDefault(); this.closeDialogs(true); return; }
       const active = this.document.activeElement;
       const editable = active && (/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable);
@@ -636,20 +679,20 @@
       this.feedback = null; this.history.record(before); this.invalidate();
     }
     newDocument() {
-      if(this.runtime){if(!this.allowed('document.reset'))throw new MI.PermissionError('PERMISSION_DENIED');this.closeDialogs(true);this.cancel();this.execute('document.reset');this.selectedIds=[];this.editBefore=null;this.hydrate();this.invalidate();return;}
+      if(this.runtime){if(!this.allowed('document.reset'))throw new MI.PermissionError('PERMISSION_DENIED');this.closeDialogs(true);this.cancel();this.execute('document.reset');this.selectedIds=[];this.inspectorTarget="objects";this.editBefore=null;this.hydrate();this.invalidate();return;}
       this.closeDialogs(true); this.cancel(); this.flushEdits(); this.invalidateImport();
       let failure = null; if (this.services.draft) try { this.services.draft.clear(this.storage); } catch (e) { failure = e; }
       const r = this.engine.renderer;
       this.execute("document.replace",{document:{ version: 2, type: "geometry", meta: {}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: r.showGrid, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } }});
-      this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");
+      this.history.clear(); this.editBefore = null; this.selectedId = null; this.inspectorTarget="objects";this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");this.savedDocument=JSON.stringify(this.engine.toJSON());
     }
-    loadDocument(data) { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.closeDialogs(true); this.cancel(); this.flushEdits(); this.execute("document.replace",{document:data}); this.invalidateImport(); this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen."); }
+    loadDocument(data) { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.closeDialogs(true); this.cancel(); this.flushEdits(); this.execute("document.replace",{document:data}); this.invalidateImport(); this.history.clear(); this.editBefore = null; this.selectedId = null; this.inspectorTarget="objects";this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen.");this.savedDocument=JSON.stringify(this.engine.toJSON()); }
     invalidateImport() {
       this.importSerial++;const reader=this.reader;this.reader=null;
       if(reader && reader.readyState===1)reader.abort();
       if(this.nodes.fileInput)this.nodes.fileInput.value='';
     }
-    importDocument(data) {
+    importDocument(data,{confirmReplace=false}={}) {
       if(this.runtime)throw new MI.PermissionError('MODE_DENIED');
       // Validate the whole candidate before touching dialogs, captures or history.
       const renderer=this.engine.renderer;
@@ -659,14 +702,15 @@
       for(const key of MI.PRESENTATION_FLAGS)options[key]=renderer[key];
       const candidate=new MI.Engine(null,options);candidate.load(data);
       const imported=candidate.toJSON();
+      if(confirmReplace && this.savedDocument!==JSON.stringify(this.engine.toJSON()) && JSON.stringify(imported)!==JSON.stringify(this.engine.toJSON()) && !this.window.confirm('Niet-opgeslagen wijzigingen vervangen door het geladen document? Je kunt de import ongedaan maken.')){this.invalidateImport();return;}
       this.closeDialogs(true);this.cancel();this.flushEdits();
       const before=this.history.capture();
       if(JSON.stringify(imported)===before.document){
         this.invalidateImport();this.hydrate();this.invalidate();this.status('Illustratie geladen.');return;
       }
       this.execute('document.replace',{document:imported});this.invalidateImport();
-      this.editBefore=null;this.selectedIds=[];this.axisMenuOpen=false;
-      this.history.record(before);this.hydrate();this.invalidate();this.status('Illustratie geladen.');
+      this.editBefore=null;this.selectedIds=[];this.inspectorTarget='objects';this.axisMenuOpen=false;
+      this.history.record(before);this.hydrate();this.invalidate();this.status('Illustratie geladen.');this.savedDocument=JSON.stringify(this.engine.toJSON());
     }
     importFile(event) {
       if(this.runtime)throw new MI.PermissionError("MODE_DENIED");
@@ -674,7 +718,7 @@
       const serial = ++this.importSerial;
       if (this.reader && this.reader.readyState === 1) this.reader.abort();
       const reader = this.reader = new this.window.FileReader();
-      reader.onload = () => { if (!this.initialized || serial !== this.importSerial) return; try { this.importDocument(JSON.parse(reader.result)); } catch (e) { this.window.alert("JSON kon niet worden geladen: " + e.message); } event.target.value = ""; this.reader = null; };
+      reader.onload = () => { if (!this.initialized || serial !== this.importSerial) return; try { this.importDocument(JSON.parse(reader.result),{confirmReplace:true}); } catch (e) { this.window.alert("JSON kon niet worden geladen: " + e.message); } event.target.value = ""; this.reader = null; };
       reader.onerror = () => { if (this.initialized && serial === this.importSerial) {this.status("JSON kon niet worden gelezen.");event.target.value="";this.reader=null;} };
       reader.readAsText(file);
     }
@@ -694,7 +738,7 @@
       if((button=find('[data-layer-forward]'))){this.moveLayer(button.dataset.layerForward,1);return;}
       if((button=find('[data-layer-backward]'))){this.moveLayer(button.dataset.layerBackward,-1);return;}
       if((button=find('[data-layer-delete]'))){this.changeDocument(()=>this.execute('layer.delete',{id:button.dataset.layerDelete}));return;}
-      if ((button = find('[data-view-select="axes"]'))) { this.axisMenuOpen = !this.axisMenuOpen; this.invalidate(); return; }
+      if ((button = find('[data-view-select="axes"]'))) { this.selectAxes(); return; }
       if ((button = find('[data-axis-system]')) && !button.disabled) { this.changeDocument(() => { this.execute("document.setPresentation",{fields:[{path:"coordinateSystem",value:button.dataset.axisSystem}]}); this.axisMenuOpen = false; }); return; }
       if ((button = find("[data-color-object]"))) { this.openColor(button.dataset.colorObject); return; }
       if ((button = find('[data-object-lock]'))) { this.changeDocument(()=>{const o=this.engine.get(button.dataset.objectLock);this.execute("object.setLock",{ids:[o.id],value:!o.locked});});return; }
@@ -702,7 +746,7 @@
       if ((button = find("[data-select-object]"))) { this.selectObject(button.dataset.selectObject,event.shiftKey || event.ctrlKey || event.metaKey); return; }
       if ((button = find("[data-object-visibility]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.objectVisibility); this.execute("object.setVisibility",{ids:[object.id],value:object.visible===false}); }); return; }
       if ((button = find("[data-toggle-label]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.toggleLabel); if(!object.locked)this.updateObject(object.id, { showLabel: !object.showLabel }); }); return; }
-      if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.changeDocument(() => { this.execute("document.setPresentation",{fields:[{path:key,value:!this.engine.renderer[key]}]}); }); } }
+      if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.setPresentationFlag(key,!this.engine.renderer[key]); } }
     }
     viewObject(id) {if(this.runtime && this.colorTransaction){const p=this.runtime.previewObject(this.colorTransaction,id);if(p)return p;}if(this.runtime && this.interaction?.transaction && !this.interaction.rejected){const preview=this.runtime.previewObject(this.interaction.transaction,id);if(preview)return preview;} const object = this.engine.get(id), state = this.interaction; return object && !this.runtime && state && (state.mode === "endpoint" || state.mode==='vertex') && state.id === id && state.resolved ? { ...object, ...state.resolved.patch } : object; }
     invalidate(defer = false) {
@@ -724,24 +768,30 @@
       if (svg && svg.querySelectorAll) { Array.from(svg.querySelectorAll('[data-object-id]')).filter(node=>this.selectedIds.includes(node.getAttribute('data-object-id'))).forEach(node=>node.classList.add('selected')); }
       if (this.document.createElementNS) {
         this.renderRectangle(svg,r);
-        if (this.services.overlays) this.services.overlays.render(svg, r, this.selectedIds.length===1 && this.engine.isDisplayed(object?.id) && (!this.runtime || this.capabilities(object?.id).geometryFields.length)?object:null, this.tool, this.document);
+        if (this.services.overlays) this.services.overlays.render(svg, r, this.selectedIds.length===1 && this.engine.isDisplayed(object?.id) && (!this.runtime || this.capabilities(object?.id).geometryFields.length)?object:null, this.navigationMode==='pan'?'pan':this.tool, this.document);
         if (this.services.feedback) this.services.feedback.render(svg, r, this.feedback, this.document);
       }
       if(this.runtime && svg)for(const handle of svg.querySelectorAll('.fzi-line-endpoint, .fzi-polygon-vertex')){const id=handle.getAttribute('data-line-id')||handle.getAttribute('data-polygon-id'),caps=this.capabilities(id),part=handle.getAttribute('data-endpoint'),fields=part?[part==='start'?'x1':'x2',part==='start'?'y1':'y2']:['x','y'].map(k=>'vertices['+handle.getAttribute('data-vertex')+'].'+k);if(!fields.every(k=>caps.geometryFields.includes(k)))handle.remove();}
       this.renderPresentation(true);
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
-      this.renderViewList(); this.renderInspector(object);
+      const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
+      this.renderViewList(); this.renderInspector(object);this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
+      if(focusKey.length && focusIds===JSON.stringify(this.selectedIds)){const replacement=Array.from(n.selectionPanel.querySelectorAll('input,select')).find(el=>focusKey.every(([k,v])=>el.dataset[k]===v));if(replacement && !replacement.disabled){replacement.focus?.({preventScroll:true});if(caret!=null && replacement.type==='text')replacement.setSelectionRange?.(caret,caret);}}
+      if(n.zoomPercent)n.zoomPercent.textContent=Math.round(this.engine.renderer.scale()/((this.engine.renderer.width-2*this.engine.renderer.padding)/10)*100)+"%";
+      if(n.panBtn){n.panBtn.classList.toggle("active",this.navigationMode==="pan");n.panBtn.disabled=!this.allowed("view.pan",{bounds:{...r.bounds}});}for(const node of [n.zoomInBtn,n.zoomOutBtn,n.resetViewBtn])if(node)node.disabled=!this.allowed("view.zoom",{bounds:{...r.bounds}});
       if (n.undoBtn) n.undoBtn.disabled = !this.history.canUndo && !this.editBefore;
       if (n.redoBtn) n.redoBtn.disabled = !this.history.canRedo || !!this.editBefore;
       this.document.querySelectorAll('[data-tool-category]').forEach(category=>{const active=Array.from(category.querySelectorAll('[data-tool]')).find(button=>button.dataset.tool===this.tool),label=category.querySelector('[data-active-tool]');if(label)label.textContent=active?' · '+active.textContent.trim():'';});
-      this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool));
+      this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool && this.navigationMode!=="pan"));
       this.restrictControls();
       n.crosshair.hidden = !this.interaction || this.interaction.mode !== "draw" || (this.feedback && this.feedback.snapped && r.showSnapPoints !== false);
       if (this.feedback && this.interaction && this.interaction.mode === "draw") { const p = this.transform().mathToScreen(this.feedback.point), rect = n.canvasWrap.getBoundingClientRect(); n.crosshair.style.left = p.x - rect.left + "px"; n.crosshair.style.top = p.y - rect.top + "px"; }
     }
     renderViewList() {
       const r = this.engine.renderer;
-      const rows = ['<div class="view-row"><button class="view-name view-system-btn" type="button" data-view-select="axes">Assenstelsel</button><button class="eye-btn" type="button" data-view="axes">' + eyeIcon(r.showAxes) + '</button>' + (this.axisMenuOpen && this.services.axis ? this.services.axis.html(r) : "") + '</div>', '<div class="view-row"><span class="view-name">Snappunten</span><button class="eye-btn" type="button" data-view="snapPoints">' + eyeIcon(r.showSnapPoints !== false) + '</button></div>'];
+      const displayHtml='<div class="view-row'+(this.inspectorTarget==='axes'?' view-row-selected':'')+'"><button class="view-name view-system-btn" type="button" data-view-select="axes">✣ Assenstelsel</button><button class="eye-btn" type="button" role="switch" aria-label="Assenstelsel zichtbaar" aria-checked="'+r.showAxes+'" data-view="axes">'+eyeIcon(r.showAxes)+'</button></div><div class="view-row"><span class="view-name">▦ Raster</span><button class="eye-btn" type="button" role="switch" aria-label="Raster zichtbaar" aria-checked="'+r.showGrid+'" data-view="grid">'+eyeIcon(r.showGrid)+'</button></div>';
+      if(this.nodes.viewControls)this.nodes.viewControls.innerHTML=displayHtml;
+      const rows=[];
       const layers=this.engine.model.layers||[],esc=MI.escapeXml;
       const objectRow=object=>{
         const color = this.services.color ? this.services.color.value(this.viewObject(object.id)) : "#222222";
@@ -761,24 +811,31 @@
     }
     renderInspector(object) {
       const panel = this.nodes.selectionPanel;
-      if (!object) { panel.className = "selection-empty"; panel.textContent = "Geen object geselecteerd."; return; }
+      if(this.inspectorTarget==='axes' && !this.selectedId){panel.className='selection-panel';panel.innerHTML=this.services.axis?.html(this.engine.renderer)||'';this.decorateInspector();return;}
+      if (!object) { panel.className = "selection-empty"; panel.textContent = "Selecteer een object of het assenstelsel."; return; }
+      this.inspectorTarget='objects';
+
+      this.inspectorObjectKey=JSON.stringify(this.selectedIds);
       panel.className = "selection-panel";
       const grouping=this.runtime?'':'<div class="selection-actions"><button type="button" data-group-selection'+(this.selectedIds.length<2?' disabled':'')+'>Groeperen</button><button type="button" data-ungroup-selection'+(!this.selectedGroups().length?' disabled':'')+'>Groep opheffen</button></div>';
       const layers=this.engine.model.layers||[],owner=MI.DocumentLayers.index(layers).owner,current=owner.get(this.selectedIds[0])?.id,same=this.selectedIds.every(id=>owner.get(id)?.id===current),assignment=!this.runtime&&layers.length?'<label>Laag<select data-layer-assign aria-label="Laag van selectie">'+(!same?'<option value="">Verschillende lagen</option>':'')+layers.slice().reverse().map(l=>'<option value="'+MI.escapeXml(l.id)+'"'+(same&&l.id===current?' selected':'')+'>'+MI.escapeXml(l.name)+(l.visible?'':' (verborgen)')+'</option>').join('')+'</select></label>':'';
       const derived=this.selectedObjects().filter(o=>o.construction),detach=!this.runtime&&derived.length?'<button type="button" class="secondary" data-detach-construction'+(!this.allowed('construction.detach',{ids:derived.map(o=>o.id)})?' disabled':'')+'>Constructie losmaken</button>':'';
       const info=this.selectedIds.length===1?this.constructionPanel(object):'';
-      const actions=info+detach+assignment+grouping+'<div class="selection-actions"><button type="button" data-duplicate-selection>Dupliceren</button><button type="button" class="secondary" data-lock-selection>'+ (this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen')+'</button></div>';
-      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML='<strong>'+ (this.selectedIds.length>1?this.selectedIds.length+' objecten geselecteerd':MI.escapeXml(object.name))+'</strong><p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+actions+'<button class="delete-btn" data-delete-selected'+(!this.editableSelection()?' disabled':'')+'>Verwijder selectie</button>';return;}
-      let html = '<strong>' + MI.escapeXml(object.name) + '</strong><code>' + MI.escapeXml(object.id) + '</code><label>Naam<input data-edit="name" value="' + MI.escapeXml(object.name) + '"></label>';
+      const visibility='<button type="button" class="secondary" data-visibility-selection'+(!this.allowed('object.setVisibility',{ids:this.selectedIds,value:true})?' disabled':'')+'>'+ (this.selectedObjects().every(o=>o.visible!==false)?'Selectie verbergen':'Selectie tonen')+'</button>';
+      const actions=info+detach+assignment+grouping+visibility+'<div class="selection-actions"><button type="button" data-duplicate-selection>Dupliceren</button><button type="button" class="secondary" data-lock-selection>'+ (this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen')+'</button></div>';
+      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML='<strong>'+ (this.selectedIds.length>1?this.selectedIds.length+' objecten geselecteerd':MI.escapeXml(object.name))+'</strong><p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions+'<button class="delete-btn" data-delete-selected'+(!this.editableSelection()?' disabled':'')+'>Verwijder selectie</button>';return;}
+      let html = '<p class="object-kind">'+MI.escapeXml(({point:'Punt',line:'Lijnstuk',straight:'Rechte',ray:'Halfrechte',vector:'Vector',circle:'Cirkel',text:'Tekst',polygon:'Veelhoek',dimension:'Lengtemaat',angle:'Hoek'})[object.type]||object.type)+'</p><strong>' + MI.escapeXml(object.name) + '</strong><code>' + MI.escapeXml(object.id) + '</code><label>Naam<input data-edit="name" value="' + MI.escapeXml(object.name) + '"></label>';
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
       for (const key of object.construction?[]:keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.1" value="' + MI.escapeXml(object[key]) + '"></label>';
       if(object.type==='polygon' || object.type==='angle') object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.1" value="'+MI.escapeXml(p[key])+'"></label>'; });
       if (object.type === "text" && !object.construction) html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
+      html+='<details data-property-section="labels" open><summary>Label en meting</summary><label class="style-toggle"><input type="checkbox" data-edit="showLabel"'+(object.showLabel?' checked':'')+'>Label tonen</label>';
       if(MI.LinearGeometry.isLinear(object)||['circle','angle'].includes(object.type)) {
         if(['dimension','angle'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-edit="measurementLabelOnly"'+(object.measurementLabelOnly?' checked':'')+'>Alleen meetlabel tonen</label>';
         if(!['dimension','angle'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-edit="showMeasurement"'+(object.showMeasurement?' checked':'')+'>Maat tonen</label>';
         if(object.showMeasurement || ['dimension','angle'].includes(object.type)) {const mode=object.measurementMode||'computed';html+='<label>Maatweergave<select data-edit="measurementMode"><option value="computed"'+(mode==='computed'?' selected':'')+'>Berekende waarde</option><option value="text"'+(mode==='text'?' selected':'')+'>Vrije tekst</option></select></label>';if(mode==='text')html+='<label>Maattekst<input data-edit="measurementText" value="'+MI.escapeXml(object.measurementText||'')+'"></label>';else html+='<p data-measurement-value>'+MI.escapeXml(MI.MeasurementGeometry.label(object))+'</p>';}
       }
+      html+='</details>';
       const style=object.style,esc=MI.escapeXml;
       html+='<fieldset class="object-style"><legend>Stijl</legend><button type="button" class="secondary" data-style-color="'+esc(object.id)+'">'+(object.type==='text'?'Tekstkleur':'Lijnkleur')+'</button>';
       if(object.type==='text') html+='<label>Tekstgrootte<input data-style="fontSize" type="number" min="1" step="1" value="'+esc(style.fontSize)+'"></label>';
@@ -790,7 +847,9 @@
         if(['point','circle','polygon'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-style="fillEnabled"'+(style.fill && style.fill!=='none'?' checked':'')+'>Vulling</label><button type="button" class="secondary" data-fill-object="'+esc(object.id)+'">Vulkleur kiezen</button>';
       }
       html+='<label>Dekking (%)<input data-style="opacity" type="number" min="0" max="100" step="1" value="'+esc(style.opacity*100)+'"></label><p class="help-text">0% is onzichtbaar, 100% is volledig zichtbaar.</p></fieldset>';
-      panel.innerHTML = html + actions + '<button class="delete-btn" data-delete-selected>Verwijder object</button>';
+      const split=html.indexOf('<details data-property-section="labels"'),appearance=html.indexOf('<fieldset');
+      html='<details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split<0?html.length:split)+'</details>'+(split<0?'':html.slice(split,appearance)+'<details data-property-section="appearance" open><summary>Uiterlijk</summary>'+html.slice(appearance)+'</details>');
+      panel.innerHTML = html + '<details data-property-section="relations" open><summary>Relaties en organisatie</summary>'+actions+'</details>' + '<button class="delete-btn" data-delete-selected>Verwijder object</button>';
     }
     download(name, content, type) { const blob = new this.window.Blob([content], { type }), url = this.window.URL.createObjectURL(blob), link = this.document.createElement("a"); link.href = url; link.download = name; link.click(); this.window.setTimeout(() => this.window.URL.revokeObjectURL(url), 500); }
   }
