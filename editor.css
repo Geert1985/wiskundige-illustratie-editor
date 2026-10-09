@@ -146,3 +146,9 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 @media(min-width:760px) and (max-width:999px){.workspace{grid-template-columns:280px minmax(0,1fr)}}
 @media(max-width:759px){.sidebar{width:min(300px,calc(100% - 12px))}}
 .tool-grid>.tool{min-width:0}.tool-grid>.tool span{white-space:nowrap}
+
+.canvas-tools-menu{position:absolute;right:10px;top:calc(var(--navigation-height,59px) + 5px);z-index:50;width:min(360px,calc(100% - 20px));max-height:calc(100% - var(--navigation-height,59px) - 20px);overflow:auto;padding:12px;background:var(--panel,#17252f);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px #0005}
+.canvas-tools-menu[hidden]{display:none}.canvas-tools-menu section{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:12px}.canvas-tools-menu strong{grid-column:1/-1;color:var(--accent);font-size:14px}.canvas-tools-menu .tool{min-width:0}.canvas-tools-menu .tool span{white-space:normal}
+.canvas-fullscreen .canvas-area{position:fixed;inset:0;z-index:100;height:100dvh;background:#f7f7f4;border-radius:0}.canvas-fullscreen .canvas-toolbar,.canvas-fullscreen .canvas-wrap{border-radius:0}.canvas-fullscreen .panel-toggle{display:none!important}.fullscreen-hint{background:#fafcfb;color:#46545d;padding:5px 14px;font-size:13px;flex:none}.fullscreen-hint[hidden]{display:none}
+
+.canvas-fullscreen .properties-sidebar{display:none;position:fixed;right:10px;top:calc(var(--navigation-height,59px) + 10px);bottom:10px;width:min(310px,calc(100% - 20px));z-index:110;overflow-y:auto;box-shadow:-6px 0 25px #0005}.canvas-fullscreen.properties-open .properties-sidebar{display:block}.canvas-fullscreen .properties-sidebar .panel-close{display:block}

@@ -16,7 +16,24 @@
       this.linearTool='line';this.figureTool='triangle';this.splitMenuOpen=null;
       for(const [group,tools] of Object.entries(SPLIT_TOOLS))try{const saved=storage?.getItem('fzi-math-illustration-'+group+'-tool');if(tools.includes(saved))this[group+'Tool']=saved;}catch(_){}
       this.nodes = {};
-      for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
+      for (const id of ["canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
+    }
+    renderCanvasTools() {
+      const menu=this.nodes.canvasToolsMenu;if(!menu||typeof menu.append!=='function')return;
+      if(!menu.childElementCount){for(const category of this.nodes.toolGrid.querySelectorAll('[data-tool-category]')){const section=this.document.createElement('section'),heading=this.document.createElement('strong');heading.textContent=category.querySelector('summary').childNodes[0].textContent;section.append(heading);for(const source of category.querySelectorAll('[data-tool]')){const button=this.document.createElement('button');button.type='button';button.className='tool';button.dataset.canvasTool=source.dataset.tool;button.innerHTML=source.innerHTML;section.append(button);}menu.append(section);}}
+      for(const button of menu.querySelectorAll('[data-canvas-tool]')){button.disabled=!this.toolAllowed(button.dataset.canvasTool);button.classList.toggle('active',this.tool===button.dataset.canvasTool);button.setAttribute('aria-pressed',String(this.tool===button.dataset.canvasTool));}
+    }
+    closeCanvasTools(focus=false) {if(this.nodes.canvasToolsMenu)this.nodes.canvasToolsMenu.hidden=true;this.nodes.canvasToolsBtn?.setAttribute?.('aria-expanded','false');if(focus)this.nodes.canvasToolsBtn?.focus?.();}
+    syncFullscreen(active) {
+      this.canvasFullscreen=active;if(active)this.document.body?.classList.remove('properties-open','tools-open');this.document.body?.classList.toggle('canvas-fullscreen',active);
+      const button=this.nodes.canvasFullscreenBtn;if(button){button.setAttribute('aria-pressed',String(active));button.title=active?'Volledig scherm verlaten':'Volledig scherm';button.setAttribute('aria-label',button.title);button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+(active?'M3 3h18v18H3zM17 7l-5 5M12 7v5h5':'M3 3h18v18H3zM10 14l7-7M12 7h5v5')+'"/></svg>';}
+      if(this.nodes.fullscreenHint){this.nodes.fullscreenHint.hidden=!active;this.nodes.fullscreenHint.textContent=this.nodes.status.textContent;}
+      this.invalidate();
+    }
+    async toggleCanvasFullscreen() {
+      if(this.canvasFullscreen){this.syncFullscreen(false);if(this.document.fullscreenElement)try{await this.document.exitFullscreen();}catch(_){}return;}
+      this.syncFullscreen(true);
+      try{await this.document.documentElement.requestFullscreen?.();}catch(_){/* Canvas still fills the browser viewport when native fullscreen is unavailable. */}
     }
     selectAxes() { this.closeDialogs(true);this.cancel();this.flushEdits();this.selectedIds=[];this.inspectorTarget='axes';this.axisMenuOpen=true;this.document.body?.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');this.invalidate(); }
     setNavigation(mode) { this.setTool('select');this.navigationMode=mode==='pan'?'pan':'select';this.clearHover();this.invalidate(); }
@@ -236,7 +253,7 @@
       this.listeners.push(() => target.removeEventListener && target.removeEventListener(type, guarded, options));
     }
     toolHint(tool) { return ({point:'Klik op het werkvlak om een punt te plaatsen.',line:'Sleep van begin- naar eindpunt voor een lijnstuk. Typ voor een exacte lengte.',straight:'Sleep tussen twee punten voor een rechte.',ray:'Sleep van het beginpunt in de richting van de halfrechte.',vector:'Sleep van staart naar pijlpunt voor een vector.',circle:'Klik het middelpunt en sleep voor de straal. Typ voor een exacte straal.',triangle:'Klik drie hoekpunten. Escape annuleert.',polygon:'Klik de hoekpunten; Enter sluit af, Backspace verwijdert het laatste punt, Escape annuleert.',dimension:'Sleep tussen twee punten om de lengte te meten.',angle:'Klik arm, hoekpunt en tweede arm voor een hoek.',rightAngle:'Klik arm, hoekpunt en tweede arm voor een rechte hoek.',text:'Klik op het werkvlak en voer tekst in.',select:'Selecteer een object of het assenstelsel.'})[tool]||''; }
-    status(text) { this.nodes.status.textContent = text; }
+    status(text) { this.nodes.status.textContent = text;if(this.nodes.fullscreenHint)this.nodes.fullscreenHint.textContent=text; }
     hydrate() { this.nodes.titleInput.value = this.engine.model.meta.title || ""; this.nodes.descriptionInput.value = this.engine.model.meta.description || ""; }
     updateMeta() {const fields=[{path:'title',value:this.nodes.titleInput.value.trim()},{path:'description',value:this.nodes.descriptionInput.value.trim()}].filter(f=>this.engine.model.meta[f.path]!==f.value);if(fields.length)this.execute('document.setMeta',{fields});}
     flushEdits() { if (this.editBefore) { this.history.record(this.editBefore); this.editBefore = null; } }
@@ -343,6 +360,13 @@
         this.on(input, "input", () => { if (!this.editBefore) this.editBefore = this.history.capture(); this.updateMeta(); this.invalidate(); });
         this.on(input, "change", () => { this.flushEdits(); this.invalidate(); });
       }
+      this.on(n.canvasFullscreenBtn,'click',()=>this.toggleCanvasFullscreen());
+      this.on(this.document,'fullscreenchange',()=>{if(this.document.fullscreenElement)this.syncFullscreen(true);else this.invalidate();});
+      this.on(n.canvasToolsBtn,'click',()=>{const menu=n.canvasToolsMenu;this.renderCanvasTools();menu.hidden=!menu.hidden;n.canvasToolsBtn.setAttribute('aria-expanded',String(!menu.hidden));});
+      this.on(n.canvasToolsMenu,'click',event=>{const button=event.target.closest('[data-canvas-tool]');if(button&&!button.disabled){this.setTool(button.dataset.canvasTool);this.closeCanvasTools(true);}});
+      this.on(n.canvasToolsMenu,'keydown',event=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key))return;const items=[...n.canvasToolsMenu.querySelectorAll('button:not(:disabled)')];if(!items.length)return;event.preventDefault();const i=items.indexOf(event.target),next=event.key==='Home'?0:event.key==='End'?items.length-1:(i+(event.key==='ArrowUp'?-1:1)+items.length)%items.length;items[next].focus();});
+      this.on(n.canvasToolsBtn,'keydown',event=>{if(event.key==='ArrowDown'){event.preventDefault();this.renderCanvasTools();n.canvasToolsMenu.hidden=false;n.canvasToolsBtn.setAttribute('aria-expanded','true');n.canvasToolsMenu.querySelector('button:not(:disabled)')?.focus();}});
+      this.on(this.document,'pointerdown',event=>{if(!event.target.closest('#canvasToolsMenu,#canvasToolsBtn'))this.closeCanvasTools();},true);
       this.on(n.resetViewBtn, "click", () => { this.changeDocument(() => this.execute('view.zoom',{bounds:{...DEFAULT_BOUNDS}})); });
       this.on(n.newBtn, "click", () => {if(this.runtime){this.newDocument();return;} if (this.window.confirm("Een nieuwe illustratie starten? Het opgeslagen concept en niet-opgeslagen wijzigingen worden verwijderd.")) this.newDocument(); });
       this.on(n.saveBtn, "click", () => { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.cancel(); this.flushEdits(); this.updateMeta(); try { if(this.runtime)this.execute('document.draftSave');else this.services.draft.save(this.engine, this.storage);this.savedDocument=JSON.stringify(this.engine.toJSON()); this.status("Concept opgeslagen in deze browser."); } catch (e) { this.status("Concept kon niet worden opgeslagen: " + e.message); } });
@@ -364,7 +388,7 @@
       this.invalidate();if(!this.runtime)this.savedDocument=JSON.stringify(this.engine.toJSON()); return this;
     }
     dispose() {
-      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.closeSplitMenu();this.initialized = false; this.invalidateImport();
+      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.closeSplitMenu();this.closeCanvasTools();if(this.canvasFullscreen){this.syncFullscreen(false);if(this.document.fullscreenElement)this.document.exitFullscreen?.().catch(()=>{});}this.initialized = false; this.invalidateImport();
       for (const remove of this.listeners.splice(0)) remove();
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
       this.engine.renderer.preview = null; this.feedback = null;
@@ -677,6 +701,8 @@
       if (this.initialized) this.invalidate();
     }
     keyDown(event) {
+      if(event.key==='Escape' && this.nodes.canvasToolsMenu && this.nodes.canvasToolsMenu.hidden===false){event.preventDefault();this.closeCanvasTools(true);return;}
+      if(event.key==='Escape' && this.canvasFullscreen && this.document.body?.classList.contains('properties-open')){event.preventDefault();this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.navigationTools?.querySelector?.('[data-view-select=axes]')?.focus?.();return;}
       if(event.key==='Escape' && this.splitMenuOpen){event.preventDefault();this.closeSplitMenu(true);return;}
       if(event.key==='Escape' && this.nodes.fileMenu?.open){event.preventDefault();this.closeFileMenu(true);return;}
       const state = this.interaction;
@@ -835,7 +861,7 @@
       this.document.querySelectorAll('[data-tool-category]').forEach(category=>{const active=Array.from(category.querySelectorAll('[data-tool]')).find(button=>button.dataset.tool===this.tool),label=category.querySelector('[data-active-tool]');if(label)label.textContent=active?' · '+active.textContent.trim():'';});
       this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool && this.navigationMode!=="pan"));
       const navigationHeight=n.navigationTools?.parentElement?.offsetHeight;if(navigationHeight)this.document.documentElement?.style.setProperty("--navigation-height",navigationHeight+"px");
-      this.restrictControls();this.renderSplitTools();
+      this.restrictControls();this.renderSplitTools();this.renderCanvasTools();
       n.crosshair.hidden = !this.interaction || this.interaction.mode !== "draw" || (this.feedback && this.feedback.snapped && r.showSnapPoints !== false);
       if (this.feedback && this.interaction && this.interaction.mode === "draw") { const p = this.transform().mathToScreen(this.feedback.point), rect = n.canvasWrap.getBoundingClientRect(); n.crosshair.style.left = p.x - rect.left + "px"; n.crosshair.style.top = p.y - rect.top + "px"; }
     }
