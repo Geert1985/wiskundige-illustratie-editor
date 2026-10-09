@@ -61,6 +61,32 @@ function appRuntime() {
   const move = (point, pointerId = 1) => { const p = screen(point); emit(win, 'pointermove', { clientX: p.x, clientY: p.y, pointerId }); };
   return { MI, engine, app, doc, win, emit, down, move };
 }
+test('M1.1 hover and click share the same hit at eight CSS pixels and clear outside',()=>{
+  const h=appRuntime(),p=h.app.transform().mathToScreen({x:0,y:0}),event={clientX:p.x+7,clientY:p.y,target:null};
+  assert.equal(h.app.hitAt(event).object.id,'p');h.app.updateHover(event);assert.equal(h.app.hoverId,'p');assert.equal(h.doc.getElementById('canvasWrap').style.cursor,'pointer');
+  h.app.selectObject('p');h.app.updateHover(event);assert.equal(h.doc.getElementById('canvasWrap').style.cursor,'grab');
+  h.app.updateHover({...event,clientX:p.x+9});assert.equal(h.app.hoverId,null);h.app.clearHover();assert.equal(h.doc.getElementById('canvasWrap').style.cursor,'default');
+});
+test('M1.1 idle hover updates presentation without rendering geometry or inspector',()=>{
+  const h=appRuntime();let renders=0;const render=h.app.render.bind(h.app);h.app.render=()=>{renders++;render();};
+  const p=h.app.transform().mathToScreen({x:0,y:0});for(let i=0;i<20;i++)h.app.updateHover({clientX:p.x+i/100,clientY:p.y,target:null});assert.equal(renders,0);assert.equal(h.app.hoverId,'p');
+});
+test('M1.1 locks show selection pointer but never a move cursor',()=>{
+  const h=appRuntime();h.engine.update('p',{locked:true});h.app.selectedIds=['p'];const p=h.app.transform().mathToScreen({x:0,y:0});h.app.updateHover({clientX:p.x,clientY:p.y});assert.equal(h.app.cursorFor(h.app.hoverHit),'pointer');assert.equal(h.app.moveSelectionPlan(),null);
+});
+test('M1.1 group cursor and drag retain all IDs and cancel restores geometry',()=>{
+  const h=appRuntime();h.app.selectedIds=['p','l'];const before=plain(h.engine.toJSON());assert.equal(h.app.moveSelectionPlan().length,2);h.down({x:0,y:0});assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);assert.equal(h.doc.getElementById('canvasWrap').style.cursor,'grabbing');h.move({x:1,y:0});h.app.cancel();assert.deepEqual(plain(h.engine.toJSON()),before);assert.notEqual(h.doc.getElementById('canvasWrap').style.cursor,'grabbing');
+});
+test('M1.1 dependent group movement requires all free source roots and respects locks',()=>{
+  const h=appRuntime();h.engine.add({id:'q',type:'point',x:2,y:0});const mid=h.engine.construct('midpoint',[{objectId:'p',anchor:'point'},{objectId:'q',anchor:'point'}])[0];
+  h.app.selectedIds=['p',mid.id];assert.equal(h.app.moveSelectionPlan(),null);
+  h.app.selectedIds=['p','q',mid.id];assert.deepEqual(Array.from(h.app.moveSelectionPlan(),o=>o.id),['p','q']);
+  const old=h.engine.get(mid.id);h.down({x:0,y:0});h.move({x:1,y:1});assert.equal(h.engine.get(mid.id).x,old.x+1);assert.equal(h.engine.get(mid.id).y,old.y+1);h.app.cancel();
+  h.engine.update('q',{locked:true});assert.equal(h.app.moveSelectionPlan(),null);
+});
+test('M1.1 hover is tool gated and teardown never retains hover state',()=>{
+  const h=appRuntime(),p=h.app.transform().mathToScreen({x:0,y:0});h.app.updateHover({clientX:p.x,clientY:p.y});h.app.setTool('line');assert.equal(h.app.hoverId,null);assert.equal(h.doc.getElementById('canvasWrap').style.cursor,'crosshair');h.app.setTool('select');h.app.updateHover({clientX:p.x,clientY:p.y});h.app.dispose();assert.equal(h.app.hoverId,null);
+});
 
 function rightRectangle(h,a,b,modifiers={}) {
   const t=h.app.transform(),p=t.mathToScreen(a),q=t.mathToScreen(b);
