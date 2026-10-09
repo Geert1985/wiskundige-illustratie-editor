@@ -17,7 +17,7 @@ Creation-error correction: ecf2dac. Saved locally, not pushed.
 
 New recipes require constructionSchema 2. Existing geometry object types and model versions 1?5 remain; documents using only old constructions retain schema 1 and old golden fixtures are unchanged. New-format documents require the updated engine. Imported parameters must already be canonical and finite; no silent clamp/wrap during import. Groups and layers support schema 2 roundtrips.
 
-Restricted course/assessment creation requires both recipe/tool and source grants. Explicit parameter editing and source rebinding are author-only; direct computed coordinate edits remain forbidden. Restricted exports preserve the parameter. No constrained drag controller, learner parameter binding, intersection operators, derived circles, locus or trace included; these remain later scope.
+Restricted course/assessment creation requires both recipe/tool and source grants. Explicit parameter editing and source rebinding are author-only; direct computed coordinate edits remain forbidden. Restricted exports preserve the parameter. No separate drag controller, learner parameter binding, intersection operators, derived circles, locus or trace included; these remain later scope.
 
 ## Verification
 
@@ -25,6 +25,12 @@ Two new specification tests first ran red because the recipes/commands were abse
 
 ## Manual acceptance
 
-Refresh the editor. Under Constructies choose Lijnstuk via punten, click two existing points and move/edit a parent. Then choose Punt op lijnstuk or Punt op cirkel and click the source path. Select the resulting point and adjust Positie op pad under Relaties en organisatie; check undo/redo and parent motion. The path point is repositioned with the slider rather than dragged directly.
+Refresh the editor. Under Constructies choose Lijnstuk via punten, click two existing points and move/edit a parent. Then choose Punt op lijnstuk or Punt op cirkel and click the source path. Select the resulting point and adjust Positie op pad under Relaties en organisatie; check undo/redo and parent motion. The path point can also be dragged directly with the selection tool; test segment endpoints, circle motion, Escape cancellation and undo/redo.
 
 Stop after M5a; M5b has not started.
+
+## Direct dragging extension (2026-10-09)
+
+At user request, author selection mode now drags linked path points directly using the existing pointer lifecycle and construction.setParameter. Circle angle projection wraps; finite segment projection clamps. Dependent constructions recompute live. Locks remain effective, restricted modes unchanged. Escape/lost capture cancel the gesture by restoring the original parameter. History records one completed gesture.
+
+Validation: Node 300/300; full Edge 33 modules with no page errors; targeted linked-path suite rerun after final code cleanup. Real-pointer coverage checks circle dragging, segment endpoint clamp, one-step undo/redo and Escape rollback.

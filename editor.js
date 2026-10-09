@@ -615,6 +615,10 @@
       }
       if(hit && this.runtime && !this.allowed("object.translate",{ids:[hit.object.id],delta:{x:0,y:0}})) {this.selectObject(hit.object.id);this.status("Verplaatsen is niet toegestaan.");return;}
       if(hit && hit.object.locked) { this.selectObject(hit.object.id);this.status('Object is vergrendeld.');return; }
+      if(hit && !this.runtime && MI.ConstructionService.pathKind(hit.object.construction?.kind)) {
+        this.begin({mode:'pathPoint',id:hit.object.id,original:clone(this.engine.get(hit.object.id))},event);
+        this.selectedId=hit.object.id;this.invalidate();return;
+      }
       if(hit && hit.object.construction) {this.selectObject(hit.object.id);this.status('Gekoppelde constructie: verplaats de bronobjecten.');return;}
       this.begin(hit ? { mode: "object", id: hit.object.id, original: clone(this.engine.get(hit.object.id)) } : { mode: "pan", bounds: { ...this.engine.renderer.bounds } }, event);
       this.selectedId = hit ? hit.object.id : null; this.invalidate();
@@ -659,6 +663,11 @@
         }
         this.runtimePreview(state,operation,payload);this.invalidate(true);return;
       }
+      if(state.mode==='pathPoint') {
+        const recipe=state.original.construction,ref=recipe.sources[0],source=this.engine.get(ref.objectId);
+        try {const value=MI.ConstructionService.projectParameter(recipe.kind,source,ref,point);this.execute('construction.setParameter',{id:state.id,value});}
+        catch(error){this.status(error.message);}
+      }
       if (state.mode === "draw") { state.lastRawPoint = point; this.resolveDraw(); }
       if (state.mode === "label") this.updateObject(state.id, { labelOffsetX: state.offset.x + delta.x, labelOffsetY: state.offset.y + delta.y });
       if (state.mode === "endpoint") { state.resolved = this.services.resolver.endpoint(this.engine, state.original, state.endpoint, point, { transform: this.transform() }); this.feedback = state.resolved.result; }
@@ -701,6 +710,7 @@
       if (state) {
         if(this.runtime && state.transaction)try{this.runtime.cancel(state.transaction);}catch(_){}
         if (!this.runtime && (state.mode === "object" || state.mode === "label") && this.engine.get(state.id)) this.engine.update(state.id, state.mode==="label"?{labelOffsetX:state.original.labelOffsetX,labelOffsetY:state.original.labelOffsetY}:state.original);
+        if(!this.runtime && state.mode==='pathPoint')this.execute('construction.setParameter',{id:state.id,value:state.original.construction.parameter});
         if (!this.runtime && state.mode === "pan") this.engine.renderer.setBounds(state.bounds);
         if(!this.runtime && state.mode==='group')this.engine.updateMany(state.originals.map(o=>({id:o.id,patch:o})));
         this.selectedIds=state.selectionIdsBefore || (state.selectionBefore?[state.selectionBefore]:[]); this.release(state);

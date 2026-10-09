@@ -12,7 +12,7 @@ Acceptance: failing tests first; parent motion, endpoints/clamp/wrap, invalidity
 
 ## Mathematical conventions and API
 
-Lengths at or below 1e-9 are treated as collapsed for the two segment recipes. Circle parameter 0 is the rightmost point, .25 the top, .5 the left and .75 the bottom in mathematical coordinates; increasing t runs counterclockwise. Rebinding keeps t, rather than the old world-space point. The editor slider quantizes subsequent edits to .001; stored/imported canonical parameters retain their full precision until edited. Position is changed with the inspector slider, not by a new constrained drag handler.
+Lengths at or below 1e-9 are treated as collapsed for the two segment recipes. Circle parameter 0 is the rightmost point, .25 the top, .5 the left and .75 the bottom in mathematical coordinates; increasing t runs counterclockwise. Rebinding keeps t, rather than the old world-space point. The editor slider quantizes subsequent edits to .001; stored/imported canonical parameters retain their full precision until edited. Author selection mode also supports direct path-point dragging through the existing pointer owner. Movement projects the mathematical pointer onto the source segment (clamped) or circle (wrapped), using construction.setParameter. A gesture records one undo step; Escape and pointer cancellation restore the original parameter and dependent geometry. Locks and restricted-runtime denials remain in effect.
 
 ```js
 const MI = FZI.MathIllustration;
