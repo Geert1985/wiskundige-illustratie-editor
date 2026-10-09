@@ -24,7 +24,7 @@ Effective display is object visibility AND layer visibility AND valid geometry. 
 
 Semantic commands are `layer.create`, `layer.assign`, `layer.rename`, `layer.setVisibility`, `layer.reorder`, `layer.delete`. These are author-only, including direct restricted-facade calls: `MODE_DENIED`. Layer assignment/order are presentation operations, not geometry/lock overrides. Locks continue to restrict geometry/deletion. No capability is inherited from a layer or group.
 
-Restricted projections expose readable object membership only; completely unread nonempty layers are omitted. Layer presentation for readable members is visible in the readonly list. Hidden layers cannot be displayed, selected, snapped or directly manipulated through restricted commands; authorized indirect recomputation still follows the existing policy. JSON export fails closed if original layer membership would reveal unread IDs. SVG includes only readable, effectively displayed objects. Existing document policy and server-authority boundary (M17) are unchanged.
+Restricted projections expose readable object membership only; completely unread nonempty layers are omitted. Layer presentation for readable members is visible in the readonly list. Hidden layers cannot be displayed, selected, snapped or manipulated through ordinary direct object commands. Explicit author-configured parameter bindings retain their existing authorization, including bindings on hidden sources; indirect recomputation still follows the existing policy. JSON export fails closed if original layer membership would reveal unread IDs. SVG includes only readable, effectively displayed objects. Existing document policy and server-authority boundary (M17) are unchanged.
 
 ## Acceptance
 
