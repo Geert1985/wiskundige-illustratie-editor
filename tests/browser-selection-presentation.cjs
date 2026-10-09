@@ -11,7 +11,7 @@ module.exports=async page=>{
   for(const span of [2,10,100])for(const background of ['#ffffff','#111111']){
     await load([{id:'p',type:'point',x:0,y:0,style:{radius:1,stroke:background,opacity:.2}}],{background,bounds:{xMin:-span,xMax:span,yMin:-span*.6,yMax:span*.6}});
     await hover({x:0,y:0},7);assert.equal(await hoverId(),'p');assert.equal(await cursor(),'pointer');await page.mouse.down();assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.selectedId),'p');assert.equal(await cursor(),'grabbing');await page.mouse.up();
-    await hover({x:0,y:0},7);assert.equal(await cursor(),'grab');const halo=page.locator('[data-selection-highlight="p"] circle');assert.equal(await halo.count(),2);assert.equal(await halo.last().getAttribute('vector-effect'),'non-scaling-stroke');assert.equal(await halo.last().getAttribute('stroke-width'),'5');
+    await hover({x:0,y:0},7);assert.equal(await cursor(),'grab');const halo=page.locator('[data-selection-highlight="p"] circle');assert.equal(await halo.count(),2);assert.equal(await halo.last().getAttribute('vector-effect'),'non-scaling-stroke');assert.equal(await halo.last().getAttribute('stroke-width'),'10');
     await hover({x:0,y:0},9);assert.equal(await hoverId(),null);assert.equal(await cursor(),'default');
   }
   // Overlap follows the painted topmost object; idle moves preserve the SVG and panels.
