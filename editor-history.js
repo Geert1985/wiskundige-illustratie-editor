@@ -33,4 +33,17 @@
     redo() { if (!this.canRedo) return false; this.restore(this.entries[this.cursor].after); this.cursor++; return true; }
   }
   MI.EditorHistory = EditorHistory;
+  class RuntimeHistory {
+    constructor(app) { this.app=app; }
+    capture() { return Object.freeze({revision:this.app.runtime.documentRevision}); }
+    record() { return false; }
+    clear() {}
+    get entries() { return Object.freeze([]); }
+    get canUndo() { return this.app.runtime.canUndo; }
+    get canRedo() { return this.app.runtime.canRedo; }
+    restore() { throw new MI.PermissionError('UNTRUSTED_HISTORY'); }
+    undo() { if(!this.canUndo)return false;this.app.execute('history.undo');return true; }
+    redo() { if(!this.canRedo)return false;this.app.execute('history.redo');return true; }
+  }
+  MI.RuntimeHistory=RuntimeHistory;
 })(window);

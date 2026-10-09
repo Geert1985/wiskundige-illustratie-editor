@@ -7,12 +7,52 @@
   class EditorApp {
     constructor({ engine, services, document, window, storage }) {
       this.engine = engine; this.services = services; this.document = document; this.window = window; this.storage = storage;
+      this.runtime=services.runtime || null; if(this.runtime && (!MI.RuntimeSession.isSession(this.runtime) || engine!==this.runtime.engine))throw new MI.PermissionError("INVALID_POLICY"); this.commands=this.runtime || MI.AuthorCommands(engine);
       this.tool = "select"; this.selectedIds = []; this.interaction = null; this.feedback = null;
       this.hoverId=null; this.hoverHit=null; this.hoverFrame=null; this.hoverPointer=null; this.presentationKey=null;
       this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
-      this.history = new (services.history || MI.EditorHistory)(this); this.editBefore = null;
+      this.history = new (this.runtime ? MI.RuntimeHistory : services.history || MI.EditorHistory)(this); this.editBefore = null;
       this.nodes = {};
       for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel"]) this.nodes[id] = document.getElementById(id);
+    }
+    command(operation,payload={}) { return this.commands.createCommand(operation,payload); }
+    execute(operation,payload={}) { return this.commands.execute(this.command(operation,payload)); }
+    allowed(operation,payload={}) { return this.commands.canExecute(this.command(operation,payload)).allowed; }
+    capabilities(id) { return this.commands.getObjectCapabilities(id); }
+    toolAllowed(tool) { return !this.runtime || tool==='select' || this.commands.getAllowedTools().some(t=>t.enabled && t.toolId===(tool.startsWith('construct:')?tool:'create:'+tool)); }
+    createObject(object,tool=this.tool) { return this.execute('object.create',{toolId:'create:'+tool,object}).result; }
+    restrictControls() {
+      if(!this.runtime)return;
+      for(const button of this.document.querySelectorAll('[data-tool]'))button.disabled=!this.toolAllowed(button.dataset.tool);
+      for(const [id,operation] of [['newBtn','document.reset'],['saveBtn','document.draftSave'],['loadBtn','document.replace'],['exportJsonBtn','document.exportJSON'],['exportSvgBtn','document.exportSVG']])if(this.nodes[id])this.nodes[id].disabled=!this.allowed(operation,operation==='document.replace'?{document:{}}:{});
+      for(const [id,path] of [['titleInput','title'],['descriptionInput','description']])this.nodes[id].disabled=!this.allowed('document.setMeta',{fields:[{path,value:this.nodes[id].value}]});
+      const object=this.engine.get(this.selectedId),caps=object&&this.capabilities(object.id);
+      for(const control of this.nodes.selectionPanel.querySelectorAll('[data-edit], [data-style], [data-style-color], [data-fill-object]')) {
+        let path=control.dataset.style?'style.'+(control.dataset.style==='fillEnabled'?'fill':control.dataset.style):control.dataset.vertex!=null?'vertices['+control.dataset.vertex+'].'+control.dataset.edit:control.dataset.edit;
+        if(control.dataset.styleColor)path=object?.type==='text'?'style.fill':'style.stroke';if(control.dataset.fillObject)path='style.fill';
+        control.disabled=!caps || ![...(caps.geometryFields||[]),...(caps.propertyFields||[])].includes(path);
+      }
+      for(const button of this.document.querySelectorAll('[data-object-lock], [data-object-visibility], [data-lock-selection], [data-axis-setting], [data-axis-system], [data-view]'))button.disabled=true;
+      for(const button of this.document.querySelectorAll('[data-select-object]'))button.disabled=!this.capabilities(button.dataset.selectObject).selectList;
+      for(const button of this.document.querySelectorAll('[data-toggle-label], [data-color-object]'))button.disabled=!this.capabilities(button.dataset.toggleLabel||button.dataset.colorObject).propertyFields?.includes(button.dataset.toggleLabel?'showLabel':this.engine.get(button.dataset.colorObject)?.type==='text'?'style.fill':'style.stroke');
+      for(const [selector,operation] of [['[data-delete-selected]','object.delete'],['[data-duplicate-selection]','object.duplicate']])for(const button of this.document.querySelectorAll(selector))button.disabled=!this.selectedIds.length || !this.allowed(operation,{ids:this.selectedIds});
+    }
+    updateObject(id,patch) {
+      const object=this.engine.get(id);if(!object)return null;if(!this.runtime)MI.normaliseObject({...object,...patch,style:patch.style?{...object.style,...patch.style}:object.style});
+      const fields=MI.PermissionFields.patch(object,Object.fromEntries(Object.entries(patch).filter(([key])=>key!=='id'&&key!=='type'&&key!=='visible'&&key!=='locked'&&key!=='construction'&&key!=='constructionValid'))).filter(f=>{
+        const match=f.path.match(/^vertices\[(\d+)\]\.(x|y)$/),value=match?object.vertices[Number(match[1])][match[2]]:f.path.split('.').reduce((o,k)=>o?.[k],object);return JSON.stringify(value)!==JSON.stringify(f.value);
+      });
+      if(!fields.length)return object;
+      const geometry=MI.PermissionFields.geometry(object),geometric=fields.filter(f=>geometry.includes(f.path)),properties=fields.filter(f=>!geometry.includes(f.path));
+      if(geometric.length && !properties.length)this.execute('object.setGeometry',{id,fields:geometric});
+      else if(properties.length && !geometric.length)this.execute('object.setProperties',{ids:[id],fields:properties});
+      else this.execute('object.patchBatch',{updates:[{id,patch}]});
+      return this.engine.get(id);
+    }
+    updateObjects(updates) {this.execute('object.patchBatch',{updates});}
+    runtimePreview(state,operation,payload) {
+      try { if(!state.transaction)state.transaction=this.runtime.begin(this.command(operation,payload));this.runtime.preview(state.transaction,payload);state.finalPayload=payload;state.rejected=false; }
+      catch(error) {state.rejected=true;this.status(error.message);}
     }
     get selectedId() { return this.selectedIds[this.selectedIds.length-1] || null; }
     set selectedId(id) { this.selectedIds=id ? [id] : []; }
@@ -20,17 +60,18 @@
     selectObject(id,additive=false) {
       this.cancel(); this.tool='select';
       if(additive) this.selectedIds=this.selectedIds.includes(id)?this.selectedIds.filter(x=>x!==id):[...this.selectedIds,id]; else this.selectedId=id;
+      if(this.runtime)this.selectedIds=this.execute("object.select",{ids:this.selectedIds,source:"list"}).selectedIds;
       this.invalidate();
     }
     editableSelection() { return !this.selectedObjects().some(o=>o.locked); }
-    canvasSelectable(o) { return !!o && o.visible!==false && !(o.construction && o.constructionValid===false); }
+    canvasSelectable(o) { return !!o && o.visible!==false && !(o.construction && o.constructionValid===false) && (!this.runtime || this.capabilities(o.id).selectCanvas); }
     moveSelectionPlan() {
       const snapshot=this.engine.model.objects,key=JSON.stringify(this.selectedIds),cache=this.movementCache;
       if(cache && cache.snapshot===snapshot && cache.key===key)return cache.plan;
       const byId=new Map(snapshot.map(o=>[o.id,o])),objects=this.selectedIds.map(id=>byId.get(id));
       const free=objects.filter(o=>o && !o.construction),ids=new Set(free.map(o=>o.id));
       const covered=(o,seen=new Set())=>{if(!this.canvasSelectable(o)||o.locked||seen.has(o.id))return false;if(!o.construction)return ids.has(o.id);const next=new Set([...seen,o.id]);return o.construction.sources.every(ref=>covered(byId.get(ref.objectId),next));};
-      const plan=objects.length && free.length && objects.every(o=>covered(o))?Object.freeze(free):null;
+      const plan=objects.length && free.length && objects.every(o=>covered(o)) && (!this.runtime || this.allowed("object.translate",{ids:this.selectedIds,delta:{x:0,y:0}}))?Object.freeze(free):null;
       this.movementCache={snapshot,key,plan};return plan;
     }
     hitAt(event) {
@@ -52,8 +93,8 @@
       if(this.tool!=='select')return 'crosshair';
       if(!hit || !this.canvasSelectable(hit.object))return 'default';
       const o=hit.object;
-      if(!o.locked && !o.construction && ['endpoint','vertex'].includes(hit.kind))return 'crosshair';
-      if(!o.locked && hit.kind==='label')return 'move';
+      if(!o.locked && !o.construction && (!this.runtime || this.capabilities(o.id).geometryFields.length) && ['endpoint','vertex'].includes(hit.kind))return 'crosshair';
+      if(!o.locked && (!this.runtime || ['labelOffsetX','labelOffsetY'].every(k=>this.capabilities(o.id).propertyFields.includes(k))) && hit.kind==='label')return 'move';
       if(this.selectedIds.includes(o.id) && this.moveSelectionPlan())return 'grab';
       return 'pointer';
     }
@@ -86,23 +127,24 @@
       this.hoverFrame=null;this.hoverPointer=null;this.hoverId=null;this.hoverHit=null;this.renderPresentation();
     }
     duplicateSelection() {
-      if(!this.selectedIds.length)return;this.changeDocument(()=>{this.selectedIds=this.engine.duplicateMany(this.selectedIds).map(o=>o.id);});
+      if(!this.selectedIds.length)return;this.changeDocument(()=>{this.selectedIds=this.execute('object.duplicate',{ids:this.selectedIds}).result.map(o=>o.id);});
     }
     toggleLockSelection() {
-      if(!this.selectedIds.length)return;this.changeDocument(()=>{const objects=this.selectedObjects(),locked=!objects.every(o=>o.locked);this.engine.updateMany(objects.map(o=>({id:o.id,patch:{locked}})));});
+      if(!this.selectedIds.length)return;this.changeDocument(()=>{const objects=this.selectedObjects(),locked=!objects.every(o=>o.locked);this.execute('object.setLock',{ids:objects.map(o=>o.id),value:locked});});
     }
     deleteSelection() {
       if(!this.selectedIds.length)return;if(!this.editableSelection()){this.status('Ontgrendel de selectie eerst.');return;}
-      this.changeDocument(()=>{const remove=MI.ConstructionService.descendants(this.engine.model.objects,this.selectedIds);const data=this.engine.toJSON();data.objects=data.objects.filter(o=>!remove.has(o.id));this.engine.load(data);this.selectedId=null;});
+      this.changeDocument(()=>{this.execute('object.delete',{ids:this.selectedIds});this.selectedId=null;});
     }
     on(target, type, fn, options) {
       if (!target) return;
-      target.addEventListener(type, fn, options);
-      this.listeners.push(() => target.removeEventListener && target.removeEventListener(type, fn, options));
+      const guarded=event=>{try{fn(event);}catch(error){this.status(error.message);this.invalidate();}};
+      target.addEventListener(type, guarded, options);
+      this.listeners.push(() => target.removeEventListener && target.removeEventListener(type, guarded, options));
     }
     status(text) { this.nodes.status.textContent = text; }
     hydrate() { this.nodes.titleInput.value = this.engine.model.meta.title || ""; this.nodes.descriptionInput.value = this.engine.model.meta.description || ""; }
-    updateMeta() { this.engine.model.meta.title = this.nodes.titleInput.value.trim(); this.engine.model.meta.description = this.nodes.descriptionInput.value.trim(); }
+    updateMeta() {const fields=[{path:'title',value:this.nodes.titleInput.value.trim()},{path:'description',value:this.nodes.descriptionInput.value.trim()}].filter(f=>this.engine.model.meta[f.path]!==f.value);if(fields.length)this.execute('document.setMeta',{fields});}
     flushEdits() { if (this.editBefore) { this.history.record(this.editBefore); this.editBefore = null; } }
     stylePatch(input) {
       let key=input.dataset.style,value=input.type==='number' ? input.valueAsNumber : input.value;
@@ -114,7 +156,7 @@
     }
     changeDocument(fn) {
       this.cancel(); this.flushEdits(); const before = this.history.capture();
-      try { fn(); } finally { this.history.record(before); this.invalidate(); }
+      try { fn(); } catch(error) {this.status(error.message);} finally { this.history.record(before); this.invalidate(); }
     }
     travelHistory(redo = false) {
       this.closeDialogs(true); this.cancel(); this.flushEdits();
@@ -146,14 +188,14 @@
       this.on(this.window, "pointerup", e => this.pointerUp(e));
       this.on(this.window, "pointercancel", e => { if (this.interaction && e.pointerId === this.interaction.pointerId) this.cancel(); });
       this.on(n.canvasWrap, "lostpointercapture", e => { if (this.interaction && e.pointerId === this.interaction.pointerId) this.cancel(); });
-      this.on(this.window, "blur", () => this.cancel());
+      this.on(this.window, "blur", () => {if(this.runtime)this.closeDialogs(true);this.cancel();});
       this.on(this.window, "keydown", e => this.keyDown(e));
       this.on(n.canvasWrap, "wheel", e => this.zoom(e), { capture: true, passive: false });
       this.on(n.toolGrid, "click", e => { const button = e.target.closest("[data-tool]"); if (button) this.setTool(button.dataset.tool); });
       this.on(n.viewList, "click", e => this.viewClick(e));
       this.on(n.viewList, "change", e => {
         const input = e.target.closest("[data-axis-setting]");
-        if (input) { this.changeDocument(() => { this.engine.renderer[input.dataset.axisSetting] = input.checked; }); }
+        if (input) { this.changeDocument(() => { this.execute('document.setPresentation',{fields:[{path:input.dataset.axisSetting,value:input.checked}]}); }); }
       });
       this.on(this.document, "click", e => { if (this.axisMenuOpen && !e.target.closest('[data-view-select="axes"], [data-axis-settings]')) { this.axisMenuOpen = false; this.invalidate(); } });
       this.on(n.selectionPanel, "change", e => {
@@ -165,7 +207,7 @@
           if(input.dataset.style) {
             patch={style:this.stylePatch(input)};
           } else patch=input.dataset.vertex != null ? {vertices:this.engine.get(this.selectedId).vertices.map((p,i)=>i===Number(input.dataset.vertex) ? {...p,[input.dataset.edit]:value} : p)} : {[input.dataset.edit]:value};
-          this.engine.update(this.selectedId,patch);
+          if(this.runtime && input.dataset.vertex!=null)this.execute('object.setGeometry',{id:this.selectedId,fields:[{path:'vertices['+input.dataset.vertex+'].'+input.dataset.edit,value}]});else this.updateObject(this.selectedId,patch);
         }); }
         catch (error) { this.status(error.message); }
         this.invalidate();
@@ -181,13 +223,13 @@
         this.on(input, "input", () => { if (!this.editBefore) this.editBefore = this.history.capture(); this.updateMeta(); this.invalidate(); });
         this.on(input, "change", () => { this.flushEdits(); this.invalidate(); });
       }
-      this.on(n.resetViewBtn, "click", () => { this.changeDocument(() => this.engine.renderer.setBounds({ ...DEFAULT_BOUNDS })); });
-      this.on(n.newBtn, "click", () => { if (this.window.confirm("Een nieuwe illustratie starten? Het opgeslagen concept en niet-opgeslagen wijzigingen worden verwijderd.")) this.newDocument(); });
-      this.on(n.saveBtn, "click", () => { this.cancel(); this.flushEdits(); this.updateMeta(); try { this.services.draft.save(this.engine, this.storage); this.status("Concept opgeslagen in deze browser."); } catch (e) { this.status("Concept kon niet worden opgeslagen: " + e.message); } });
-      this.on(n.loadBtn, "click", () => n.fileInput.click());
+      this.on(n.resetViewBtn, "click", () => { this.changeDocument(() => this.execute('view.zoom',{bounds:{...DEFAULT_BOUNDS}})); });
+      this.on(n.newBtn, "click", () => {if(this.runtime){this.newDocument();return;} if (this.window.confirm("Een nieuwe illustratie starten? Het opgeslagen concept en niet-opgeslagen wijzigingen worden verwijderd.")) this.newDocument(); });
+      this.on(n.saveBtn, "click", () => { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.cancel(); this.flushEdits(); this.updateMeta(); try { if(this.runtime)this.execute('document.draftSave');else this.services.draft.save(this.engine, this.storage); this.status("Concept opgeslagen in deze browser."); } catch (e) { this.status("Concept kon niet worden opgeslagen: " + e.message); } });
+      this.on(n.loadBtn, "click", () => {if(this.runtime)throw new MI.PermissionError("MODE_DENIED");n.fileInput.click();});
       this.on(n.fileInput, "change", e => this.importFile(e));
-      this.on(n.exportJsonBtn, "click", () => { this.cancel(); this.flushEdits(); this.updateMeta(); this.download("illustratie.json", this.engine.toJSONString(true), "application/json;charset=utf-8"); });
-      this.on(n.exportSvgBtn, "click", () => { this.cancel(); this.flushEdits(); this.updateMeta(); this.download("illustratie.svg", this.engine.renderSVG(), "image/svg+xml;charset=utf-8"); });
+      this.on(n.exportJsonBtn, "click", () => {if(this.runtime && !this.allowed("document.exportJSON"))throw new MI.PermissionError("PERMISSION_DENIED"); this.cancel(); this.flushEdits(); if(!this.runtime)this.updateMeta(); this.download("illustratie.json", this.engine.toJSONString(true), "application/json;charset=utf-8"); });
+      this.on(n.exportSvgBtn, "click", () => {if(this.runtime && !this.allowed("document.exportSVG"))throw new MI.PermissionError("PERMISSION_DENIED"); this.cancel(); this.flushEdits(); if(!this.runtime)this.updateMeta(); this.download("illustratie.svg", this.engine.renderSVG(), "image/svg+xml;charset=utf-8"); });
       if (this.document.createElement && this.document.body) {
         this.colorInput = this.document.createElement("input"); this.colorInput.type = "text"; this.colorInput.dataset.editorColor = "true";
         this.colorInput.id = "colorValue"; this.colorInput.required = true; this.colorInput.pattern = "#[0-9a-fA-F]{6}"; this.colorInput.maxLength = 7;
@@ -195,6 +237,10 @@
         this.on(this.colorInput, "input", () => { if (this.validColor()) this.setColor(this.colorId, this.colorInput.value); });
         this.on(this.colorInput, "change", () => { if (!n.colorDialog || !n.colorDialog.open) { this.flushEdits(); this.colorId = null; this.invalidate(); } });
       }
+      if(this.runtime)this.listeners.push(this.runtime.subscribe(event=>{
+        if(event.type==='context-changed'||event.type==='disposed'){this.closeDialogs(true);}if(event.type==='context-changed'||event.type==='disposed'||this.interaction?.transaction){this.cancel();if(!this.toolAllowed(this.tool))this.tool='select';}
+        this.selectedIds=this.selectedIds.filter(id=>this.capabilities(id).selectCanvas||this.capabilities(id).selectList);this.invalidate();
+      }));
       this.invalidate(); return this;
     }
     dispose() {
@@ -208,12 +254,13 @@
     submitText() {
       const text = this.nodes.textValue.value.trim(), pending = this.pendingText;
       if (!pending || !text) return;
-      this.closeText(); this.changeDocument(() => { this.selectedId = this.engine.add({ type: "text", x: pending.point.x, y: pending.point.y, text }).id; });
+      this.closeText(); this.changeDocument(() => { this.selectedId = this.createObject({ type: "text", x: pending.point.x, y: pending.point.y, text },"text").id; });
     }
     validColor() { return this.colorInput && /^#[0-9a-f]{6}$/i.test(this.colorInput.value); }
     closeColor(cancel = false) {
       if (this.colorId) {
-        if (cancel && this.editBefore) { this.history.restore(this.editBefore); this.editBefore = null; this.hydrate(); }
+        if(this.runtime && this.colorTransaction){try{if(cancel)this.runtime.cancel(this.colorTransaction);else this.runtime.commit(this.colorTransaction,this.colorPayload);}catch(error){this.status(error.message);}this.colorTransaction=null;this.colorPayload=null;this.editBefore=null;}
+        else if (cancel && this.editBefore) { this.history.restore(this.editBefore); this.editBefore = null; this.hydrate(); }
         else this.flushEdits();
       }
       this.colorId = null; this.colorProperty=null; if (this.nodes.colorDialog && this.nodes.colorDialog.open) this.nodes.colorDialog.close();
@@ -227,7 +274,7 @@
       const distance=p=>{const q=transform.mathToScreen(p);return Math.hypot(q.x-screen.x,q.y-screen.y);};
       const segment=(o,s)=>{const l=MI.ConstructionService.line(o,s),a=transform.mathToScreen({x:l.x1,y:l.y1}),b=transform.mathToScreen({x:l.x2,y:l.y2}),dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy;if(!length)return distance({x:l.x1,y:l.y1});const domain=o.type==='polygon'?[0,1]:MI.LinearGeometry.domain(o),t=Math.max(domain[0],Math.min(domain[1],((screen.x-a.x)*dx+(screen.y-a.y)*dy)/length));return Math.hypot(screen.x-a.x-t*dx,screen.y-a.y-t*dy);};
       for(const o of this.engine.model.objects) {
-        if(o.visible===false||(o.construction && o.constructionValid===false))continue;
+        if(o.visible===false||(o.construction && o.constructionValid===false)||(this.runtime && !this.capabilities(o.id).sourceTools.includes(this.tool)))continue;
         const add=(s,d)=>{if(d<=12)candidates.push({source:{objectId:o.id,...s},distance:d,priority:o.type==='point'?0:1});};
         if(role==='figure') {
           if(o.type==='polygon')add({},MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
@@ -246,10 +293,10 @@
     }
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
-      const target=event.target&&event.target.closest&&event.target.closest('[data-object-id]'),painted=target&&this.engine.get(target.getAttribute('data-object-id'));
+      const target=event.target&&event.target.closest&&event.target.closest('[data-object-id]'),hitObject=target&&this.engine.get(target.getAttribute('data-object-id')),painted=hitObject && (!this.runtime || this.capabilities(hitObject.id).sourceTools.includes(this.tool))?hitObject:null;
       if(['area','perimeter'].includes(kind)&&painted&&['polygon','circle'].includes(painted.type))state.sources=[{objectId:painted.id}];
       const angle=!state.sources.length&&kind==='bisector'&&(painted&&painted.type==='angle'?painted:(this.engine.selectAt(point.x,point.y,{transform:this.transform(),tolerancePx:12})||{}).object);
-      if(angle&&angle.type==='angle'&&angle.visible!==false)state.sources=[0,1,2].map(index=>({objectId:angle.id,part:'vertex',index}));
+      if(angle&&angle.type==='angle'&&angle.visible!==false&&(!this.runtime || this.capabilities(angle.id).sourceTools.includes(this.tool)))state.sources=[0,1,2].map(index=>({objectId:angle.id,part:'vertex',index}));
       let source=this.constructionPick(point,this.constructionRole(kind,state.sources.length));
       if(kind==='bisector' && !state.sources.length && source && source.part==='vertex') {const polygon=this.engine.get(source.objectId);if(polygon.type==='polygon')state.sources=[(source.index+polygon.vertices.length-1)%polygon.vertices.length,source.index,(source.index+1)%polygon.vertices.length].map(index=>({objectId:polygon.id,part:'vertex',index}));}
       if(state.sources.length===MI.ConstructionService.kinds[kind]) {}
@@ -260,11 +307,11 @@
       if(this.nodes.canvasWrap.setPointerCapture)try{this.nodes.canvasWrap.setPointerCapture(event.pointerId);}catch(_){}
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));return;}
       this.interaction=null;this.release(state);
-      try {this.changeDocument(()=>{this.selectedIds=this.engine.construct(kind,state.sources).map(o=>o.id);});this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}
+      try {this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources}).result.map(o=>o.id);});this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}
       catch(error){this.status(error.message);}
       this.invalidate();
     }
-    setTool(tool) { this.closeDialogs(true); this.cancel(); this.tool = tool; if(tool.startsWith('construct:'))this.status(this.constructionHint(tool.slice(10))); this.invalidate(); }
+    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.tool = tool; if(tool.startsWith('construct:'))this.status(this.constructionHint(tool.slice(10))); this.invalidate(); }
     begin(state, event) {
       this.clearHover();
       this.flushEdits();
@@ -294,8 +341,8 @@
       state.end={...end};
       if(!state.keyboard)state.active=state.active || Math.hypot(end.x-state.startScreen.x,end.y-state.startScreen.y)>=3;
       if(!state.active)return;
-      state.result=this.rectangleService().resolve(this.engine.model.objects,state.startScreen,end,{transform:state.transform,bounds:this.engine.renderer.bounds,textGeometry:state.textGeometry,base:state.selectionIdsBefore,operation:state.operation,mode:state.keyboard?state.rule:undefined});
-      this.selectedIds=state.result.ids;
+      state.result=this.rectangleService().resolve(this.engine.model.objects.filter(o=>this.canvasSelectable(o)),state.startScreen,end,{transform:state.transform,bounds:this.engine.renderer.bounds,textGeometry:state.textGeometry,base:state.selectionIdsBefore,operation:state.operation,mode:state.keyboard?state.rule:undefined});
+      this.selectedIds=this.runtime?this.execute("object.select",{ids:state.result.ids,source:"canvas"}).selectedIds:state.result.ids;
       this.status('Kader: '+(state.result.mode==='contain'?'omsluiten':'raken')+' · '+state.result.found.length+' objecten'+(state.keyboard?' · pijlen, Alt voor fijn, C wisselt, Enter bevestigt, Escape annuleert.':''));
       this.invalidate(true);
     }
@@ -345,7 +392,7 @@
       const angle=['angle','rightAngle'].includes(state.shape);
       try { if(angle)MI.MeasurementGeometry.validateAngle(state.vertices,state.shape==='rightAngle'?'right':'arc');else MI.PolygonGeometry.validate(state.vertices); }
       catch(error) { this.status(error.message); return; }
-      this.selectedId=this.engine.add({type:angle?'angle':'polygon',vertices:state.vertices,...(angle?{angleMark:state.shape==='rightAngle'?'right':'arc'}:{})}).id;
+      this.selectedId=this.createObject({type:angle?'angle':'polygon',vertices:state.vertices,...(angle?{angleMark:state.shape==='rightAngle'?'right':'arc'}:{})},state.shape).id;
       this.interaction=null; this.release(state); this.engine.renderer.preview=null; this.feedback=null;
       this.history.record(state.historyBefore); this.invalidate(); this.status(angle?'Hoek toegevoegd.':'Veelhoek toegevoegd.');
     }
@@ -357,20 +404,20 @@
       }
       if(!this.interaction)this.suppressMarqueeMenu=false;
       if (!this.initialized || (this.interaction && !['polygon','construction'].includes(this.interaction.mode)) || event.button !== 0 || event.isPrimary === false) return;
-      const point = this.pointer(event); if (!point) return; event.preventDefault();
+      const point = this.pointer(event); if (!point || !this.toolAllowed(this.tool)) return; event.preventDefault();
       if(this.tool.startsWith('construct:')) {this.constructionClick(point,event);return;}
       if(this.interaction && this.interaction.mode==='polygon') { this.polygonClick(point,event); return; }
       const vertex=event.target && event.target.closest && event.target.closest('.fzi-polygon-vertex');
       if(this.tool==='select' && vertex) {
         const id=vertex.getAttribute('data-polygon-id'),object=this.engine.get(id);
-        if(!this.canvasSelectable(object) || object.locked || object.construction) return;
+        if(!this.canvasSelectable(object) || object.locked || object.construction || (this.runtime && !this.capabilities(id).geometryFields.some(k=>k.startsWith("vertices[")))) return;
         this.begin({mode:'vertex',id,original:clone(object),vertex:Number(vertex.getAttribute('data-vertex')),resolved:null},event);
         this.selectedId=id; this.invalidate(); return;
       }
       const label = event.target && event.target.closest && event.target.closest(".object-label"), handle = event.target && event.target.closest && event.target.closest(".fzi-line-endpoint");
       if (this.tool === "select" && (label || handle) && !(label && this.selectedIds.length>1 && this.selectedIds.includes(label.getAttribute('data-label-id')))) {
         const id = (label || handle).getAttribute(label ? "data-label-id" : "data-line-id"), object = this.engine.get(id);
-        if (!this.canvasSelectable(object) || object.locked || (handle && object.construction)) return;
+        if (!this.canvasSelectable(object) || object.locked || (handle && object.construction) || (this.runtime && (label?!["labelOffsetX","labelOffsetY"].every(k=>this.capabilities(id).propertyFields.includes(k)):![handle.getAttribute("data-endpoint")==="start"?"x1":"x2",handle.getAttribute("data-endpoint")==="start"?"y1":"y2"].every(k=>this.capabilities(id).geometryFields.includes(k))))) return;
         this.begin({ mode: label ? "label" : "endpoint", id, original: clone(object), endpoint: handle && handle.getAttribute("data-endpoint"), offset: this.labelOffset(object), resolved: null }, event);
         this.selectedId = id; this.invalidate(); return;
       }
@@ -380,7 +427,7 @@
           this.flushEdits(); this.pendingText = result; this.nodes.textValue.value = "";
           this.nodes.textDialog.showModal(); this.nodes.textValue.focus(); return;
         }
-        this.changeDocument(() => { this.selectedId = this.engine.add(object).id; }); this.feedback = result; this.invalidate(); return;
+        this.changeDocument(() => { this.selectedId = this.createObject(object).id; }); this.feedback = result; this.invalidate(); return;
       }
       if (MI.LinearGeometry.isLinear({ type: this.tool }) || this.tool === "circle") {
         const result = this.snap(point);
@@ -398,6 +445,7 @@
         if(!this.editableSelection()){this.status('Ontgrendel de selectie eerst.');return;}
         const originals=this.moveSelectionPlan();if(!originals){this.status('Selectie kan niet rigide bewegen: selecteer ook alle ontgrendelde bronobjecten.');return;}this.begin({mode:'group',originals},event);this.status('Verplaats selectie.');this.invalidate();return;
       }
+      if(hit && this.runtime && !this.allowed("object.translate",{ids:[hit.object.id],delta:{x:0,y:0}})) {this.selectObject(hit.object.id);this.status("Verplaatsen is niet toegestaan.");return;}
       if(hit && hit.object.locked) { this.selectObject(hit.object.id);this.status('Object is vergrendeld.');return; }
       if(hit && hit.object.construction) {this.selectObject(hit.object.id);this.status('Gekoppelde constructie: verplaats de bronobjecten.');return;}
       this.begin(hit ? { mode: "object", id: hit.object.id, original: clone(this.engine.get(hit.object.id)) } : { mode: "pan", bounds: { ...this.engine.renderer.bounds } }, event);
@@ -429,19 +477,33 @@
       if(state.mode==='marquee'){this.updateRectangle({x:event.clientX,y:event.clientY});return;}
       const point = this.pointer(event); if (!point) return;
       const delta = state.transform.screenDelta(event.clientX - state.startScreen.x, event.clientY - state.startScreen.y); if (!delta) return;
+      if(this.runtime && ['label','endpoint','vertex','group','object','pan'].includes(state.mode)) {
+        let operation,payload;
+        if(state.mode==='label'){operation='object.setProperties';payload={ids:[state.id],fields:[{path:'labelOffsetX',value:state.offset.x+delta.x},{path:'labelOffsetY',value:state.offset.y+delta.y}]};}
+        else if(state.mode==='pan'){operation='view.pan';payload={bounds:{xMin:state.bounds.xMin-delta.x,xMax:state.bounds.xMax-delta.x,yMin:state.bounds.yMin-delta.y,yMax:state.bounds.yMax-delta.y}};}
+        else if(['endpoint','vertex'].includes(state.mode)) {
+          state.resolved=state.mode==='endpoint'?this.services.resolver.endpoint(this.engine,state.original,state.endpoint,point,{transform:this.transform()}):this.services.resolver.polygonVertex(this.engine,state.original,state.vertex,point,{transform:this.transform()});
+          operation='object.setGeometry';payload={id:state.id,fields:MI.PermissionFields.patch(state.original,state.resolved.patch).filter(f=>MI.PermissionFields.geometry(state.original).includes(f.path))};this.feedback=state.resolved.result;
+        }else {
+          const originals=state.mode==='group'?state.originals:[state.original];state.resolved=this.services.resolver.translateGroup(this.engine,originals,delta,{transform:this.transform()});
+          const a=MI.MeasurementGeometry.anchors(originals[0])[0],b=MI.MeasurementGeometry.anchors({...originals[0],...state.resolved.patches[0].patch})[0];
+          operation='object.translate';payload={ids:state.mode==='group'?this.selectedIds:[state.id],delta:{x:b.x-a.x,y:b.y-a.y}};this.feedback=state.resolved.result;
+        }
+        this.runtimePreview(state,operation,payload);this.invalidate(true);return;
+      }
       if (state.mode === "draw") { state.lastRawPoint = point; this.resolveDraw(); }
-      if (state.mode === "label") this.engine.update(state.id, { labelOffsetX: state.offset.x + delta.x, labelOffsetY: state.offset.y + delta.y });
+      if (state.mode === "label") this.updateObject(state.id, { labelOffsetX: state.offset.x + delta.x, labelOffsetY: state.offset.y + delta.y });
       if (state.mode === "endpoint") { state.resolved = this.services.resolver.endpoint(this.engine, state.original, state.endpoint, point, { transform: this.transform() }); this.feedback = state.resolved.result; }
       if(state.mode==='vertex') { state.resolved=this.services.resolver.polygonVertex(this.engine,state.original,state.vertex,point,{transform:this.transform()}); this.feedback=state.resolved.result; }
-      if(state.mode==='group') { state.resolved=this.services.resolver.translateGroup(this.engine,state.originals,delta,{transform:this.transform()});try{this.engine.updateMany(state.resolved.patches);this.feedback=state.resolved.result;}catch(error){this.status(error.message);} }
+      if(state.mode==='group') { state.resolved=this.services.resolver.translateGroup(this.engine,state.originals,delta,{transform:this.transform()});try{this.updateObjects(state.resolved.patches);this.feedback=state.resolved.result;}catch(error){this.status(error.message);} }
       if (state.mode === "object") {
         const o = state.original;
-        if(o.type==='angle') { const r=this.services.resolver.translateGroup(this.engine,[o],delta,{transform:this.transform()});this.engine.updateMany(r.patches);this.feedback=r.result; }
-        else if(o.type==='polygon') { state.resolved=this.services.resolver.translatePolygon(this.engine,o,delta,{transform:this.transform()}); try { this.engine.update(state.id,state.resolved.patch); this.feedback=state.resolved.result; } catch(error) { this.status(error.message); } }
-        else if (MI.LinearGeometry.isLinear(o)) { state.resolved = this.services.resolver.translateLine(this.engine, o, delta, { transform: this.transform() }); this.engine.update(state.id, state.resolved.patch); this.feedback = state.resolved.result; }
-        else { const result = this.snap(o.type === "circle" ? { x: o.cx + delta.x, y: o.cy + delta.y } : { x: o.x + delta.x, y: o.y + delta.y }, state.id); this.engine.update(state.id, o.type === "circle" ? { cx: result.point.x, cy: result.point.y } : { x: result.point.x, y: result.point.y }); this.feedback = result; }
+        if(o.type==='angle') { const r=this.services.resolver.translateGroup(this.engine,[o],delta,{transform:this.transform()});this.updateObjects(r.patches);this.feedback=r.result; }
+        else if(o.type==='polygon') { state.resolved=this.services.resolver.translatePolygon(this.engine,o,delta,{transform:this.transform()}); try { this.updateObject(state.id,state.resolved.patch); this.feedback=state.resolved.result; } catch(error) { this.status(error.message); } }
+        else if (MI.LinearGeometry.isLinear(o)) { state.resolved = this.services.resolver.translateLine(this.engine, o, delta, { transform: this.transform() }); this.updateObject(state.id, state.resolved.patch); this.feedback = state.resolved.result; }
+        else { const result = this.snap(o.type === "circle" ? { x: o.cx + delta.x, y: o.cy + delta.y } : { x: o.x + delta.x, y: o.y + delta.y }, state.id); this.updateObject(state.id, o.type === "circle" ? { cx: result.point.x, cy: result.point.y } : { x: result.point.x, y: result.point.y }); this.feedback = result; }
       }
-      if (state.mode === "pan") try { this.engine.renderer.setBounds({ xMin: state.bounds.xMin - delta.x, xMax: state.bounds.xMax - delta.x, yMin: state.bounds.yMin - delta.y, yMax: state.bounds.yMax - delta.y }); } catch (e) { this.status(e.message); return; }
+      if (state.mode === "pan") try { this.execute("view.pan",{bounds:{ xMin: state.bounds.xMin - delta.x, xMax: state.bounds.xMax - delta.x, yMin: state.bounds.yMin - delta.y, yMax: state.bounds.yMax - delta.y }}); } catch (e) { this.status(e.message); return; }
       this.invalidate(true);
     }
     pointerUp(event) {
@@ -453,12 +515,14 @@
     commit() {
       const state = this.interaction; if (!state) return;
       this.interaction = null; this.release(state); this.engine.renderer.preview = null; this.feedback = null;
+      if(this.runtime && state.transaction) {try {if(state.rejected)this.runtime.cancel(state.transaction);else this.runtime.commit(state.transaction,state.finalPayload);}catch(error){this.status(error.message);}this.invalidate();return;}
+      if(this.runtime && ['object','group','label','endpoint','vertex','pan'].includes(state.mode)){this.invalidate();return;}
       if(state.mode==='marquee'){this.suppressMarqueeMenu=!state.keyboard && state.active;this.invalidate();return;}
       if (state.mode === "draw") {
-        if (state.resolved && state.resolved.length >= .05) this.selectedId = this.engine.add(state.resolved.object).id;
+        if (state.resolved && state.resolved.length >= .05) this.selectedId = this.createObject(state.resolved.object,state.shape).id;
         else this.status("Vorm te kort; geen object toegevoegd.");
       }
-      if ((state.mode === "endpoint" || state.mode==='vertex') && state.resolved) { try { this.engine.update(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }
+      if ((state.mode === "endpoint" || state.mode==='vertex') && state.resolved) { try { this.updateObject(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }
       this.history.record(state.historyBefore); this.invalidate();
       if(state.mode==='group')this.status('Selectie verplaatst.');
       if(state.lastPointer && ['object','group','label','pan'].includes(state.mode))this.updateHover(state.lastPointer);
@@ -467,9 +531,10 @@
       this.clearHover();
       const state = this.interaction; this.interaction = null;
       if (state) {
-        if ((state.mode === "object" || state.mode === "label") && this.engine.get(state.id)) this.engine.update(state.id, state.original);
-        if (state.mode === "pan") this.engine.renderer.setBounds(state.bounds);
-        if(state.mode==='group')this.engine.updateMany(state.originals.map(o=>({id:o.id,patch:o})));
+        if(this.runtime && state.transaction)try{this.runtime.cancel(state.transaction);}catch(_){}
+        if (!this.runtime && (state.mode === "object" || state.mode === "label") && this.engine.get(state.id)) this.engine.update(state.id, state.original);
+        if (!this.runtime && state.mode === "pan") this.engine.renderer.setBounds(state.bounds);
+        if(!this.runtime && state.mode==='group')this.engine.updateMany(state.originals.map(o=>({id:o.id,patch:o})));
         this.selectedIds=state.selectionIdsBefore || (state.selectionBefore?[state.selectionBefore]:[]); this.release(state);
       }
       this.engine.renderer.preview = null; this.feedback = null;
@@ -490,7 +555,7 @@
       if (!editable && (event.ctrlKey || event.metaKey) && ["z", "y"].includes(event.key.toLowerCase())) {
         event.preventDefault(); this.travelHistory(event.key.toLowerCase() === "y" || event.shiftKey); return;
       }
-      if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='a') {event.preventDefault();this.cancel();this.tool='select';this.selectedIds=this.engine.model.objects.filter(o=>o.visible!==false).map(o=>o.id);this.invalidate();return;}
+      if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='a') {event.preventDefault();this.cancel();this.tool='select';this.selectedIds=this.engine.model.objects.filter(o=>this.canvasSelectable(o)).map(o=>o.id);this.invalidate();return;}
       if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='d') {event.preventDefault();this.duplicateSelection();return;}
       if (event.key === "Escape") { this.cancel(); this.tool = "select"; this.axisMenuOpen = false; this.invalidate(); return; }
       if(state && state.mode==='polygon') {
@@ -517,19 +582,21 @@
       let factor = event.deltaY < 0 ? .85 : 1 / .85;
       if (event.deltaY < 0 && grid) factor = Math.max(factor, r.scale() / grid.maxScale);
       const b = r.bounds, nx = (b.xMax - b.xMin) * factor, ny = (b.yMax - b.yMin) * factor, fx = (point.x - b.xMin) / (b.xMax - b.xMin), fy = (point.y - b.yMin) / (b.yMax - b.yMin);
-      try { r.setBounds({ xMin: point.x - fx * nx, xMax: point.x + (1 - fx) * nx, yMin: point.y - fy * ny, yMax: point.y + (1 - fy) * ny }); } catch (e) { this.status(e.message); return; }
+      try { const bounds={ xMin: point.x - fx * nx, xMax: point.x + (1 - fx) * nx, yMin: point.y - fy * ny, yMax: point.y + (1 - fy) * ny };this.execute("view.zoom",{bounds}); } catch (e) { this.status(e.message); return; }
       this.feedback = null; this.history.record(before); this.invalidate();
     }
     newDocument() {
+      if(this.runtime){if(!this.allowed('document.reset'))throw new MI.PermissionError('PERMISSION_DENIED');this.closeDialogs(true);this.cancel();this.execute('document.reset');this.selectedIds=[];this.editBefore=null;this.hydrate();this.invalidate();return;}
       this.closeDialogs(true); this.cancel(); this.flushEdits(); this.importSerial++;
       if (this.reader && this.reader.readyState === 1) this.reader.abort(); this.reader = null;
       let failure = null; if (this.services.draft) try { this.services.draft.clear(this.storage); } catch (e) { failure = e; }
       const r = this.engine.renderer;
-      this.engine.load({ version: 2, type: "geometry", meta: {}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: r.showGrid, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } });
+      this.execute("document.replace",{document:{ version: 2, type: "geometry", meta: {}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: r.showGrid, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } }});
       this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");
     }
-    loadDocument(data) { this.closeDialogs(true); this.cancel(); this.flushEdits(); this.engine.load(data); this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen."); }
+    loadDocument(data) { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.closeDialogs(true); this.cancel(); this.flushEdits(); this.execute("document.replace",{document:data}); this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen."); }
     importFile(event) {
+      if(this.runtime)throw new MI.PermissionError("MODE_DENIED");
       const file = event.target.files && event.target.files[0]; if (!file) return;
       this.cancel(); const serial = ++this.importSerial;
       if (this.reader && this.reader.readyState === 1) this.reader.abort();
@@ -546,19 +613,19 @@
       this.colorInput.value=/^#[0-9a-f]{6}$/i.test(color) ? color : '#222222';
       this.nodes.colorDialog.showModal(); this.colorInput.focus();
     }
-    setColor(id, color) { const object = this.engine.get(id); if (!object || object.locked) return; this.cancel(); if (!this.editBefore) this.editBefore = this.history.capture(); this.engine.update(id, this.colorProperty ? {style:{[this.colorProperty]:color}} : this.services.color.patch(object, color)); this.invalidate(); }
+    setColor(id, color) { const object = this.engine.get(id); if (!object || object.locked) return; this.cancel(); if (!this.editBefore) this.editBefore = this.history.capture(); const patch=this.colorProperty ? {style:{[this.colorProperty]:color}} : this.services.color.patch(object,color);if(patch.style)patch.style=Object.fromEntries(Object.entries(patch.style).filter(([k,v])=>MI.PermissionFields.properties.includes('style.'+k) && JSON.stringify(v)!==JSON.stringify(object.style[k])));if(this.runtime){const paths=this.colorProperty?[this.colorProperty]:object.type==='text'?['fill','stroke']:object.type==='point'?['fill','stroke']:['stroke'];const style=(this.colorProperty?{style:{[this.colorProperty]:color}}:this.services.color.patch(object,color)).style;const fields=paths.map(k=>({path:'style.'+k,value:style[k]}));const payload={ids:[id],fields};if(!this.colorTransaction)this.colorTransaction=this.runtime.begin(this.command('object.setProperties',payload));this.runtime.preview(this.colorTransaction,payload);this.colorPayload=payload;}else this.updateObject(id,patch); this.invalidate(); }
     viewClick(event) {
       const target = event.target, find = selector => target.closest(selector); let button;
       if ((button = find('[data-view-select="axes"]'))) { this.axisMenuOpen = !this.axisMenuOpen; this.invalidate(); return; }
-      if ((button = find('[data-axis-system]')) && !button.disabled) { this.changeDocument(() => { this.engine.renderer.coordinateSystem = button.dataset.axisSystem; this.axisMenuOpen = false; }); return; }
+      if ((button = find('[data-axis-system]')) && !button.disabled) { this.changeDocument(() => { this.execute("document.setPresentation",{fields:[{path:"coordinateSystem",value:button.dataset.axisSystem}]}); this.axisMenuOpen = false; }); return; }
       if ((button = find("[data-color-object]"))) { this.openColor(button.dataset.colorObject); return; }
-      if ((button = find('[data-object-lock]'))) { this.changeDocument(()=>{const o=this.engine.get(button.dataset.objectLock);this.engine.update(o.id,{locked:!o.locked});});return; }
+      if ((button = find('[data-object-lock]'))) { this.changeDocument(()=>{const o=this.engine.get(button.dataset.objectLock);this.execute("object.setLock",{ids:[o.id],value:!o.locked});});return; }
       if ((button = find("[data-select-object]"))) { this.selectObject(button.dataset.selectObject,event.shiftKey || event.ctrlKey || event.metaKey); return; }
-      if ((button = find("[data-object-visibility]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.objectVisibility); this.engine.update(object.id, { visible: object.visible === false }); }); return; }
-      if ((button = find("[data-toggle-label]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.toggleLabel); if(!object.locked)this.engine.update(object.id, { showLabel: !object.showLabel }); }); return; }
-      if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.changeDocument(() => { this.engine.renderer[key] = !this.engine.renderer[key]; }); } }
+      if ((button = find("[data-object-visibility]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.objectVisibility); this.execute("object.setVisibility",{ids:[object.id],value:object.visible===false}); }); return; }
+      if ((button = find("[data-toggle-label]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.toggleLabel); if(!object.locked)this.updateObject(object.id, { showLabel: !object.showLabel }); }); return; }
+      if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.changeDocument(() => { this.execute("document.setPresentation",{fields:[{path:key,value:!this.engine.renderer[key]}]}); }); } }
     }
-    viewObject(id) { const object = this.engine.get(id), state = this.interaction; return object && state && (state.mode === "endpoint" || state.mode==='vertex') && state.id === id && state.resolved ? { ...object, ...state.resolved.patch } : object; }
+    viewObject(id) {if(this.runtime && this.colorTransaction){const p=this.runtime.previewObject(this.colorTransaction,id);if(p)return p;}if(this.runtime && this.interaction?.transaction && !this.interaction.rejected){const preview=this.runtime.previewObject(this.interaction.transaction,id);if(preview)return preview;} const object = this.engine.get(id), state = this.interaction; return object && !this.runtime && state && (state.mode === "endpoint" || state.mode==='vertex') && state.id === id && state.resolved ? { ...object, ...state.resolved.patch } : object; }
     invalidate(defer = false) {
       if (!this.initialized) return;
       if (defer && this.window.requestAnimationFrame && this.window.cancelAnimationFrame) {
@@ -569,17 +636,19 @@
       this.render();
     }
     render() {
+      if(this.runtime)this.selectedIds=this.selectedIds.filter(id=>{const caps=this.capabilities(id);return caps.selectCanvas||caps.selectList;});
       const e = this.engine, r = e.renderer, n = this.nodes;
       if (this.services.grid) r.axisStep = this.services.grid.step(r);
-      const objects = e.model.all().map(object => this.viewObject(object.id));
+      const objects = e.model.all().filter(o=>!this.runtime || this.capabilities(o.id).display).map(object => this.viewObject(object.id));
       n.canvas.innerHTML = r.render({ meta: e.model.meta, all: () => objects });
       const svg = n.canvas.querySelector("svg"), object = this.selectedId && this.viewObject(this.selectedId);
       if (svg && svg.querySelectorAll) { Array.from(svg.querySelectorAll('[data-object-id]')).filter(node=>this.selectedIds.includes(node.getAttribute('data-object-id'))).forEach(node=>node.classList.add('selected')); }
       if (this.document.createElementNS) {
         this.renderRectangle(svg,r);
-        if (this.services.overlays) this.services.overlays.render(svg, r, this.selectedIds.length===1?object:null, this.tool, this.document);
+        if (this.services.overlays) this.services.overlays.render(svg, r, this.selectedIds.length===1 && (!this.runtime || this.capabilities(object?.id).geometryFields.length)?object:null, this.tool, this.document);
         if (this.services.feedback) this.services.feedback.render(svg, r, this.feedback, this.document);
       }
+      if(this.runtime && svg)for(const handle of svg.querySelectorAll('.fzi-line-endpoint, .fzi-polygon-vertex')){const id=handle.getAttribute('data-line-id')||handle.getAttribute('data-polygon-id'),caps=this.capabilities(id),part=handle.getAttribute('data-endpoint'),fields=part?[part==='start'?'x1':'x2',part==='start'?'y1':'y2']:['x','y'].map(k=>'vertices['+handle.getAttribute('data-vertex')+'].'+k);if(!fields.every(k=>caps.geometryFields.includes(k)))handle.remove();}
       this.renderPresentation(true);
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
       this.renderViewList(); this.renderInspector(object);
@@ -587,6 +656,7 @@
       if (n.redoBtn) n.redoBtn.disabled = !this.history.canRedo || !!this.editBefore;
       this.document.querySelectorAll('[data-tool-category]').forEach(category=>{const active=Array.from(category.querySelectorAll('[data-tool]')).find(button=>button.dataset.tool===this.tool),label=category.querySelector('[data-active-tool]');if(label)label.textContent=active?' · '+active.textContent.trim():'';});
       this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool));
+      this.restrictControls();
       n.crosshair.hidden = !this.interaction || this.interaction.mode !== "draw" || (this.feedback && this.feedback.snapped && r.showSnapPoints !== false);
       if (this.feedback && this.interaction && this.interaction.mode === "draw") { const p = this.transform().mathToScreen(this.feedback.point), rect = n.canvasWrap.getBoundingClientRect(); n.crosshair.style.left = p.x - rect.left + "px"; n.crosshair.style.top = p.y - rect.top + "px"; }
     }
@@ -594,7 +664,7 @@
       const r = this.engine.renderer;
       const rows = ['<div class="view-row"><button class="view-name view-system-btn" type="button" data-view-select="axes">Assenstelsel</button><button class="eye-btn" type="button" data-view="axes">' + eyeIcon(r.showAxes) + '</button>' + (this.axisMenuOpen && this.services.axis ? this.services.axis.html(r) : "") + '</div>', '<div class="view-row"><span class="view-name">Snappunten</span><button class="eye-btn" type="button" data-view="snapPoints">' + eyeIcon(r.showSnapPoints !== false) + '</button></div>'];
       for (const object of this.engine.model.objects) {
-        const color = this.services.color ? this.services.color.value(object) : "#222222";
+        const color = this.services.color ? this.services.color.value(this.viewObject(object.id)) : "#222222";
         rows.push('<div class="view-row' + (this.selectedIds.includes(object.id) ? ' view-row-selected' : '') + '"><button class="view-name view-select-btn" type="button" data-select-object="' + MI.escapeXml(object.id) + '">' + MI.escapeXml(objectName(object)) + '<span class="view-type">' + MI.escapeXml(object.id) + '</span></button><button class="text-btn" title="Label tonen/verbergen" data-toggle-label="' + MI.escapeXml(object.id) + '">' + textIcon(object.showLabel) + '</button><button class="color-btn" title="Kleur wijzigen" aria-label="Kleur wijzigen" type="button" data-color-object="' + MI.escapeXml(object.id) + '" style="--object-color:' + MI.escapeXml(color) + '"><span class="color-swatch"></span></button><button class="eye-btn" title="Object tonen/verbergen" type="button" data-object-visibility="' + MI.escapeXml(object.id) + '">' + eyeIcon(object.visible !== false) + '</button><button class="eye-btn" type="button" data-object-lock="' + MI.escapeXml(object.id) + '" title="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '" aria-label="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '">' + (object.locked?'🔒':'🔓') + '</button></div>');
       }
       this.nodes.viewList.innerHTML = rows.join("");

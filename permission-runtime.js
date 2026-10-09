@@ -172,7 +172,7 @@
   function refreshRender(s){const preview=s.render?.preview;s.render=new MI.SvgRenderer({...s.kernel.toJSON().presentation,...s.view});s.render.preview=preview||null;}
   function decision(s,c){try{authorizeCommand(s,c);return Object.freeze({allowed:true,code:'ALLOWED',deniedTargets:[],deniedFields:[]});}catch(e){if(e instanceof PermissionError)return Object.freeze({allowed:false,code:e.code,deniedTargets:[],deniedFields:[]});return Object.freeze({allowed:false,code:'INVALID_COMMAND',deniedTargets:[],deniedFields:[]});}}
   class RuntimeSession {
-    static isSession(value) { return states.has(value); }
+    static isSession(value) { return states.has(value) && !states.get(value).disposed; }
     static create(options={}) {
       let kernel,policy;try{if(!options||!own(options,'initialDocument')||!plain(options.initialDocument)||typeof options.actorId!=='string'||!options.actorId.trim())fail('INVALID_POLICY');kernel=new MI.Engine(options.initialDocument);policy=compilePolicy(options.policy,kernel.toJSON());}catch(e){if(e instanceof PermissionError)throw e;fail('INVALID_POLICY');}
       if(policy.profile==='assessment'&&!['practice','summative'].includes(options.assessmentKind))fail('INVALID_POLICY');
