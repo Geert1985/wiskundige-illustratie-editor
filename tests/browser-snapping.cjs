@@ -5,7 +5,7 @@ module.exports = async function verifySnapping(page) {
   const load = async (objects = [], showGrid = false) => {
     const title = '0C-' + ++serial;
     const data = { version: 2, type: 'geometry', meta: { title }, objects, presentation: { bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, showGrid, showSnapPoints: true } };
-    await page.locator('#fileInput').setInputFiles({ name: '0c.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(data)) });
+    await require('./browser-tool-menu.cjs').importFile(page,{ name: '0c.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(data)) });
     await page.waitForFunction(title => FZI.MathIllustration.activeEngine.model.meta.title === title, title);
     await require('./browser-tool-menu.cjs').choose(page,'[data-tool="select"]');
   };

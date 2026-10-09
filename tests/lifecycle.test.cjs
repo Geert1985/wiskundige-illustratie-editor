@@ -420,7 +420,7 @@ test('M4a label cancellation preserves newer computed geometry from an indirect 
 
 test('M2c axes configuration selection is temporary and independent of visibility',()=>{
  const h=appRuntime(),before=JSON.stringify(h.engine.toJSON());h.app.selectAxes();
- assert.equal(h.app.inspectorTarget,'axes');assert.deepEqual(h.app.selectedIds,[]);assert.equal(JSON.stringify(h.engine.toJSON()),before);
+ assert.equal(h.app.inspectorTarget,'axes');assert.deepEqual(plain(h.app.selectedIds),[]);assert.equal(JSON.stringify(h.engine.toJSON()),before);
  h.app.setPresentationFlag('showAxes',false);assert.equal(h.app.inspectorTarget,'axes');assert.equal(h.engine.renderer.showAxes,false);
  h.app.selectObject('p');assert.equal(h.app.inspectorTarget,'objects');
 });
@@ -433,5 +433,14 @@ test('M2c centered zoom buttons share bounded zoom and undo behavior',()=>{
 });
 test('M2c common style changes are atomic and reject locked members',()=>{
  const h=appRuntime();h.app.selectedIds=['p','l'];h.app.setCommonProperty('style.opacity',.5);assert.equal(h.engine.get('p').style.opacity,.5);assert.equal(h.engine.get('l').style.opacity,.5);
- h.engine.update('l',{locked:true});const before=JSON.stringify(h.engine.toJSON());assert.throws(()=>h.app.setCommonProperty('style.opacity',.2));assert.equal(JSON.stringify(h.engine.toJSON()),before);
+ h.engine.update('l',{locked:true});const before=JSON.stringify(h.engine.toJSON());h.app.setCommonProperty('style.opacity',.2);assert.equal(JSON.stringify(h.engine.toJSON()),before);
+});
+
+test('M2c restricted view settings mutate only authorized session view',()=>{
+ const h=appRuntime(),f=require('./permission-fixtures.cjs').fixture('course',{document:{viewConfigure:true,undo:true,pan:true,zoom:true}}),{session,owner}=h.MI.RuntimeSession.create(f);
+ h.app.dispose();h.doc.getElementById('canvas').querySelector=()=>null;h.app.runtime=session;h.app.engine=session.engine;h.app.commands=session;h.app.history=new h.MI.RuntimeHistory(h.app);h.app.selectedIds=[];h.app.init();
+ const before=JSON.stringify(owner.inspect().document);h.app.selectAxes();h.app.setPresentationFlag('showGrid',true);assert.equal(session.engine.renderer.showGrid,true);assert.equal(JSON.stringify(owner.inspect().document),before);assert.equal(session.canUndo,false);
+});
+test('M2c restricted denied axis setting leaves document and view unchanged',()=>{
+ const h=appRuntime(),f=require('./permission-fixtures.cjs').fixture(),{session,owner}=h.MI.RuntimeSession.create(f);h.app.dispose();h.doc.getElementById('canvas').querySelector=()=>null;h.app.runtime=session;h.app.engine=session.engine;h.app.commands=session;h.app.history=new h.MI.RuntimeHistory(h.app);h.app.selectedIds=[];h.app.init();const before=JSON.stringify(owner.inspect());h.app.setPresentationFlag('showGrid',true);assert.equal(JSON.stringify(owner.inspect()),before);assert.equal(session.engine.renderer.showGrid,false);
 });

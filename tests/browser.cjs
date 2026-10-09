@@ -49,6 +49,7 @@ const server = http.createServer((req, res) => {
     await page.locator('#canvasWrap').click({ position: { x: 200, y: 200 } });
     assert.equal(await page.evaluate(() => FZI.MathIllustration.activeEngine.model.objects.length), 1);
     const legacy = fs.readFileSync(path.join(__dirname, 'fixtures', 'legacy-v1.json'));
+    page.once('dialog',dialog=>{assert.equal(dialog.type(),'confirm');dialog.accept();});
     await page.locator('#fileInput').setInputFiles({ name: 'legacy.json', mimeType: 'application/json', buffer: legacy });
     await page.waitForFunction(() => document.getElementById('status').textContent === 'Illustratie geladen.');
     assert.equal(await page.evaluate(() => FZI.MathIllustration.activeEngine.get('A').name), 'Alpha');
@@ -67,7 +68,7 @@ const server = http.createServer((req, res) => {
     assert.deepEqual(await page.evaluate(() => FZI.MathIllustration.activeEngine.toJSON()), saved);
     assert.deepEqual(await labelPositions(), labels);
     const exportEvent = page.waitForEvent('download');
-    await page.locator('#exportJsonBtn').click();
+    await require('./browser-tool-menu.cjs').action(page,'#exportJsonBtn');
     const exported = await exportEvent;
     const exportedData = JSON.parse(fs.readFileSync(await exported.path(), 'utf8'));
     assert.deepEqual(exportedData, saved);
@@ -86,7 +87,7 @@ const server = http.createServer((req, res) => {
     assert.equal(await page.evaluate(() => localStorage.getItem(FZI.MathIllustration.DraftStore.key)), badDraft);
     assert.equal(await page.evaluate(() => FZI.MathIllustration.activeEngine.model.objects.length), 0);
     const confirmEvent = page.waitForEvent('dialog');
-    const newClick = page.locator('#newBtn').click();
+    const newClick = require('./browser-tool-menu.cjs').action(page,'#newBtn');
     const confirm = await confirmEvent; await confirm.accept(); await newClick;
     assert.equal(await page.evaluate(() => localStorage.getItem(FZI.MathIllustration.DraftStore.key)), null);
     await page.reload();
@@ -112,7 +113,8 @@ const server = http.createServer((req, res) => {
     const persistentGroups=await require('./browser-persistent-groups.cjs')(page);
     const layers=await require('./browser-layers.cjs')(page);
     const constructionContract=await require('./browser-construction-contract.cjs')(page);
+    const uiModernization=await require('./browser-ui-modernization.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

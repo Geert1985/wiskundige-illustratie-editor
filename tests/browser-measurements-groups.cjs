@@ -36,7 +36,7 @@ module.exports=async page=>{
   const p=locked.objects.find(o=>o.id===ids[0]);await move(p.x,p.y);await page.mouse.down();await move(p.x+1,p.y+1);await page.mouse.up();assert.deepEqual(await doc(),locked);
   assert.equal(await page.locator('[data-delete-selected]').isDisabled(),true);await page.keyboard.press('Delete');assert.deepEqual(await doc(),locked);
   await page.locator('[data-lock-selection]').click();await page.locator('[data-delete-selected]').click();assert.equal((await doc()).objects.length,3);await page.locator('#undoBtn').click();assert.equal((await doc()).objects.length,5);
-  const download=page.waitForEvent('download');await page.locator('#exportSvgBtn').click();const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/data-measurement-label/);assert.doesNotMatch(svg,/NaN|Infinity|fzi-line-endpoint/);
+  const download=page.waitForEvent('download');await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/data-measurement-label/);assert.doesNotMatch(svg,/NaN|Infinity|fzi-line-endpoint/);
   await page.locator('#saveBtn').click();const saved=await doc();await page.reload();assert.deepEqual(await doc(),saved);
   await page.locator('#fileInput').setInputFiles({name:'measurements.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(saved))});await page.waitForFunction(()=>document.getElementById('status').textContent==='Illustratie geladen.');assert.deepEqual(await doc(),saved);
   await page.evaluate(()=>localStorage.removeItem(FZI.MathIllustration.DraftStore.key));

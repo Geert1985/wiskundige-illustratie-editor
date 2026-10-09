@@ -27,7 +27,7 @@ module.exports = async page => {
     const label = await page.locator('.object-label').boundingBox();
     await page.mouse.move(label.x + label.width / 2, label.y + label.height / 2); await page.mouse.down(); await page.mouse.move(label.x + label.width / 2 + 20, label.y + label.height / 2 - 10); await page.mouse.up();
     object = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects[0]); assert.ok(object.labelOffsetX > .2);
-    const downloadEvent = page.waitForEvent('download'); await page.locator('#exportSvgBtn').click();
+    const downloadEvent = page.waitForEvent('download'); await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');
     const svg = fs.readFileSync(await (await downloadEvent).path(), 'utf8'); assert.match(svg, /data-direction-arrow/); assert.doesNotMatch(svg, /NaN|Infinity|fzi-line-endpoint/);
     const document = await page.evaluate(() => FZI.MathIllustration.editor.engine.toJSON());
     await page.locator('#saveBtn').click(); await page.reload();

@@ -33,7 +33,7 @@ module.exports=async page=>{
   await roundtrip(()=>edit('fontSize',36));await roundtrip(()=>edit('opacity',60));
   assert.equal(await page.locator('[data-object-id="t"] text').getAttribute('font-size'),'36');
   const valid=await doc();await edit('fontSize',0);assert.deepEqual(await doc(),valid);await edit('opacity',101);assert.deepEqual(await doc(),valid);
-  const download=page.waitForEvent('download');await page.locator('#exportSvgBtn').click();const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/font-size="36"/);assert.match(svg,/stroke-dasharray="8 5"/);assert.match(svg,/opacity="0.6"/);
+  const download=page.waitForEvent('download');await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/font-size="36"/);assert.match(svg,/stroke-dasharray="8 5"/);assert.match(svg,/opacity="0.6"/);
   await page.locator('#saveBtn').click();const saved=await doc();await page.reload();assert.deepEqual(await doc(),saved);
   await page.locator('#fileInput').setInputFiles({name:'styles.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(saved))});await page.waitForFunction(()=>document.getElementById('status').textContent==='Illustratie geladen.');assert.deepEqual(await doc(),saved);
   await page.evaluate(()=>localStorage.removeItem(FZI.MathIllustration.DraftStore.key));

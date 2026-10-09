@@ -125,10 +125,12 @@ module.exports = async function verifyLifecycle(page) {
   await page.locator('#colorApply').click();
   await page.locator('[data-view-select="axes"]').click(); await page.locator('[data-axis-setting="showXAxis"]').uncheck();
   assert.equal(await page.locator('[data-object-id="hidden"]').count(), 0);
+  assert.equal(await page.locator('[data-object-id="l"].selected').count(), 0); // Axes configuration is a distinct context.
+  await select('l');
   assert.equal(await page.locator('[data-object-id="l"].selected').count(), 1);
   assert.equal(await page.locator('.fzi-line-endpoint').count(), 2);
   close(Number(await page.locator('[data-edit="x2"]').inputValue()), view.object.x2);
-  const download = page.waitForEvent('download'); await page.locator('#exportSvgBtn').click();
+  const download = page.waitForEvent('download'); await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');
   const exported = fs.readFileSync(await (await download).path(), 'utf8');
   assert.doesNotMatch(exported, /data-object-id="hidden"|fzi-line-endpoint|class="selected"/);
   assert.match(exported, />0<\/text>/);

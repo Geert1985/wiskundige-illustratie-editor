@@ -23,7 +23,7 @@ module.exports=async page=>{
   await page.locator('[data-toggle-label]').click();const label=await page.locator('.object-label').boundingBox();
   await page.mouse.move(label.x+label.width/2,label.y+label.height/2);await page.mouse.down();await page.mouse.move(label.x+label.width/2+20,label.y+label.height/2-10);await page.mouse.up();
   assert.ok((await doc()).objects[0].labelOffsetX>0);
-  const download=page.waitForEvent('download');await page.locator('#exportSvgBtn').click();const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/<polygon /);assert.doesNotMatch(svg,/fzi-polygon-vertex|NaN|Infinity/);
+  const download=page.waitForEvent('download');await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/<polygon /);assert.doesNotMatch(svg,/fzi-polygon-vertex|NaN|Infinity/);
   const saved=await doc();await page.locator('#saveBtn').click();await page.reload();assert.deepEqual(await doc(),saved);
   await page.locator('#fileInput').setInputFiles({name:'polygon.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(saved))});await page.waitForFunction(()=>document.getElementById('status').textContent==='Illustratie geladen.');assert.deepEqual(await doc(),saved);
   await reset();await require('./browser-tool-menu.cjs').choose(page,'[data-tool="polygon"]');for(const p of [[-2,-1],[1,-1],[1,1],[-2,1]])await click(...p);
