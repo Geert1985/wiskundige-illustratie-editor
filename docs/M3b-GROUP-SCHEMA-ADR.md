@@ -27,6 +27,8 @@ Constructed objects still require `constructionSchema: 1`. Group-free documents 
 
 `IllustrationModel` owns frozen group records. `PersistentGroups` implements validation, hierarchy lookup, leaf expansion, complete-root selection and pruning. `Engine.group(members, name)`, `ungroup(groupIds)` and `groupMembers(id)` expose this structure. Semantic commands are `group.create` and `group.ungroup`; the existing command boundary enforces mode restrictions. IDs share the object namespace and allocator.
 
+Standalone script loaders must load `persistent-groups.js` after `model.js` and before constructing an Engine. The editor entry point and Node test loader include it explicitly. Existing SnapService and InteractionResolver contracts remain unchanged; descendant exclusion already prevents snapping to selected derived geometry.
+
 Each record has exactly `id`, `name`, `members`. IDs are nonempty strings, names are strings, and members contain at least two unique existing object/group IDs. Object and group IDs cannot collide. Every object/subgroup has at most one parent. Dangling references, overlaps, duplicate IDs, cycles, additional fields and depth greater than 64 are rejected before state replacement. Traversal is iterative. Failed creation restores the allocator; failed load leaves objects, groups, renderer and metadata unchanged.
 
 Legacy version 1–3 fields named `groups` or `groupSchema` remain opaque preserved extensions. Group creation refuses to overwrite them. There is no automatic interpretation of previously untyped extension data.
