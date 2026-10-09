@@ -65,7 +65,7 @@
     groupIndex() {
       const groups=this.engine.model.groups||[],objects=this.engine.model.objects;
       if(this.groupCache?.groups!==groups)this.groupCache={groups,...MI.PersistentGroups.index(groups),leaves:new Map()};
-      if(this.groupCache.objects!==objects){this.groupCache.objects=objects;this.groupCache.byId=new Map(objects.map(o=>[o.id,o]));this.groupCache.selectable=new Map();}
+      if(this.groupCache.objects!==objects||this.groupCache.layers!==this.engine.model.layers){this.groupCache.layers=this.engine.model.layers;this.groupCache.objects=objects;this.groupCache.byId=new Map(objects.map(o=>[o.id,o]));this.groupCache.selectable=new Map();}
       return this.groupCache;
     }
     groupRoot(id) {const {parent}=this.groupIndex();while(parent.has(id))id=parent.get(id);return id;}
@@ -75,6 +75,9 @@
       return cache.leaves.get(root).slice();
     }
     selectedGroups() {try{return MI.PersistentGroups.roots(this.engine.model.groups||[],this.selectedIds).filter(id=>this.groupIndex().map.has(id));}catch(_){return [];}}
+    addLayer(name='Nieuwe laag'){this.changeDocument(()=>this.execute('layer.create',{name}));}
+    assignSelectionLayer(layerId){if(layerId&&this.selectedIds.length)this.changeDocument(()=>this.execute('layer.assign',{ids:this.selectedIds,layerId}));}
+    moveLayer(id,offset){const ids=this.engine.model.layers.map(l=>l.id),i=ids.indexOf(id),j=i+offset;if(i<0||j<0||j>=ids.length)return;[ids[i],ids[j]]=[ids[j],ids[i]];this.changeDocument(()=>this.execute('layer.reorder',{ids}));}
     groupSelection() {
       this.changeDocument(()=>{const members=MI.PersistentGroups.roots(this.engine.model.groups||[],this.selectedIds);if(members.length<2)throw Error('Selecteer minstens twee objecten of groepen.');const g=this.execute('group.create',{members,name:'Groep'}).result;this.selectedIds=this.engine.groupMembers(g.id);});
     }
@@ -87,17 +90,17 @@
       this.invalidate();
     }
     editableSelection() { return !this.selectedObjects().some(o=>o.locked); }
-    canvasSelectable(o) { return !!o && o.visible!==false && !(o.construction && o.constructionValid===false) && (!this.runtime || this.capabilities(o.id).selectCanvas); }
+    canvasSelectable(o) { return !!o && o.visible!==false && !(o.construction && o.constructionValid===false) && this.engine.isDisplayed(o.id) && (!this.runtime || this.capabilities(o.id).selectCanvas); }
     groupCanvasSelectable(id) {const cache=this.groupIndex(),root=this.groupRoot(id);if(!cache.selectable.has(root))cache.selectable.set(root,this.groupLeaves(root).every(member=>this.canvasSelectable(cache.byId.get(member))));return cache.selectable.get(root);}
     moveSelectionPlan() {
       const snapshot=this.engine.model.objects,key=JSON.stringify(this.selectedIds),cache=this.movementCache;
-      if(cache && cache.snapshot===snapshot && cache.groups===this.engine.model.groups && cache.key===key)return cache.plan;
+      if(cache && cache.snapshot===snapshot && cache.groups===this.engine.model.groups && cache.layers===this.engine.model.layers && cache.key===key)return cache.plan;
       const byId=new Map(snapshot.map(o=>[o.id,o])),objects=this.selectedIds.map(id=>byId.get(id));
       const free=objects.filter(o=>o && !o.construction),ids=new Set(free.map(o=>o.id));
       const covered=(o,seen=new Set())=>{if(!this.canvasSelectable(o)||o.locked||seen.has(o.id))return false;if(!o.construction)return ids.has(o.id);const next=new Set([...seen,o.id]);return o.construction.sources.every(ref=>covered(byId.get(ref.objectId),next));};
       let complete=true;try{MI.PersistentGroups.roots(this.engine.model.groups||[],this.selectedIds);}catch(_){complete=false;}
       const plan=complete && objects.length && free.length && objects.every(o=>covered(o)) && (!this.runtime || this.allowed("object.translate",{ids:this.selectedIds,delta:{x:0,y:0}}))?Object.freeze(free):null;
-      this.movementCache={snapshot,groups:this.engine.model.groups,key,plan};return plan;
+      this.movementCache={snapshot,groups:this.engine.model.groups,layers:this.engine.model.layers,key,plan};return plan;
     }
     hitAt(event) {
       if(!event || !Number.isFinite(event.clientX)||!Number.isFinite(event.clientY))return null;
@@ -221,11 +224,13 @@
       this.on(n.toolGrid, "click", e => { const button = e.target.closest("[data-tool]"); if (button) this.setTool(button.dataset.tool); });
       this.on(n.viewList, "click", e => this.viewClick(e));
       this.on(n.viewList, "change", e => {
+        const layer=e.target.closest('[data-layer-name]');if(layer&&layer.dataset.layerName!=null){this.changeDocument(()=>this.execute('layer.rename',{id:layer.dataset.layerName,name:layer.value}));return;}
         const input = e.target.closest("[data-axis-setting]");
         if (input) { this.changeDocument(() => { this.execute('document.setPresentation',{fields:[{path:input.dataset.axisSetting,value:input.checked}]}); }); }
       });
       this.on(this.document, "click", e => { if (this.axisMenuOpen && !e.target.closest('[data-view-select="axes"], [data-axis-settings]')) { this.axisMenuOpen = false; this.invalidate(); } });
       this.on(n.selectionPanel, "change", e => {
+        const layer=e.target.closest('[data-layer-assign]');if(layer&&layer.dataset.layerAssign!=null){this.assignSelectionLayer(layer.value);return;}
         const input = e.target.closest("[data-edit], [data-style]"); if (!input || !this.selectedId || !this.editableSelection()) return;
         this.cancel();
         try { this.changeDocument(() => {
@@ -302,7 +307,7 @@
       const distance=p=>{const q=transform.mathToScreen(p);return Math.hypot(q.x-screen.x,q.y-screen.y);};
       const segment=(o,s)=>{const l=MI.ConstructionService.line(o,s),a=transform.mathToScreen({x:l.x1,y:l.y1}),b=transform.mathToScreen({x:l.x2,y:l.y2}),dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy;if(!length)return distance({x:l.x1,y:l.y1});const domain=o.type==='polygon'?[0,1]:MI.LinearGeometry.domain(o),t=Math.max(domain[0],Math.min(domain[1],((screen.x-a.x)*dx+(screen.y-a.y)*dy)/length));return Math.hypot(screen.x-a.x-t*dx,screen.y-a.y-t*dy);};
       for(const o of this.engine.model.objects) {
-        if(o.visible===false||(o.construction && o.constructionValid===false)||(this.runtime && !this.capabilities(o.id).sourceTools.includes(this.tool)))continue;
+        if(!this.engine.isDisplayed(o.id)||o.visible===false||(o.construction && o.constructionValid===false)||(this.runtime && !this.capabilities(o.id).sourceTools.includes(this.tool)))continue;
         const add=(s,d)=>{if(d<=12)candidates.push({source:{objectId:o.id,...s},distance:d,priority:o.type==='point'?0:1});};
         if(role==='figure') {
           if(o.type==='polygon')add({},MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
@@ -681,6 +686,11 @@
     setColor(id, color) { const object = this.engine.get(id); if (!object || object.locked) return; this.cancel(); if (!this.editBefore) this.editBefore = this.history.capture(); const patch=this.colorProperty ? {style:{[this.colorProperty]:color}} : this.services.color.patch(object,color);if(patch.style)patch.style=Object.fromEntries(Object.entries(patch.style).filter(([k,v])=>MI.PermissionFields.properties.includes('style.'+k) && JSON.stringify(v)!==JSON.stringify(object.style[k])));if(this.runtime){const paths=this.colorProperty?[this.colorProperty]:object.type==='text'?['fill','stroke']:object.type==='point'?['fill','stroke']:['stroke'];const style=(this.colorProperty?{style:{[this.colorProperty]:color}}:this.services.color.patch(object,color)).style;const fields=paths.map(k=>({path:'style.'+k,value:style[k]}));const payload={ids:[id],fields};if(!this.colorTransaction)this.colorTransaction=this.runtime.begin(this.command('object.setProperties',payload));this.runtime.preview(this.colorTransaction,payload);this.colorPayload=payload;}else this.updateObject(id,patch); this.invalidate(); }
     viewClick(event) {
       const target = event.target, find = selector => target.closest(selector); let button;
+      if((button=find('[data-layer-add]'))){this.addLayer(this.nodes.viewList.querySelector('[data-layer-new-name]').value);return;}
+      if((button=find('[data-layer-visibility]'))){const l=this.engine.model.layers.find(l=>l.id===button.dataset.layerVisibility);this.changeDocument(()=>this.execute('layer.setVisibility',{id:l.id,value:!l.visible}));return;}
+      if((button=find('[data-layer-forward]'))){this.moveLayer(button.dataset.layerForward,1);return;}
+      if((button=find('[data-layer-backward]'))){this.moveLayer(button.dataset.layerBackward,-1);return;}
+      if((button=find('[data-layer-delete]'))){this.changeDocument(()=>this.execute('layer.delete',{id:button.dataset.layerDelete}));return;}
       if ((button = find('[data-view-select="axes"]'))) { this.axisMenuOpen = !this.axisMenuOpen; this.invalidate(); return; }
       if ((button = find('[data-axis-system]')) && !button.disabled) { this.changeDocument(() => { this.execute("document.setPresentation",{fields:[{path:"coordinateSystem",value:button.dataset.axisSystem}]}); this.axisMenuOpen = false; }); return; }
       if ((button = find("[data-color-object]"))) { this.openColor(button.dataset.colorObject); return; }
@@ -706,12 +716,12 @@
       const e = this.engine, r = e.renderer, n = this.nodes;
       if (this.services.grid) r.axisStep = this.services.grid.step(r);
       const objects = e.model.all().filter(o=>!this.runtime || this.capabilities(o.id).display).map(object => this.viewObject(object.id));
-      n.canvas.innerHTML = r.render({ meta: e.model.meta, all: () => objects });
+      n.canvas.innerHTML = r.render({ meta: e.model.meta, layers:e.model.layers, all: () => objects });
       const svg = n.canvas.querySelector("svg"), object = this.selectedId && this.viewObject(this.selectedId);
       if (svg && svg.querySelectorAll) { Array.from(svg.querySelectorAll('[data-object-id]')).filter(node=>this.selectedIds.includes(node.getAttribute('data-object-id'))).forEach(node=>node.classList.add('selected')); }
       if (this.document.createElementNS) {
         this.renderRectangle(svg,r);
-        if (this.services.overlays) this.services.overlays.render(svg, r, this.selectedIds.length===1 && (!this.runtime || this.capabilities(object?.id).geometryFields.length)?object:null, this.tool, this.document);
+        if (this.services.overlays) this.services.overlays.render(svg, r, this.selectedIds.length===1 && this.engine.isDisplayed(object?.id) && (!this.runtime || this.capabilities(object?.id).geometryFields.length)?object:null, this.tool, this.document);
         if (this.services.feedback) this.services.feedback.render(svg, r, this.feedback, this.document);
       }
       if(this.runtime && svg)for(const handle of svg.querySelectorAll('.fzi-line-endpoint, .fzi-polygon-vertex')){const id=handle.getAttribute('data-line-id')||handle.getAttribute('data-polygon-id'),caps=this.capabilities(id),part=handle.getAttribute('data-endpoint'),fields=part?[part==='start'?'x1':'x2',part==='start'?'y1':'y2']:['x','y'].map(k=>'vertices['+handle.getAttribute('data-vertex')+'].'+k);if(!fields.every(k=>caps.geometryFields.includes(k)))handle.remove();}
@@ -729,11 +739,21 @@
     renderViewList() {
       const r = this.engine.renderer;
       const rows = ['<div class="view-row"><button class="view-name view-system-btn" type="button" data-view-select="axes">Assenstelsel</button><button class="eye-btn" type="button" data-view="axes">' + eyeIcon(r.showAxes) + '</button>' + (this.axisMenuOpen && this.services.axis ? this.services.axis.html(r) : "") + '</div>', '<div class="view-row"><span class="view-name">Snappunten</span><button class="eye-btn" type="button" data-view="snapPoints">' + eyeIcon(r.showSnapPoints !== false) + '</button></div>'];
-      for(const g of this.engine.model.groups||[])if(this.groupRoot(g.id)===g.id){const leaves=this.groupLeaves(g.id);rows.push('<div class="view-row'+(leaves.every(id=>this.selectedIds.includes(id))?' view-row-selected':'')+'"><button class="view-name view-select-btn" type="button" data-select-group="'+MI.escapeXml(g.id)+'"'+(this.runtime&&!leaves.every(id=>this.capabilities(id).selectList)?' disabled':'')+'>'+MI.escapeXml(g.name)+'<span class="view-type">'+leaves.length+' objecten &middot; '+MI.escapeXml(g.id)+'</span></button></div>');}
-      for (const object of this.engine.model.objects) {
+      const layers=this.engine.model.layers||[],esc=MI.escapeXml;
+      const objectRow=object=>{
         const color = this.services.color ? this.services.color.value(this.viewObject(object.id)) : "#222222";
-        rows.push('<div class="view-row' + (this.selectedIds.includes(object.id) ? ' view-row-selected' : '') + '"><button class="view-name view-select-btn" type="button" data-select-object="' + MI.escapeXml(object.id) + '">' + MI.escapeXml(objectName(object)) + '<span class="view-type">' + MI.escapeXml(object.id) + '</span></button><button class="text-btn" title="Label tonen/verbergen" data-toggle-label="' + MI.escapeXml(object.id) + '">' + textIcon(object.showLabel) + '</button><button class="color-btn" title="Kleur wijzigen" aria-label="Kleur wijzigen" type="button" data-color-object="' + MI.escapeXml(object.id) + '" style="--object-color:' + MI.escapeXml(color) + '"><span class="color-swatch"></span></button><button class="eye-btn" title="Object tonen/verbergen" type="button" data-object-visibility="' + MI.escapeXml(object.id) + '">' + eyeIcon(object.visible !== false) + '</button><button class="eye-btn" type="button" data-object-lock="' + MI.escapeXml(object.id) + '" title="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '" aria-label="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '">' + (object.locked?'🔒':'🔓') + '</button></div>');
-      }
+        return '<div class="view-row' + (this.selectedIds.includes(object.id) ? ' view-row-selected' : '') + '"><button class="view-name view-select-btn" type="button" data-select-object="' + MI.escapeXml(object.id) + '">' + MI.escapeXml(objectName(object)) + '<span class="view-type">' + MI.escapeXml(object.id) + '</span></button><button class="text-btn" title="Label tonen/verbergen" data-toggle-label="' + MI.escapeXml(object.id) + '">' + textIcon(object.showLabel) + '</button><button class="color-btn" title="Kleur wijzigen" aria-label="Kleur wijzigen" type="button" data-color-object="' + MI.escapeXml(object.id) + '" style="--object-color:' + MI.escapeXml(color) + '"><span class="color-swatch"></span></button><button class="eye-btn" title="Object tonen/verbergen" type="button" data-object-visibility="' + MI.escapeXml(object.id) + '">' + eyeIcon(object.visible !== false) + '</button><button class="eye-btn" type="button" data-object-lock="' + MI.escapeXml(object.id) + '" title="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '" aria-label="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '">' + (object.locked?'🔒':'🔓') + '</button></div>';
+      };
+      const groupsFor=layerId=>{for(const g of this.engine.model.groups||[])if(this.groupRoot(g.id)===g.id && (!layerId||MI.DocumentLayers.index(layers).owner.get(this.groupLeaves(g.id)[0])?.id===layerId)){const leaves=this.groupLeaves(g.id);rows.push('<div class="view-row'+(leaves.every(id=>this.selectedIds.includes(id))?' view-row-selected':'')+'"><button class="view-name view-select-btn" type="button" data-select-group="'+esc(g.id)+'"'+(this.runtime&&!leaves.every(id=>this.capabilities(id).selectList)?' disabled':'')+'>'+esc(g.name)+'<span class="view-type">'+leaves.length+' objecten &middot; '+esc(g.id)+'</span></button></div>');}};
+      if(!this.runtime)rows.push('<div class="view-divider"></div><div class="view-row layer-add"><input type="text" data-layer-new-name aria-label="Naam nieuwe laag" maxlength="200" value="Nieuwe laag"><button type="button" class="secondary" data-layer-add>Laag toevoegen</button></div>');
+      if(layers.length){
+        rows.push('<p class="help-text">Lagen: bovenaan staat vooraan. Nieuwe objecten komen op de bovenste zichtbare laag.</p>');
+        const byId=new Map(this.engine.model.objects.map(o=>[o.id,o]));
+        for(const l of layers.slice().reverse()){
+          const id=esc(l.id),i=layers.findIndex(layer=>layer.id===l.id);rows.push('<section data-layer-row="'+id+'" class="layer-section'+(!l.visible?' layer-hidden':'')+'"><div class="view-row layer-header">'+(this.runtime?'<strong class="view-name">'+esc(l.name)+'</strong>':'<input type="text" data-layer-name="'+id+'" aria-label="Laagnaam" maxlength="200" value="'+esc(l.name)+'"><button class="eye-btn" type="button" data-layer-visibility="'+id+'" title="Laag tonen/verbergen" aria-label="Laag tonen/verbergen" aria-pressed="'+l.visible+'">'+eyeIcon(l.visible)+'</button><button class="eye-btn" type="button" data-layer-forward="'+id+'" title="Laag naar voren" aria-label="Laag naar voren"'+(i===layers.length-1?' disabled':'')+'>&uarr;</button><button class="eye-btn" type="button" data-layer-backward="'+id+'" title="Laag naar achteren" aria-label="Laag naar achteren"'+(i===0?' disabled':'')+'>&darr;</button><button class="eye-btn" type="button" data-layer-delete="'+id+'" title="Laag verwijderen; objecten behouden" aria-label="Laag verwijderen; objecten behouden"'+(layers.length===1?' disabled':'')+'>&times;</button>')+'</div>');
+          groupsFor(l.id);for(const objectId of l.members.slice().reverse()){const o=byId.get(objectId);if(o)rows.push(objectRow(o));}rows.push('</section>');
+        }
+      }else{groupsFor(null);for(const object of this.engine.model.objects)rows.push(objectRow(object));}
       this.nodes.viewList.innerHTML = rows.join("");
     }
     renderInspector(object) {
@@ -741,7 +761,8 @@
       if (!object) { panel.className = "selection-empty"; panel.textContent = "Geen object geselecteerd."; return; }
       panel.className = "selection-panel";
       const grouping=this.runtime?'':'<div class="selection-actions"><button type="button" data-group-selection'+(this.selectedIds.length<2?' disabled':'')+'>Groeperen</button><button type="button" data-ungroup-selection'+(!this.selectedGroups().length?' disabled':'')+'>Groep opheffen</button></div>';
-      const actions=grouping+'<div class="selection-actions"><button type="button" data-duplicate-selection>Dupliceren</button><button type="button" class="secondary" data-lock-selection>'+ (this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen')+'</button></div>';
+      const layers=this.engine.model.layers||[],owner=MI.DocumentLayers.index(layers).owner,current=owner.get(this.selectedIds[0])?.id,same=this.selectedIds.every(id=>owner.get(id)?.id===current),assignment=!this.runtime&&layers.length?'<label>Laag<select data-layer-assign aria-label="Laag van selectie">'+(!same?'<option value="">Verschillende lagen</option>':'')+layers.slice().reverse().map(l=>'<option value="'+MI.escapeXml(l.id)+'"'+(same&&l.id===current?' selected':'')+'>'+MI.escapeXml(l.name)+(l.visible?'':' (verborgen)')+'</option>').join('')+'</select></label>':'';
+      const actions=assignment+grouping+'<div class="selection-actions"><button type="button" data-duplicate-selection>Dupliceren</button><button type="button" class="secondary" data-lock-selection>'+ (this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen')+'</button></div>';
       if(this.selectedIds.length>1 || object.locked) {panel.innerHTML='<strong>'+ (this.selectedIds.length>1?this.selectedIds.length+' objecten geselecteerd':MI.escapeXml(object.name))+'</strong><p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+actions+'<button class="delete-btn" data-delete-selected'+(!this.editableSelection()?' disabled':'')+'>Verwijder selectie</button>';return;}
       let html = '<strong>' + MI.escapeXml(object.name) + '</strong><code>' + MI.escapeXml(object.id) + '</code><label>Naam<input data-edit="name" value="' + MI.escapeXml(object.name) + '"></label>';
       if(object.construction) html+='<p class="help-text">Gekoppeld aan: '+object.construction.sources.map(s=>MI.escapeXml(s.objectId)).join(', ')+'.</p>'+((object.construction && object.constructionValid===false)?'<p>Constructie bestaat momenteel niet; wijzig de bronobjecten om te herstellen.</p>':'');
