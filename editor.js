@@ -8,6 +8,7 @@
     constructor({ engine, services, document, window, storage }) {
       this.engine = engine; this.services = services; this.document = document; this.window = window; this.storage = storage;
       this.tool = "select"; this.selectedIds = []; this.interaction = null; this.feedback = null;
+      this.hoverId=null; this.hoverHit=null; this.hoverFrame=null; this.hoverPointer=null; this.presentationKey=null;
       this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
       this.history = new (services.history || MI.EditorHistory)(this); this.editBefore = null;
       this.nodes = {};
@@ -22,6 +23,68 @@
       this.invalidate();
     }
     editableSelection() { return !this.selectedObjects().some(o=>o.locked); }
+    canvasSelectable(o) { return !!o && o.visible!==false && !(o.construction && o.constructionValid===false); }
+    moveSelectionPlan() {
+      const snapshot=this.engine.model.objects,key=JSON.stringify(this.selectedIds),cache=this.movementCache;
+      if(cache && cache.snapshot===snapshot && cache.key===key)return cache.plan;
+      const byId=new Map(snapshot.map(o=>[o.id,o])),objects=this.selectedIds.map(id=>byId.get(id));
+      const free=objects.filter(o=>o && !o.construction),ids=new Set(free.map(o=>o.id));
+      const covered=(o,seen=new Set())=>{if(!this.canvasSelectable(o)||o.locked||seen.has(o.id))return false;if(!o.construction)return ids.has(o.id);const next=new Set([...seen,o.id]);return o.construction.sources.every(ref=>covered(byId.get(ref.objectId),next));};
+      const plan=objects.length && free.length && objects.every(o=>covered(o))?Object.freeze(free):null;
+      this.movementCache={snapshot,key,plan};return plan;
+    }
+    hitAt(event) {
+      if(!event || !Number.isFinite(event.clientX)||!Number.isFinite(event.clientY))return null;
+      const n=this.nodes,target=event.target;
+      if(target && !n.canvasWrap.contains(target))return null;
+      const rect=n.canvasWrap.getBoundingClientRect();
+      if(Number.isFinite(rect.right) && (event.clientX<rect.left || event.clientX>rect.right || event.clientY<rect.top || event.clientY>rect.bottom))return null;
+      for(const [selector,attribute,kind] of [['.fzi-polygon-vertex','data-polygon-id','vertex'],['.fzi-line-endpoint','data-line-id','endpoint'],['.object-label','data-label-id','label'],['[data-object-id]','data-object-id','object']]) {
+        const node=target?.closest?.(selector),object=node && n.canvas.contains(node) && this.engine.get(node.getAttribute(attribute));
+        if(this.canvasSelectable(object))return {object,kind:kind==='label' && this.selectedIds.length>1 && this.selectedIds.includes(object.id)?'object':kind};
+      }
+      const transform=this.transform(),point=transform?.screenToMath({x:event.clientX,y:event.clientY});
+      return point ? this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8}):null;
+    }
+    cursorFor(hit) {
+      const state=this.interaction;
+      if(state)return ['object','group','label','pan'].includes(state.mode)?'grabbing':'crosshair';
+      if(this.tool!=='select')return 'crosshair';
+      if(!hit || !this.canvasSelectable(hit.object))return 'default';
+      const o=hit.object;
+      if(!o.locked && !o.construction && ['endpoint','vertex'].includes(hit.kind))return 'crosshair';
+      if(!o.locked && hit.kind==='label')return 'move';
+      if(this.selectedIds.includes(o.id) && this.moveSelectionPlan())return 'grab';
+      return 'pointer';
+    }
+    renderPresentation(force=false) {
+      if(this.hoverId) {
+        const object=this.engine.get(this.hoverId);
+        if(!this.canvasSelectable(object)){this.hoverId=null;this.hoverHit=null;}else this.hoverHit={...this.hoverHit,object};
+      }
+      if(force && this.hoverPointer && !this.interaction && this.tool==='select' && this.document.elementFromPoint) {
+        this.hoverHit=this.hitAt({...this.hoverPointer,target:this.document.elementFromPoint(this.hoverPointer.clientX,this.hoverPointer.clientY)});this.hoverId=this.hoverHit?.object.id||null;
+      }
+      this.nodes.canvasWrap.style.cursor=this.cursorFor(this.hoverHit);
+      const key=JSON.stringify([this.selectedIds,this.hoverId]);if(!force && key===this.presentationKey)return;
+      this.presentationKey=key;
+      const service=this.services.overlays||MI.EditorOverlays;
+      if(service?.selection)service.selection(this.nodes.canvas.querySelector('svg'),{selectedIds:this.selectedIds,hoverId:this.hoverId,transform:this.transform(),renderer:this.engine.renderer,document:this.document});
+    }
+    updateHover(event) {
+      this.hoverPointer=event?{clientX:event.clientX,clientY:event.clientY,target:event.target}:null;
+      const hit=this.tool==='select' && !this.interaction?this.hitAt(event):null;
+      this.hoverHit=hit;this.hoverId=hit?.object.id||null;this.renderPresentation();
+    }
+    queueHover(event) {
+      this.hoverPointer={clientX:event.clientX,clientY:event.clientY,target:event.target};
+      if(!this.window.requestAnimationFrame){this.updateHover(this.hoverPointer);return;}
+      if(this.hoverFrame===null)this.hoverFrame=this.window.requestAnimationFrame(()=>{this.hoverFrame=null;if(this.initialized)this.updateHover(this.hoverPointer);});
+    }
+    clearHover() {
+      if(this.hoverFrame!==null && this.window.cancelAnimationFrame)this.window.cancelAnimationFrame(this.hoverFrame);
+      this.hoverFrame=null;this.hoverPointer=null;this.hoverId=null;this.hoverHit=null;this.renderPresentation();
+    }
     duplicateSelection() {
       if(!this.selectedIds.length)return;this.changeDocument(()=>{this.selectedIds=this.engine.duplicateMany(this.selectedIds).map(o=>o.id);});
     }
@@ -76,6 +139,7 @@
       this.on(n.undoBtn, "click", () => this.travelHistory());
       this.on(n.redoBtn, "click", () => this.travelHistory(true));
       this.on(n.canvasWrap, "pointerdown", e => this.pointerDown(e));
+      this.on(n.canvasWrap,'pointerleave',()=>{if(!this.interaction)this.clearHover();});
       this.on(n.canvasWrap, 'contextmenu', e => { if(this.suppressMarqueeMenu || (this.interaction?.mode==='marquee' && this.interaction.active)) { e.preventDefault(); this.suppressMarqueeMenu=false; } });
       this.on(this.document.getElementById('rectangleSelectBtn'), 'click', e => this.startKeyboardRectangle(e));
       this.on(this.window, "pointermove", e => this.pointerMove(e));
@@ -202,9 +266,11 @@
     }
     setTool(tool) { this.closeDialogs(true); this.cancel(); this.tool = tool; if(tool.startsWith('construct:'))this.status(this.constructionHint(tool.slice(10))); this.invalidate(); }
     begin(state, event) {
+      this.clearHover();
       this.flushEdits();
       this.interaction = { ...state, historyBefore: this.history.capture(), pointerId: event.pointerId, selectionBefore: this.selectedId, selectionIdsBefore:this.selectedIds.slice(), startScreen: { x: event.clientX, y: event.clientY }, transform: this.transform(), typed: "" };
       if (this.nodes.canvasWrap.setPointerCapture) try { this.nodes.canvasWrap.setPointerCapture(event.pointerId); } catch (_) {}
+      this.renderPresentation();
     }
     release(state) { if (state && this.nodes.canvasWrap.hasPointerCapture && this.nodes.canvasWrap.hasPointerCapture(state.pointerId)) try { this.nodes.canvasWrap.releasePointerCapture(state.pointerId); } catch (_) {} }
     rectangleService() { return this.services.selection || MI.RectangleSelection; }
@@ -235,6 +301,7 @@
     }
     startKeyboardRectangle(event={}) {
       if(this.tool!=='select' || this.interaction)return;
+      this.clearHover();
       const b=this.engine.renderer.bounds,t=this.transform();if(!t)return;
       const p=t.mathToScreen({x:(b.xMin+b.xMax)/2,y:(b.yMin+b.yMax)/2});
       this.flushEdits();this.interaction={mode:'marquee',keyboard:true,phase:'anchor',pointerId:null,active:true,rule:'contain',transform:t,startScreen:p,end:{...p},selectionIdsBefore:this.selectedIds.slice(),operation:this.rectangleService().operation(event),textGeometry:this.textSelectionGeometry()};
@@ -296,14 +363,14 @@
       const vertex=event.target && event.target.closest && event.target.closest('.fzi-polygon-vertex');
       if(this.tool==='select' && vertex) {
         const id=vertex.getAttribute('data-polygon-id'),object=this.engine.get(id);
-        if(!object || object.visible===false || object.locked) return;
+        if(!this.canvasSelectable(object) || object.locked || object.construction) return;
         this.begin({mode:'vertex',id,original:clone(object),vertex:Number(vertex.getAttribute('data-vertex')),resolved:null},event);
         this.selectedId=id; this.invalidate(); return;
       }
       const label = event.target && event.target.closest && event.target.closest(".object-label"), handle = event.target && event.target.closest && event.target.closest(".fzi-line-endpoint");
-      if (this.tool === "select" && (label || handle)) {
+      if (this.tool === "select" && (label || handle) && !(label && this.selectedIds.length>1 && this.selectedIds.includes(label.getAttribute('data-label-id')))) {
         const id = (label || handle).getAttribute(label ? "data-label-id" : "data-line-id"), object = this.engine.get(id);
-        if (!object || object.visible === false || object.locked) return;
+        if (!this.canvasSelectable(object) || object.locked || (handle && object.construction)) return;
         this.begin({ mode: label ? "label" : "endpoint", id, original: clone(object), endpoint: handle && handle.getAttribute("data-endpoint"), offset: this.labelOffset(object), resolved: null }, event);
         this.selectedId = id; this.invalidate(); return;
       }
@@ -325,13 +392,11 @@
         this.polygonPreview(); this.status(['angle','rightAngle'].includes(this.tool)?'Klik een punt op de eerste arm, het hoekpunt en een punt op de tweede arm.':'Klik voor hoekpunten; Enter sluit af, Backspace verwijdert het laatste punt, Escape annuleert.'); return;
       }
       if (this.tool !== 'select') { this.status('Deze tekentool is niet beschikbaar. Vernieuw de editor.'); return; }
-      const group = event.target && event.target.closest && event.target.closest('[data-object-id]');
-      const painted = group && this.nodes.canvas.contains(group) && this.engine.get(group.getAttribute('data-object-id'));
-      const hit = painted && painted.visible !== false ? { object: painted } : this.engine.selectAt(point.x, point.y, { transform: this.transform(), tolerancePx: 8 });
+      const hit = this.hitAt(event);
       if(hit && (event.shiftKey || event.ctrlKey || event.metaKey)) { this.selectObject(hit.object.id,true);return; }
       if(hit && this.selectedIds.includes(hit.object.id) && this.selectedIds.length>1) {
         if(!this.editableSelection()){this.status('Ontgrendel de selectie eerst.');return;}
-        const originals=this.selectedObjects().filter(o=>!o.construction);if(!originals.length){this.status('Gekoppelde constructies: verplaats de bronobjecten.');return;}this.begin({mode:'group',originals},event);this.invalidate();return;
+        const originals=this.moveSelectionPlan();if(!originals){this.status('Selectie kan niet rigide bewegen: selecteer ook alle ontgrendelde bronobjecten.');return;}this.begin({mode:'group',originals},event);this.status('Verplaats selectie.');this.invalidate();return;
       }
       if(hit && hit.object.locked) { this.selectObject(hit.object.id);this.status('Object is vergrendeld.');return; }
       if(hit && hit.object.construction) {this.selectObject(hit.object.id);this.status('Gekoppelde constructie: verplaats de bronobjecten.');return;}
@@ -353,12 +418,14 @@
       if (!this.initialized) return;
       const state = this.interaction;
       if (!state) {
+        if(this.tool==='select')this.queueHover(event);
         if (this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
         return;
       }
       if(state.mode==='construction')return;
       if (state.mode==='polygon') { if(event.isPrimary===false || (state.pointerId!=null && event.pointerId!==state.pointerId)) return; const point=this.pointer(event); if(point) { state.result=this.polygonResult(point); this.polygonPreview(); } return; }
       if (event.pointerId !== state.pointerId) return;
+      state.lastPointer={clientX:event.clientX,clientY:event.clientY};
       if(state.mode==='marquee'){this.updateRectangle({x:event.clientX,y:event.clientY});return;}
       const point = this.pointer(event); if (!point) return;
       const delta = state.transform.screenDelta(event.clientX - state.startScreen.x, event.clientY - state.startScreen.y); if (!delta) return;
@@ -393,8 +460,11 @@
       }
       if ((state.mode === "endpoint" || state.mode==='vertex') && state.resolved) { try { this.engine.update(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }
       this.history.record(state.historyBefore); this.invalidate();
+      if(state.mode==='group')this.status('Selectie verplaatst.');
+      if(state.lastPointer && ['object','group','label','pan'].includes(state.mode))this.updateHover(state.lastPointer);
     }
     cancel() {
+      this.clearHover();
       const state = this.interaction; this.interaction = null;
       if (state) {
         if ((state.mode === "object" || state.mode === "label") && this.engine.get(state.id)) this.engine.update(state.id, state.original);
@@ -510,6 +580,7 @@
         if (this.services.overlays) this.services.overlays.render(svg, r, this.selectedIds.length===1?object:null, this.tool, this.document);
         if (this.services.feedback) this.services.feedback.render(svg, r, this.feedback, this.document);
       }
+      this.renderPresentation(true);
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
       this.renderViewList(); this.renderInspector(object);
       if (n.undoBtn) n.undoBtn.disabled = !this.history.canUndo && !this.editBefore;
