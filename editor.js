@@ -2,6 +2,7 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
+  const SPLIT_TOOLS={linear:['line','straight','ray','vector'],figure:['triangle','polygon']};
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
@@ -12,8 +13,10 @@
       this.hoverId=null; this.hoverHit=null; this.hoverFrame=null; this.hoverPointer=null; this.presentationKey=null;
       this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
       this.history = new (this.runtime ? MI.RuntimeHistory : services.history || MI.EditorHistory)(this); this.editBefore = null;
+      this.linearTool='line';this.figureTool='triangle';this.splitMenuOpen=null;
+      for(const [group,tools] of Object.entries(SPLIT_TOOLS))try{const saved=storage?.getItem('fzi-math-illustration-'+group+'-tool');if(tools.includes(saved))this[group+'Tool']=saved;}catch(_){}
       this.nodes = {};
-      for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection"]) this.nodes[id] = document.getElementById(id);
+      for (const id of ["canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
     }
     selectAxes() { this.closeDialogs(true);this.cancel();this.flushEdits();this.selectedIds=[];this.inspectorTarget='axes';this.axisMenuOpen=true;this.document.body?.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');this.invalidate(); }
     setNavigation(mode) { this.setTool('select');this.navigationMode=mode==='pan'?'pan':'select';this.clearHover();this.invalidate(); }
@@ -34,6 +37,24 @@
       }).join('');const labelAllowed=this.allowed('object.setProperties',{ids:this.selectedIds,fields:[{path:'showLabel',value:true}]}),labels=objects.map(o=>o.showLabel),mixed=labels.some(v=>v!==labels[0]);return '<details data-property-section="common" open><summary>Gemeenschappelijk uiterlijk</summary>'+html+'<label class="style-toggle"><input type="checkbox" data-common="showLabel"'+(labels.every(Boolean)?' checked':'')+(mixed?' data-mixed="true"':'')+(!labelAllowed?' disabled':'')+'>Labels tonen'+(mixed?' (verschillend)':'')+'</label></details>';
     }
     zoomBy(direction) { const b=this.engine.renderer.bounds,screen=this.transform().mathToScreen({x:(b.xMin+b.xMax)/2,y:(b.yMin+b.yMax)/2});this.zoom({deltaY:direction,clientX:screen.x,clientY:screen.y,preventDefault(){},stopImmediatePropagation(){}}); }
+    renderSplitTools() {
+      for(const group of Object.keys(SPLIT_TOOLS)) {
+        const main=this.document.getElementById(group+'ToolMain'),toggle=this.document.getElementById(group+'ToolToggle'),menu=this.document.getElementById(group+'ToolMenu');
+        const items=Array.from(menu?.querySelectorAll?.('[data-tool]')||[]);if(!main||!toggle||!items.length)continue;
+        const enabled=items.filter(b=>this.toolAllowed(b.dataset.tool)),item=enabled.find(b=>b.dataset.tool===this[group+'Tool'])||enabled[0]||items[0];
+        main.innerHTML=item.innerHTML;main.dataset.choice=item.dataset.tool;main.disabled=!this.toolAllowed(item.dataset.tool);main.classList.toggle('active',this.tool===item.dataset.tool);
+        main.setAttribute('aria-label',item.textContent.trim());main.setAttribute('title',item.textContent.trim());toggle.disabled=!enabled.length;toggle.setAttribute('aria-expanded',String(this.splitMenuOpen===group));menu.hidden=this.splitMenuOpen!==group;
+        if(!menu.hidden){menu.style.left='0px';menu.style.right='auto';menu.style.top='calc(100% + 5px)';menu.style.bottom='auto';const side=main.closest('.sidebar')?.getBoundingClientRect(),anchor=main.getBoundingClientRect(),box=menu.getBoundingClientRect();if(side){menu.style.left=Math.max(side.left+8-anchor.left,Math.min(0,side.right-8-anchor.left-box.width))+'px';if(box.bottom>side.bottom && anchor.top-box.height-5>=side.top){menu.style.top='auto';menu.style.bottom='calc(100% + 5px)';}}}
+
+      }
+    }
+    closeSplitMenu(focus=false) {const group=this.splitMenuOpen;this.splitMenuOpen=null;this.renderSplitTools();if(focus&&group)this.document.getElementById(group+'ToolToggle')?.focus?.();}
+    splitMenuKey(event) {
+      const toggle=event.target.closest('[data-split-toggle]'),group=toggle?.dataset.splitToggle||this.splitMenuOpen;if(!SPLIT_TOOLS[group])return;
+      const menu=this.document.getElementById(group+'ToolMenu'),items=Array.from(menu?.querySelectorAll?.('[data-tool]')||[]).filter(b=>!b.disabled);if(!items.length)return;
+      if(toggle && event.key==='ArrowDown'){event.preventDefault();this.splitMenuOpen=group;this.renderSplitTools();items[0].focus();return;}
+      if(this.splitMenuOpen===group && menu.contains(event.target) && ['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();const i=items.indexOf(event.target),next=event.key==='Home'?0:event.key==='End'?items.length-1:(i+(event.key==='ArrowUp'?-1:1)+items.length)%items.length;items[next].focus();}
+    }
     closeFileMenu(returnFocus=false) { if(this.nodes.fileMenu){this.nodes.fileMenu.open=false;if(returnFocus)this.nodes.moreBtn?.focus?.();} }
     decorateInspector() {
       const panel=this.nodes.selectionPanel;if(!panel?.querySelectorAll)return;
@@ -214,6 +235,7 @@
       target.addEventListener(type, guarded, options);
       this.listeners.push(() => target.removeEventListener && target.removeEventListener(type, guarded, options));
     }
+    toolHint(tool) { return ({point:'Klik op het werkvlak om een punt te plaatsen.',line:'Sleep van begin- naar eindpunt voor een lijnstuk. Typ voor een exacte lengte.',straight:'Sleep tussen twee punten voor een rechte.',ray:'Sleep van het beginpunt in de richting van de halfrechte.',vector:'Sleep van staart naar pijlpunt voor een vector.',circle:'Klik het middelpunt en sleep voor de straal. Typ voor een exacte straal.',triangle:'Klik drie hoekpunten. Escape annuleert.',polygon:'Klik de hoekpunten; Enter sluit af, Backspace verwijdert het laatste punt, Escape annuleert.',dimension:'Sleep tussen twee punten om de lengte te meten.',angle:'Klik arm, hoekpunt en tweede arm voor een hoek.',rightAngle:'Klik arm, hoekpunt en tweede arm voor een rechte hoek.',text:'Klik op het werkvlak en voer tekst in.',select:'Selecteer een object of het assenstelsel.'})[tool]||''; }
     status(text) { this.nodes.status.textContent = text; }
     hydrate() { this.nodes.titleInput.value = this.engine.model.meta.title || ""; this.nodes.descriptionInput.value = this.engine.model.meta.description || ""; }
     updateMeta() {const fields=[{path:'title',value:this.nodes.titleInput.value.trim()},{path:'description',value:this.nodes.descriptionInput.value.trim()}].filter(f=>this.engine.model.meta[f.path]!==f.value);if(fields.length)this.execute('document.setMeta',{fields});}
@@ -264,7 +286,8 @@
       this.on(this.window, "keydown", e => this.keyDown(e));
       this.on(n.canvasWrap, "wheel", e => this.zoom(e), { capture: true, passive: false });
       this.on(n.toolGrid,'toggle',()=>this.invalidate(),{capture:true});this.on(n.layersSection,'toggle',()=>this.invalidate());
-      this.on(n.toolGrid, "click", e => { const button = e.target.closest("[data-tool]"); if (button) this.setTool(button.dataset.tool); });
+      this.on(n.toolGrid,'keydown',e=>this.splitMenuKey(e));
+      this.on(n.toolGrid, "click", e => {const toggle=e.target.closest('[data-split-toggle]');if(SPLIT_TOOLS[toggle?.dataset.splitToggle]){this.splitMenuOpen=this.splitMenuOpen===toggle.dataset.splitToggle?null:toggle.dataset.splitToggle;this.renderSplitTools();return;}const main=e.target.closest('[data-split-main]');if(main?.dataset.choice){this.setTool(main.dataset.choice);return;}const button=e.target.closest('[data-tool]');if(button)this.setTool(button.dataset.tool);});
       this.on(n.viewList, "click", e => this.viewClick(e));
       this.on(n.viewControls,"click",e=>this.viewClick(e));
       this.on(n.navigationTools,"click",e=>{if(e.target.closest('[data-view-select=axes]')){this.selectAxes();return;}const button=e.target.closest('[data-tool]');if(button)this.setTool(button.dataset.tool);});
@@ -279,9 +302,9 @@
         const input = e.target.closest("[data-axis-setting]");
         if (input) { this.setPresentationFlag(input.dataset.axisSetting,input.checked); }
       });
-      this.on(this.document,"click",e=>{if(n.fileMenu?.open && !e.target.closest('#fileMenu'))this.closeFileMenu();if(e.target.closest('#fileMenu button'))this.closeFileMenu();});
+      this.on(this.document,"click",e=>{if(this.splitMenuOpen&&!e.target.closest('.tool-split'))this.closeSplitMenu();if(n.fileMenu?.open && !e.target.closest('#fileMenu'))this.closeFileMenu();if(e.target.closest('#fileMenu button'))this.closeFileMenu();});
       this.on(n.selectionPanel, "input", e => {
-        const slider=e.target.closest('[data-style="strokeWidth"], [data-style="opacity"]');
+        const slider=e.target.closest('[data-style="strokeWidth"], [data-style="opacity"], [data-style="fontSize"]');
         if(slider?.type==='range'){const value=slider.parentElement.querySelector('output');if(value)value.textContent=slider.value+(slider.dataset.style==='opacity'?'%':' px');}
       });
       this.on(n.selectionPanel, "change", e => {
@@ -341,7 +364,7 @@
       this.invalidate();if(!this.runtime)this.savedDocument=JSON.stringify(this.engine.toJSON()); return this;
     }
     dispose() {
-      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.initialized = false; this.invalidateImport();
+      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.closeSplitMenu();this.initialized = false; this.invalidateImport();
       for (const remove of this.listeners.splice(0)) remove();
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
       this.engine.renderer.preview = null; this.feedback = null;
@@ -409,7 +432,7 @@
       catch(error){this.status(error.message);}
       this.invalidate();
     }
-    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.tool = tool; if(tool.startsWith('construct:'))this.status(this.constructionHint(tool.slice(10))); this.invalidate(); }
+    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.tool = tool;this.splitMenuOpen=null;for(const [group,tools] of Object.entries(SPLIT_TOOLS))if(tools.includes(tool)){this[group+'Tool']=tool;try{this.storage?.setItem('fzi-math-illustration-'+group+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
     begin(state, event) {
       this.clearHover();
       this.flushEdits();
@@ -654,6 +677,7 @@
       if (this.initialized) this.invalidate();
     }
     keyDown(event) {
+      if(event.key==='Escape' && this.splitMenuOpen){event.preventDefault();this.closeSplitMenu(true);return;}
       if(event.key==='Escape' && this.nodes.fileMenu?.open){event.preventDefault();this.closeFileMenu(true);return;}
       const state = this.interaction;
       if(event.key==='Escape' && !state && this.document.body?.classList.contains('properties-open') && this.window.innerWidth<1000){this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.propertiesToggle?.focus?.();this.selectedIds=[];this.inspectorTarget='objects';this.clearHover();this.invalidate();return;}
@@ -810,7 +834,7 @@
       this.document.querySelectorAll('[data-tool-category]').forEach(category=>{const active=Array.from(category.querySelectorAll('[data-tool]')).find(button=>button.dataset.tool===this.tool),label=category.querySelector('[data-active-tool]');if(label)label.textContent=active?' · '+active.textContent.trim():'';});
       this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool && this.navigationMode!=="pan"));
       const navigationHeight=n.navigationTools?.parentElement?.offsetHeight;if(navigationHeight)this.document.documentElement?.style.setProperty("--navigation-height",navigationHeight+"px");
-      this.restrictControls();
+      this.restrictControls();this.renderSplitTools();
       n.crosshair.hidden = !this.interaction || this.interaction.mode !== "draw" || (this.feedback && this.feedback.snapped && r.showSnapPoints !== false);
       if (this.feedback && this.interaction && this.interaction.mode === "draw") { const p = this.transform().mathToScreen(this.feedback.point), rect = n.canvasWrap.getBoundingClientRect(); n.crosshair.style.left = p.x - rect.left + "px"; n.crosshair.style.top = p.y - rect.top + "px"; }
     }
@@ -841,7 +865,7 @@
     renderInspector(object) {
       const panel = this.nodes.selectionPanel;
       if(this.inspectorTarget==='axes' && !this.selectedId){panel.className='selection-panel';panel.innerHTML=this.services.axis?.html(this.engine.renderer,{adaptive:!!this.services.grid})||'';this.decorateInspector();return;}
-      if (!object) { panel.className = "selection-empty"; panel.textContent = "Selecteer een object of het assenstelsel."; return; }
+      if (!object) { panel.className = "selection-empty"; panel.textContent = this.tool==='select'?"Selecteer een object of het assenstelsel.":""; return; }
       this.inspectorTarget='objects';
 
       this.inspectorObjectKey=JSON.stringify(this.selectedIds);
@@ -871,7 +895,7 @@
       html+='</details>';
       const style=object.style,esc=MI.escapeXml;
       html+='<fieldset class="object-style"><legend>Stijl</legend><div class="inspector-color-row"><span>'+(object.type==='text'?'Tekstkleur':'Lijnkleur')+'</span><button type="button" class="secondary inspector-color" data-style-color="'+esc(object.id)+'" aria-label="'+(object.type==='text'?'Tekstkleur wijzigen':'Lijnkleur wijzigen')+'" title="Kleur wijzigen" style="--object-color:'+esc(object.type==='text'?style.fill:style.stroke)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
-      if(object.type==='text') html+='<label>Tekstgrootte<input data-style="fontSize" type="number" min="1" step="1" value="'+esc(style.fontSize)+'"></label>';
+      if(object.type==='text') html+='<label>Tekstgrootte<span class="stroke-slider"><input aria-label="Tekstgrootte" data-style="fontSize" type="range" min="1" max="'+Math.max(96,style.fontSize)+'" step="1" value="'+esc(style.fontSize)+'"><output>'+esc(style.fontSize)+' px</output></span></label>';
       else {
         html+='<label>Lijndikte<span class="stroke-slider"><input aria-label="Lijndikte" data-style="strokeWidth" type="range" min="0" max="'+Math.max(20,style.strokeWidth)+'" step="0.1" value="'+esc(style.strokeWidth)+'"><output>'+esc(style.strokeWidth)+' px</output></span></label>';
         const options=[['','Doorgetrokken'],['8 5','Gestreept'],['2 5','Gestippeld'],['8 4 2 4','Streep-punt']];

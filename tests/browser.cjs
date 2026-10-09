@@ -119,7 +119,8 @@ const server = http.createServer((req, res) => {
     const axesGrid=await require('./browser-axes-grid.cjs')(page);
     const constructionHover=await require('./browser-construction-hover.cjs')(page);
     const fullCanvasAxes=await require('./browser-full-canvas-axes.cjs')(page);
+    const splitTools=await require('./browser-split-tools.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, splitTools, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

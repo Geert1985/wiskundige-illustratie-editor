@@ -130,6 +130,21 @@
       const xlabel=svg.querySelector('[data-canvas-axis-label="x"]'),ylabel=svg.querySelector('[data-canvas-axis-label="y"]');
       if(xlabel)xlabel.setAttribute('x',right-8);
       if(ylabel)ylabel.setAttribute('y',top+12);
+      svg.querySelector('[data-canvas-extra-ticks]')?.remove();
+      const doc=svg.ownerDocument;if(!doc?.createElementNS)return;
+      const extra=doc.createElementNS(SVG_NS,'g');extra.setAttribute('data-canvas-extra-ticks','');
+      const append=(tag,attrs,text)=>{const node=doc.createElementNS(SVG_NS,tag);for(const [key,value] of Object.entries(attrs))node.setAttribute(key,value);if(text!=null)node.textContent=text;extra.appendChild(node);};
+      const ticks=(axis,min,max)=>{
+        let values;try{values=tickValues(min,max,renderer.axisStep);}catch(_){return;}
+        const low=axis==='x'?renderer.bounds.xMin:renderer.bounds.yMin,high=axis==='x'?renderer.bounds.xMax:renderer.bounds.yMax;
+        for(const value of values){if((value>=low-1e-9&&value<=high+1e-9)||Math.abs(value)<1e-9)continue;
+          const pos=axis==='x'?renderer.mapX(value):renderer.mapY(value),zero=axis==='x'?renderer.mapY(0):renderer.mapX(0),label=String(axisNumber(value));
+          append('line',axis==='x'?{x1:pos,y1:zero-4,x2:pos,y2:zero+4,stroke:'#aaa','stroke-width':1}:{x1:zero-4,y1:pos,x2:zero+4,y2:pos,stroke:'#aaa','stroke-width':1});
+          if(renderer.showAxisLabels && (axis==='x'?pos>=left+label.length*4&&pos<=right-label.length*4:pos>=top+8&&pos<=bottom-8))append('text',axis==='x'?{x:pos,y:zero+18,fill:'#666','font-size':12,'font-family':'Source Sans 3, sans-serif','text-anchor':'middle'}:{x:zero-8,y:pos+4,fill:'#666','font-size':12,'font-family':'Source Sans 3, sans-serif','text-anchor':'end'},label);
+        }
+      };
+      if(x)ticks('x',a.x,b.x);if(y)ticks('y',b.y,a.y);
+      (x||y)?.parentNode.appendChild(extra);
     }
 
     renderPreview() {

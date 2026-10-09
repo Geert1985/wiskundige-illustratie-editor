@@ -37,7 +37,7 @@ module.exports=async page=>{
   assert.equal(await page.locator('[data-style-apply]').count(),0);
   await roundtrip(()=>edit('fontSize',36));await roundtrip(()=>edit('opacity',60));
   assert.equal(await page.locator('[data-object-id="t"] text').getAttribute('font-size'),'36');
-  const valid=await doc();await edit('fontSize',0);assert.deepEqual(await doc(),valid);
+  const valid=await doc();assert.equal(await page.locator('[data-style=fontSize]').getAttribute('type'),'range');assert.equal(await page.evaluate(()=>{try{FZI.MathIllustration.editor.engine.update('t',{style:{fontSize:0}});return false;}catch{return true;}}),true);assert.deepEqual(await doc(),valid);
   assert.equal(await page.locator('[data-style="opacity"]').getAttribute('type'),'range');
   assert.equal(await page.locator('[data-style="opacity"]').getAttribute('max'),'100');
   assert.equal(await page.evaluate(()=>{try{FZI.MathIllustration.editor.engine.update('t',{style:{opacity:1.01}});return false;}catch{return true;}}),true);assert.deepEqual(await doc(),valid);
