@@ -332,3 +332,24 @@ for(const cancellation of ['Escape','blur','pointercancel'])test(`construction s
 test('bisector accepts a direct click on an existing angle and keeps its vertex references',()=>{const {app,engine,down}=appRuntime();const angle=engine.add({type:'angle',vertices:[{x:1,y:0},{x:0,y:0},{x:0,y:1}]});app.setTool('construct:bisector');down({x:.2,y:.2},{closest:selector=>selector==='[data-object-id]'?{getAttribute:()=>angle.id}:null});const result=engine.model.objects.find(o=>o.construction);assert.ok(result);assert.equal(result.construction.kind,'bisector');assert.equal(result.construction.sources.length,3);assert.ok(result.construction.sources.every(s=>s.objectId===angle.id));assert.equal(app.interaction,null);});
 
 test('bisector of a triangle is constructed by clicking its vertex',()=>{const {app,engine,down}=appRuntime();const p=engine.add({type:'polygon',vertices:[{x:2,y:2},{x:4,y:2},{x:2,y:4}]});app.setTool('construct:bisector');down({x:2,y:2});const result=engine.model.objects.find(o=>o.construction);assert.ok(result);assert.equal(result.x1,2);assert.equal(result.y1,2);assert.ok(Math.abs(result.x2-result.x1-result.y2+result.y1)<1e-9);assert.ok(result.construction.sources.every(s=>s.objectId===p.id));});
+
+
+test('M3a author import is one reversible replacement restoring document presentation and selection',()=>{
+  const {app,engine}=appRuntime();app.selectedIds=['p','l'];engine.renderer.showAxes=false;const before=plain(engine.toJSON());
+  app.importDocument({version:2,meta:{title:'Imported'},objects:[{id:'new',type:'circle',cx:1,cy:2,r:2}],presentation:{showAxes:true,bounds:{xMin:-2,xMax:2,yMin:-2,yMax:2}}});
+  const after=plain(engine.toJSON());assert.equal(app.history.entries.length,1);assert.deepEqual(app.selectedIds,[]);assert.equal(app.history.undo(),true);assert.deepEqual(plain(engine.toJSON()),before);assert.deepEqual(app.selectedIds,['p','l']);assert.equal(app.history.redo(),true);assert.deepEqual(plain(engine.toJSON()),after);assert.deepEqual(app.selectedIds,[]);
+});
+test('M3a rejected import preserves active drag history redo document and pointer capture',()=>{
+  const {app,engine,down,move,doc}=appRuntime();const before=app.history.capture();engine.add({type:'point',x:2,y:2});app.history.record(before);app.history.undo();down({x:0,y:0});move({x:1,y:1});assert.equal(typeof app.importDocument,'function');const state=app.interaction,data=plain(engine.toJSON()),entries=plain(app.history.entries),cursor=app.history.cursor,capture=doc.getElementById('canvasWrap').capture;
+  for(const imported of [{objects:[{id:'x',type:'point'},{id:'x',type:'point'}]},{objects:[],presentation:{bounds:{xMin:1,xMax:0,yMin:0,yMax:1}}}])assert.throws(()=>app.importDocument(imported));
+  assert.equal(app.interaction,state);assert.deepEqual(plain(engine.toJSON()),data);assert.deepEqual(plain(app.history.entries),entries);assert.equal(app.history.cursor,cursor);assert.equal(doc.getElementById('canvasWrap').capture,capture);assert.equal(app.history.canRedo,true);
+});
+test('M3a accepted import cancels preview then captures committed base, and no-op retains redo',()=>{
+  const {app,engine,down,move}=appRuntime();const before=plain(engine.toJSON());down({x:0,y:0});move({x:1,y:1});app.importDocument({objects:[]});assert.equal(app.interaction,null);app.history.undo();assert.deepEqual(plain(engine.toJSON()),before);assert.equal(app.history.canRedo,true);app.importDocument(before);assert.equal(app.history.canRedo,true);
+});
+test('M3a import retains earlier history, replacing redo only on a changed document',()=>{
+  const {app,engine}=appRuntime();const old=app.history.capture();engine.add({type:'point',x:2,y:2});app.history.record(old);const previous=plain(engine.toJSON());app.importDocument({objects:[]});assert.equal(app.history.entries.length,2);app.history.undo();assert.deepEqual(plain(engine.toJSON()),previous);app.history.undo();assert.equal(engine.model.objects.length,2);
+});
+test('M3a restricted direct import remains forbidden without changing context or history',()=>{
+  const {app,MI}=appRuntime(),{fixture}=require('./permission-fixtures.cjs');const {session,owner}=MI.RuntimeSession.create(fixture());app.runtime=session;app.engine=session.engine;app.commands=session;const before=plain(owner.inspect());assert.throws(()=>app.importDocument({objects:[]}),e=>e.code==='MODE_DENIED');assert.deepEqual(plain(owner.inspect()),before);
+});
