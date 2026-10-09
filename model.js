@@ -132,15 +132,19 @@
     get objects() { return this.#objects; }
     #groups = Object.freeze([]);
     get groups() { return this.#groups; }
+    #layers=Object.freeze([]);
+    get layers(){return this.#layers;}
     constructor(data) { this.version = MODEL_VERSION; this.type = "geometry"; this.meta = {}; this.presentation = null; this._extra = {}; this._nextId = 1; if (data != null) this.load(data); }
-    _generateId(type) { let id; do { id = (type || "object") + "-" + this._nextId; this._nextId = this._nextId >= Number.MAX_SAFE_INTEGER - 1 ? 1 : this._nextId + 1; } while (this.get(id) || this.#groups.some(g=>g.id===id)); return id; }
+    _generateId(type) { let id; do { id = (type || "object") + "-" + this._nextId; this._nextId = this._nextId >= Number.MAX_SAFE_INTEGER - 1 ? 1 : this._nextId + 1; } while (this.get(id) || this.#groups.some(g=>g.id===id) || this.#layers.some(l=>l.id===id)); return id; }
     add(input) {
       if (!record(input)) throw new Error('Ongeldig illustratie-object.');
       const nextId = this._nextId;
       try {
         const data = { ...input }; if (data.id == null || data.id === '') data.id = this._generateId(data.type);
-        const object = freeze(normaliseObject(data)); if ((this.#objects.some(o => o.id === object.id) || this.#groups.some(g=>g.id===object.id))) throw new Error('Object-id bestaat al: ' + object.id);
-        this.#objects = freeze(MI.ConstructionService.resolve([...this.#objects, object])); return this.get(object.id);
+        const object = freeze(normaliseObject(data)); if ((this.#objects.some(o => o.id === object.id) || this.#groups.some(g=>g.id===object.id) || this.#layers.some(l=>l.id===object.id))) throw new Error('Object-id bestaat al: ' + object.id);
+        const resolved=freeze(MI.ConstructionService.resolve([...this.#objects, object]));
+        let layers=this.#layers;if(layers.length){const target=layers.slice().reverse().find(l=>l.visible);if(!target)throw Error('Maak eerst een laag zichtbaar.');layers=freeze(MI.DocumentLayers.validate(layers.map(l=>l.id===target.id?{...l,members:[...l.members,object.id]}:l),resolved,this.#groups));}
+        this.#objects=resolved;this.#layers=layers;return this.get(object.id);
       } catch (error) { this._nextId = nextId; throw error; }
     }
     update(id, patch) {
@@ -155,28 +159,42 @@
     createGroup(members,name='Groep') {
       if ('groups' in this._extra || 'groupSchema' in this._extra) throw Error('Legacy groepsgegevens moeten eerst expliciet worden gemigreerd.');
       const counter=this._nextId;
-      try {const group={id:this._generateId('group'),name,members};const groups=MI.PersistentGroups.validate([...this.#groups,group],this.#objects);this.#groups=freeze(groups);return clone(groups.at(-1));}catch(error){this._nextId=counter;throw error;}
+      try {const group={id:this._generateId('group'),name,members};const groups=MI.PersistentGroups.validate([...this.#groups,group],this.#objects);if(this.#layers.length)MI.DocumentLayers.validate(this.#layers,this.#objects,groups);this.#groups=freeze(groups);return clone(groups.at(-1));}catch(error){this._nextId=counter;throw error;}
     }
+    createLayer(name) {
+      if('layers' in this._extra || 'layerSchema' in this._extra)throw Error('Legacy laaggegevens moeten eerst expliciet worden gemigreerd.');
+      const counter=this._nextId;try{const base=this.#layers.length?this.#layers:[{id:this._generateId('layer'),name:'Basislaag',visible:true,members:this.#objects.map(o=>o.id)}],layer={id:this._generateId('layer'),name,visible:true,members:[]};const layers=MI.DocumentLayers.validate([...base,layer],this.#objects,this.#groups);this.#layers=freeze(layers);return clone(layers.at(-1));}catch(error){this._nextId=counter;throw error;}
+    }
+    _replaceLayers(layers){this.#layers=freeze(MI.DocumentLayers.validate(layers,this.#objects,this.#groups));}
+    assignLayer(ids,layerId){
+      if(!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!this.get(id))||!this.#layers.some(l=>l.id===layerId))throw Error('Ongeldige laagtoewijzing.');
+      MI.PersistentGroups.roots(this.#groups,ids);if(ids.every(id=>this.#layers.find(l=>l.id===layerId).members.includes(id)))return ids.slice();const selected=new Set(ids),moving=MI.DocumentLayers.ordered(this.#objects,this.#layers).filter(o=>selected.has(o.id)).map(o=>o.id);
+      this._replaceLayers(this.#layers.map(l=>({...l,members:l.id===layerId?[...l.members.filter(id=>!selected.has(id)),...moving]:l.members.filter(id=>!selected.has(id))})));return ids.slice();
+    }
+    renameLayer(id,name){if(!this.#layers.some(l=>l.id===id))throw Error('Laag niet gevonden.');this._replaceLayers(this.#layers.map(l=>l.id===id?{...l,name}:l));}
+    setLayerVisibility(id,value){if(!this.#layers.some(l=>l.id===id))throw Error('Laag niet gevonden.');this._replaceLayers(this.#layers.map(l=>l.id===id?{...l,visible:value}:l));}
+    reorderLayers(ids){if(!Array.isArray(ids)||ids.length!==this.#layers.length||new Set(ids).size!==ids.length||ids.some(id=>!this.#layers.some(l=>l.id===id)))throw Error('Ongeldige laagvolgorde.');this._replaceLayers(ids.map(id=>this.#layers.find(l=>l.id===id)));}
+    removeLayer(id){const i=this.#layers.findIndex(l=>l.id===id);if(i<0||this.#layers.length<2)throw Error('De laatste laag kan niet worden verwijderd.');const target=this.#layers[i>0?i-1:1].id,members=this.#layers[i].members;this._replaceLayers(this.#layers.filter(l=>l.id!==id).map(l=>l.id===target?{...l,members:i===0?[...members,...l.members]:[...l.members,...members]}:l));}
     ungroup(ids) {
       if(!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!this.#groups.some(g=>g.id===id)))throw Error('Groep niet gevonden.');
       this.#groups=freeze(MI.PersistentGroups.prune(this.#groups,new Set(this.#objects.map(o=>o.id)),new Set(ids)));return ids.slice();
     }
-    remove(id) { const before = this.#objects.length; const removed=MI.ConstructionService.descendants(this.#objects,[id]); this.#objects = Object.freeze(this.#objects.filter(o => !removed.has(o.id))); this.#groups=freeze(MI.PersistentGroups.prune(this.#groups,new Set(this.#objects.map(o=>o.id)))); return this.#objects.length !== before; }
+    remove(id) { const before = this.#objects.length; const removed=MI.ConstructionService.descendants(this.#objects,[id]); this.#objects = Object.freeze(this.#objects.filter(o => !removed.has(o.id))); this.#groups=freeze(MI.PersistentGroups.prune(this.#groups,new Set(this.#objects.map(o=>o.id)))); if(this.#layers.length)this.#layers=freeze(this.#layers.map(l=>({...l,members:l.members.filter(id=>!removed.has(id))}))); return this.#objects.length !== before; }
     get(id) { const object = this.#objects.find(o => o.id === id); return object ? clone(object) : null; }
-    all() { return clone(this.objects); }
-    clear() { this.#objects = Object.freeze([]); this.#groups=Object.freeze([]); }
-    toJSON() { return { ...clone(this._extra), type: this.type, version: this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION, ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
+    all() { return clone(MI.DocumentLayers.ordered(this.objects,this.#layers)); }
+    clear() { this.#objects = Object.freeze([]); this.#groups=Object.freeze([]); this.#layers=Object.freeze([]); }
+    toJSON() { return { ...clone(this._extra), type: this.type, version: this.#layers.length?5:this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION, ...(this.#layers.length?{layerSchema:1,layers:clone(this.#layers)}:{}), ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
     load(data) {
       if (!record(data) || !Array.isArray(data.objects)) throw new Error("Ongeldig illustratiemodel: objects-array vereist.");
       const version = data.version == null ? 1 : Number(data.version);
-      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || (version > MODEL_VERSION && !(version===3 && data.constructionSchema===1) && !(version===4 && data.groupSchema===1 && Array.isArray(data.groups)))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
+      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || (version > MODEL_VERSION && !(version===3 && data.constructionSchema===1) && !(version===4 && data.groupSchema===1 && Array.isArray(data.groups)) && !(version===5 && data.layerSchema===1 && Array.isArray(data.layers)))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
       if (data.type != null && data.type !== "geometry") throw new Error("Niet-ondersteund documenttype.");
       if (data.meta != null && !record(data.meta)) throw new Error("Ongeldige documentmetadata.");
       const meta = clone(data.meta || {}), presentation = normalisePresentation(data.presentation);
       ["title", "description"].forEach(key => {
         if (meta[key] != null && typeof meta[key] !== "string") throw new Error("Ongeldige documentmetadata: " + key);
       });
-      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version===4?["groups","groupSchema"]:[])].includes(key))));
+      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version===5?["layers","layerSchema"]:[])].includes(key))));
       const seen = new Set();
       let nextId = 1;
       const objects = data.objects.map(input => {
@@ -192,12 +210,14 @@
         return object;
       });
       const resolved = MI.ConstructionService.resolve(objects);
-      if(version===4 && objects.some(o=>o.construction) && data.constructionSchema!==1)throw Error("Constructieschema vereist.");
-      const groups=version===4?MI.PersistentGroups.validate(data.groups,resolved):[];
-      for(const group of groups){const suffix=Number(group.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(suffix)&&suffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,suffix+1);}
+      if(version>=4 && objects.some(o=>o.construction) && data.constructionSchema!==1)throw Error("Constructieschema vereist.");
+      if(version===5 && data.groups!=null && data.groupSchema!==1)throw Error("Groepsschema vereist.");
+      const groups=version>=4&&data.groups!=null?MI.PersistentGroups.validate(data.groups,resolved):[];
+      const layers=version===5?MI.DocumentLayers.validate(data.layers,resolved,groups):[];
+      for(const group of [...groups,...layers]){const suffix=Number(group.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(suffix)&&suffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,suffix+1);}
       // Commit only after every object, migration and document field has succeeded.
       this.type = "geometry"; this.version = MODEL_VERSION; this.meta = meta;
-      this.#objects = freeze(resolved); this.#groups=freeze(groups); this.presentation = presentation; this._extra = extra; this._nextId = nextId;
+      this.#objects = freeze(resolved); this.#groups=freeze(groups); this.#layers=freeze(layers); this.presentation = presentation; this._extra = extra; this._nextId = nextId;
       return this;
     }
   }

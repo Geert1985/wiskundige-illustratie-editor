@@ -19,7 +19,7 @@
   function keys(v,allowed,code='INVALID_COMMAND'){if(!plain(v)||Object.keys(v).some(k=>!allowed.includes(k)))fail(code);}
   const number=v=>{if(typeof v!=='number'||!Number.isFinite(v))fail('INVALID_COMMAND');return v;};
   const identifier=v=>{if(typeof v!=='string'||!v.trim())fail('INVALID_COMMAND');return v;};
-  const available=o=>!!o&&o.visible!==false&&!(o.construction&&o.constructionValid===false);
+  const available=(o,engine)=>!!o&&o.visible!==false&&!(o.construction&&o.constructionValid===false)&&(!engine||MI.DocumentLayers.visible(engine.model.layers||[],o.id));
   const propertyFields=['name','text','rotation','label','labelDx','labelDy','labelOffsetX','labelOffsetY','showLabel','showMeasurement','measurementLabelOnly','measurementMode','measurementText','style.stroke','style.fill','style.strokeWidth','style.opacity','style.radius','style.fontSize','style.fontFamily','style.anchor','style.dash'];
   const resultTypes={triangle:'polygon',rightAngle:'angle',midpoint:'point',perpendicular:'straight',parallel:'straight',perpendicularBisector:'straight',bisector:'ray',tangent:'straight',area:'text',perimeter:'text'};
   const tools=[...MI.OBJECT_TYPES.map(t=>'create:'+t),'create:triangle','create:rightAngle',...Object.keys(MI.ConstructionService.kinds).map(t=>'construct:'+t)];
@@ -74,7 +74,7 @@
   }
   function inDomain(value,b){if(typeof value!=='number'||!Number.isFinite(value)||value<b.min||value>b.max)return false;if(!b.step)return true;const k=Math.round((value-b.min)/b.step),expected=b.min+k*b.step;return Math.abs(value-expected)<=Math.min(b.step*1e-6,32*Number.EPSILON*Math.max(1,Math.abs(value),Math.abs(b.min)));}
   function effective(s,o) {
-    if(s.author)return {read:true,display:true,selectCanvas:available(o),selectList:true,translate:!o.locked&&!o.construction,delete:!o.locked,duplicate:true,snap:available(o),geometryFields:geometryFields(o),propertyFields,sourceTools:tools.filter(t=>t.startsWith('construct:')),immutableFields:[],indirectGeometry:'follow',allowIndirectInvalid:true};
+    if(s.author)return {read:true,display:true,selectCanvas:available(o,s.kernel),selectList:true,translate:!o.locked&&!o.construction,delete:!o.locked,duplicate:true,snap:available(o,s.kernel),geometryFields:geometryFields(o),propertyFields,sourceTools:tools.filter(t=>t.startsWith('construct:')),immutableFields:[],indirectGeometry:'follow',allowIndirectInvalid:true};
     const base=s.policy.defaultCapabilities,override=s.initialIds.has(o.id)?s.policy.initialObjectRules[o.id]:s.policy.createdObjectRules[o.type],r={indirectGeometry:'follow',allowIndirectInvalid:s.policy.profile==='course',...base,...override};
     r.immutableFields=[...new Set([...(base.immutableFields||[]),...(override?.immutableFields||[])])];return r;
   }
@@ -83,6 +83,7 @@
   function checkBudgets(s,candidate,command){if(s.author)return;if(utf8Size(command)>s.policy.limits.maxCommandBytes||candidate.model.objects.length>s.policy.limits.maxObjects)fail('INVALID_COMMAND');const depths=new Map(),map=new Map(candidate.model.objects.map(o=>[o.id,o]));for(const o of map.values()){const stack=[{id:o.id,exit:false}];while(stack.length){const t=stack.pop(),v=map.get(t.id);if(depths.has(t.id))continue;if(!v)fail('INVALID_COMMAND');if(!v.construction){depths.set(t.id,0);continue;}if(t.exit){const d=1+Math.max(...v.construction.sources.map(r=>depths.get(r.objectId)));if(d>s.policy.limits.maxDependencyDepth)fail('INVALID_COMMAND');depths.set(t.id,d);}else{stack.push({id:t.id,exit:true});v.construction.sources.forEach(r=>{if(!depths.has(r.objectId))stack.push({id:r.objectId,exit:false});});}}}}
   function commandOf(operation,payload,revision){return {schema:1,operation,payload,expectedDocumentRevision:revision};}
   const payloadKeys={
+    'layer.create':['name'],'layer.assign':['ids','layerId'],'layer.rename':['id','name'],'layer.setVisibility':['id','value'],'layer.reorder':['ids'],'layer.delete':['id'],
     'group.create':['members','name'],'group.ungroup':['ids'],
     'object.select':['ids','source'],'object.translate':['ids','delta'],'object.setGeometry':['id','fields'],'object.setProperties':['ids','fields'],'object.patchBatch':['updates'],
     'object.create':['toolId','object'],'construction.create':['toolId','sources'],'object.duplicate':['ids','delta'],'object.delete':['ids'],
@@ -92,7 +93,7 @@
     'object.setLock':['ids','value'],'object.setVisibility':['ids','value']
   };
   function normalize(s,command){if(s.disposed)fail('STALE_TRANSACTION');tree(command);keys(command,['schema','operation','payload','expectedDocumentRevision','origin']);if(command.schema!==1||!own(payloadKeys,command.operation))fail('UNSUPPORTED_COMMAND');keys(command.payload,payloadKeys[command.operation]);if(!Number.isSafeInteger(command.expectedDocumentRevision)||command.expectedDocumentRevision!==s.revision)fail('STALE_TRANSACTION');if(!s.author&&utf8Size(command)>s.policy.limits.maxCommandBytes)fail('INVALID_COMMAND');return clone(command);}
-  function requireObject(s,id,{visible=true,unlocked=false}={}){identifier(id);const o=s.kernel.get(id);if(!o||(!s.author&&(!effective(s,o).read||(visible&&(!available(o)||!effective(s,o).display)))))fail('OBJECT_NOT_AVAILABLE');if(unlocked&&o.locked)fail('LOCKED');return o;}
+  function requireObject(s,id,{visible=true,unlocked=false}={}){identifier(id);const o=s.kernel.get(id);if(!o||(!s.author&&(!effective(s,o).read||(visible&&(!available(o,s.kernel)||!effective(s,o).display)))))fail('OBJECT_NOT_AVAILABLE');if(unlocked&&o.locked)fail('LOCKED');return o;}
   function idsOf(s,ids){if(!Array.isArray(ids)||!ids.length||ids.some(id=>typeof id!=='string'||!id.trim())||new Set(ids).size!==ids.length)fail('INVALID_COMMAND');if(!s.author&&ids.length>s.policy.limits.maxBatchObjects)fail('INVALID_COMMAND');return ids;}
   function grant(s,o,key){if(!effective(s,o)[key])fail('PERMISSION_DENIED');}
   function writable(s,o,path,kind,parameter=false){const r=effective(s,o);if(o.locked)fail('LOCKED');if(r.immutableFields?.includes(path))fail('IMMUTABLE_FIELD');if(kind==='geometry'&&o.construction)fail('MODE_DENIED');if(!s.author&&!parameter&&!(r[kind==='geometry'?'geometryFields':'propertyFields']||[]).includes(path))fail('PERMISSION_DENIED');}
@@ -110,9 +111,15 @@
   }
   function authorizeCommand(s,input) {
     const c=normalize(s,input),p=c.payload,op=c.operation,direct=new Set(),e=newKernel(s);let result=null,view=null,selection=null,historyAction=null,relatedCommandId=null;
-    if(!s.author&&['document.replace','document.clear','policy.configure','document.draftSave','document.draftResume','object.setLock','object.setVisibility','group.create','group.ungroup'].includes(op))fail('MODE_DENIED');
+    if(!s.author&&['document.replace','document.clear','policy.configure','document.draftSave','document.draftResume','object.setLock','object.setVisibility','group.create','group.ungroup','layer.create','layer.assign','layer.rename','layer.setVisibility','layer.reorder','layer.delete'].includes(op))fail('MODE_DENIED');
     const docGrant=k=>{if(!s.author&&!s.policy.document[k])fail('PERMISSION_DENIED');};
-    if(op==='group.create'){const refs=idsOf(s,p.members);result=e.group(refs,p.name);}
+    if(op==='layer.create'){result=e.createLayer(p.name);}
+    else if(op==='layer.assign'){result=e.assignLayer(idsOf(s,p.ids),identifier(p.layerId));}
+    else if(op==='layer.rename'){e.renameLayer(identifier(p.id),p.name);}
+    else if(op==='layer.setVisibility'){e.setLayerVisibility(identifier(p.id),p.value);}
+    else if(op==='layer.reorder'){e.reorderLayers(idsOf(s,p.ids));}
+    else if(op==='layer.delete'){e.removeLayer(identifier(p.id));}
+    else if(op==='group.create'){const refs=idsOf(s,p.members);result=e.group(refs,p.name);}
     else if(op==='group.ungroup'){result=e.ungroup(idsOf(s,p.ids));}
     else if(op==='object.select') {if(!Array.isArray(p.ids)||p.ids.some(id=>typeof id!=='string')||!['canvas','list'].includes(p.source))fail('INVALID_COMMAND');selection=[...new Set(p.ids.flatMap(id=>s.kernel.get(id)?MI.PersistentGroups.members(s.kernel.model.groups,MI.PersistentGroups.top(s.kernel.model.groups,id)):[]))].filter(id=>groupSelectable(s,id,p.source));}
     else if(op==='object.translate') {
@@ -152,10 +159,11 @@
   function projectObject(o){const keys=['id','type','visible','locked',...geometryFields(o).filter(k=>!k.startsWith('vertices[')),...propertyFields.filter(k=>!k.includes('.')),'vertices','style','angleMark','construction','constructionValid'];const result=clone(Object.fromEntries(Object.entries(o).filter(([k])=>keys.includes(k))));if(result.style)result.style=Object.fromEntries(Object.entries(result.style).filter(([k])=>propertyFields.includes('style.'+k)));if(result.vertices)result.vertices=result.vertices.map(p=>({x:p.x,y:p.y}));if(result.construction)result.construction={kind:o.construction.kind,sources:o.construction.sources.map(r=>Object.fromEntries(Object.entries(r).filter(([k])=>['objectId','part','index'].includes(k)))),...(o.construction.branch!=null?{branch:o.construction.branch}:{})};return result;}
   // Stable local integrity digest, deliberately not a security signature (M17).
   function digest(value){const canonical=v=>Array.isArray(v)?'['+v.map(canonical).join(',')+']':v&&typeof v==='object'?'{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+canonical(v[k])).join(',')+'}':JSON.stringify(v);let hash=2166136261;for(const ch of canonical(value)){hash^=ch.charCodeAt(0);hash=Math.imul(hash,16777619);}return 'fnv1a32:'+ (hash>>>0).toString(16).padStart(8,'0');}
-  function readObjects(s,source=s.kernel,display=false){return source.model.objects.filter(o=>effective(s,o).read&&(!display||(available(o)&&effective(s,o).display))).map(projectObject);}
-  function groupSelectable(s,id,source){return MI.PersistentGroups.members(s.kernel.model.groups,MI.PersistentGroups.top(s.kernel.model.groups,id)).every(member=>{const o=s.kernel.get(member);return o&&effective(s,o)[source==='list'?'selectList':'selectCanvas']&&(s.author&&source==='list'||available(o)&&effective(s,o).display)&&effective(s,o).read;});}
+  function readObjects(s,source=s.kernel,display=false){return MI.DocumentLayers.ordered(source.model.objects,source.model.layers||[]).filter(o=>effective(s,o).read&&(!display||(available(o,source)&&effective(s,o).display))).map(projectObject);}
+  function groupSelectable(s,id,source){return MI.PersistentGroups.members(s.kernel.model.groups,MI.PersistentGroups.top(s.kernel.model.groups,id)).every(member=>{const o=s.kernel.get(member);return o&&effective(s,o)[source==='list'?'selectList':'selectCanvas']&&(s.author&&source==='list'||available(o,s.kernel)&&effective(s,o).display)&&effective(s,o).read;});}
+  function readLayers(s){const ids=new Set(readObjects(s).map(o=>o.id));return s.kernel.model.layers.filter(l=>!l.members.length||l.members.some(id=>ids.has(id))).map(l=>({...l,members:l.members.filter(id=>ids.has(id))}));}
   function readGroups(s){const readable=new Set(readObjects(s).map(o=>o.id));return s.kernel.model.groups.filter(g=>s.kernel.groupMembers(g.id).every(id=>readable.has(id))).map(clone);}
-  function exportData(s,svg){const objects=readObjects(s,s.kernel,svg);if(!svg){const ids=new Set(objects.map(o=>o.id));if(objects.some(o=>o.construction&&o.construction.sources.some(r=>!ids.has(r.objectId))))fail('PERMISSION_DENIED');}const doc=s.kernel.toJSON(),data={type:doc.type,version:doc.version,...(doc.constructionSchema?{constructionSchema:doc.constructionSchema}:{}),meta:{title:doc.meta.title||'',description:doc.meta.description||''},objects,presentation:doc.presentation};if(!svg){if(doc.version===4){const groups=readGroups(s);if(groups.length!==s.kernel.model.groups.length)fail('PERMISSION_DENIED');data.groupSchema=1;data.groups=groups;}return data;}const r=new MI.SvgRenderer({...doc.presentation,...s.view});return r.render({meta:data.meta,all:()=>objects});}
+  function exportData(s,svg){const objects=readObjects(s,s.kernel,svg);if(!svg){const ids=new Set(objects.map(o=>o.id));if(objects.some(o=>o.construction&&o.construction.sources.some(r=>!ids.has(r.objectId))))fail('PERMISSION_DENIED');}const doc=s.kernel.toJSON(),data={type:doc.type,version:doc.version,...(doc.constructionSchema?{constructionSchema:doc.constructionSchema}:{}),meta:{title:doc.meta.title||'',description:doc.meta.description||''},objects,presentation:doc.presentation};if(!svg){if(doc.groups?.length){const groups=readGroups(s);if(groups.length!==s.kernel.model.groups.length)fail('PERMISSION_DENIED');data.groupSchema=1;data.groups=groups;}if(doc.version===5){const layers=readLayers(s);if(layers.reduce((n,l)=>n+l.members.length,0)!==s.kernel.model.objects.length)fail('PERMISSION_DENIED');data.layerSchema=1;data.layers=layers;}return data;}const r=new MI.SvgRenderer({...doc.presentation,...s.view});return r.render({meta:data.meta,layers:s.kernel.model.layers,all:()=>objects});}
   function rendererFacade(s) {
     const facade={};for(const key of ['width','height','padding','bounds','background','coordinateSystem','axisStep',...MI.PRESENTATION_FLAGS])Object.defineProperty(facade,key,{enumerable:true,get:()=>typeof s.render[key]==='object'?freeze(clone(s.render[key])):s.render[key]});
     Object.defineProperty(facade,'preview',{enumerable:true,get:()=>s.render.preview,set:v=>{s.render.preview=v==null?null:clone(v);}});
@@ -164,15 +172,16 @@
   }
   function facadeFor(session,s) {
     const invoke=(op,payload)=>session.execute(commandOf(op,payload,s.revision)),e={};let cache=null,cacheEpoch=-1,model=null;
-    Object.defineProperty(e,'model',{enumerable:true,get:()=>{if(cache!==s.kernel.model.objects||cacheEpoch!==s.epoch||!model){cache=s.kernel.model.objects;cacheEpoch=s.epoch;const objects=freeze(readObjects(s));model=Object.freeze({objects,groups:freeze(readGroups(s)),meta:freeze({title:s.kernel.model.meta.title||'',description:s.kernel.model.meta.description||''}),all:()=>clone(objects),get:id=>{const o=objects.find(o=>o.id===id);return o?clone(o):null;}});}return model;}});
+    Object.defineProperty(e,'model',{enumerable:true,get:()=>{if(cache!==s.kernel.model.objects||cacheEpoch!==s.epoch||!model){cache=s.kernel.model.objects;cacheEpoch=s.epoch;const objects=freeze(readObjects(s));model=Object.freeze({objects,layers:freeze(readLayers(s)),groups:freeze(readGroups(s)),meta:freeze({title:s.kernel.model.meta.title||'',description:s.kernel.model.meta.description||''}),all:()=>clone(objects),get:id=>{const o=objects.find(o=>o.id===id);return o?clone(o):null;}});}return model;}});
     Object.defineProperty(e,'renderer',{enumerable:true,get:()=>s.rendererFacade});
+    e.createLayer=name=>invoke('layer.create',{name}).result;e.assignLayer=(ids,layerId)=>invoke('layer.assign',{ids,layerId}).result;e.renameLayer=(id,name)=>invoke('layer.rename',{id,name});e.setLayerVisibility=(id,value)=>invoke('layer.setVisibility',{id,value});e.reorderLayers=ids=>invoke('layer.reorder',{ids});e.removeLayer=id=>invoke('layer.delete',{id});e.isDisplayed=id=>session.getObjectCapabilities(id).display;
     e.group=(members,name)=>invoke('group.create',{members,...(name==null?{}:{name})}).result;e.ungroup=ids=>invoke('group.ungroup',{ids}).result;e.groupMembers=id=>MI.PersistentGroups.members(e.model.groups,id);
     e.get=id=>e.model.get(id);e.add=object=>invoke('object.create',{toolId:'create:'+object.type,object}).result;e.construct=(kind,sources)=>invoke('construction.create',{toolId:'construct:'+kind,sources}).result;
     e.move=(id,x,y)=>{const o=e.get(id);if(!o)fail('OBJECT_NOT_AVAILABLE');const anchor=o.type==='circle'?{x:o.cx,y:o.cy}:MI.MeasurementGeometry.anchors(o)[0];return invoke('object.translate',{ids:[id],delta:{x:x-anchor.x,y:y-anchor.y}}).result||e.get(id);};
     e.update=(id,patch)=>{invoke('object.patchBatch',{updates:[{id,patch}]});return e.get(id);};e.updateMany=updates=>{invoke('object.patchBatch',{updates});return updates.map(u=>e.get(u.id));};
     e.remove=id=>{invoke('object.delete',{ids:[id]});return true;};e.duplicateMany=(ids,delta)=>invoke('object.duplicate',{ids,...(delta?{delta}:{})}).result;
     e.load=()=>fail('MODE_DENIED');e.toJSON=()=>invoke('document.exportJSON',{}).result;e.toJSONString=pretty=>JSON.stringify(e.toJSON(),null,pretty?2:0);e.renderSVG=()=>invoke('document.exportSVG',{}).result;
-    e.canSnap=id=>session.getObjectCapabilities(id).snap;e.selectAt=(x,y,tolerance)=>MI.Engine.prototype.selectAt.call({model:{objects:s.kernel.model.objects.filter(o=>session.getObjectCapabilities(o.id).selectCanvas)}},x,y,tolerance);
+    e.canSnap=id=>session.getObjectCapabilities(id).snap;e.selectAt=(x,y,tolerance)=>MI.Engine.prototype.selectAt.call({model:{layers:s.kernel.model.layers,objects:s.kernel.model.objects.filter(o=>session.getObjectCapabilities(o.id).selectCanvas)}},x,y,tolerance);
     return Object.freeze(e);
   }
   function refreshRender(s){const preview=s.render?.preview;s.render=new MI.SvgRenderer({...s.kernel.toJSON().presentation,...s.view});s.render.preview=preview||null;}
@@ -195,7 +204,7 @@
     subscribe(fn){if(typeof fn!=='function')fail('INVALID_COMMAND');const s=states.get(this);s.listeners.add(fn);return ()=>s.listeners.delete(fn);}
     canExecute(c){return decision(states.get(this),c);}
     getAllowedTools(){const s=states.get(this);return tools.map(toolId=>Object.freeze({toolId,enabled:s.policy.allowedTools.includes(toolId),reason:s.policy.allowedTools.includes(toolId)?'ALLOWED':'PERMISSION_DENIED'}));}
-    getObjectCapabilities(id){const s=states.get(this),o=s.kernel.get(id);if(!o)return Object.freeze({read:false,display:false,selectCanvas:false,selectList:false,translate:false,snap:false,sourceTools:[],geometryFields:[],propertyFields:[]});const r=effective(s,o),visible=available(o)&&!!r.read&&!!r.display;
+    getObjectCapabilities(id){const s=states.get(this),o=s.kernel.get(id);if(!o)return Object.freeze({read:false,display:false,selectCanvas:false,selectList:false,translate:false,snap:false,sourceTools:[],geometryFields:[],propertyFields:[]});const r=effective(s,o),visible=available(o,s.kernel)&&!!r.read&&!!r.display;
       const geometry=o.locked||o.construction||!visible?[]:(r.geometryFields||[]).filter(k=>geometryFields(o).includes(k)&&!r.immutableFields.includes(k)),properties=o.locked||!visible?[]:(r.propertyFields||[]).filter(k=>!r.immutableFields.includes(k));
       return freeze({setGeometryFields:geometry.slice(),setPropertyFields:properties.slice(),labelMove:['labelOffsetX','labelOffsetY'].every(k=>properties.includes(k)),reasonCodes:[o.locked?'LOCKED':visible?'ALLOWED':'OBJECT_NOT_AVAILABLE'],read:!!r.read,display:visible,selectCanvas:visible&&!!r.selectCanvas&&groupSelectable(s,id,'canvas'),selectList:visible&&!!r.selectList&&groupSelectable(s,id,'list'),translate:visible&&!o.locked&&!o.construction&&!!r.translate,delete:!!r.read&&!o.locked&&!!r.delete&&!(s.policy.profile==='assessment'&&s.initialIds.has(id)),duplicate:visible&&!!r.duplicate,snap:visible&&!!r.snap,sourceTools:visible?(r.sourceTools||[]).slice():[],geometryFields:geometry,propertyFields:properties});
     }

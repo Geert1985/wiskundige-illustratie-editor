@@ -95,6 +95,7 @@
       const model=new MI.IllustrationModel(this.model.toJSON());
       const copies=ids.map(id=>{const original=model.get(id);if(!original)throw Error('Object niet gevonden: '+id);const {id:ignored,construction:ignoredConstruction,constructionValid:ignoredValidity,...data}=original;return model.add({...data,...MI.MeasurementGeometry.translate(original,delta),name:original.name+' (kopie)',locked:false});});
       const mapping=new Map(ids.map((id,i)=>[id,copies[i].id]));
+      if(model.layers.length)for(const id of ids)model.assignLayer([mapping.get(id)],MI.DocumentLayers.index(this.model.layers).owner.get(id).id);
       const pending=this.model.groups.filter(g=>this.groupMembers(g.id).every(id=>mapping.has(id)));
       const grouped=new Set(pending.flatMap(g=>this.groupMembers(g.id)));
       for(const id of ids){const original=this.get(id);if(grouped.has(id)&&original.construction&&original.construction.sources.every(r=>mapping.has(r.objectId)))model.update(mapping.get(id),{construction:{...original.construction,sources:original.construction.sources.map(r=>({...r,objectId:mapping.get(r.objectId)}))}});}
@@ -107,6 +108,14 @@
       const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&Math.abs(Math.hypot(first.x1-map.get(sources[0].objectId).cx,first.y1-map.get(sources[0].objectId).cy)-map.get(sources[0].objectId).r)>1e-9?2:1;
       const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,construction:{kind,sources, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
     }
+    createLayer(name){return this.model.createLayer(name);}
+    assignLayer(ids,layerId){return this.model.assignLayer(ids,layerId);}
+    renameLayer(id,name){return this.model.renameLayer(id,name);}
+    setLayerVisibility(id,value){return this.model.setLayerVisibility(id,value);}
+    reorderLayers(ids){return this.model.reorderLayers(ids);}
+    removeLayer(id){return this.model.removeLayer(id);}
+    isDisplayed(id){const o=this.get(id);return !!o&&o.visible!==false&&!(o.construction&&o.constructionValid===false)&&MI.DocumentLayers.visible(this.model.layers||[],id);}
+    canSnap(id){return MI.DocumentLayers.visible(this.model.layers||[],id);}
     group(members,name) { return this.model.createGroup(members,name); }
     ungroup(ids) { return this.model.ungroup(ids); }
     groupMembers(id) { return MI.PersistentGroups.members(this.model.groups,id); }
@@ -124,10 +133,10 @@
       let best = null;
       let bestDistance = Infinity;
 
-      this.model.objects.forEach((object) => {
-        if (object.visible === false || (object.construction && object.constructionValid===false)) return;
+      MI.DocumentLayers.ordered(this.model.objects,this.model.layers||[]).forEach((object) => {
+        if (!MI.DocumentLayers.visible(this.model.layers||[],object.id) || object.visible === false || (object.construction && object.constructionValid===false)) return;
         const distance = options ? screenHit(object, screen, options.transform) : hitDistance(object, x, y);
-        if (distance <= maxDistance + (options ? 1e-9 : 0) && (options ? distance <= bestDistance + 1e-9 : distance < bestDistance)) {
+        if (distance <= maxDistance + (options ? 1e-9 : 0) && (options || this.model.layers?.length ? distance <= bestDistance + 1e-9 : distance < bestDistance)) {
           best = object;
           bestDistance = distance;
         }
