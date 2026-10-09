@@ -365,7 +365,7 @@ test('M3b clicking and modifier selection treat persistent groups as one unit',(
 });
 test('M3b grouping shortcuts inspector history and one-level ungroup share command path',()=>{
   const h=appRuntime();h.app.selectedIds=['p','l'];h.emit(h.win,'keydown',{key:'g',ctrlKey:true});assert.equal(h.engine.model.groups.length,1);assert.match(h.doc.getElementById('selectionPanel').innerHTML,/data-ungroup-selection/);assert.match(h.doc.getElementById('viewList').innerHTML,/data-select-group/);
-  h.emit(h.win,'keydown',{key:'g',ctrlKey:true,shiftKey:true});assert.equal(h.engine.model.groups.length,0);assert.equal(h.app.history.entries.length,2);h.app.undo();assert.equal(h.engine.model.groups.length,1);h.app.redo();assert.equal(h.engine.model.groups.length,0);
+  h.emit(h.win,'keydown',{key:'g',ctrlKey:true,shiftKey:true});assert.equal(h.engine.model.groups.length,0);assert.equal(h.app.history.entries.length,2);h.app.travelHistory();assert.equal(h.engine.model.groups.length,1);h.app.travelHistory(true);assert.equal(h.engine.model.groups.length,0);
 });
 test('M3b group crossing selects all members containment requires all and cancel restores selection',()=>{
   const h=appRuntime();h.engine.group(['p','l']);rightRectangle(h,{x:-.5,y:.5},{x:.5,y:-.5});assert.deepEqual(Array.from(h.app.selectedIds),[]);h.app.cancel();
