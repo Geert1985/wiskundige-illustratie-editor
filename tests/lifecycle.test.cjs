@@ -61,6 +61,54 @@ function appRuntime() {
   const move = (point, pointerId = 1) => { const p = screen(point); emit(win, 'pointermove', { clientX: p.x, clientY: p.y, pointerId }); };
   return { MI, engine, app, doc, win, emit, down, move };
 }
+
+function rightRectangle(h,a,b,modifiers={}) {
+  const t=h.app.transform(),p=t.mathToScreen(a),q=t.mathToScreen(b);
+  h.emit(h.doc.getElementById('canvasWrap'),'pointerdown',{button:2,clientX:p.x,clientY:p.y,...modifiers});
+  h.emit(h.win,'pointermove',{clientX:q.x,clientY:q.y});
+  return q;
+}
+test('M1 right rectangle previews synchronize selection list inspector without document/history writes',()=>{
+  const h=appRuntime(),before=plain(h.engine.toJSON());
+  const q=rightRectangle(h,{x:-.5,y:.5},{x:.5,y:-.5});
+  assert.equal(h.app.interaction.mode,'marquee');assert.deepEqual(Array.from(h.app.selectedIds),['p']);
+  assert.match(h.doc.getElementById('viewList').innerHTML,/view-row-selected/);
+  h.emit(h.win,'pointerup',{clientX:q.x,clientY:q.y});assert.equal(h.app.interaction,null);
+  assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+});
+test('M1 final pointer-up sample is resolved without a move and outside target is accepted',()=>{
+  const h=appRuntime(),t=h.app.transform(),a=t.mathToScreen({x:-.5,y:.5}),b=t.mathToScreen({x:.5,y:-.5});
+  h.emit(h.doc.getElementById('canvasWrap'),'pointerdown',{button:2,clientX:a.x,clientY:a.y});
+  h.emit(h.win,'pointerup',{clientX:b.x,clientY:b.y,target:{outside:true}});
+  assert.deepEqual(Array.from(h.app.selectedIds),['p']);assert.equal(h.doc.getElementById('canvasWrap').capture,null);
+});
+test('M1 add and combined toggle modifiers resolve from original IDs on repeated moves',()=>{
+  const h=appRuntime();h.app.selectedIds=['l'];let q=rightRectangle(h,{x:-.5,y:.5},{x:.5,y:-.5},{shiftKey:true});h.emit(h.win,'pointerup',{clientX:q.x,clientY:q.y});assert.deepEqual(Array.from(h.app.selectedIds),['l','p']);
+  q=rightRectangle(h,{x:-.5,y:.5},{x:.5,y:-.5},{ctrlKey:true,shiftKey:true});h.emit(h.win,'pointermove',{clientX:q.x,clientY:q.y});assert.deepEqual(Array.from(h.app.selectedIds),['l']);h.app.cancel();assert.deepEqual(Array.from(h.app.selectedIds),['l','p']);
+});
+test('M1 all cancellation paths restore original selection and release capture',()=>{
+  for(const action of ['pointercancel','blur','lostpointercapture','Escape','dispose','new']) {
+    const h=appRuntime();h.app.selectedIds=['l'];rightRectangle(h,{x:-.5,y:.5},{x:.5,y:-.5});
+    if(action==='Escape')h.emit(h.win,'keydown',{key:'Escape'});
+    else if(action==='dispose')h.app.dispose();else if(action==='new')h.app.newDocument();
+    else h.emit(action==='lostpointercapture'?h.doc.getElementById('canvasWrap'):h.win,action);
+    assert.equal(h.app.interaction,null,action);assert.equal(h.doc.getElementById('canvasWrap').capture,null,action);
+    assert.deepEqual(Array.from(h.app.selectedIds),action==='new'?[]:['l'],action);
+  }
+});
+test('M1 right click retains context menu and drawing tools never start marquee',()=>{
+  const h=appRuntime();let blocked=false;const p=h.app.transform().mathToScreen({x:0,y:0});
+  h.emit(h.doc.getElementById('canvasWrap'),'pointerdown',{button:2,clientX:p.x,clientY:p.y});h.emit(h.win,'pointerup',{clientX:p.x,clientY:p.y});
+  h.emit(h.doc.getElementById('canvasWrap'),'contextmenu',{preventDefault(){blocked=true;}});assert.equal(blocked,false);
+  h.app.setTool('line');h.emit(h.doc.getElementById('canvasWrap'),'pointerdown',{button:2,clientX:p.x,clientY:p.y});assert.equal(h.app.interaction,null);
+});
+test('M1 keyboard rectangle uses same resolver and does not intercept text entry',()=>{
+  const h=appRuntime();h.doc.activeElement={tagName:'INPUT'};h.emit(h.win,'keydown',{key:'k'});assert.equal(h.app.interaction,null);
+  h.doc.activeElement={tagName:'BODY'};h.emit(h.win,'keydown',{key:'k',shiftKey:true});assert.equal(h.app.interaction.mode,'marquee');
+  h.emit(h.win,'keydown',{key:'ArrowLeft'});h.emit(h.win,'keydown',{key:'ArrowUp'});h.emit(h.win,'keydown',{key:'Enter'});
+  for(let i=0;i<2;i++){h.emit(h.win,'keydown',{key:'ArrowRight'});h.emit(h.win,'keydown',{key:'ArrowDown'});}
+  assert.deepEqual(Array.from(h.app.selectedIds),['p']);h.emit(h.win,'keydown',{key:'Enter'});assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,0);
+});
 test('style inspector edits font size and stroke without replacing other style fields',()=>{
   const {app,engine,emit,doc}=appRuntime();const o=engine.add({type:'text',x:1,y:1,text:'T',style:{fontSize:16,extension:{keep:true}}});app.selectedId=o.id;app.invalidate();
   assert.match(doc.getElementById('selectionPanel').innerHTML,/data-style="fontSize"/);
