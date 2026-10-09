@@ -130,14 +130,16 @@
   class IllustrationModel {
     #objects = Object.freeze([]);
     get objects() { return this.#objects; }
+    #groups = Object.freeze([]);
+    get groups() { return this.#groups; }
     constructor(data) { this.version = MODEL_VERSION; this.type = "geometry"; this.meta = {}; this.presentation = null; this._extra = {}; this._nextId = 1; if (data != null) this.load(data); }
-    _generateId(type) { let id; do { id = (type || "object") + "-" + this._nextId; this._nextId = this._nextId >= Number.MAX_SAFE_INTEGER - 1 ? 1 : this._nextId + 1; } while (this.get(id)); return id; }
+    _generateId(type) { let id; do { id = (type || "object") + "-" + this._nextId; this._nextId = this._nextId >= Number.MAX_SAFE_INTEGER - 1 ? 1 : this._nextId + 1; } while (this.get(id) || this.#groups.some(g=>g.id===id)); return id; }
     add(input) {
       if (!record(input)) throw new Error('Ongeldig illustratie-object.');
       const nextId = this._nextId;
       try {
         const data = { ...input }; if (data.id == null || data.id === '') data.id = this._generateId(data.type);
-        const object = freeze(normaliseObject(data)); if (this.#objects.some(o => o.id === object.id)) throw new Error('Object-id bestaat al: ' + object.id);
+        const object = freeze(normaliseObject(data)); if ((this.#objects.some(o => o.id === object.id) || this.#groups.some(g=>g.id===object.id))) throw new Error('Object-id bestaat al: ' + object.id);
         this.#objects = freeze(MI.ConstructionService.resolve([...this.#objects, object])); return this.get(object.id);
       } catch (error) { this._nextId = nextId; throw error; }
     }
@@ -150,22 +152,31 @@
       const next = freeze(normaliseObject({ ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style }));
       const objects = this.#objects.slice(); objects[index] = next; this.#objects = freeze(MI.ConstructionService.resolve(objects)); return this.get(id);
     }
-    remove(id) { const before = this.#objects.length; const removed=MI.ConstructionService.descendants(this.#objects,[id]); this.#objects = Object.freeze(this.#objects.filter(o => !removed.has(o.id))); return this.#objects.length !== before; }
+    createGroup(members,name='Groep') {
+      if ('groups' in this._extra || 'groupSchema' in this._extra) throw Error('Legacy groepsgegevens moeten eerst expliciet worden gemigreerd.');
+      const counter=this._nextId;
+      try {const group={id:this._generateId('group'),name,members};const groups=MI.PersistentGroups.validate([...this.#groups,group],this.#objects);this.#groups=freeze(groups);return clone(groups.at(-1));}catch(error){this._nextId=counter;throw error;}
+    }
+    ungroup(ids) {
+      if(!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!this.#groups.some(g=>g.id===id)))throw Error('Groep niet gevonden.');
+      this.#groups=freeze(MI.PersistentGroups.prune(this.#groups,new Set(this.#objects.map(o=>o.id)),new Set(ids)));return ids.slice();
+    }
+    remove(id) { const before = this.#objects.length; const removed=MI.ConstructionService.descendants(this.#objects,[id]); this.#objects = Object.freeze(this.#objects.filter(o => !removed.has(o.id))); this.#groups=freeze(MI.PersistentGroups.prune(this.#groups,new Set(this.#objects.map(o=>o.id)))); return this.#objects.length !== before; }
     get(id) { const object = this.#objects.find(o => o.id === id); return object ? clone(object) : null; }
     all() { return clone(this.objects); }
-    clear() { this.#objects = Object.freeze([]); }
-    toJSON() { return { ...clone(this._extra), type: this.type, version: this.#objects.some(o=>o.construction)?3:MODEL_VERSION, ...(this.#objects.some(o=>o.construction)?{constructionSchema:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
+    clear() { this.#objects = Object.freeze([]); this.#groups=Object.freeze([]); }
+    toJSON() { return { ...clone(this._extra), type: this.type, version: this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION, ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
     load(data) {
       if (!record(data) || !Array.isArray(data.objects)) throw new Error("Ongeldig illustratiemodel: objects-array vereist.");
       const version = data.version == null ? 1 : Number(data.version);
-      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || (version > MODEL_VERSION && !(version===3 && data.constructionSchema===1))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
+      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || (version > MODEL_VERSION && !(version===3 && data.constructionSchema===1) && !(version===4 && data.groupSchema===1 && Array.isArray(data.groups)))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
       if (data.type != null && data.type !== "geometry") throw new Error("Niet-ondersteund documenttype.");
       if (data.meta != null && !record(data.meta)) throw new Error("Ongeldige documentmetadata.");
       const meta = clone(data.meta || {}), presentation = normalisePresentation(data.presentation);
       ["title", "description"].forEach(key => {
         if (meta[key] != null && typeof meta[key] !== "string") throw new Error("Ongeldige documentmetadata: " + key);
       });
-      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation"].includes(key))));
+      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version===4?["groups","groupSchema"]:[])].includes(key))));
       const seen = new Set();
       let nextId = 1;
       const objects = data.objects.map(input => {
@@ -181,9 +192,12 @@
         return object;
       });
       const resolved = MI.ConstructionService.resolve(objects);
+      if(version===4 && objects.some(o=>o.construction) && data.constructionSchema!==1)throw Error("Constructieschema vereist.");
+      const groups=version===4?MI.PersistentGroups.validate(data.groups,resolved):[];
+      for(const group of groups){const suffix=Number(group.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(suffix)&&suffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,suffix+1);}
       // Commit only after every object, migration and document field has succeeded.
       this.type = "geometry"; this.version = MODEL_VERSION; this.meta = meta;
-      this.#objects = freeze(resolved); this.presentation = presentation; this._extra = extra; this._nextId = nextId;
+      this.#objects = freeze(resolved); this.#groups=freeze(groups); this.presentation = presentation; this._extra = extra; this._nextId = nextId;
       return this;
     }
   }

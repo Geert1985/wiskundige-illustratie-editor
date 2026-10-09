@@ -94,7 +94,12 @@
     duplicateMany(ids,delta={x:.5,y:.5}) {
       const model=new MI.IllustrationModel(this.model.toJSON());
       const copies=ids.map(id=>{const original=model.get(id);if(!original)throw Error('Object niet gevonden: '+id);const {id:ignored,construction:ignoredConstruction,constructionValid:ignoredValidity,...data}=original;return model.add({...data,...MI.MeasurementGeometry.translate(original,delta),name:original.name+' (kopie)',locked:false});});
-      this.model=model;return copies;
+      const mapping=new Map(ids.map((id,i)=>[id,copies[i].id]));
+      const pending=this.model.groups.filter(g=>this.groupMembers(g.id).every(id=>mapping.has(id)));
+      const grouped=new Set(pending.flatMap(g=>this.groupMembers(g.id)));
+      for(const id of ids){const original=this.get(id);if(grouped.has(id)&&original.construction&&original.construction.sources.every(r=>mapping.has(r.objectId)))model.update(mapping.get(id),{construction:{...original.construction,sources:original.construction.sources.map(r=>({...r,objectId:mapping.get(r.objectId)}))}});}
+      while(pending.length){const i=pending.findIndex(g=>g.members.every(id=>mapping.has(id)));if(i<0)throw Error('Ongeldige groepshierarchie.');const [g]=pending.splice(i,1);mapping.set(g.id,model.createGroup(g.members.map(id=>mapping.get(id)),g.name+' (kopie)').id);}
+      this.model=model;return copies.map(o=>model.get(o.id));
     }
     construct(kind,sources) {
       const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.calculate({kind,sources},map);
@@ -102,6 +107,9 @@
       const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&Math.abs(Math.hypot(first.x1-map.get(sources[0].objectId).cx,first.y1-map.get(sources[0].objectId).cy)-map.get(sources[0].objectId).r)>1e-9?2:1;
       const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,construction:{kind,sources, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
     }
+    group(members,name) { return this.model.createGroup(members,name); }
+    ungroup(ids) { return this.model.ungroup(ids); }
+    groupMembers(id) { return MI.PersistentGroups.members(this.model.groups,id); }
     add(object) { return this.model.add(object); }
     update(id, patch) { return this.model.update(id, patch); }
     remove(id) { return this.model.remove(id); }
