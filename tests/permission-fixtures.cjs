@@ -1,0 +1,6 @@
+const objects=[{id:'A',type:'point',x:0,y:0},{id:'B',type:'point',x:4,y:0},{id:'L',type:'point',x:3,y:0,locked:true},{id:'H',type:'point',x:1,y:1,visible:false},{id:'C',type:'circle',cx:0,cy:3,r:1},{id:'M',type:'point',x:2,y:0,construction:{kind:'midpoint',sources:[{objectId:'A'},{objectId:'B'}]}}];
+function fixture(profile='course',changes={}) {
+  const policy={schema:1,activityId:'activity',revision:'r1',profile,defaultCapabilities:{read:true,display:true,selectCanvas:true,selectList:true,snap:true},initialObjectRules:{A:{translate:true,sourceTools:['construct:midpoint']},B:{sourceTools:['construct:midpoint']},C:{},M:{}},createdObjectRules:{point:{read:true,display:true,selectCanvas:true,selectList:true,translate:true,delete:true,snap:true}},allowedTools:['create:point','construct:midpoint'],document:{undo:true,redo:true,reset:true,exportSVG:true,exportJSON:true,pan:true,zoom:true},parameters:{rC:{targets:[{objectId:'C',fieldPath:'r'}],min:1,max:3,step:.25,initialValue:1}},limits:{maxObjects:1000,maxCommandBytes:65536,maxBatchObjects:1000,maxDependencyDepth:256},...changes};
+  return {actorId:'student',assessmentKind:profile==='assessment'?'practice':undefined,initialDocument:{version:3,constructionSchema:1,type:'geometry',meta:{title:'',description:''},objects:JSON.parse(JSON.stringify(objects))},policy};
+}
+module.exports={fixture};
