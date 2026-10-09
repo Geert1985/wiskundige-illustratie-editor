@@ -87,36 +87,49 @@
       return '<g data-illustration-grid aria-hidden="true">' + parts.join("") + '</g>';
     }
 
-    renderAxes() {
+    renderAxes(editorCanvas=false) {
       if (!this.showAxes || this.coordinateSystem !== "cartesian") return "";
       this.syncAspectRatio();
       const b = this.bounds, parts = [], axisStroke = "#777", tickStroke = "#aaa", labelFill = "#666", x0 = this.mapX(0), y0 = this.mapY(0), step = this.axisStep;
       const canDrawX = this.showXAxis && b.yMin <= 0 && b.yMax >= 0;
       const canDrawY = this.showYAxis && b.xMin <= 0 && b.xMax >= 0;
       if (canDrawX) {
-        parts.push('<line x1="' + this.mapX(b.xMin) + '" y1="' + y0 + '" x2="' + this.mapX(b.xMax) + '" y2="' + y0 + '" stroke="' + axisStroke + '" stroke-width="1.4"/>');
+        parts.push('<line '+(editorCanvas?'data-canvas-axis="x" ':'')+'x1="' + this.mapX(b.xMin) + '" y1="' + y0 + '" x2="' + this.mapX(b.xMax) + '" y2="' + y0 + '" stroke="' + axisStroke + '" stroke-width="1.4"/>');
         for (const x of tickValues(b.xMin, b.xMax, step)) {
           if (Math.abs(x) < 1e-9) continue;
           const sx = this.mapX(x);
           parts.push('<line x1="' + sx + '" y1="' + (y0 - 4) + '" x2="' + sx + '" y2="' + (y0 + 4) + '" stroke="' + tickStroke + '" stroke-width="1"/>');
           if (this.showAxisLabels) parts.push('<text x="' + sx + '" y="' + (y0 + 18) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">' + esc(axisNumber(x)) + '</text>');
         }
-        if (this.showAxisLabels) parts.push('<text x="' + (this.mapX(b.xMax) - 8) + '" y="' + (y0 - 8) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif" text-anchor="end">x</text>');
+        if (this.showAxisLabels) parts.push('<text '+(editorCanvas?'data-canvas-axis-label="x" ':'')+'x="' + (this.mapX(b.xMax) - 8) + '" y="' + (y0 - 8) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif" text-anchor="end">x</text>');
       }
       if (canDrawY) {
-        parts.push('<line x1="' + x0 + '" y1="' + this.mapY(b.yMin) + '" x2="' + x0 + '" y2="' + this.mapY(b.yMax) + '" stroke="' + axisStroke + '" stroke-width="1.4"/>');
+        parts.push('<line '+(editorCanvas?'data-canvas-axis="y" ':'')+'x1="' + x0 + '" y1="' + this.mapY(b.yMin) + '" x2="' + x0 + '" y2="' + this.mapY(b.yMax) + '" stroke="' + axisStroke + '" stroke-width="1.4"/>');
         for (const y of tickValues(b.yMin, b.yMax, step)) {
           if (Math.abs(y) < 1e-9) continue;
           const sy = this.mapY(y);
           parts.push('<line x1="' + (x0 - 4) + '" y1="' + sy + '" x2="' + (x0 + 4) + '" y2="' + sy + '" stroke="' + tickStroke + '" stroke-width="1"/>');
           if (this.showAxisLabels) parts.push('<text x="' + (x0 - 8) + '" y="' + (sy + 4) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="end">' + esc(axisNumber(y)) + '</text>');
         }
-        if (this.showAxisLabels) parts.push('<text x="' + (x0 + 8) + '" y="' + (this.mapY(b.yMax) + 12) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif">y</text>');
+        if (this.showAxisLabels) parts.push('<text '+(editorCanvas?'data-canvas-axis-label="y" ':'')+'x="' + (x0 + 8) + '" y="' + (this.mapY(b.yMax) + 12) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif">y</text>');
       }
       if (this.showOrigin && (canDrawX || canDrawY)) {
         parts.push('<text x="' + (x0 + 7) + '" y="' + (y0 + 16) + '" fill="' + labelFill + '" font-size="11" font-family="Source Sans 3, sans-serif">0</text>');
       }
       return '<g data-illustration-axes aria-hidden="true">' + parts.join("") + '</g>';
+    }
+
+    // Canvas-only presentation, using the same screen transform as pointer interaction.
+    static fitCanvasAxes(svg,renderer,transform,rect) {
+      if(!svg?.querySelector || !transform || !rect || ![rect.left,rect.right,rect.top,rect.bottom].every(Number.isFinite))return;
+      const a=transform.screenToMath({x:rect.left,y:rect.top}),b=transform.screenToMath({x:rect.right,y:rect.bottom});if(!a||!b)return;
+      const left=renderer.mapX(a.x),right=renderer.mapX(b.x),top=renderer.mapY(a.y),bottom=renderer.mapY(b.y);
+      const x=svg.querySelector('[data-canvas-axis="x"]'),y=svg.querySelector('[data-canvas-axis="y"]');
+      if(x){x.setAttribute('x1',left);x.setAttribute('x2',right);}
+      if(y){y.setAttribute('y1',bottom);y.setAttribute('y2',top);}
+      const xlabel=svg.querySelector('[data-canvas-axis-label="x"]'),ylabel=svg.querySelector('[data-canvas-axis-label="y"]');
+      if(xlabel)xlabel.setAttribute('x',right-8);
+      if(ylabel)ylabel.setAttribute('y',top+12);
     }
 
     renderPreview() {
@@ -133,11 +146,11 @@
       return "";
     }
 
-    render(model) {
+    render(model,{editorCanvas=false}={}) {
       this.syncAspectRatio();
       const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object)).join("\n");
       const background = this.background === "transparent" ? "" : '<rect x="0" y="0" width="' + esc(this.width) + '" height="' + esc(this.height) + '" fill="' + esc(this.background) + '"/>';
-      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(),this.renderAxes(),body,this.renderPreview(),'</svg>'].join("\n");
+      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(),this.renderAxes(editorCanvas),body,this.renderPreview(),'</svg>'].join("\n");
     }
 
     renderLabel(object, label, defaultDx, defaultDy, line) {

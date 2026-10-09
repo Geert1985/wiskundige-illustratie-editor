@@ -788,8 +788,9 @@
       const e = this.engine, r = e.renderer, n = this.nodes;
       if (this.services.grid) r.axisStep = this.services.grid.step(r);
       const objects = e.model.all().filter(o=>!this.runtime || this.capabilities(o.id).display).map(object => this.viewObject(object.id));
-      n.canvas.innerHTML = r.render({ meta: e.model.meta, layers:e.model.layers, all: () => objects });
+      n.canvas.innerHTML = r.render({ meta: e.model.meta, layers:e.model.layers, all: () => objects },{editorCanvas:true});
       const svg = n.canvas.querySelector("svg"), object = this.selectedId && this.viewObject(this.selectedId);
+      if(svg)MI.SvgRenderer.fitCanvasAxes(svg,r,this.transform(),n.canvas.getBoundingClientRect?.());
       if (svg && svg.querySelectorAll) { Array.from(svg.querySelectorAll('[data-object-id]')).filter(node=>this.selectedIds.includes(node.getAttribute('data-object-id'))).forEach(node=>node.classList.add('selected')); }
       if (this.document.createElementNS) {
         this.renderRectangle(svg,r);
