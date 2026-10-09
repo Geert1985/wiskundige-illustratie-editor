@@ -378,3 +378,7 @@ test('M3b persistent group label drag moves group rigidly and Escape restores ge
 test('M3b locks hidden members and incomplete construction roots prevent partial group translation',()=>{
   const h=appRuntime();h.engine.group(['p','l']);h.engine.update('l',{locked:true});h.down({x:0,y:0});assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);assert.equal(h.app.interaction,null);h.engine.update('l',{locked:false,visible:false});h.down({x:0,y:0});assert.equal(h.app.interaction,null);assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);
 });
+
+test('M3b author initialization restores persistent document controls after restricted mounting',()=>{
+  const h=appRuntime();for(const id of ['saveBtn','loadBtn','exportJsonBtn','exportSvgBtn','titleInput','descriptionInput'])h.doc.getElementById(id).disabled=true;h.app.dispose();h.app.init();for(const id of ['saveBtn','loadBtn','exportJsonBtn','exportSvgBtn','titleInput','descriptionInput'])assert.equal(h.doc.getElementById(id).disabled,false);
+});
