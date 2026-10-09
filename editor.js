@@ -811,7 +811,7 @@
     }
     renderInspector(object) {
       const panel = this.nodes.selectionPanel;
-      if(this.inspectorTarget==='axes' && !this.selectedId){panel.className='selection-panel';panel.innerHTML=this.services.axis?.html(this.engine.renderer)||'';this.decorateInspector();return;}
+      if(this.inspectorTarget==='axes' && !this.selectedId){panel.className='selection-panel';panel.innerHTML=this.services.axis?.html(this.engine.renderer,{adaptive:!!this.services.grid})||'';this.decorateInspector();return;}
       if (!object) { panel.className = "selection-empty"; panel.textContent = "Selecteer een object of het assenstelsel."; return; }
       this.inspectorTarget='objects';
 

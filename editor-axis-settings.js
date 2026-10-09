@@ -5,12 +5,12 @@
     return value ? ' checked' : '';
   }
 
-  function menuHtml(renderer) {
+  function menuHtml(renderer,{adaptive=true}={}) {
     const r = renderer || {};
 
     return '<div class="axis-settings" data-axis-settings>' +
       '<div class="axis-settings-title">Assenstelsel</div>' +
-      '<label>Coordinatenstelsel<select id="coordinateSystem" aria-label="Coordinatenstelsel"><option value="cartesian">Cartesiaans</option><option disabled>Logaritmisch - nog niet beschikbaar</option><option disabled>Semilogaritmisch - nog niet beschikbaar</option><option disabled>Poolcoordinaten - nog niet beschikbaar</option></select></label>' +
+      '<label>Coördinatenstelsel<select id="coordinateSystem" aria-label="Coördinatenstelsel"><option value="cartesian">Cartesiaans</option><option disabled>Logaritmisch - nog niet beschikbaar</option><option disabled>Semilogaritmisch - nog niet beschikbaar</option><option disabled>Poolcoördinaten - nog niet beschikbaar</option></select></label>' +
       '<details data-property-section="axes" open><summary>Assen en oorsprong</summary>' +
       '<label class="axis-setting-toggle"><input type="checkbox" data-axis-setting="showXAxis"' + checked(r.showXAxis !== false) + '> <span>X-as zichtbaar</span></label>' +
       '<label class="axis-setting-toggle"><input type="checkbox" data-axis-setting="showYAxis"' + checked(r.showYAxis !== false) + '> <span>Y-as zichtbaar</span></label>' +
@@ -20,7 +20,7 @@
       '</details><details data-property-section="grid" open><summary>Raster en schaalverdeling</summary>' +
       '<label class="axis-setting-toggle"><input type="checkbox" data-axis-setting="showGrid"' + checked(r.showGrid === true) + '> <span>Raster zichtbaar</span></label>' +
       '<div class="axis-settings-current">'+(r.axisStep!=null?'Stap: '+MI.escapeXml(r.axisStep)+' · ':'')+'Rasterverdeling</div>' +
-      '<p class="axis-settings-help">De rasterverdeling past zich automatisch aan de zoom aan. Snapping gebruikt dezelfde verdeling.</p>' +
+      '<p class="axis-settings-help">'+(adaptive?'De rasterverdeling past zich automatisch aan de zoom aan.':'De sessie gebruikt de ingestelde documentverdeling.')+' Snapping gebruikt dezelfde verdeling.</p>' +
     '</details></div>';
   }
 

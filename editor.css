@@ -80,3 +80,5 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 
 .navigation-tools svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.navigation-tools [data-tool=select] svg{fill:currentColor;stroke-width:1}
 .properties-sidebar .selection-panel label:not(.style-toggle):not(.axis-setting-toggle){display:grid;grid-template-columns:88px minmax(0,1fr);align-items:center;gap:7px}.properties-sidebar .selection-panel input,.properties-sidebar .selection-panel select{margin:0}.properties-sidebar .axis-settings>label{display:block!important}.properties-sidebar .axis-settings>label select{margin-top:7px}.properties-sidebar .object-kind{margin:3px 0;font-weight:600;color:var(--accent)}.delete-btn{width:100%}.sidebar,.properties-sidebar{scrollbar-width:thin;scrollbar-color:#42515c transparent}
+
+.navigation-tools button:focus-visible{outline-color:#876217}
