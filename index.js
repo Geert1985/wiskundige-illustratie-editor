@@ -103,11 +103,13 @@
       this.model=model;return copies.map(o=>model.get(o.id));
     }
     construct(kind,sources) {
-      const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.calculate({kind,sources},map);
+      const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.evaluate({kind,sources},map).geometry;
       if(!first)throw Error('Deze constructie bestaat niet voor de gekozen geometrie.');
       const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&Math.abs(Math.hypot(first.x1-map.get(sources[0].objectId).cx,first.y1-map.get(sources[0].objectId).cy)-map.get(sources[0].objectId).r)>1e-9?2:1;
       const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,construction:{kind,sources, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
     }
+    getConstructionInfo(id){return MI.ConstructionService.describe(this.model.objects,id);}
+    detachConstructions(ids){return this.model.detachConstructions(ids);}
     createLayer(name){return this.model.createLayer(name);}
     assignLayer(ids,layerId){return this.model.assignLayer(ids,layerId);}
     renameLayer(id,name){return this.model.renameLayer(id,name);}

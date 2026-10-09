@@ -151,10 +151,16 @@
       const index = this.#objects.findIndex(o => o.id === id); if (index === -1) throw new Error('Object niet gevonden: ' + id);
       if (patch != null && !record(patch)) throw new Error('Ongeldige objectupdate.'); patch = patch || {};
       const current = this.#objects[index];
+      MI.ConstructionService.validateUpdate(this.#objects,current,patch);
       if (('id' in patch && patch.id !== id) || ('type' in patch && patch.type !== current.type)) throw new Error('ID en objecttype kunnen niet worden gewijzigd.');
       if ('style' in patch && !record(patch.style)) throw new Error('Ongeldige objectstijl.');
       const next = freeze(normaliseObject({ ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style }));
       const objects = this.#objects.slice(); objects[index] = next; this.#objects = freeze(MI.ConstructionService.resolve(objects)); return this.get(id);
+    }
+    detachConstructions(ids){
+      if(!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length)throw Error('Ongeldige selectie van constructies.');
+      for(const id of ids){const info=MI.ConstructionService.describe(this.#objects,id);if(!info||info.mode!=='linked')throw Error('Selecteer een gekoppelde constructie.');if(!info.canDetach)throw Error('Een vergrendelde of ongeldige constructie kan niet worden losgemaakt.');}
+      const selected=new Set(ids),objects=this.#objects.map(o=>{if(!selected.has(o.id))return o;const {construction,constructionValid,...free}=o;return free;});this.#objects=freeze(MI.ConstructionService.resolve(objects));return ids.map(id=>this.get(id));
     }
     createGroup(members,name='Groep') {
       if ('groups' in this._extra || 'groupSchema' in this._extra) throw Error('Legacy groepsgegevens moeten eerst expliciet worden gemigreerd.');

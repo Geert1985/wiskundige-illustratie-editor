@@ -21,7 +21,7 @@
   const identifier=v=>{if(typeof v!=='string'||!v.trim())fail('INVALID_COMMAND');return v;};
   const available=(o,engine)=>!!o&&o.visible!==false&&!(o.construction&&o.constructionValid===false)&&(!engine||MI.DocumentLayers.visible(engine.model.layers||[],o.id));
   const propertyFields=['name','text','rotation','label','labelDx','labelDy','labelOffsetX','labelOffsetY','showLabel','showMeasurement','measurementLabelOnly','measurementMode','measurementText','style.stroke','style.fill','style.strokeWidth','style.opacity','style.radius','style.fontSize','style.fontFamily','style.anchor','style.dash'];
-  const resultTypes={triangle:'polygon',rightAngle:'angle',midpoint:'point',perpendicular:'straight',parallel:'straight',perpendicularBisector:'straight',bisector:'ray',tangent:'straight',area:'text',perimeter:'text'};
+  const resultTypes={triangle:'polygon',rightAngle:'angle',...Object.fromEntries(Object.keys(MI.ConstructionService.kinds).map(kind=>[kind,MI.ConstructionService.contract(kind).resultType]))};
   const tools=[...MI.OBJECT_TYPES.map(t=>'create:'+t),'create:triangle','create:rightAngle',...Object.keys(MI.ConstructionService.kinds).map(t=>'construct:'+t)];
   function geometryFields(o){if(o.vertices)return o.vertices.flatMap((p,i)=>[`vertices[${i}].x`,`vertices[${i}].y`]);if(MI.LinearGeometry.isLinear(o))return ['x1','y1','x2','y2'];return o.type==='circle'?['cx','cy','r']:['x','y'];}
   function getPath(o,path){const m=path.match(/^vertices\[(\d+)\]\.(x|y)$/);if(m)return o.vertices?.[Number(m[1])]?.[m[2]];return path.split('.').reduce((v,k)=>v?.[k],o);}
@@ -86,7 +86,7 @@
     'layer.create':['name'],'layer.assign':['ids','layerId'],'layer.rename':['id','name'],'layer.setVisibility':['id','value'],'layer.reorder':['ids'],'layer.delete':['id'],
     'group.create':['members','name'],'group.ungroup':['ids'],
     'object.select':['ids','source'],'object.translate':['ids','delta'],'object.setGeometry':['id','fields'],'object.setProperties':['ids','fields'],'object.patchBatch':['updates'],
-    'object.create':['toolId','object'],'construction.create':['toolId','sources'],'object.duplicate':['ids','delta'],'object.delete':['ids'],
+    'object.create':['toolId','object'],'construction.detach':['ids'],'construction.create':['toolId','sources'],'object.duplicate':['ids','delta'],'object.delete':['ids'],
     'parameter.set':['parameterId','value'],'history.undo':[],'history.redo':[],'document.reset':[],'document.exportSVG':[],'document.exportJSON':[],
     'document.setMeta':['fields'],'document.setPresentation':['fields'],'view.pan':['bounds'],'view.zoom':['bounds'],'view.configure':['fields'],
     'document.replace':['document'],'document.clear':[],'policy.configure':[],'document.draftSave':[],'document.draftResume':[],
@@ -96,7 +96,7 @@
   function requireObject(s,id,{visible=true,unlocked=false}={}){identifier(id);const o=s.kernel.get(id);if(!o||(!s.author&&(!effective(s,o).read||(visible&&(!available(o,s.kernel)||!effective(s,o).display)))))fail('OBJECT_NOT_AVAILABLE');if(unlocked&&o.locked)fail('LOCKED');return o;}
   function idsOf(s,ids){if(!Array.isArray(ids)||!ids.length||ids.some(id=>typeof id!=='string'||!id.trim())||new Set(ids).size!==ids.length)fail('INVALID_COMMAND');if(!s.author&&ids.length>s.policy.limits.maxBatchObjects)fail('INVALID_COMMAND');return ids;}
   function grant(s,o,key){if(!effective(s,o)[key])fail('PERMISSION_DENIED');}
-  function writable(s,o,path,kind,parameter=false){const r=effective(s,o);if(o.locked)fail('LOCKED');if(r.immutableFields?.includes(path))fail('IMMUTABLE_FIELD');if(kind==='geometry'&&o.construction)fail('MODE_DENIED');if(!s.author&&!parameter&&!(r[kind==='geometry'?'geometryFields':'propertyFields']||[]).includes(path))fail('PERMISSION_DENIED');}
+  function writable(s,o,path,kind,parameter=false){const r=effective(s,o);if(o.locked)fail('LOCKED');if(r.immutableFields?.includes(path))fail('IMMUTABLE_FIELD');if(o.construction&&(kind==='geometry'||MI.ConstructionService.contract(o.construction.kind).computedFields.includes(path)))fail('MODE_DENIED');if(!s.author&&!parameter&&!(r[kind==='geometry'?'geometryFields':'propertyFields']||[]).includes(path))fail('PERMISSION_DENIED');}
   function validateValue(path,value,geometric=false) {
     if(geometric || ['rotation','labelDx','labelDy','style.strokeWidth','style.opacity','style.radius','style.fontSize'].includes(path))number(value);
     else if(['labelOffsetX','labelOffsetY'].includes(path)){if(value!==null)number(value);}
@@ -104,16 +104,17 @@
     else if(typeof value!=='string')fail('INVALID_COMMAND');
   }
   function applyFields(s,e,o,fields,kind,parameter=false){if(!Array.isArray(fields)||!fields.length||new Set(fields.map(f=>f.path)).size!==fields.length)fail('INVALID_COMMAND');const copy=clone(o);for(const f of fields){keys(f,['path','value']);const geometric=geometryFields(o).includes(f.path);if((kind==='geometry'&&!geometric)||(kind==='properties'&&!propertyFields.includes(f.path)))fail('INVALID_COMMAND');validateValue(f.path,f.value,geometric);writable(s,o,f.path,geometric?'geometry':'properties',parameter);putPath(copy,f.path,f.value);}e.update(o.id,copy);}
-  function checkEffects(s,e,directIds){const before=new Map(s.kernel.model.objects.map(o=>[o.id,o]));for(const o of e.model.objects){const prior=before.get(o.id);if(!prior)continue;const r=effective(s,prior);if(!directIds.has(o.id)&&o.construction){const outputs=o.type==='text'?['x','y','text']:geometryFields(o),changed=outputs.some(k=>JSON.stringify(getPath(o,k))!==JSON.stringify(getPath(prior,k)))||o.constructionValid!==prior.constructionValid;if(changed&&r.indirectGeometry==='freeze')fail('INDIRECT_FROZEN');if(prior.constructionValid!==false&&o.constructionValid===false&&!r.allowIndirectInvalid)fail('WOULD_INVALIDATE');
+  function checkEffects(s,e,directIds){const before=new Map(s.kernel.model.objects.map(o=>[o.id,o]));for(const o of e.model.objects){const prior=before.get(o.id);if(!prior)continue;const r=effective(s,prior);if(!directIds.has(o.id)&&o.construction){const outputs=MI.ConstructionService.contract(o.construction.kind).computedFields,changed=outputs.some(k=>JSON.stringify(getPath(o,k))!==JSON.stringify(getPath(prior,k)))||o.constructionValid!==prior.constructionValid;if(changed&&r.indirectGeometry==='freeze')fail('INDIRECT_FROZEN');if(prior.constructionValid!==false&&o.constructionValid===false&&!r.allowIndirectInvalid)fail('WOULD_INVALIDATE');
         for(const key of Object.keys(prior))if(!outputs.includes(key)&&key!=='constructionValid'&&JSON.stringify(o[key])!==JSON.stringify(prior[key]))fail('INVALID_COMMAND');
       }}
     if(!s.author)for(const b of Object.values(s.policy.parameters))for(const t of b.targets){const o=e.get(t.objectId);if(o&&!inDomain(getPath(o,t.fieldPath),b))fail('OUT_OF_RANGE');}
   }
   function authorizeCommand(s,input) {
     const c=normalize(s,input),p=c.payload,op=c.operation,direct=new Set(),e=newKernel(s);let result=null,view=null,selection=null,historyAction=null,relatedCommandId=null;
-    if(!s.author&&['document.replace','document.clear','policy.configure','document.draftSave','document.draftResume','object.setLock','object.setVisibility','group.create','group.ungroup','layer.create','layer.assign','layer.rename','layer.setVisibility','layer.reorder','layer.delete'].includes(op))fail('MODE_DENIED');
+    if(!s.author&&['document.replace','document.clear','policy.configure','document.draftSave','document.draftResume','object.setLock','object.setVisibility','group.create','group.ungroup','layer.create','layer.assign','layer.rename','layer.setVisibility','layer.reorder','layer.delete','construction.detach'].includes(op))fail('MODE_DENIED');
     const docGrant=k=>{if(!s.author&&!s.policy.document[k])fail('PERMISSION_DENIED');};
-    if(op==='layer.create'){result=e.createLayer(p.name);}
+    if(op==='construction.detach'){const ids=idsOf(s,p.ids);for(const id of ids){requireObject(s,id,{visible:false,unlocked:true});direct.add(id);}result=e.detachConstructions(ids);}
+    else if(op==='layer.create'){result=e.createLayer(p.name);}
     else if(op==='layer.assign'){result=e.assignLayer(idsOf(s,p.ids),identifier(p.layerId));}
     else if(op==='layer.rename'){e.renameLayer(identifier(p.id),p.name);}
     else if(op==='layer.setVisibility'){e.setLayerVisibility(identifier(p.id),p.value);}
@@ -174,6 +175,7 @@
     const invoke=(op,payload)=>session.execute(commandOf(op,payload,s.revision)),e={};let cache=null,cacheEpoch=-1,model=null;
     Object.defineProperty(e,'model',{enumerable:true,get:()=>{if(cache!==s.kernel.model.objects||cacheEpoch!==s.epoch||!model){cache=s.kernel.model.objects;cacheEpoch=s.epoch;const objects=freeze(readObjects(s));model=Object.freeze({objects,layers:freeze(readLayers(s)),groups:freeze(readGroups(s)),meta:freeze({title:s.kernel.model.meta.title||'',description:s.kernel.model.meta.description||''}),all:()=>clone(objects),get:id=>{const o=objects.find(o=>o.id===id);return o?clone(o):null;}});}return model;}});
     Object.defineProperty(e,'renderer',{enumerable:true,get:()=>s.rendererFacade});
+    e.getConstructionInfo=id=>{const o=s.kernel.get(id);if(!o||!effective(s,o).read)return null;const info=clone(s.kernel.getConstructionInfo(id));info.hasRestrictedSources=info.sources.some(r=>!effective(s,s.kernel.get(r.objectId)).read);info.sources=info.sources.filter(r=>effective(s,s.kernel.get(r.objectId)).read);info.dependents=info.dependents.filter(id=>effective(s,s.kernel.get(id)).read);info.canDetach=false;info.geometryEditable=session.getObjectCapabilities(id).geometryFields.length>0;return freeze(info);};e.detachConstructions=ids=>invoke('construction.detach',{ids}).result;
     e.createLayer=name=>invoke('layer.create',{name}).result;e.assignLayer=(ids,layerId)=>invoke('layer.assign',{ids,layerId}).result;e.renameLayer=(id,name)=>invoke('layer.rename',{id,name});e.setLayerVisibility=(id,value)=>invoke('layer.setVisibility',{id,value});e.reorderLayers=ids=>invoke('layer.reorder',{ids});e.removeLayer=id=>invoke('layer.delete',{id});e.isDisplayed=id=>session.getObjectCapabilities(id).display;
     e.group=(members,name)=>invoke('group.create',{members,...(name==null?{}:{name})}).result;e.ungroup=ids=>invoke('group.ungroup',{ids}).result;e.groupMembers=id=>MI.PersistentGroups.members(e.model.groups,id);
     e.get=id=>e.model.get(id);e.add=object=>invoke('object.create',{toolId:'create:'+object.type,object}).result;e.construct=(kind,sources)=>invoke('construction.create',{toolId:'construct:'+kind,sources}).result;
