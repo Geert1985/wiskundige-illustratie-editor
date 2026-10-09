@@ -189,11 +189,11 @@
     get(id) { const object = this.#objects.find(o => o.id === id); return object ? clone(object) : null; }
     all() { return clone(MI.DocumentLayers.ordered(this.objects,this.#layers)); }
     clear() { this.#objects = Object.freeze([]); this.#groups=Object.freeze([]); this.#layers=Object.freeze([]); }
-    toJSON() { return { ...clone(this._extra), type: this.type, version: this.#layers.length?5:this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION, ...(this.#layers.length?{layerSchema:1,layers:clone(this.#layers)}:{}), ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
+    toJSON() { return { ...clone(this._extra), type: this.type, version: this.#layers.length?5:this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION, ...(this.#layers.length?{layerSchema:1,layers:clone(this.#layers)}:{}), ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:this.#objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))?2:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
     load(data) {
       if (!record(data) || !Array.isArray(data.objects)) throw new Error("Ongeldig illustratiemodel: objects-array vereist.");
       const version = data.version == null ? 1 : Number(data.version);
-      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || (version > MODEL_VERSION && !(version===3 && data.constructionSchema===1) && !(version===4 && data.groupSchema===1 && Array.isArray(data.groups)) && !(version===5 && data.layerSchema===1 && Array.isArray(data.layers)))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
+      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || (version > MODEL_VERSION && !(version===3 && [1,2].includes(data.constructionSchema)) && !(version===4 && data.groupSchema===1 && Array.isArray(data.groups)) && !(version===5 && data.layerSchema===1 && Array.isArray(data.layers)))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
       if (data.type != null && data.type !== "geometry") throw new Error("Niet-ondersteund documenttype.");
       if (data.meta != null && !record(data.meta)) throw new Error("Ongeldige documentmetadata.");
       const meta = clone(data.meta || {}), presentation = normalisePresentation(data.presentation);
@@ -215,8 +215,9 @@
         if (Number.isSafeInteger(suffix) && suffix < Number.MAX_SAFE_INTEGER - 1) nextId = Math.max(nextId, suffix + 1);
         return object;
       });
+      if(objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))&&data.constructionSchema!==2)throw Error('Deze gekoppelde geometrie vereist constructieschema 2.');
       const resolved = MI.ConstructionService.resolve(objects);
-      if(version>=4 && objects.some(o=>o.construction) && data.constructionSchema!==1)throw Error("Constructieschema vereist.");
+      if(version>=4 && objects.some(o=>o.construction) && ![1,2].includes(data.constructionSchema))throw Error("Constructieschema vereist.");
       if(version===5 && data.groups!=null && data.groupSchema!==1)throw Error("Groepsschema vereist.");
       const groups=version>=4&&data.groups!=null?MI.PersistentGroups.validate(data.groups,resolved):[];
       const layers=version===5?MI.DocumentLayers.validate(data.layers,resolved,groups):[];

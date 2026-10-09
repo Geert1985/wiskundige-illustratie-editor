@@ -102,11 +102,12 @@
       while(pending.length){const i=pending.findIndex(g=>g.members.every(id=>mapping.has(id)));if(i<0)throw Error('Ongeldige groepshierarchie.');const [g]=pending.splice(i,1);mapping.set(g.id,model.createGroup(g.members.map(id=>mapping.get(id)),g.name+' (kopie)').id);}
       this.model=model;return copies.map(o=>model.get(o.id));
     }
-    construct(kind,sources) {
-      const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.evaluate({kind,sources},map).geometry;
+    construct(kind,sources,parameter) {
+      if(parameter!==undefined&&!MI.ConstructionService.pathKind(kind))throw Error('Deze constructie heeft geen padparameter.');const recipe={kind,sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.normaliseParameter(kind,parameter)}:{})};
+      const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.evaluate(recipe,map).geometry;
       if(!first)throw Error('Deze constructie bestaat niet voor de gekozen geometrie.');
       const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&Math.abs(Math.hypot(first.x1-map.get(sources[0].objectId).cx,first.y1-map.get(sources[0].objectId).cy)-map.get(sources[0].objectId).r)>1e-9?2:1;
-      const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,construction:{kind,sources, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
+      const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,construction:{...recipe, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
     }
     getConstructionInfo(id){return MI.ConstructionService.describe(this.model.objects,id);}
     detachConstructions(ids){return this.model.detachConstructions(ids);}

@@ -152,3 +152,6 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .canvas-fullscreen .canvas-area{position:fixed;inset:0;z-index:100;height:100dvh;background:#f7f7f4;border-radius:0}.canvas-fullscreen .canvas-toolbar,.canvas-fullscreen .canvas-wrap{border-radius:0}.canvas-fullscreen .panel-toggle{display:none!important}.fullscreen-hint{background:#fafcfb;color:#46545d;padding:5px 14px;font-size:13px;flex:none}.fullscreen-hint[hidden]{display:none}
 
 .canvas-fullscreen .properties-sidebar{display:none;position:fixed;right:10px;top:calc(var(--navigation-height,59px) + 10px);bottom:10px;width:min(310px,calc(100% - 20px));z-index:110;overflow-y:auto;box-shadow:-6px 0 25px #0005}.canvas-fullscreen.properties-open .properties-sidebar{display:block}.canvas-fullscreen .properties-sidebar .panel-close{display:block}
+
+.tool-grid .linked-tool{grid-column:1/-1}
+[data-path-parameter]{accent-color:var(--accent)}

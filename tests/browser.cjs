@@ -121,10 +121,11 @@ const server = http.createServer((req, res) => {
     const fullCanvasAxes=await require('./browser-full-canvas-axes.cjs')(page);
     const splitTools=await require('./browser-split-tools.cjs')(page);
     const bisectorClip=await require('./browser-bisector-clip.cjs')(page);
+    const linkedPaths=await require('./browser-linked-paths.cjs')(page);
     const semanticSequence=await require('./browser-semantic-sequence.cjs')(page);
     const canvasFullscreen=await require('./browser-canvas-fullscreen.cjs')(page);
     const minimalObjectList=await require('./browser-minimal-object-list.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, splitTools, bisectorClip, minimalObjectList,canvasFullscreen,semanticSequence, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, splitTools, bisectorClip, minimalObjectList,canvasFullscreen,semanticSequence,linkedPaths, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
