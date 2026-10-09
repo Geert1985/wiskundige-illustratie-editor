@@ -54,8 +54,8 @@ const server = http.createServer((req, res) => {
     await page.waitForFunction(() => document.getElementById('status').textContent === 'Illustratie geladen.');
     assert.equal(await page.evaluate(() => FZI.MathIllustration.activeEngine.get('A').name), 'Alpha');
     await page.locator('[data-view-select="axes"]').click();
-    await page.locator('[data-axis-setting="showXAxis"]').uncheck();
-    await page.locator('[data-axis-setting="showGrid"]').check();
+    await page.locator('[data-axis-setting="showXAxis"]').click();
+    await page.locator('[data-axis-setting="showGrid"]').click();
     await page.locator('[data-view-select="axes"]').click();
     await page.locator('summary').filter({ hasText: /^Illustratie$/ }).click();
     await page.locator('#titleInput').fill('Opgeslagen test');
@@ -116,7 +116,8 @@ const server = http.createServer((req, res) => {
     const uiModernization=await require('./browser-ui-modernization.cjs')(page);
     const uiRefinements=await require('./browser-ui-refinements.cjs')(page);
     const inspectorFeedback=await require('./browser-inspector-feedback.cjs')(page);
+    const axesGrid=await require('./browser-axes-grid.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

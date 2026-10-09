@@ -20,7 +20,7 @@
     return Object.fromEntries([...new Set([...Object.keys(base), ...Object.keys(patch)])].map(key => [key, Object.prototype.hasOwnProperty.call(patch, key) ? (record(base[key]) && record(patch[key]) ? mergeStyle(base[key], patch[key]) : patch[key]) : base[key]]));
   }
   function optionalNumber(value) { return value == null ? null : finite(value, null); }
-  const PRESENTATION_FLAGS = ["showAxes", "showGrid", "showXAxis", "showYAxis", "showAxisLabels", "showOrigin", "showSnapPoints"];
+  const PRESENTATION_FLAGS = ["showAxes", "showGrid", "showXAxis", "showYAxis", "showAxisLabels", "showOrigin", "showSnapPoints", "showMinorGrid"];
 
   function normalisePresentation(input) {
     if (input == null) return null;

@@ -29,6 +29,7 @@ module.exports = async page => {
   await check('color batch', async () => {
     await page.evaluate(() => { const app = FZI.MathIllustration.editor; app.colorId = 'l'; const input = app.colorInput; for (const value of ['#123456', '#654321']) { input.value = value; input.dispatchEvent(new Event('input')); } input.dispatchEvent(new Event('change')); });
   });
+  await page.locator('[data-view-select=axes]').click();
   await check('axes', () => page.locator('[data-view="axes"]').click());
   await check('pan', () => drag([-4, -2], [-3.5, -1.5]));
   await check('zoom', async () => { await move(0, 0); await page.mouse.wheel(0, -100); await page.waitForTimeout(100); });

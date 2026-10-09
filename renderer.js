@@ -41,6 +41,7 @@
       this.bounds = Object.assign({ xMin: -5, yMin: -3, xMax: 5, yMax: 3 }, opts.bounds || {});
       this.background = opts.background || "transparent"; this.padding = Number(opts.padding || 0);
       this.showAxes = opts.showAxes !== false; this.showGrid = opts.showGrid === true; this.axisStep = Number(opts.axisStep == null ? 1 : opts.axisStep);
+      this.showMinorGrid = opts.showMinorGrid === true;
       this.showXAxis = opts.showXAxis !== false; this.showYAxis = opts.showYAxis !== false;
       this.showAxisLabels = opts.showAxisLabels !== false; this.showOrigin = opts.showOrigin !== false;
       this.coordinateSystem = opts.coordinateSystem || "cartesian";
@@ -71,6 +72,16 @@
       if (!this.showGrid) return "";
       this.syncAspectRatio();
       const b = this.bounds, parts = [], step = this.axisStep;
+      if(this.showMinorGrid){
+        const minorStep=step/5,count=(min,max)=>Math.max(0,Math.floor((max+1e-9)/minorStep)-Math.ceil(min/minorStep)+1);
+        // Dense optional subdivisions may be omitted; primary ticks keep their existing limits.
+        if(minorStep*this.scale()>=2 && count(b.xMin,b.xMax)<=MAX_TICKS_PER_AXIS && count(b.yMin,b.yMax)<=MAX_TICKS_PER_AXIS){
+          const minor=[];
+          for(const x of tickValues(b.xMin,b.xMax,minorStep)){if(Math.abs(x/step-Math.round(x/step))<1e-8)continue;const sx=this.mapX(x);minor.push('<line x1="'+number(sx)+'" y1="'+this.padding+'" x2="'+number(sx)+'" y2="'+(this.height-this.padding)+'" stroke="#eceeea" stroke-width="0.4"/>');}
+          for(const y of tickValues(b.yMin,b.yMax,minorStep)){if(Math.abs(y/step-Math.round(y/step))<1e-8)continue;const sy=this.mapY(y);minor.push('<line x1="'+this.padding+'" y1="'+number(sy)+'" x2="'+(this.width-this.padding)+'" y2="'+number(sy)+'" stroke="#eceeea" stroke-width="0.4"/>');}
+          parts.push('<g data-illustration-minor-grid>'+minor.join('')+'</g>');
+        }
+      }
       for (const x of tickValues(b.xMin, b.xMax, step)) { const sx = this.mapX(x); parts.push('<line x1="' + number(sx) + '" y1="' + this.padding + '" x2="' + number(sx) + '" y2="' + (this.height - this.padding) + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
       for (const y of tickValues(b.yMin, b.yMax, step)) { const sy = this.mapY(y); parts.push('<line x1="' + this.padding + '" y1="' + number(sy) + '" x2="' + (this.width - this.padding) + '" y2="' + number(sy) + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
       return '<g data-illustration-grid aria-hidden="true">' + parts.join("") + '</g>';

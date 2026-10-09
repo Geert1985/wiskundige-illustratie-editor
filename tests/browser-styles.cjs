@@ -9,25 +9,25 @@ module.exports=async page=>{
   async function edit(key,value) {const input=page.locator(`[data-style="${key}"]`);if(await input.getAttribute('type')==='range'){await input.evaluate((el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},String(value));}else{await input.fill(String(value));await input.press('Tab');}}
   async function roundtrip(action) {const before=await doc();await action();const after=await doc();assert.notDeepEqual(after,before);await page.locator('#undoBtn').click();assert.deepEqual(await doc(),before);await page.locator('#redoBtn').click();assert.deepEqual(await doc(),after);}
   await page.locator('[data-select-object="l"]').click();
-  assert.equal(await page.locator('[data-style="dash"]').inputValue(),'3 7');
+  assert.equal(await page.locator('[data-style-dash][aria-pressed=true]').getAttribute('value'),'3 7');
   assert.equal(await page.locator('[data-style="strokeWidth"]').getAttribute('type'),'range');
   assert.equal(await page.locator('[data-style-color]').textContent(),'');
   assert.equal(await page.locator('[data-style-color]').getAttribute('aria-label'),'Lijnkleur wijzigen');
   await roundtrip(async()=>{const slider=page.locator('[data-style="strokeWidth"]');await slider.focus();await slider.press('ArrowRight');});
   assert.match(await page.locator('[data-style=strokeWidth]+output').textContent(),/px/);
-  await roundtrip(()=>edit('strokeWidth',4));await roundtrip(()=>page.locator('[data-style="dash"]').selectOption('8 5'));
+  await roundtrip(()=>edit('strokeWidth',4));await roundtrip(()=>page.locator('[data-style-dash][value="8 5" ]').click());
   assert.equal(await page.locator('[data-object-id="l"] line').getAttribute('stroke-width'),'4');assert.equal(await page.locator('[data-object-id="l"] line').getAttribute('stroke-dasharray'),'8 5');
   assert.equal((await doc()).objects.find(o=>o.id==='l').style.extension.keep,true);
   for(const id of ['p','c','poly']) {
     await page.locator(`[data-select-object="${id}"]`).click();
-    if(id!=='p') await roundtrip(()=>page.locator('[data-style="fillEnabled"]').check());
+
     const stroke=(await doc()).objects.find(o=>o.id===id).style.stroke;
     await roundtrip(async()=>{await page.locator('[data-fill-object]').click();await page.locator('[data-editor-color]').fill('#abcdef');await page.locator('#colorApply').click();});
     assert.equal((await doc()).objects.find(o=>o.id===id).style.fill,'#abcdef');assert.equal((await doc()).objects.find(o=>o.id===id).style.stroke,stroke);
     await roundtrip(async()=>{await page.locator('[data-style-color]').click();await page.locator('[data-editor-color]').fill('#e63946');await page.locator('#colorApply').click();});
     assert.equal((await doc()).objects.find(o=>o.id===id).style.fill,'#abcdef');assert.equal((await doc()).objects.find(o=>o.id===id).style.stroke,'#e63946');
     await roundtrip(()=>edit('opacity',40));assert.equal(await page.locator(`[data-object-id="${id}"]`).getAttribute('opacity'),'0.4');
-    await roundtrip(()=>page.locator('[data-style="fillEnabled"]').uncheck());
+    await roundtrip(async()=>{await page.locator('[data-fill-object]').click();await page.locator('#colorNone').click();});
     assert.equal((await doc()).objects.find(o=>o.id===id).style.fill,'none');
   }
   await page.locator('[data-select-object="t"]').click();assert.equal(await page.locator('[data-style="strokeWidth"]').count(),0);

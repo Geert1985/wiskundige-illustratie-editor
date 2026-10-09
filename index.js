@@ -10,7 +10,7 @@
   const NS = global.FZI = global.FZI || {};
   const MI = NS.MathIllustration = NS.MathIllustration || {};
   function presentationOptions(presentation) {
-    const options = {};
+    const options = {showMinorGrid:presentation?.showMinorGrid===true};
     [...MI.PRESENTATION_FLAGS, "bounds", "background", "coordinateSystem", "axisStep"].forEach(key => {
       if (presentation && key in presentation) options[key] = presentation[key];
     });
@@ -167,6 +167,8 @@
       const document = this.model.toJSON(), r = this.renderer;
       const presentation = { ...(document.presentation || {}), bounds: { ...(document.presentation && document.presentation.bounds || {}), ...r.bounds }, coordinateSystem: r.coordinateSystem, background: r.background, axisStep: r.axisStep };
       MI.PRESENTATION_FLAGS.forEach(key => { presentation[key] = key === "showSnapPoints" ? r[key] !== false : r[key]; });
+      // Opt-in extension: default documents retain their previous JSON shape.
+      if(!r.showMinorGrid)delete presentation.showMinorGrid;
       document.presentation = presentation;
       return document;
     }
