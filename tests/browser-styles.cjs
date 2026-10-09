@@ -14,7 +14,7 @@ module.exports=async page=>{
   assert.equal(await page.locator('[data-style-color]').textContent(),'');
   assert.equal(await page.locator('[data-style-color]').getAttribute('aria-label'),'Lijnkleur wijzigen');
   await roundtrip(async()=>{const slider=page.locator('[data-style="strokeWidth"]');await slider.focus();await slider.press('ArrowRight');});
-  assert.match(await page.locator('.stroke-slider output').textContent(),/px/);
+  assert.match(await page.locator('[data-style=strokeWidth]+output').textContent(),/px/);
   await roundtrip(()=>edit('strokeWidth',4));await roundtrip(()=>page.locator('[data-style="dash"]').selectOption('8 5'));
   assert.equal(await page.locator('[data-object-id="l"] line').getAttribute('stroke-width'),'4');assert.equal(await page.locator('[data-object-id="l"] line').getAttribute('stroke-dasharray'),'8 5');
   assert.equal((await doc()).objects.find(o=>o.id==='l').style.extension.keep,true);
@@ -37,7 +37,10 @@ module.exports=async page=>{
   assert.equal(await page.locator('[data-style-apply]').count(),0);
   await roundtrip(()=>edit('fontSize',36));await roundtrip(()=>edit('opacity',60));
   assert.equal(await page.locator('[data-object-id="t"] text').getAttribute('font-size'),'36');
-  const valid=await doc();await edit('fontSize',0);assert.deepEqual(await doc(),valid);await edit('opacity',101);assert.deepEqual(await doc(),valid);
+  const valid=await doc();await edit('fontSize',0);assert.deepEqual(await doc(),valid);
+  assert.equal(await page.locator('[data-style="opacity"]').getAttribute('type'),'range');
+  assert.equal(await page.locator('[data-style="opacity"]').getAttribute('max'),'100');
+  assert.equal(await page.evaluate(()=>{try{FZI.MathIllustration.editor.engine.update('t',{style:{opacity:1.01}});return false;}catch{return true;}}),true);assert.deepEqual(await doc(),valid);
   const download=page.waitForEvent('download');await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/font-size="36"/);assert.match(svg,/stroke-dasharray="8 5"/);assert.match(svg,/opacity="0.6"/);
   await page.locator('#saveBtn').click();const saved=await doc();await page.reload();assert.deepEqual(await doc(),saved);
   await page.locator('#fileInput').setInputFiles({name:'styles.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(saved))});await page.waitForFunction(()=>document.getElementById('status').textContent==='Illustratie geladen.');assert.deepEqual(await doc(),saved);

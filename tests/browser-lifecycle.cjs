@@ -87,7 +87,7 @@ module.exports = async function verifyLifecycle(page) {
   await page.mouse.move(20, 200); await page.mouse.up(); // Actual pointer-up outside the canvas.
   assert.equal(await app(() => FZI.MathIllustration.editor.interaction), null);
   const committed = await doc(); await page.mouse.move(700, 500); assert.deepEqual(await doc(), committed);
-  close(Number(await page.locator('#selectionPanel [data-edit="x"]').inputValue()), committed.objects.find(o => o.id === 'p').x);
+  close(Number(await page.locator('#selectionPanel [data-edit="x"]').inputValue()), Number(committed.objects.find(o => o.id === 'p').x.toFixed(2)));
   // New and dispose terminate every interaction type. Re-init and bootstrap cannot duplicate listeners.
   for (const mode of modes) {
     await reset(); await begin(mode);
@@ -115,8 +115,8 @@ module.exports = async function verifyLifecycle(page) {
   close(view.lineX, view.expectedX, 1e-4); close(view.lineY, view.expectedY, 1e-4);
   close(view.handleX, view.expectedX); close(view.handleY, view.expectedY);
   close(view.labelX, view.expectedLabelX, 1e-4); close(view.labelY, view.expectedLabelY, 1e-4);
-  close(Number(await page.locator('[data-edit="x2"]').inputValue()), view.object.x2);
-  close(Number(await page.locator('[data-edit="y2"]').inputValue()), view.object.y2);
+  close(Number(await page.locator('[data-edit="x2"]').inputValue()), Number(view.object.x2.toFixed(2)));
+  close(Number(await page.locator('[data-edit="y2"]').inputValue()), Number(view.object.y2.toFixed(2)));
   await page.mouse.up();
   for (const [key, value] of Object.entries(view.patch)) close((await doc()).objects.find(o => o.id === 'l')[key], value);
   // Color/as changes go through full rendering, preserving hidden state and selection overlays.
@@ -129,7 +129,7 @@ module.exports = async function verifyLifecycle(page) {
   await select('l');
   assert.equal(await page.locator('[data-object-id="l"].selected').count(), 1);
   assert.equal(await page.locator('.fzi-line-endpoint').count(), 2);
-  close(Number(await page.locator('[data-edit="x2"]').inputValue()), view.object.x2);
+  close(Number(await page.locator('[data-edit="x2"]').inputValue()), Number(view.object.x2.toFixed(2)));
   const download = page.waitForEvent('download'); await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');
   const exported = fs.readFileSync(await (await download).path(), 'utf8');
   assert.doesNotMatch(exported, /data-object-id="hidden"|fzi-line-endpoint|class="selected"/);
