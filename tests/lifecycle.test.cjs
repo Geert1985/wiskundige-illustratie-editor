@@ -357,3 +357,24 @@ test('M3a restricted direct import remains forbidden without changing context or
 test('M3a stale file reads cannot overwrite explicit load New dispose or a newer import',()=>{
   for(const action of ['load','new','dispose','newer']){const {app,engine,win}=appRuntime(),readers=[];win.FileReader=class{readAsText(){this.readyState=1;readers.push(this);}abort(){this.readyState=2;}};const first={files:[{}],value:'first.json'};app.importFile({target:first});if(action==='load')app.loadDocument({objects:[]});if(action==='new')app.newDocument();if(action==='dispose')app.dispose();if(action==='newer')app.importFile({target:{files:[{}],value:'second.json'}});const before=plain(engine.toJSON());readers[0].result=JSON.stringify({objects:[{id:'stale',type:'point',x:1,y:1}]});readers[0].onload();assert.deepEqual(plain(engine.toJSON()),before,action);}
 });
+
+
+test('M3b clicking and modifier selection treat persistent groups as one unit',()=>{
+  const h=appRuntime();h.engine.group(['p','l']);h.app.selectObject('p');assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);h.app.selectObject('l',true);assert.deepEqual(Array.from(h.app.selectedIds),[]);
+  h.down({x:0,y:0});assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);assert.equal(h.app.interaction.mode,'group');h.app.cancel();
+});
+test('M3b grouping shortcuts inspector history and one-level ungroup share command path',()=>{
+  const h=appRuntime();h.app.selectedIds=['p','l'];h.emit(h.win,'keydown',{key:'g',ctrlKey:true});assert.equal(h.engine.model.groups.length,1);assert.match(h.doc.getElementById('selectionPanel').innerHTML,/data-ungroup-selection/);assert.match(h.doc.getElementById('viewList').innerHTML,/data-select-group/);
+  h.emit(h.win,'keydown',{key:'g',ctrlKey:true,shiftKey:true});assert.equal(h.engine.model.groups.length,0);assert.equal(h.app.history.entries.length,2);h.app.undo();assert.equal(h.engine.model.groups.length,1);h.app.redo();assert.equal(h.engine.model.groups.length,0);
+});
+test('M3b group crossing selects all members containment requires all and cancel restores selection',()=>{
+  const h=appRuntime();h.engine.group(['p','l']);rightRectangle(h,{x:-.5,y:.5},{x:.5,y:-.5});assert.deepEqual(Array.from(h.app.selectedIds),[]);h.app.cancel();
+  rightRectangle(h,{x:.5,y:.5},{x:-.5,y:-.5});assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);h.app.cancel();assert.deepEqual(Array.from(h.app.selectedIds),[]);
+});
+test('M3b persistent group label drag moves group rigidly and Escape restores geometry',()=>{
+  const h=appRuntime();h.engine.group(['p','l']);const before=plain(h.engine.toJSON()),node={getAttribute:()=> 'p'},target={closest:s=>s==='.object-label'?node:null};
+  h.down({x:0,y:0},target);assert.equal(h.app.interaction.mode,'group');h.move({x:1,y:1});assert.equal(h.engine.get('l').x1,1);assert.equal(h.engine.get('p').x,1);h.emit(h.win,'keydown',{key:'Escape'});assert.deepEqual(plain(h.engine.toJSON()),before);
+});
+test('M3b locks hidden members and incomplete construction roots prevent partial group translation',()=>{
+  const h=appRuntime();h.engine.group(['p','l']);h.engine.update('l',{locked:true});h.down({x:0,y:0});assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);assert.equal(h.app.interaction,null);h.engine.update('l',{locked:false,visible:false});h.down({x:0,y:0});assert.equal(h.app.interaction,null);assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);
+});
