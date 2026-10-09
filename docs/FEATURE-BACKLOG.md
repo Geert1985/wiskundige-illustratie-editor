@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.0.0
+Version: 1.1.0
 Status: proposed; reconcile with repository before implementation
 Date: 2026-10-09
 
@@ -82,3 +82,23 @@ Priority is implementation sequence, not permission to omit any feature. All ent
 
 ## Cross-cutting acceptance rules
 For each feature specify geometry, interaction, persistence, preview/commit, permissions, import/export, browser tests, performance, accessibility, and failure states. No unbounded feature implementation prompts. Avoid duplication of already-implemented features.
+
+## Amendment 1.1.0 - UI/UX modernization tracking
+
+Date: 2026-10-09. Additive tracking only: no existing feature requirement is removed or marked released by this amendment. See M2c-UX-SPEC-v1.1.md (UX01-UX16) and M2c-IMPLEMENTATION-PLAN.md for evidence, scope and acceptance.
+
+| Related requirement | UI deliverable / remaining gap | Status |
+|---|---|---|
+| F01, F10 | Compact tool categories, central selection/navigation, right inspector, accessible file menu, layers | Proposed M2c.1-4; approval pending |
+| F01, F06 | Preserve construction inspection, detach, computed-field guards, groups/locks/history | Existing foundation; UI migration must retain regression coverage |
+| F04 | Direct grid toggle and existing Cartesian axes properties in context panel | Existing functionality to relocate / presentation to improve |
+| F04 | Logarithmic, semilogarithmic and polar coordinate systems | Missing; mathematical follow-up required, not a UI switch |
+| F04 | Separate labels/numbers, axes style/arrowheads, major/minor grid and independent origin marker | Proposed extensions; persistence/export/permission contract needed first |
+| F07, F08 | New controls honor M2b runtime grants, learner-view isolation and trusted baseline | Mandatory cross-cutting acceptance, no new course/assessment host feature |
+| F10 | Responsive panels, keyboard/focus/contrast, visual reference comparison | Proposed M2c integration gate; explicit user visual acceptance required |
+
+Origin marker styling must remain separate from geometric point style.radius. Generic arrow/type/equation editing shown in the visual reference is not currently implemented and is not silently introduced by layout changes. All original long-term requirements remain retained.
+
+## M2c implementation status
+
+The proposed M2c UI items above are implemented and technically tested; user visual/functional acceptance is pending. Existing coordinate-system and presentation-extension gaps remain unchanged and retained. No requirement is removed. Evidence: M2c-REPORT.md.

@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.0.0
+Version: 1.1.0
 Status: proposed sequencing; validate against repository
 Date: 2026-10-09
 
@@ -42,3 +42,22 @@ Formal proof-step layer, visual demonstrations, templates, LaTeX labels, export 
 
 ## First instruction to Codex
 Read these three documents and the current repository. Perform a READ-ONLY gap analysis: existing vs partial vs missing for every feature; propose a dependency-aware milestone sequence, identify mathematical/schema/security risks, and recommend the smallest next milestone. Do not change code, commit, or push until the plan is reviewed.
+
+## Amendment 1.1.0 - M2c UI/UX modernization proposal
+
+Date: 2026-10-09. Analysis checkpoint: 3ffefff1784d6a148ca6208289747744cf146e16. M1/M1.1, M2b, M3a/b/c and M4a have been delivered; this amendment records the current UI proposal without replacing the original M1-M20 roadmap. M4a automated verification passed; user requested this separate UX trajectory next. M4b has not started.
+
+Normative UX requirements: [M2c specification 1.1](M2c-UX-SPEC-v1.1.md). Proposed architecture, dependencies and tests: [M2c plan 1.0](M2c-IMPLEMENTATION-PLAN.md).
+
+| Checkpoint | Scope | Acceptance gate |
+|---|---|---|
+| M2c.1 | Header, accessible file disclosure, compact independent tool categories, Display/layer presentation | All controls reachable, unchanged snapping/document semantics; full regressions and manual checkpoint |
+| M2c.2 | Contextual right properties panel, axes configuration selection, existing properties and atomic common style | Axis selection separate from visibility; author/course/assessment command enforcement |
+| M2c.3 | Shared navigation controls, zoom readout, responsive panels | One controller/render path; geometry/bounds invariant on resize |
+| M2c.4 | Integrated browser, visual, keyboard and accessibility verification | Explicit functional AND visual user acceptance |
+
+Status: plan awaiting explicit approval; no production implementation authorized by this document. Logarithmic, semilogarithmic and polar systems are currently absent, not migrated existing features. Their mathematical implementation and new persistent axes/origin style semantics remain separate follow-up proposals. Existing product requirements and all 54 gap-analysis entries remain in scope.
+
+## M2c implementation checkpoint
+
+All four UX checkpoints delivered against specification1.1 after explicit full-milestone approval. Technical Node/Edge verification PASS; user functional and visual acceptance pending. See M2c-REPORT.md. M4b and deferred geometry/presentation extensions have not started.
