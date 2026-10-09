@@ -87,6 +87,16 @@ test('M1.1 dependent group movement requires all free source roots and respects 
 test('M1.1 hover is tool gated and teardown never retains hover state',()=>{
   const h=appRuntime(),p=h.app.transform().mathToScreen({x:0,y:0});h.app.updateHover({clientX:p.x,clientY:p.y});h.app.setTool('line');assert.equal(h.app.hoverId,null);assert.equal(h.doc.getElementById('canvasWrap').style.cursor,'crosshair');h.app.setTool('select');h.app.updateHover({clientX:p.x,clientY:p.y});h.app.dispose();assert.equal(h.app.hoverId,null);
 });
+test('M1.1 movement eligibility is cached until selection or immutable model changes',()=>{
+  const h=appRuntime();h.app.selectedIds=['p','l'];const plan=h.app.moveSelectionPlan();assert.equal(h.app.moveSelectionPlan(),plan);h.engine.update('l',{locked:true});assert.equal(h.app.moveSelectionPlan(),null);h.engine.update('l',{locked:false});assert.notEqual(h.app.moveSelectionPlan(),plan);h.app.selectedIds=['p','missing'];assert.equal(h.app.moveSelectionPlan(),null);
+});
+test('M1.1 hidden and invalid painted targets cannot override the shared hit resolver',()=>{
+  const h=appRuntime();h.engine.add({id:'c',type:'circle',cx:0,cy:0,r:1});h.engine.update('p',{x:2});const tangent=h.engine.construct('tangent',[{objectId:'c'},{objectId:'p'}])[0];const node={getAttribute:()=>tangent.id},target={closest:selector=>selector==='[data-object-id]'?node:null},p=h.app.transform().mathToScreen({x:0,y:0});
+  assert.equal(h.app.hitAt({clientX:p.x,clientY:p.y,target}).object.id,tangent.id);h.engine.update('p',{x:0});assert.equal(h.engine.get(tangent.id).constructionValid,false);assert.notEqual(h.app.hitAt({clientX:p.x,clientY:p.y,target})?.object.id,tangent.id);h.engine.update('c',{visible:false});assert.notEqual(h.app.hitAt({clientX:p.x,clientY:p.y})?.object.id,'c');
+});
+test('M1.1 handles labels pan and marquee have gated cursors and clear hover',()=>{
+  const h=appRuntime(),object=h.engine.get('l');assert.equal(h.app.cursorFor({object,kind:'endpoint'}),'crosshair');assert.equal(h.app.cursorFor({object,kind:'label'}),'move');assert.equal(h.app.cursorFor({object:{...object,locked:true},kind:'endpoint'}),'pointer');h.app.interaction={mode:'pan'};assert.equal(h.app.cursorFor(null),'grabbing');h.app.interaction=null;const p=h.app.transform().mathToScreen({x:0,y:0});h.app.updateHover({clientX:p.x,clientY:p.y});h.app.startKeyboardRectangle();assert.equal(h.app.hoverId,null);assert.equal(h.doc.getElementById('canvasWrap').style.cursor,'crosshair');h.app.cancel();
+});
 
 function rightRectangle(h,a,b,modifiers={}) {
   const t=h.app.transform(),p=t.mathToScreen(a),q=t.mathToScreen(b);

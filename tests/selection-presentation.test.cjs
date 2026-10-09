@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const {runtime,root}=require('./helpers.cjs');
 test('M1.1 selection presentation is an explicit overlay service without event handlers',()=>{
   const {MI,context}=runtime();vm.runInContext(fs.readFileSync(path.join(root,'editor-enhancements.js'),'utf8'),context);assert.equal(typeof MI.EditorOverlays.selection,'function');
-  const source=fs.readFileSync(path.join(root,'editor-enhancements.js'),'utf8');assert.doesNotMatch(source,/addEventListener|innerHTML|prototype\./);assert.match(source,/pointer-events/);assert.match(source,/non-scaling-stroke/);assert.match(source,/data-selection-presentation/);
+  const source=fs.readFileSync(path.join(root,'editor-enhancements.js'),'utf8');assert.doesNotMatch(source,/addEventListener|innerHTML|prototype\.|style\.cursor/);assert.match(source,/pointer-events/);assert.match(source,/non-scaling-stroke/);assert.match(source,/data-selection-presentation/);
 });
 test('M1.1 presentation never modifies renderer export or persistent styles',()=>{
   const {MI,context}=runtime();const e=new MI.Engine({objects:[{id:'p',type:'point',x:0,y:0,style:{stroke:'#aabbcc',opacity:.3}}]}),before=e.toJSONString(),svg=e.renderSVG();
