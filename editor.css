@@ -85,3 +85,15 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 
 @media(max-width:999px){.properties-sidebar{top:calc(var(--navigation-height,80px) + 12px)}}
 @media(max-width:759px){.properties-sidebar,.sidebar{top:calc(var(--navigation-height,80px) + 6px)}}
+
+/* Keep the layer hierarchy in view rather than below the tool palette. */
+.sidebar{display:flex;flex-direction:column;overflow:hidden}.sidebar>.sidebar-section{flex:0 0 auto}.sidebar>.sidebar-section:first-child{flex:0 1 auto;max-height:52%;min-height:0;overflow-y:auto}
+#layersSection[open]{flex:1 1 180px;min-height:150px;overflow:hidden;display:flex;flex-direction:column}#layersSection>summary{flex-shrink:0}#layersSection>.section-content{flex:1;min-height:0;overflow-y:auto;padding:0 2px 8px}.layer-add{margin-top:8px;border-top:1px solid var(--border);padding-top:8px}.layer-add button{width:30px;height:30px;padding:2px;font-size:20px}.layer-add input{width:0;flex:1}
+.layer-header{flex-wrap:nowrap}.layer-header input[data-layer-name]{flex:1;flex-basis:0;width:0;padding:5px 2px}.layer-header .eye-btn{flex:0 0 22px;width:22px;height:24px}.layer-objects{padding-left:7px;border-left:1px solid #40515d;margin:4px 0 3px 4px}.layer-objects .view-row{flex-wrap:wrap;gap:3px}.layer-objects .view-name{flex-basis:100%}.layer-objects .view-type{display:none}.layer-objects .view-row .eye-btn,.layer-objects .text-btn,.layer-objects .color-btn{height:22px;flex-basis:22px;width:22px}.unlayered-title{font-size:11px;color:var(--muted);margin:5px 0 8px}
+
+#layersSection[open]{min-height:200px}.layer-objects .view-row{flex-wrap:nowrap}.layer-objects .view-name{flex:1 1 0}.layer-objects .view-row .eye-btn,.layer-objects .text-btn,.layer-objects .color-btn{flex-basis:20px;width:20px}.layer-objects .eye-btn svg{width:15px;height:15px}
+
+@media(max-width:759px){.tools-open .sidebar{display:flex}}
+
+@media(max-width:759px){.sidebar{display:none}.tools-open .sidebar{display:flex}}
+@media(max-height:600px){.sidebar{overflow-y:auto}.sidebar>.sidebar-section:first-child{flex:0 0 auto;max-height:none;overflow:visible}#layersSection[open]{flex:0 0 auto;height:220px;min-height:200px}}
