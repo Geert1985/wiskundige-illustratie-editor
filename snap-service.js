@@ -47,7 +47,7 @@
   const geometryCache = new WeakMap();
   function snapCandidates(engine, excludeId) {
     const excluded=MI.ConstructionService.descendants(engine.model.objects,Array.isArray(excludeId)?excludeId:excludeId?[excludeId]:[]);
-    const objects = engine.model.objects.filter(o => o.visible !== false && !(o.construction && o.constructionValid===false) && !excluded.has(o.id));
+    const objects = engine.model.objects.filter(o => o.visible !== false && !(o.construction && o.constructionValid===false) && !excluded.has(o.id) && (!engine.canSnap || engine.canSnap(o.id)));
     // Inspect geometry rather than trusting a revision counter: injected
     // service-input views may differ from the immutable production model.
     // One entry per model bounds cache lifetime even when exclusions change.
