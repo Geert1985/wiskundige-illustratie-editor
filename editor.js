@@ -923,10 +923,10 @@
       const pathParameter=!this.runtime&&MI.ConstructionService.pathKind(object.construction?.kind)?'<label>Positie op pad<input data-path-parameter type="range" min="0" max="'+(object.construction.kind==='pointOnCircle'?'.999':'1')+'" step=".001" value="'+object.construction.parameter+'"'+(object.locked?' disabled':'')+' aria-label="Positie op pad"><output>'+Number((object.construction.parameter*100).toFixed(1))+'%</output></label>':'';
       const actions=info+this.constructionInputs(object)+pathParameter+detach+assignment;
       const kind=MI.escapeXml(({point:'Punt',line:'Lijnstuk',straight:'Rechte',ray:'Halfrechte',vector:'Vector',circle:'Cirkel',text:'Tekst',polygon:'Veelhoek',dimension:'Lengtemaat',angle:'Hoek'})[object.type]||object.type);
-      const heading='<div class="object-heading"><div><strong>'+MI.escapeXml(this.selectedIds.length>1?this.selectedIds.length+' objecten geselecteerd':object.name)+'</strong><span class="object-kind">'+(this.selectedIds.length>1?'Multiselectie':kind)+'</span></div>'+toolbar+'</div>';
+      const heading='<div class="object-heading"><div>'+(this.selectedIds.length>1?'<strong>'+this.selectedIds.length+' objecten geselecteerd</strong>':'<input class="object-name-input" type="text" data-edit="name" aria-label="Objectnaam" value="'+MI.escapeXml(object.name)+'"'+(object.locked?' disabled':'')+'>')+'<span class="object-kind">'+(this.selectedIds.length>1?'Multiselectie':kind)+'</span></div>'+toolbar+'</div>';
       if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions;return;}
       const displayNumber=value=>String(Number(Number(value).toFixed(2)));
-      let html = '<label>Naam<input data-edit="name" value="' + MI.escapeXml(object.name) + '"></label>';
+      let html = '';
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
       for (const key of object.construction?[]:keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.01" value="' + displayNumber(object[key]) + '"></label>';
       if(object.type==='polygon' || object.type==='angle') object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.01" value="'+displayNumber(p[key])+'"></label>'; });
@@ -952,7 +952,7 @@
       const split=html.indexOf('<details data-property-section="labels"'),appearance=html.indexOf('<fieldset');
       html='<details data-property-section="appearance" open><summary>Uiterlijk</summary>'+html.slice(appearance)+'</details><details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       html=html.replace('<details data-property-section="labels" open><summary>Label en meting</summary></details>','');
-      panel.innerHTML = heading+html + '<details data-property-section="relations" open><summary>Relaties en organisatie</summary>'+actions+'</details>';
+      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+html;
     }
     download(name, content, type) { const blob = new this.window.Blob([content], { type }), url = this.window.URL.createObjectURL(blob), link = this.document.createElement("a"); link.href = url; link.download = name; link.click(); this.window.setTimeout(() => this.window.URL.revokeObjectURL(url), 500); }
   }
