@@ -4,7 +4,7 @@
   const MI = global.FZI.MathIllustration;
   MI.InteractionResolver = {
     translateGroup(engine,objects,delta,options={}) {
-      const ids=objects.map(o=>o.id), candidates=objects.flatMap(o=>MI.MeasurementGeometry.anchors(o)).map((p,index)=>{const start={x:p.x+delta.x,y:p.y+delta.y};return {index,start,result:MI.SnapService.resolve(engine,start,{...options,excludeIds:[...new Set([...ids,...(options.excludeIds||[])])]})};});
+      const ids=objects.map(o=>o.id), candidates=objects.flatMap(o=>MI.MeasurementGeometry.anchors(o)).map((p,index)=>{const start={x:p.x+delta.x,y:p.y+delta.y};return {index,start,result:MI.SnapService.resolve(engine,start,{...options,excludeIds:ids})};});
       candidates.sort((a,b)=>MI.SnapService.compare(a.result,b.result)||a.index-b.index);
       const winner=candidates[0],correction=winner.result.snapped?{x:winner.result.point.x-winner.start.x,y:winner.result.point.y-winner.start.y}:{x:0,y:0};
       const vector={x:delta.x+correction.x,y:delta.y+correction.y};return {result:winner.result,delta:vector,patches:objects.map(o=>({id:o.id,patch:MI.MeasurementGeometry.translate(o,vector)}))};
