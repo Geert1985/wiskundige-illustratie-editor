@@ -416,3 +416,22 @@ test('M4a inspector source navigation uses existing selection and has no documen
 });
 
 test('M4a label cancellation preserves newer computed geometry from an indirect source update',()=>{const h=appRuntime();h.engine.add({id:'q',type:'point',x:2,y:0});const m=h.engine.construct('midpoint',[{objectId:'p'},{objectId:'q'}])[0];h.engine.update(m.id,{showLabel:true});const node={getAttribute:()=>m.id},target={closest:s=>s==='.object-label'?node:null};h.down({x:1,y:0},target);assert.equal(h.app.interaction.mode,'label');h.move({x:1.5,y:.5});h.engine.update('q',{x:4});h.app.cancel();assert.equal(h.engine.get(m.id).x,2);assert.equal(h.engine.get(m.id).labelOffsetX,null);assert.equal(h.engine.get(m.id).labelOffsetY,null);assert.equal(h.doc.getElementById('canvasWrap').capture,null);});
+
+
+test('M2c axes configuration selection is temporary and independent of visibility',()=>{
+ const h=appRuntime(),before=JSON.stringify(h.engine.toJSON());h.app.selectAxes();
+ assert.equal(h.app.inspectorTarget,'axes');assert.deepEqual(h.app.selectedIds,[]);assert.equal(JSON.stringify(h.engine.toJSON()),before);
+ h.app.setPresentationFlag('showAxes',false);assert.equal(h.app.inspectorTarget,'axes');assert.equal(h.engine.renderer.showAxes,false);
+ h.app.selectObject('p');assert.equal(h.app.inspectorTarget,'objects');
+});
+test('M2c explicit pan uses existing interaction and preserves selected geometry',()=>{
+ const h=appRuntime();h.app.selectedId='p';h.app.setNavigation('pan');h.down({x:0,y:0});assert.equal(h.app.interaction.mode,'pan');assert.equal(h.app.selectedId,'p');
+ h.move({x:1,y:1});h.app.cancel();assert.equal(h.engine.get('p').x,0);assert.equal(h.engine.get('p').y,0);
+});
+test('M2c centered zoom buttons share bounded zoom and undo behavior',()=>{
+ const h=appRuntime(),before=JSON.stringify(h.engine.renderer.bounds);h.app.zoomBy(-1);assert.notEqual(JSON.stringify(h.engine.renderer.bounds),before);assert.ok(h.app.history.canUndo);h.app.travelHistory(false);assert.equal(JSON.stringify(h.engine.renderer.bounds),before);
+});
+test('M2c common style changes are atomic and reject locked members',()=>{
+ const h=appRuntime();h.app.selectedIds=['p','l'];h.app.setCommonProperty('style.opacity',.5);assert.equal(h.engine.get('p').style.opacity,.5);assert.equal(h.engine.get('l').style.opacity,.5);
+ h.engine.update('l',{locked:true});const before=JSON.stringify(h.engine.toJSON());assert.throws(()=>h.app.setCommonProperty('style.opacity',.2));assert.equal(JSON.stringify(h.engine.toJSON()),before);
+});
