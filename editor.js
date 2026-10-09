@@ -244,8 +244,7 @@
       this.invalidate(); return this;
     }
     dispose() {
-      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.initialized = false; this.importSerial++;
-      if (this.reader && this.reader.readyState === 1) this.reader.abort(); this.reader = null;
+      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.initialized = false; this.invalidateImport();
       for (const remove of this.listeners.splice(0)) remove();
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
       this.engine.renderer.preview = null; this.feedback = null;
@@ -587,22 +586,45 @@
     }
     newDocument() {
       if(this.runtime){if(!this.allowed('document.reset'))throw new MI.PermissionError('PERMISSION_DENIED');this.closeDialogs(true);this.cancel();this.execute('document.reset');this.selectedIds=[];this.editBefore=null;this.hydrate();this.invalidate();return;}
-      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.importSerial++;
-      if (this.reader && this.reader.readyState === 1) this.reader.abort(); this.reader = null;
+      this.closeDialogs(true); this.cancel(); this.flushEdits(); this.invalidateImport();
       let failure = null; if (this.services.draft) try { this.services.draft.clear(this.storage); } catch (e) { failure = e; }
       const r = this.engine.renderer;
       this.execute("document.replace",{document:{ version: 2, type: "geometry", meta: {}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: r.showGrid, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } }});
       this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");
     }
-    loadDocument(data) { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.closeDialogs(true); this.cancel(); this.flushEdits(); this.execute("document.replace",{document:data}); this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen."); }
+    loadDocument(data) { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.closeDialogs(true); this.cancel(); this.flushEdits(); this.execute("document.replace",{document:data}); this.invalidateImport(); this.history.clear(); this.editBefore = null; this.selectedId = null; this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen."); }
+    invalidateImport() {
+      this.importSerial++;const reader=this.reader;this.reader=null;
+      if(reader && reader.readyState===1)reader.abort();
+      if(this.nodes.fileInput)this.nodes.fileInput.value='';
+    }
+    importDocument(data) {
+      if(this.runtime)throw new MI.PermissionError('MODE_DENIED');
+      // Validate the whole candidate before touching dialogs, captures or history.
+      const renderer=this.engine.renderer;
+      const options={width:renderer.width,height:renderer.height,padding:renderer.padding,
+        bounds:this.interaction?.mode==='pan'?this.interaction.bounds:renderer.bounds,
+        background:renderer.background,coordinateSystem:renderer.coordinateSystem,axisStep:renderer.axisStep};
+      for(const key of MI.PRESENTATION_FLAGS)options[key]=renderer[key];
+      const candidate=new MI.Engine(null,options);candidate.load(data);
+      const imported=candidate.toJSON();
+      this.closeDialogs(true);this.cancel();this.flushEdits();
+      const before=this.history.capture();
+      if(JSON.stringify(imported)===before.document){
+        this.invalidateImport();this.hydrate();this.invalidate();this.status('Illustratie geladen.');return;
+      }
+      this.execute('document.replace',{document:imported});this.invalidateImport();
+      this.editBefore=null;this.selectedIds=[];this.axisMenuOpen=false;
+      this.history.record(before);this.hydrate();this.invalidate();this.status('Illustratie geladen.');
+    }
     importFile(event) {
       if(this.runtime)throw new MI.PermissionError("MODE_DENIED");
       const file = event.target.files && event.target.files[0]; if (!file) return;
-      this.cancel(); const serial = ++this.importSerial;
+      const serial = ++this.importSerial;
       if (this.reader && this.reader.readyState === 1) this.reader.abort();
       const reader = this.reader = new this.window.FileReader();
-      reader.onload = () => { if (!this.initialized || serial !== this.importSerial) return; try { this.loadDocument(JSON.parse(reader.result)); } catch (e) { this.window.alert("JSON kon niet worden geladen: " + e.message); } event.target.value = ""; this.reader = null; };
-      reader.onerror = () => { if (this.initialized && serial === this.importSerial) this.status("JSON kon niet worden gelezen."); };
+      reader.onload = () => { if (!this.initialized || serial !== this.importSerial) return; try { this.importDocument(JSON.parse(reader.result)); } catch (e) { this.window.alert("JSON kon niet worden geladen: " + e.message); } event.target.value = ""; this.reader = null; };
+      reader.onerror = () => { if (this.initialized && serial === this.importSerial) {this.status("JSON kon niet worden gelezen.");event.target.value="";this.reader=null;} };
       reader.readAsText(file);
     }
     openColor(id,property=null) {

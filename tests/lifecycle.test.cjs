@@ -337,7 +337,7 @@ test('bisector of a triangle is constructed by clicking its vertex',()=>{const {
 test('M3a author import is one reversible replacement restoring document presentation and selection',()=>{
   const {app,engine}=appRuntime();app.selectedIds=['p','l'];engine.renderer.showAxes=false;const before=plain(engine.toJSON());
   app.importDocument({version:2,meta:{title:'Imported'},objects:[{id:'new',type:'circle',cx:1,cy:2,r:2}],presentation:{showAxes:true,bounds:{xMin:-2,xMax:2,yMin:-2,yMax:2}}});
-  const after=plain(engine.toJSON());assert.equal(app.history.entries.length,1);assert.deepEqual(app.selectedIds,[]);assert.equal(app.history.undo(),true);assert.deepEqual(plain(engine.toJSON()),before);assert.deepEqual(app.selectedIds,['p','l']);assert.equal(app.history.redo(),true);assert.deepEqual(plain(engine.toJSON()),after);assert.deepEqual(app.selectedIds,[]);
+  const after=plain(engine.toJSON());assert.equal(app.history.entries.length,1);assert.deepEqual(plain(app.selectedIds),[]);assert.equal(app.history.undo(),true);assert.deepEqual(plain(engine.toJSON()),before);assert.deepEqual(plain(app.selectedIds),['p','l']);assert.equal(app.history.redo(),true);assert.deepEqual(plain(engine.toJSON()),after);assert.deepEqual(plain(app.selectedIds),[]);
 });
 test('M3a rejected import preserves active drag history redo document and pointer capture',()=>{
   const {app,engine,down,move,doc}=appRuntime();const before=app.history.capture();engine.add({type:'point',x:2,y:2});app.history.record(before);app.history.undo();down({x:0,y:0});move({x:1,y:1});assert.equal(typeof app.importDocument,'function');const state=app.interaction,data=plain(engine.toJSON()),entries=plain(app.history.entries),cursor=app.history.cursor,capture=doc.getElementById('canvasWrap').capture;
@@ -352,4 +352,8 @@ test('M3a import retains earlier history, replacing redo only on a changed docum
 });
 test('M3a restricted direct import remains forbidden without changing context or history',()=>{
   const {app,MI}=appRuntime(),{fixture}=require('./permission-fixtures.cjs');const {session,owner}=MI.RuntimeSession.create(fixture());app.runtime=session;app.engine=session.engine;app.commands=session;const before=plain(owner.inspect());assert.throws(()=>app.importDocument({objects:[]}),e=>e.code==='MODE_DENIED');assert.deepEqual(plain(owner.inspect()),before);
+});
+
+test('M3a stale file reads cannot overwrite explicit load New dispose or a newer import',()=>{
+  for(const action of ['load','new','dispose','newer']){const {app,engine,win}=appRuntime(),readers=[];win.FileReader=class{readAsText(){this.readyState=1;readers.push(this);}abort(){this.readyState=2;}};const first={files:[{}],value:'first.json'};app.importFile({target:first});if(action==='load')app.loadDocument({objects:[]});if(action==='new')app.newDocument();if(action==='dispose')app.dispose();if(action==='newer')app.importFile({target:{files:[{}],value:'second.json'}});const before=plain(engine.toJSON());readers[0].result=JSON.stringify({objects:[{id:'stale',type:'point',x:1,y:1}]});readers[0].onload();assert.deepEqual(plain(engine.toJSON()),before,action);}
 });
