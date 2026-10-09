@@ -143,6 +143,7 @@
     cursorFor(hit) {
       const state=this.interaction;
       if(!state && this.navigationMode==='pan')return this.allowed('view.pan',{bounds:{...this.engine.renderer.bounds}})?'grab':'default';
+      if(this.tool.startsWith('construct:') && (!state || state.mode==='construction'))return hit?'pointer':'crosshair';
       if(state)return ['object','group','label','pan'].includes(state.mode)?'grabbing':'crosshair';
       if(this.tool!=='select')return 'crosshair';
       if(!hit || !this.canvasSelectable(hit.object))return 'default';
@@ -153,25 +154,33 @@
       if(this.selectedIds.includes(o.id) && this.moveSelectionPlan())return 'grab';
       return 'pointer';
     }
+    hoverAt(event) {
+      if(this.tool.startsWith('construct:') && (!this.interaction || this.interaction.mode==='construction')) {
+        const point=this.pointer(event);if(!point)return null;
+        const previous=this.interaction?.sources||[],sources=this.constructionSourcesAt(point,event,previous),source=sources?.[previous.length];
+        return source?{object:this.engine.get(source.objectId),kind:'construction',source}:null;
+      }
+      const hit=this.tool==='select' && this.navigationMode!=='pan' && !this.interaction?this.hitAt(event):null;
+      return hit && this.groupRoot(hit.object.id)!==hit.object.id && !this.groupCanvasSelectable(hit.object.id)?null:hit;
+    }
     renderPresentation(force=false) {
       if(this.hoverId) {
-        const object=this.engine.get(this.hoverId);
-        if(!this.canvasSelectable(object)||!this.groupCanvasSelectable(object.id)){this.hoverId=null;this.hoverHit=null;}else this.hoverHit={...this.hoverHit,object};
+        const object=this.engine.get(this.hoverId),valid=this.tool.startsWith('construct:')?this.constructionSelectable(object):this.canvasSelectable(object)&&this.groupCanvasSelectable(object.id);
+        if(!valid){this.hoverId=null;this.hoverHit=null;}else this.hoverHit={...this.hoverHit,object};
       }
-      if(force && this.hoverPointer && !this.interaction && this.tool==='select' && this.navigationMode!=='pan' && this.document.elementFromPoint) {
-        this.hoverHit=this.hitAt({...this.hoverPointer,target:this.document.elementFromPoint(this.hoverPointer.clientX,this.hoverPointer.clientY)});if(this.hoverHit&&!this.groupCanvasSelectable(this.hoverHit.object.id))this.hoverHit=null;this.hoverId=this.hoverHit?.object.id||null;
+      if(force && this.hoverPointer && this.document.elementFromPoint) {
+        this.hoverHit=this.hoverAt({...this.hoverPointer,target:this.document.elementFromPoint(this.hoverPointer.clientX,this.hoverPointer.clientY)});this.hoverId=this.hoverHit?.object.id||null;
       }
       this.nodes.canvasWrap.style.cursor=this.cursorFor(this.hoverHit);
-      const key=JSON.stringify([this.selectedIds,this.hoverId]);if(!force && key===this.presentationKey)return;
+      const construction=this.tool.startsWith('construct:'),selectedIds=construction?[...new Set((this.interaction?.sources||[]).map(s=>s.objectId))]:this.selectedIds;
+      const key=JSON.stringify([selectedIds,this.hoverId,construction]);if(!force && key===this.presentationKey)return;
       this.presentationKey=key;
       const service=this.services.overlays||MI.EditorOverlays;
-      if(service?.selection)service.selection(this.nodes.canvas.querySelector('svg'),{selectedIds:this.selectedIds,hoverId:this.hoverId,transform:this.transform(),renderer:this.engine.renderer,document:this.document});
+      if(service?.selection)service.selection(this.nodes.canvas.querySelector('svg'),{selectedIds,hoverId:this.hoverId,showFrame:!construction,transform:this.transform(),renderer:this.engine.renderer,document:this.document});
     }
     updateHover(event) {
       this.hoverPointer=event?{clientX:event.clientX,clientY:event.clientY,target:event.target}:null;
-      let hit=this.tool==='select' && this.navigationMode!=='pan' && !this.interaction?this.hitAt(event):null;
-      if(hit && this.groupRoot(hit.object.id)!==hit.object.id && !this.groupCanvasSelectable(hit.object.id))hit=null;
-      this.hoverHit=hit;this.hoverId=hit?.object.id||null;this.renderPresentation();
+      const hit=this.hoverAt(event);this.hoverHit=hit;this.hoverId=hit?.object.id||null;this.renderPresentation();
     }
     queueHover(event) {
       this.hoverPointer={clientX:event.clientX,clientY:event.clientY,target:event.target};
@@ -372,9 +381,10 @@
       }
       candidates.sort((a,b)=>a.distance-b.distance || a.priority-b.priority || a.source.objectId.localeCompare(b.source.objectId));return candidates[0]&&candidates[0].source;
     }
-    constructionClick(point,event) {
-      const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
-      const target=event.target&&event.target.closest&&event.target.closest('[data-object-id]'),hitObject=target&&this.engine.get(target.getAttribute('data-object-id')),painted=hitObject && (!this.runtime || this.capabilities(hitObject.id).sourceTools.includes(this.tool))?hitObject:null;
+    constructionSelectable(o) { return !!o && this.engine.isDisplayed(o.id) && o.visible!==false && !(o.construction && o.constructionValid===false) && (!this.runtime || this.capabilities(o.id).sourceTools.includes(this.tool)); }
+    constructionSourcesAt(point,event,sources=[]) {
+      const kind=this.tool.slice(10),state={sources:sources.slice()};
+      const target=event.target&&event.target.closest&&event.target.closest('[data-object-id]'),hitObject=target&&this.engine.get(target.getAttribute('data-object-id')),painted=this.constructionSelectable(hitObject)?hitObject:null;
       if(['area','perimeter'].includes(kind)&&painted&&['polygon','circle'].includes(painted.type))state.sources=[{objectId:painted.id}];
       const angle=!state.sources.length&&kind==='bisector'&&(painted&&painted.type==='angle'?painted:(this.engine.selectAt(point.x,point.y,{transform:this.transform(),tolerancePx:12})||{}).object);
       if(angle&&angle.type==='angle'&&angle.visible!==false&&(!this.runtime || this.capabilities(angle.id).sourceTools.includes(this.tool)))state.sources=[0,1,2].map(index=>({objectId:angle.id,part:'vertex',index}));
@@ -383,10 +393,17 @@
       if(state.sources.length===MI.ConstructionService.kinds[kind]) {}
       else if(!source && !state.sources.length && ['midpoint','perpendicularBisector'].includes(kind)) {const line=this.constructionPick(point,'line');if(line){const o=this.engine.get(line.objectId);state.sources=o.type==='polygon'?[{objectId:o.id,part:'vertex',index:line.index},{objectId:o.id,part:'vertex',index:(line.index+1)%o.vertices.length}]:[{objectId:o.id,part:'start'},{objectId:o.id,part:'end'}];}}
       else if(source)state.sources.push(source);
-      else {this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}
+      else return null;
+      return state.sources;
+    }
+    constructionClick(point,event) {
+      const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
+      const sources=this.constructionSourcesAt(point,event,state.sources);
+      if(!sources){this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}
+      state.sources=sources;
       state.pointerId=event.pointerId; this.interaction=state;
       if(this.nodes.canvasWrap.setPointerCapture)try{this.nodes.canvasWrap.setPointerCapture(event.pointerId);}catch(_){}
-      if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));return;}
+      if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       this.interaction=null;this.release(state);
       try {this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources}).result.map(o=>o.id);});this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}
       catch(error){this.status(error.message);}
@@ -562,11 +579,11 @@
       if (!this.initialized) return;
       const state = this.interaction;
       if (!state) {
-        if(this.tool==='select')this.queueHover(event);
-        if (this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
+        if(this.tool==='select'||this.tool.startsWith('construct:'))this.queueHover(event);
+        if (!this.tool.startsWith('construct:') && this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
         return;
       }
-      if(state.mode==='construction')return;
+      if(state.mode==='construction'){this.queueHover(event);return;}
       if (state.mode==='polygon') { if(event.isPrimary===false || (state.pointerId!=null && event.pointerId!==state.pointerId)) return; const point=this.pointer(event); if(point) { state.result=this.polygonResult(point); this.polygonPreview(); } return; }
       if (event.pointerId !== state.pointerId) return;
       state.lastPointer={clientX:event.clientX,clientY:event.clientY};

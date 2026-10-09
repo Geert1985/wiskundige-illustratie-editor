@@ -2,7 +2,7 @@
 (function(global) {
   global.FZI.MathIllustration.EditorOverlays = {
     // Editor-only contrast halos. The source groups and standalone renderer stay untouched.
-    selection(svg, { selectedIds=[], hoverId=null, transform, renderer, document }={}) {
+    selection(svg, { selectedIds=[], hoverId=null, showFrame=true, transform, renderer, document }={}) {
       if(!svg || !document || !transform)return;
       svg.querySelector('[data-selection-presentation]')?.remove();
       const groups=Array.from(svg.querySelectorAll('[data-object-id]'));
@@ -28,7 +28,7 @@
       }
       selected.forEach(group=>halo(group,false));if(hover && !selected.includes(hover))halo(hover,true);
       // A labelled dashed screen-space frame is presentation, never a transform handle.
-      if(selected.length>1) {
+      if(showFrame && selected.length>1) {
         const m=transform.matrix,points=selected.flatMap(group=>{const b=group.getBBox();return [[b.x,b.y],[b.x+b.width,b.y],[b.x+b.width,b.y+b.height],[b.x,b.y+b.height]].map(([x,y])=>({x:m.a*x+m.c*y+m.e,y:m.b*x+m.d*y+m.f}));});
         const left=Math.min(...points.map(p=>p.x))-8,right=Math.max(...points.map(p=>p.x))+8,top=Math.min(...points.map(p=>p.y))-8,bottom=Math.max(...points.map(p=>p.y))+8;
         const map=(x,y)=>{const p=transform.screenToMath({x,y});return [renderer.mapX(p.x),renderer.mapY(p.y)];};
