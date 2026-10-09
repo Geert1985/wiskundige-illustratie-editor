@@ -22,7 +22,12 @@
     toolAllowed(tool) { return !this.runtime || tool==='select' || this.commands.getAllowedTools().some(t=>t.enabled && t.toolId===(tool.startsWith('construct:')?tool:'create:'+tool)); }
     createObject(object,tool=this.tool) { return this.execute('object.create',{toolId:'create:'+tool,object}).result; }
     restrictControls() {
-      if(!this.runtime)return;
+      if(!this.runtime){
+        // Static controls survive a runtime re-mount; derive their state again.
+        for(const id of ['newBtn','saveBtn','loadBtn','exportJsonBtn','exportSvgBtn','titleInput','descriptionInput'])if(this.nodes[id])this.nodes[id].disabled=false;
+        for(const button of this.document.querySelectorAll('[data-tool]'))button.disabled=false;
+        return;
+      }
       for(const button of this.document.querySelectorAll('[data-tool]'))button.disabled=!this.toolAllowed(button.dataset.tool);
       for(const [id,operation] of [['newBtn','document.reset'],['saveBtn','document.draftSave'],['loadBtn','document.replace'],['exportJsonBtn','document.exportJSON'],['exportSvgBtn','document.exportSVG']])if(this.nodes[id])this.nodes[id].disabled=!this.allowed(operation,operation==='document.replace'?{document:{}}:{});
       for(const [id,path] of [['titleInput','title'],['descriptionInput','description']])this.nodes[id].disabled=!this.allowed('document.setMeta',{fields:[{path,value:this.nodes[id].value}]});
@@ -55,24 +60,44 @@
       catch(error) {state.rejected=true;this.status(error.message);}
     }
     get selectedId() { return this.selectedIds[this.selectedIds.length-1] || null; }
-    set selectedId(id) { this.selectedIds=id ? [id] : []; }
+    set selectedId(id) { this.selectedIds=id ? this.groupLeaves(id) : []; }
     selectedObjects() { return this.selectedIds.map(id=>this.engine.get(id)).filter(Boolean); }
-    selectObject(id,additive=false) {
+    groupIndex() {
+      const groups=this.engine.model.groups||[],objects=this.engine.model.objects;
+      if(this.groupCache?.groups!==groups)this.groupCache={groups,...MI.PersistentGroups.index(groups),leaves:new Map()};
+      if(this.groupCache.objects!==objects){this.groupCache.objects=objects;this.groupCache.byId=new Map(objects.map(o=>[o.id,o]));this.groupCache.selectable=new Map();}
+      return this.groupCache;
+    }
+    groupRoot(id) {const {parent}=this.groupIndex();while(parent.has(id))id=parent.get(id);return id;}
+    groupLeaves(id) {
+      const cache=this.groupIndex(),root=this.groupRoot(id);
+      if(!cache.leaves.has(root)){const result=[],stack=[root];while(stack.length){const current=stack.pop(),g=cache.map.get(current);if(g)stack.push(...g.members.slice().reverse());else result.push(current);}cache.leaves.set(root,result);}
+      return cache.leaves.get(root).slice();
+    }
+    selectedGroups() {try{return MI.PersistentGroups.roots(this.engine.model.groups||[],this.selectedIds).filter(id=>this.groupIndex().map.has(id));}catch(_){return [];}}
+    groupSelection() {
+      this.changeDocument(()=>{const members=MI.PersistentGroups.roots(this.engine.model.groups||[],this.selectedIds);if(members.length<2)throw Error('Selecteer minstens twee objecten of groepen.');const g=this.execute('group.create',{members,name:'Groep'}).result;this.selectedIds=this.engine.groupMembers(g.id);});
+    }
+    ungroupSelection() {const ids=this.selectedGroups();if(ids.length)this.changeDocument(()=>this.execute('group.ungroup',{ids}));}
+    selectObject(id,additive=false,source='list') {
       this.cancel(); this.tool='select';
-      if(additive) this.selectedIds=this.selectedIds.includes(id)?this.selectedIds.filter(x=>x!==id):[...this.selectedIds,id]; else this.selectedId=id;
-      if(this.runtime)this.selectedIds=this.execute("object.select",{ids:this.selectedIds,source:"list"}).selectedIds;
+      const leaves=this.groupLeaves(id);if(source==='canvas'&&!leaves.every(id=>this.canvasSelectable(this.engine.get(id))))return;
+      if(additive)this.selectedIds=leaves.every(id=>this.selectedIds.includes(id))?this.selectedIds.filter(id=>!leaves.includes(id)):[...new Set([...this.selectedIds,...leaves])];else this.selectedIds=leaves;
+      if(this.runtime)this.selectedIds=this.execute("object.select",{ids:this.selectedIds,source}).selectedIds;
       this.invalidate();
     }
     editableSelection() { return !this.selectedObjects().some(o=>o.locked); }
     canvasSelectable(o) { return !!o && o.visible!==false && !(o.construction && o.constructionValid===false) && (!this.runtime || this.capabilities(o.id).selectCanvas); }
+    groupCanvasSelectable(id) {const cache=this.groupIndex(),root=this.groupRoot(id);if(!cache.selectable.has(root))cache.selectable.set(root,this.groupLeaves(root).every(member=>this.canvasSelectable(cache.byId.get(member))));return cache.selectable.get(root);}
     moveSelectionPlan() {
       const snapshot=this.engine.model.objects,key=JSON.stringify(this.selectedIds),cache=this.movementCache;
-      if(cache && cache.snapshot===snapshot && cache.key===key)return cache.plan;
+      if(cache && cache.snapshot===snapshot && cache.groups===this.engine.model.groups && cache.key===key)return cache.plan;
       const byId=new Map(snapshot.map(o=>[o.id,o])),objects=this.selectedIds.map(id=>byId.get(id));
       const free=objects.filter(o=>o && !o.construction),ids=new Set(free.map(o=>o.id));
       const covered=(o,seen=new Set())=>{if(!this.canvasSelectable(o)||o.locked||seen.has(o.id))return false;if(!o.construction)return ids.has(o.id);const next=new Set([...seen,o.id]);return o.construction.sources.every(ref=>covered(byId.get(ref.objectId),next));};
-      const plan=objects.length && free.length && objects.every(o=>covered(o)) && (!this.runtime || this.allowed("object.translate",{ids:this.selectedIds,delta:{x:0,y:0}}))?Object.freeze(free):null;
-      this.movementCache={snapshot,key,plan};return plan;
+      let complete=true;try{MI.PersistentGroups.roots(this.engine.model.groups||[],this.selectedIds);}catch(_){complete=false;}
+      const plan=complete && objects.length && free.length && objects.every(o=>covered(o)) && (!this.runtime || this.allowed("object.translate",{ids:this.selectedIds,delta:{x:0,y:0}}))?Object.freeze(free):null;
+      this.movementCache={snapshot,groups:this.engine.model.groups,key,plan};return plan;
     }
     hitAt(event) {
       if(!event || !Number.isFinite(event.clientX)||!Number.isFinite(event.clientY))return null;
@@ -92,19 +117,20 @@
       if(state)return ['object','group','label','pan'].includes(state.mode)?'grabbing':'crosshair';
       if(this.tool!=='select')return 'crosshair';
       if(!hit || !this.canvasSelectable(hit.object))return 'default';
+      if(this.groupRoot(hit.object.id)!==hit.object.id && !this.groupCanvasSelectable(hit.object.id))return 'default';
       const o=hit.object;
-      if(!o.locked && !o.construction && (!this.runtime || this.capabilities(o.id).geometryFields.length) && ['endpoint','vertex'].includes(hit.kind))return 'crosshair';
-      if(!o.locked && (!this.runtime || ['labelOffsetX','labelOffsetY'].every(k=>this.capabilities(o.id).propertyFields.includes(k))) && hit.kind==='label')return 'move';
+      if(!o.locked && !o.construction && (!this.runtime || this.capabilities(o.id).geometryFields.length) && this.groupRoot(o.id)===o.id && ['endpoint','vertex'].includes(hit.kind))return 'crosshair';
+      if(!o.locked && (!this.runtime || ['labelOffsetX','labelOffsetY'].every(k=>this.capabilities(o.id).propertyFields.includes(k))) && this.groupRoot(o.id)===o.id && hit.kind==='label')return 'move';
       if(this.selectedIds.includes(o.id) && this.moveSelectionPlan())return 'grab';
       return 'pointer';
     }
     renderPresentation(force=false) {
       if(this.hoverId) {
         const object=this.engine.get(this.hoverId);
-        if(!this.canvasSelectable(object)){this.hoverId=null;this.hoverHit=null;}else this.hoverHit={...this.hoverHit,object};
+        if(!this.canvasSelectable(object)||!this.groupCanvasSelectable(object.id)){this.hoverId=null;this.hoverHit=null;}else this.hoverHit={...this.hoverHit,object};
       }
       if(force && this.hoverPointer && !this.interaction && this.tool==='select' && this.document.elementFromPoint) {
-        this.hoverHit=this.hitAt({...this.hoverPointer,target:this.document.elementFromPoint(this.hoverPointer.clientX,this.hoverPointer.clientY)});this.hoverId=this.hoverHit?.object.id||null;
+        this.hoverHit=this.hitAt({...this.hoverPointer,target:this.document.elementFromPoint(this.hoverPointer.clientX,this.hoverPointer.clientY)});if(this.hoverHit&&!this.groupCanvasSelectable(this.hoverHit.object.id))this.hoverHit=null;this.hoverId=this.hoverHit?.object.id||null;
       }
       this.nodes.canvasWrap.style.cursor=this.cursorFor(this.hoverHit);
       const key=JSON.stringify([this.selectedIds,this.hoverId]);if(!force && key===this.presentationKey)return;
@@ -114,7 +140,8 @@
     }
     updateHover(event) {
       this.hoverPointer=event?{clientX:event.clientX,clientY:event.clientY,target:event.target}:null;
-      const hit=this.tool==='select' && !this.interaction?this.hitAt(event):null;
+      let hit=this.tool==='select' && !this.interaction?this.hitAt(event):null;
+      if(hit && this.groupRoot(hit.object.id)!==hit.object.id && !this.groupCanvasSelectable(hit.object.id))hit=null;
       this.hoverHit=hit;this.hoverId=hit?.object.id||null;this.renderPresentation();
     }
     queueHover(event) {
@@ -213,6 +240,8 @@
         this.invalidate();
       });
       this.on(n.selectionPanel, "click", e => {
+        if(e.target.closest('[data-group-selection]')) {this.groupSelection();return;}
+        if(e.target.closest('[data-ungroup-selection]')) {this.ungroupSelection();return;}
         if(e.target.closest('[data-duplicate-selection]')) { this.duplicateSelection(); return; }
         if(e.target.closest('[data-lock-selection]')) { this.toggleLockSelection(); return; }
         const color=e.target.closest('[data-style-color], [data-fill-object]');
@@ -341,6 +370,9 @@
       if(!state.keyboard)state.active=state.active || Math.hypot(end.x-state.startScreen.x,end.y-state.startScreen.y)>=3;
       if(!state.active)return;
       state.result=this.rectangleService().resolve(this.engine.model.objects.filter(o=>this.canvasSelectable(o)),state.startScreen,end,{transform:state.transform,bounds:this.engine.renderer.bounds,textGeometry:state.textGeometry,base:state.selectionIdsBefore,operation:state.operation,mode:state.keyboard?state.rule:undefined});
+      const hitIds=new Set(state.result.found),seen=new Set(),found=[];
+      for(const id of state.result.found){const root=this.groupRoot(id);if(seen.has(root))continue;seen.add(root);const leaves=this.groupLeaves(root);if(leaves.every(id=>this.canvasSelectable(this.engine.get(id)))&&(state.result.mode==='cross'||leaves.every(id=>hitIds.has(id))))found.push(...leaves);}
+      state.result.found=found;state.result.ids=this.rectangleService().combine(state.selectionIdsBefore,found,state.operation);
       this.selectedIds=this.runtime?this.execute("object.select",{ids:state.result.ids,source:"canvas"}).selectedIds:state.result.ids;
       this.status('Kader: '+(state.result.mode==='contain'?'omsluiten':'raken')+' · '+state.result.found.length+' objecten'+(state.keyboard?' · pijlen, Alt voor fijn, C wisselt, Enter bevestigt, Escape annuleert.':''));
       this.invalidate(true);
@@ -406,6 +438,16 @@
       const point = this.pointer(event); if (!point || !this.toolAllowed(this.tool)) return; event.preventDefault();
       if(this.tool.startsWith('construct:')) {this.constructionClick(point,event);return;}
       if(this.interaction && this.interaction.mode==='polygon') { this.polygonClick(point,event); return; }
+      if(this.tool==='select') {
+        const hit=this.hitAt(event);
+        if(hit && this.groupRoot(hit.object.id)!==hit.object.id){
+          const leaves=this.groupLeaves(hit.object.id);if(!leaves.every(id=>this.canvasSelectable(this.engine.get(id)))){this.status('Groep bevat verborgen of ongeldige objecten; gebruik de objectlijst.');return;}
+          if(event.shiftKey||event.ctrlKey||event.metaKey){this.selectObject(hit.object.id,true,'canvas');return;}
+          const before=this.selectedIds.slice();if(!leaves.every(id=>this.selectedIds.includes(id)))this.selectedIds=leaves;
+          const originals=this.moveSelectionPlan();if(!originals){this.status('Groep kan niet bewegen: controleer locks en bronobjecten.');this.invalidate();return;}
+          this.begin({mode:'group',originals},event);this.interaction.selectionIdsBefore=before;this.invalidate();return;
+        }
+      }
       const vertex=event.target && event.target.closest && event.target.closest('.fzi-polygon-vertex');
       if(this.tool==='select' && vertex) {
         const id=vertex.getAttribute('data-polygon-id'),object=this.engine.get(id);
@@ -439,7 +481,7 @@
       }
       if (this.tool !== 'select') { this.status('Deze tekentool is niet beschikbaar. Vernieuw de editor.'); return; }
       const hit = this.hitAt(event);
-      if(hit && (event.shiftKey || event.ctrlKey || event.metaKey)) { this.selectObject(hit.object.id,true);return; }
+      if(hit && (event.shiftKey || event.ctrlKey || event.metaKey)) { this.selectObject(hit.object.id,true,'canvas');return; }
       if(hit && this.selectedIds.includes(hit.object.id) && this.selectedIds.length>1) {
         if(!this.editableSelection()){this.status('Ontgrendel de selectie eerst.');return;}
         const originals=this.moveSelectionPlan();if(!originals){this.status('Selectie kan niet rigide bewegen: selecteer ook alle ontgrendelde bronobjecten.');return;}this.begin({mode:'group',originals},event);this.status('Verplaats selectie.');this.invalidate();return;
@@ -494,7 +536,7 @@
       if (state.mode === "label") this.updateObject(state.id, { labelOffsetX: state.offset.x + delta.x, labelOffsetY: state.offset.y + delta.y });
       if (state.mode === "endpoint") { state.resolved = this.services.resolver.endpoint(this.engine, state.original, state.endpoint, point, { transform: this.transform() }); this.feedback = state.resolved.result; }
       if(state.mode==='vertex') { state.resolved=this.services.resolver.polygonVertex(this.engine,state.original,state.vertex,point,{transform:this.transform()}); this.feedback=state.resolved.result; }
-      if(state.mode==='group') { state.resolved=this.services.resolver.translateGroup(this.engine,state.originals,delta,{transform:this.transform()});try{this.updateObjects(state.resolved.patches);this.feedback=state.resolved.result;}catch(error){this.status(error.message);} }
+      if(state.mode==='group') { state.resolved=this.services.resolver.translateGroup(this.engine,state.originals,delta,{transform:this.transform()});try{const desired=MI.MeasurementGeometry.anchors({...state.originals[0],...state.resolved.patches[0].patch})[0],current=MI.MeasurementGeometry.anchors(this.engine.get(state.originals[0].id))[0];this.execute('object.translate',{ids:this.selectedIds,delta:{x:desired.x-current.x,y:desired.y-current.y}});this.feedback=state.resolved.result;}catch(error){this.status(error.message);} }
       if (state.mode === "object") {
         const o = state.original;
         if(o.type==='angle') { const r=this.services.resolver.translateGroup(this.engine,[o],delta,{transform:this.transform()});this.updateObjects(r.patches);this.feedback=r.result; }
@@ -554,7 +596,8 @@
       if (!editable && (event.ctrlKey || event.metaKey) && ["z", "y"].includes(event.key.toLowerCase())) {
         event.preventDefault(); this.travelHistory(event.key.toLowerCase() === "y" || event.shiftKey); return;
       }
-      if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='a') {event.preventDefault();this.cancel();this.tool='select';this.selectedIds=this.engine.model.objects.filter(o=>this.canvasSelectable(o)).map(o=>o.id);this.invalidate();return;}
+      if(!editable && !this.interaction && (event.ctrlKey||event.metaKey) && event.key.toLowerCase()==='g'){event.preventDefault();if(event.shiftKey)this.ungroupSelection();else this.groupSelection();return;}
+      if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='a') {event.preventDefault();this.cancel();this.tool='select';this.selectedIds=this.engine.model.objects.filter(o=>this.canvasSelectable(o)&&this.groupCanvasSelectable(o.id)).map(o=>o.id);this.invalidate();return;}
       if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='d') {event.preventDefault();this.duplicateSelection();return;}
       if (event.key === "Escape") { this.cancel(); this.tool = "select"; this.axisMenuOpen = false; this.invalidate(); return; }
       if(state && state.mode==='polygon') {
@@ -642,6 +685,7 @@
       if ((button = find('[data-axis-system]')) && !button.disabled) { this.changeDocument(() => { this.execute("document.setPresentation",{fields:[{path:"coordinateSystem",value:button.dataset.axisSystem}]}); this.axisMenuOpen = false; }); return; }
       if ((button = find("[data-color-object]"))) { this.openColor(button.dataset.colorObject); return; }
       if ((button = find('[data-object-lock]'))) { this.changeDocument(()=>{const o=this.engine.get(button.dataset.objectLock);this.execute("object.setLock",{ids:[o.id],value:!o.locked});});return; }
+      if ((button = find('[data-select-group]'))) {this.selectObject(button.dataset.selectGroup,event.shiftKey||event.ctrlKey||event.metaKey);return;}
       if ((button = find("[data-select-object]"))) { this.selectObject(button.dataset.selectObject,event.shiftKey || event.ctrlKey || event.metaKey); return; }
       if ((button = find("[data-object-visibility]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.objectVisibility); this.execute("object.setVisibility",{ids:[object.id],value:object.visible===false}); }); return; }
       if ((button = find("[data-toggle-label]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.toggleLabel); if(!object.locked)this.updateObject(object.id, { showLabel: !object.showLabel }); }); return; }
@@ -685,6 +729,7 @@
     renderViewList() {
       const r = this.engine.renderer;
       const rows = ['<div class="view-row"><button class="view-name view-system-btn" type="button" data-view-select="axes">Assenstelsel</button><button class="eye-btn" type="button" data-view="axes">' + eyeIcon(r.showAxes) + '</button>' + (this.axisMenuOpen && this.services.axis ? this.services.axis.html(r) : "") + '</div>', '<div class="view-row"><span class="view-name">Snappunten</span><button class="eye-btn" type="button" data-view="snapPoints">' + eyeIcon(r.showSnapPoints !== false) + '</button></div>'];
+      for(const g of this.engine.model.groups||[])if(this.groupRoot(g.id)===g.id){const leaves=this.groupLeaves(g.id);rows.push('<div class="view-row'+(leaves.every(id=>this.selectedIds.includes(id))?' view-row-selected':'')+'"><button class="view-name view-select-btn" type="button" data-select-group="'+MI.escapeXml(g.id)+'"'+(this.runtime&&!leaves.every(id=>this.capabilities(id).selectList)?' disabled':'')+'>'+MI.escapeXml(g.name)+'<span class="view-type">'+leaves.length+' objecten &middot; '+MI.escapeXml(g.id)+'</span></button></div>');}
       for (const object of this.engine.model.objects) {
         const color = this.services.color ? this.services.color.value(this.viewObject(object.id)) : "#222222";
         rows.push('<div class="view-row' + (this.selectedIds.includes(object.id) ? ' view-row-selected' : '') + '"><button class="view-name view-select-btn" type="button" data-select-object="' + MI.escapeXml(object.id) + '">' + MI.escapeXml(objectName(object)) + '<span class="view-type">' + MI.escapeXml(object.id) + '</span></button><button class="text-btn" title="Label tonen/verbergen" data-toggle-label="' + MI.escapeXml(object.id) + '">' + textIcon(object.showLabel) + '</button><button class="color-btn" title="Kleur wijzigen" aria-label="Kleur wijzigen" type="button" data-color-object="' + MI.escapeXml(object.id) + '" style="--object-color:' + MI.escapeXml(color) + '"><span class="color-swatch"></span></button><button class="eye-btn" title="Object tonen/verbergen" type="button" data-object-visibility="' + MI.escapeXml(object.id) + '">' + eyeIcon(object.visible !== false) + '</button><button class="eye-btn" type="button" data-object-lock="' + MI.escapeXml(object.id) + '" title="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '" aria-label="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '">' + (object.locked?'🔒':'🔓') + '</button></div>');
@@ -695,7 +740,8 @@
       const panel = this.nodes.selectionPanel;
       if (!object) { panel.className = "selection-empty"; panel.textContent = "Geen object geselecteerd."; return; }
       panel.className = "selection-panel";
-      const actions='<div class="selection-actions"><button type="button" data-duplicate-selection>Dupliceren</button><button type="button" class="secondary" data-lock-selection>'+ (this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen')+'</button></div>';
+      const grouping=this.runtime?'':'<div class="selection-actions"><button type="button" data-group-selection'+(this.selectedIds.length<2?' disabled':'')+'>Groeperen</button><button type="button" data-ungroup-selection'+(!this.selectedGroups().length?' disabled':'')+'>Groep opheffen</button></div>';
+      const actions=grouping+'<div class="selection-actions"><button type="button" data-duplicate-selection>Dupliceren</button><button type="button" class="secondary" data-lock-selection>'+ (this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen')+'</button></div>';
       if(this.selectedIds.length>1 || object.locked) {panel.innerHTML='<strong>'+ (this.selectedIds.length>1?this.selectedIds.length+' objecten geselecteerd':MI.escapeXml(object.name))+'</strong><p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+actions+'<button class="delete-btn" data-delete-selected'+(!this.editableSelection()?' disabled':'')+'>Verwijder selectie</button>';return;}
       let html = '<strong>' + MI.escapeXml(object.name) + '</strong><code>' + MI.escapeXml(object.id) + '</code><label>Naam<input data-edit="name" value="' + MI.escapeXml(object.name) + '"></label>';
       if(object.construction) html+='<p class="help-text">Gekoppeld aan: '+object.construction.sources.map(s=>MI.escapeXml(s.objectId)).join(', ')+'.</p>'+((object.construction && object.constructionValid===false)?'<p>Constructie bestaat momenteel niet; wijzig de bronobjecten om te herstellen.</p>':'');
