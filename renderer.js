@@ -147,7 +147,7 @@
       (x||y)?.parentNode.appendChild(extra);
     }
 
-    renderPreview() {
+    renderPreview(clipBounds=this.bounds) {
       const preview = this.preview; if (!preview) return "";
       if(preview.type==='angle' && preview.vertices.length===3) { try { MI.MeasurementGeometry.validateAngle(preview.vertices,preview.angleMark); return '<g data-drawing-preview>'+this.renderObject({type:'angle',angleMark:preview.angleMark,vertices:preview.vertices,id:'preview',style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5'}})+'</g>'; } catch(_) {} }
       if (preview.type === "polygon" || preview.type==='angle') return '<g data-drawing-preview><polyline points="'+preview.vertices.map(p=>this.mapX(p.x)+','+this.mapY(p.y)).join(' ')+'" fill="none" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/>'+this.renderPolygonMeasurements(preview)+preview.vertices.map(p=>'<circle cx="'+this.mapX(p.x)+'" cy="'+this.mapY(p.y)+'" r="4" fill="#9a7a32"/>').join('')+'</g>';
@@ -155,17 +155,17 @@
       if(preview.type==='dimension') return '<g data-drawing-preview>'+this.renderObject({type:'dimension',id:'preview',name:'',x1:preview.start.x,y1:preview.start.y,x2:preview.end.x,y2:preview.end.y,style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5',fill:'none'}})+'</g>';
       if (length < 1e-9) return "";
       const mx = (sx + ex) / 2, my = (sy + ey) / 2 - 10, label = esc(axisNumber(length));
-      if (["straight", "ray", "vector"].includes(preview.type)) return '<g data-drawing-preview>' + this.renderDirected({ type: preview.type, x1: preview.start.x, y1: preview.start.y, x2: preview.end.x, y2: preview.end.y, style: { stroke: "#9a7a32", strokeWidth: 2, opacity: 1, dash: "7 5" } }) + '<text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12">' + label + '</text></g>';
+      if (["straight", "ray", "vector"].includes(preview.type)) return '<g data-drawing-preview>' + this.renderDirected({ type: preview.type, x1: preview.start.x, y1: preview.start.y, x2: preview.end.x, y2: preview.end.y, style: { stroke: "#9a7a32", strokeWidth: 2, opacity: 1, dash: "7 5" } },clipBounds) + '<text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12">' + label + '</text></g>';
       if (preview.type === "line") return '<g data-drawing-preview><line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/><circle cx="' + sx + '" cy="' + sy + '" r="3" fill="#9a7a32"/><circle cx="' + ex + '" cy="' + ey + '" r="3" fill="#9a7a32"/><text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">' + label + '</text></g>';
       if (preview.type === "circle") return '<g data-drawing-preview><circle cx="' + sx + '" cy="' + sy + '" r="' + (length * this.scale()) + '" fill="none" stroke="#9a7a32" stroke-width="1.5" stroke-dasharray="7 5"/><line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="#9a7a32" stroke-width="2"/><circle cx="' + sx + '" cy="' + sy + '" r="3" fill="#9a7a32"/><circle cx="' + ex + '" cy="' + ey + '" r="3" fill="#9a7a32"/><text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">r = ' + label + '</text></g>';
       return "";
     }
 
-    render(model,{editorCanvas=false}={}) {
+    render(model,{editorCanvas=false,clipBounds=this.bounds}={}) {
       this.syncAspectRatio();
-      const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object)).join("\n");
+      const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object,clipBounds||this.bounds)).join("\n");
       const background = this.background === "transparent" ? "" : '<rect x="0" y="0" width="' + esc(this.width) + '" height="' + esc(this.height) + '" fill="' + esc(this.background) + '"/>';
-      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(),this.renderAxes(editorCanvas),body,this.renderPreview(),'</svg>'].join("\n");
+      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(),this.renderAxes(editorCanvas),body,this.renderPreview(clipBounds||this.bounds),'</svg>'].join("\n");
     }
 
     renderLabel(object, label, defaultDx, defaultDy, line) {
@@ -184,8 +184,8 @@
       return '<text class="object-label" data-label-id="' + esc(object.id) + '" x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="'+number(fontSize)+'" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
     }
 
-    renderDirected(object) {
-      const clipped = global.FZI.MathIllustration.LinearGeometry.clip(object, this.bounds); if (!clipped) return '';
+    renderDirected(object,clipBounds=this.bounds) {
+      const clipped = global.FZI.MathIllustration.LinearGeometry.clip(object, clipBounds); if (!clipped) return '';
       const style = object.style || {}, sx = this.mapX(clipped.start.x), sy = this.mapY(clipped.start.y), ex = this.mapX(clipped.end.x), ey = this.mapY(clipped.end.y);
       const dx = ex - sx, dy = ey - sy, length = Math.hypot(dx, dy);
       if (!length) return '<circle cx="' + number(sx) + '" cy="' + number(sy) + '" r="3" ' + strokeAttrs(style) + ' fill="' + esc(style.stroke) + '"/>';
@@ -198,7 +198,7 @@
       return svg;
     }
 
-    renderObject(object) {
+    renderObject(object,clipBounds=this.bounds) {
       if ((object.visible === false || (object.construction && object.constructionValid===false))) return "";
       const opacity=object.style && object.style.opacity != null ? object.style.opacity : 1;
       const style = {...(object.style || {}),opacity:1}; let svg = "";
@@ -211,7 +211,7 @@
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.label || object.id, 6, -6, true);
       }
       if (['straight', 'ray', 'vector'].includes(object.type)) {
-        svg = this.renderDirected({...object,style});
+        svg = this.renderDirected({...object,style},clipBounds);
         if (svg && object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6, true);
       }
       if (object.type === "circle") {

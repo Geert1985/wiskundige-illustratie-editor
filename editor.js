@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
-  const SPLIT_TOOLS={linear:['line','straight','ray','vector'],figure:['triangle','polygon']};
+  const SPLIT_TOOLS={linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector']};
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
@@ -812,7 +812,8 @@
       const e = this.engine, r = e.renderer, n = this.nodes;
       if (this.services.grid) r.axisStep = this.services.grid.step(r);
       const objects = e.model.all().filter(o=>!this.runtime || this.capabilities(o.id).display).map(object => this.viewObject(object.id));
-      n.canvas.innerHTML = r.render({ meta: e.model.meta, layers:e.model.layers, all: () => objects },{editorCanvas:true});
+      const viewport=n.canvas.getBoundingClientRect?.(),viewportTransform=MI.CoordinateTransform.forViewport(r,viewport),clipBounds=viewportTransform?.visibleBounds(viewport);
+      n.canvas.innerHTML = r.render({ meta: e.model.meta, layers:e.model.layers, all: () => objects },{editorCanvas:true,clipBounds});
       const svg = n.canvas.querySelector("svg"), object = this.selectedId && this.viewObject(this.selectedId);
       if(svg)MI.SvgRenderer.fitCanvasAxes(svg,r,this.transform(),n.canvas.getBoundingClientRect?.());
       if (svg && svg.querySelectorAll) { Array.from(svg.querySelectorAll('[data-object-id]')).filter(node=>this.selectedIds.includes(node.getAttribute('data-object-id'))).forEach(node=>node.classList.add('selected')); }

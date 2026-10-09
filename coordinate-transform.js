@@ -29,6 +29,15 @@
       return next ? { x: next.x - origin.x, y: next.y - origin.y } : null;
     }
     distance(a, b) { const p = this.mathToScreen(a), q = this.mathToScreen(b); return Math.hypot(p.x - q.x, p.y - q.y); }
+    visibleBounds(rect) {
+      const a=this.screenToMath({x:rect.left,y:rect.top}),b=this.screenToMath({x:rect.right,y:rect.bottom});
+      return a&&b?{xMin:a.x,xMax:b.x,yMin:b.y,yMax:a.y}:null;
+    }
+    static forViewport(renderer,rect) {
+      if(!rect || ![rect.left,rect.top,rect.width,rect.height].every(Number.isFinite) || rect.width<=0 || rect.height<=0)return null;
+      const scale=Math.min(rect.width/renderer.width,rect.height/renderer.height);
+      try{return new CoordinateTransform(renderer,{a:scale,d:scale,e:rect.left+(rect.width-renderer.width*scale)/2,f:rect.top+(rect.height-renderer.height*scale)/2});}catch(_){return null;}
+    }
     static forCanvas(engine, ownerDocument) {
       if (!ownerDocument && typeof document === "undefined") return null;
       const source = ownerDocument || document;
