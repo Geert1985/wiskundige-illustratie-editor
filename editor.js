@@ -210,7 +210,7 @@
     updateMeta() {const fields=[{path:'title',value:this.nodes.titleInput.value.trim()},{path:'description',value:this.nodes.descriptionInput.value.trim()}].filter(f=>this.engine.model.meta[f.path]!==f.value);if(fields.length)this.execute('document.setMeta',{fields});}
     flushEdits() { if (this.editBefore) { this.history.record(this.editBefore); this.editBefore = null; } }
     stylePatch(input) {
-      let key=input.dataset.style,value=input.type==='number' ? input.valueAsNumber : input.value;
+      let key=input.dataset.style,value=['number','range'].includes(input.type) ? input.valueAsNumber : input.value;
       if(key==='opacity') { const current=this.engine.get(this.selectedId).style.opacity; value=value===current*100 ? current : value/100; }
       if(key==='fillEnabled') { key='fill'; const object=this.engine.get(this.selectedId),stroke=object.style.stroke;
         value=input.checked ? (object.style.fill && object.style.fill!=='none' ? object.style.fill : stroke && stroke!=='none' ? stroke : '#222222') : 'none';
@@ -272,6 +272,10 @@
         if (input) { this.setPresentationFlag(input.dataset.axisSetting,input.checked); }
       });
       this.on(this.document,"click",e=>{if(n.fileMenu?.open && !e.target.closest('#fileMenu'))this.closeFileMenu();if(e.target.closest('#fileMenu button'))this.closeFileMenu();});
+      this.on(n.selectionPanel, "input", e => {
+        const slider=e.target.closest('[data-style="strokeWidth"]');
+        if(slider?.type==='range'){const value=slider.parentElement.querySelector('output');if(value)value.textContent=slider.value+' px';}
+      });
       this.on(n.selectionPanel, "change", e => {
         const layer=e.target.closest('[data-layer-assign]');if(layer&&layer.dataset.layerAssign!=null){this.assignSelectionLayer(layer.value);return;}
         const axis=e.target.closest('[data-axis-setting]');if(axis?.dataset.axisSetting){try{this.setPresentationFlag(axis.dataset.axisSetting,axis.checked);}catch(error){this.status(error.message);this.invalidate();}return;}
@@ -842,10 +846,10 @@
       }
       html+='</details>';
       const style=object.style,esc=MI.escapeXml;
-      html+='<fieldset class="object-style"><legend>Stijl</legend><button type="button" class="secondary" data-style-color="'+esc(object.id)+'">'+(object.type==='text'?'Tekstkleur':'Lijnkleur')+'</button>';
+      html+='<fieldset class="object-style"><legend>Stijl</legend><div class="inspector-color-row"><span>'+(object.type==='text'?'Tekstkleur':'Lijnkleur')+'</span><button type="button" class="secondary inspector-color" data-style-color="'+esc(object.id)+'" aria-label="'+(object.type==='text'?'Tekstkleur wijzigen':'Lijnkleur wijzigen')+'" title="Kleur wijzigen" style="--object-color:'+esc(object.type==='text'?style.fill:style.stroke)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
       if(object.type==='text') html+='<label>Tekstgrootte<input data-style="fontSize" type="number" min="1" step="1" value="'+esc(style.fontSize)+'"></label>';
       else {
-        html+='<label>Lijndikte<input data-style="strokeWidth" type="number" min="0" step="0.5" value="'+esc(style.strokeWidth)+'"></label>';
+        html+='<label>Lijndikte<span class="stroke-slider"><input aria-label="Lijndikte" data-style="strokeWidth" type="range" min="0" max="'+Math.max(20,style.strokeWidth)+'" step="0.1" value="'+esc(style.strokeWidth)+'"><output>'+esc(style.strokeWidth)+' px</output></span></label>';
         const options=[['','Doorgetrokken'],['8 5','Gestreept'],['2 5','Gestippeld'],['8 4 2 4','Streep-punt']];
         if(!options.some(o=>o[0]===style.dash)) options.push([style.dash,'Eigen patroon']);
         html+='<label>Lijnpatroon<select data-style="dash">'+options.map(([value,label])=>'<option value="'+esc(value)+'"'+(style.dash===value?' selected':'')+'>'+label+'</option>').join('')+'</select></label>';

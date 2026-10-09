@@ -6,10 +6,15 @@ module.exports=async page=>{
     {id:'t',type:'text',x:0,y:2,text:'Tekstgrootte',style:{extension:{keep:true}}}
   ]}));
   const doc=()=>page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
-  async function edit(key,value) {const input=page.locator(`[data-style="${key}"]`);await input.fill(String(value));await input.press('Tab');}
+  async function edit(key,value) {const input=page.locator(`[data-style="${key}"]`);if(await input.getAttribute('type')==='range'){await input.evaluate((el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},String(value));}else{await input.fill(String(value));await input.press('Tab');}}
   async function roundtrip(action) {const before=await doc();await action();const after=await doc();assert.notDeepEqual(after,before);await page.locator('#undoBtn').click();assert.deepEqual(await doc(),before);await page.locator('#redoBtn').click();assert.deepEqual(await doc(),after);}
   await page.locator('[data-select-object="l"]').click();
   assert.equal(await page.locator('[data-style="dash"]').inputValue(),'3 7');
+  assert.equal(await page.locator('[data-style="strokeWidth"]').getAttribute('type'),'range');
+  assert.equal(await page.locator('[data-style-color]').textContent(),'');
+  assert.equal(await page.locator('[data-style-color]').getAttribute('aria-label'),'Lijnkleur wijzigen');
+  await roundtrip(async()=>{const slider=page.locator('[data-style="strokeWidth"]');await slider.focus();await slider.press('ArrowRight');});
+  assert.match(await page.locator('.stroke-slider output').textContent(),/px/);
   await roundtrip(()=>edit('strokeWidth',4));await roundtrip(()=>page.locator('[data-style="dash"]').selectOption('8 5'));
   assert.equal(await page.locator('[data-object-id="l"] line').getAttribute('stroke-width'),'4');assert.equal(await page.locator('[data-object-id="l"] line').getAttribute('stroke-dasharray'),'8 5');
   assert.equal((await doc()).objects.find(o=>o.id==='l').style.extension.keep,true);
