@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
-  const SPLIT_TOOLS={linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector']};
+  const SPLIT_TOOLS={linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
@@ -845,8 +845,7 @@
       const rows=[];
       const layers=this.engine.model.layers||[],esc=MI.escapeXml;
       const objectRow=object=>{
-        const color = this.services.color ? this.services.color.value(this.viewObject(object.id)) : "#222222";
-        return '<div class="view-row' + (this.selectedIds.includes(object.id) ? ' view-row-selected' : '') + '"><button class="view-name view-select-btn" type="button" data-select-object="' + MI.escapeXml(object.id) + '">' + MI.escapeXml(objectName(object)) + '<span class="view-type">' + MI.escapeXml(object.id) + '</span></button><button class="text-btn" title="Label tonen/verbergen" data-toggle-label="' + MI.escapeXml(object.id) + '">' + textIcon(object.showLabel) + '</button><button class="color-btn" title="Kleur wijzigen" aria-label="Kleur wijzigen" type="button" data-color-object="' + MI.escapeXml(object.id) + '" style="--object-color:' + MI.escapeXml(color) + '"><span class="color-swatch"></span></button><button class="eye-btn" title="Object tonen/verbergen" type="button" data-object-visibility="' + MI.escapeXml(object.id) + '">' + eyeIcon(object.visible !== false) + '</button><button class="eye-btn" type="button" data-object-lock="' + MI.escapeXml(object.id) + '" title="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '" aria-label="' + (object.locked?'Ontgrendelen':'Vergrendelen') + '">' + (object.locked?'🔒':'🔓') + '</button></div>';
+        return '<div class="view-row'+(this.selectedIds.includes(object.id)?' view-row-selected':'')+'"><button class="view-name view-select-btn" type="button" data-select-object="'+MI.escapeXml(object.id)+'">'+MI.escapeXml(objectName(object))+'<span class="view-type">'+MI.escapeXml(object.id)+'</span></button><button class="eye-btn" title="Object tonen/verbergen" aria-label="Object tonen/verbergen" type="button" data-object-visibility="'+MI.escapeXml(object.id)+'">'+eyeIcon(object.visible!==false)+'</button></div>';
       };
       const groupsFor=layerId=>{for(const g of this.engine.model.groups||[])if(this.groupRoot(g.id)===g.id && (!layerId||MI.DocumentLayers.index(layers).owner.get(this.groupLeaves(g.id)[0])?.id===layerId)){const leaves=this.groupLeaves(g.id);rows.push('<div class="view-row'+(leaves.every(id=>this.selectedIds.includes(id))?' view-row-selected':'')+'"><button class="view-name view-select-btn" type="button" data-select-group="'+esc(g.id)+'"'+(this.runtime&&!leaves.every(id=>this.capabilities(id).selectList)?' disabled':'')+'>'+esc(g.name)+'<span class="view-type">'+leaves.length+' objecten &middot; '+esc(g.id)+'</span></button></div>');}};
 

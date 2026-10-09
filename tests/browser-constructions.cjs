@@ -10,7 +10,7 @@ module.exports=async page=>{
   const id=made[0].id;await page.locator(`[data-select-object="${id}"]`).click();assert.equal(await page.locator('.fzi-line-endpoint').count(),0);assert.equal(await page.locator('[data-edit="x1"]').count(),0);
   const toggle=page.locator(`[data-object-visibility="${id}"]`);await toggle.click();assert.equal((await doc()).objects.find(o=>o.id===id).visible,false);assert.equal(await page.locator(`#canvas [data-object-id="${id}"]`).count(),0);assert.doesNotMatch(await page.evaluate(()=>FZI.MathIllustration.editor.engine.renderSVG()),new RegExp('data-object-id="'+id+'"'));
   await page.locator('#undoBtn').click();assert.equal((await doc()).objects.find(o=>o.id===id).visible,true);await page.locator('#redoBtn').click();assert.equal((await doc()).objects.find(o=>o.id===id).visible,false);await toggle.click();assert.equal((await doc()).objects.find(o=>o.id===id).visible,true);
-  await page.locator(`[data-object-lock="${id}"]`).click();assert.equal((await doc()).objects.find(o=>o.id===id).locked,true);await page.locator(`[data-object-lock="${id}"]`).click();assert.equal((await doc()).objects.find(o=>o.id===id).locked,false);
+  await page.locator(`[data-select-object="${id}"]`).click();await page.locator('[data-lock-selection]').click();assert.equal((await doc()).objects.find(o=>o.id===id).locked,true);await page.locator(`[data-select-object="${id}"]`).click();await page.locator('[data-lock-selection]').click();assert.equal((await doc()).objects.find(o=>o.id===id).locked,false);
 
  }
  await reset();await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:midpoint"]');await click(-2,0);await page.keyboard.press('Escape');await click(0,0);assert.equal((await doc()).objects.length,5);

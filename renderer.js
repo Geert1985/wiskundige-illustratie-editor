@@ -68,22 +68,24 @@
     mapX(x) { return this.padding + (x - this.bounds.xMin) * this.scale(); }
     mapY(y) { return this.height - this.padding - (y - this.bounds.yMin) * this.scale(); }
 
-    renderGrid() {
+    renderGrid(clipBounds=this.bounds) {
       if (!this.showGrid) return "";
       this.syncAspectRatio();
-      const b = this.bounds, parts = [], step = this.axisStep;
+      const b = clipBounds, parts = [], step = this.axisStep;
+      const left=b===this.bounds?this.padding:this.mapX(b.xMin),right=b===this.bounds?this.width-this.padding:this.mapX(b.xMax),top=b===this.bounds?this.padding:this.mapY(b.yMax),bottom=b===this.bounds?this.height-this.padding:this.mapY(b.yMin);
+      const ticks=(axis)=>{try{return tickValues(axis==='x'?b.xMin:b.yMin,axis==='x'?b.xMax:b.yMax,step);}catch(error){if(b===this.bounds)throw error;return tickValues(axis==='x'?this.bounds.xMin:this.bounds.yMin,axis==='x'?this.bounds.xMax:this.bounds.yMax,step);}};
       if(this.showMinorGrid){
         const minorStep=step/5,count=(min,max)=>Math.max(0,Math.floor((max+1e-9)/minorStep)-Math.ceil(min/minorStep)+1);
         // Dense optional subdivisions may be omitted; primary ticks keep their existing limits.
         if(minorStep*this.scale()>=2 && count(b.xMin,b.xMax)<=MAX_TICKS_PER_AXIS && count(b.yMin,b.yMax)<=MAX_TICKS_PER_AXIS){
           const minor=[];
-          for(const x of tickValues(b.xMin,b.xMax,minorStep)){if(Math.abs(x/step-Math.round(x/step))<1e-8)continue;const sx=this.mapX(x);minor.push('<line x1="'+number(sx)+'" y1="'+this.padding+'" x2="'+number(sx)+'" y2="'+(this.height-this.padding)+'" stroke="#eceeea" stroke-width="0.4"/>');}
-          for(const y of tickValues(b.yMin,b.yMax,minorStep)){if(Math.abs(y/step-Math.round(y/step))<1e-8)continue;const sy=this.mapY(y);minor.push('<line x1="'+this.padding+'" y1="'+number(sy)+'" x2="'+(this.width-this.padding)+'" y2="'+number(sy)+'" stroke="#eceeea" stroke-width="0.4"/>');}
+          for(const x of tickValues(b.xMin,b.xMax,minorStep)){if(Math.abs(x/step-Math.round(x/step))<1e-8)continue;const sx=this.mapX(x);minor.push('<line x1="'+number(sx)+'" y1="'+top+'" x2="'+number(sx)+'" y2="'+bottom+'" stroke="#eceeea" stroke-width="0.4"/>');}
+          for(const y of tickValues(b.yMin,b.yMax,minorStep)){if(Math.abs(y/step-Math.round(y/step))<1e-8)continue;const sy=this.mapY(y);minor.push('<line x1="'+left+'" y1="'+number(sy)+'" x2="'+right+'" y2="'+number(sy)+'" stroke="#eceeea" stroke-width="0.4"/>');}
           parts.push('<g data-illustration-minor-grid>'+minor.join('')+'</g>');
         }
       }
-      for (const x of tickValues(b.xMin, b.xMax, step)) { const sx = this.mapX(x); parts.push('<line x1="' + number(sx) + '" y1="' + this.padding + '" x2="' + number(sx) + '" y2="' + (this.height - this.padding) + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
-      for (const y of tickValues(b.yMin, b.yMax, step)) { const sy = this.mapY(y); parts.push('<line x1="' + this.padding + '" y1="' + number(sy) + '" x2="' + (this.width - this.padding) + '" y2="' + number(sy) + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
+      for (const x of ticks('x')) { const sx = this.mapX(x); parts.push('<line x1="' + number(sx) + '" y1="' + top + '" x2="' + number(sx) + '" y2="' + bottom + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
+      for (const y of ticks('y')) { const sy = this.mapY(y); parts.push('<line x1="' + left + '" y1="' + number(sy) + '" x2="' + right + '" y2="' + number(sy) + '" stroke="#dfe1dd" stroke-width="0.7"/>'); }
       return '<g data-illustration-grid aria-hidden="true">' + parts.join("") + '</g>';
     }
 
@@ -165,7 +167,7 @@
       this.syncAspectRatio();
       const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object,clipBounds||this.bounds)).join("\n");
       const background = this.background === "transparent" ? "" : '<rect x="0" y="0" width="' + esc(this.width) + '" height="' + esc(this.height) + '" fill="' + esc(this.background) + '"/>';
-      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(),this.renderAxes(editorCanvas),body,this.renderPreview(clipBounds||this.bounds),'</svg>'].join("\n");
+      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(clipBounds||this.bounds),this.renderAxes(editorCanvas),body,this.renderPreview(clipBounds||this.bounds),'</svg>'].join("\n");
     }
 
     renderLabel(object, label, defaultDx, defaultDy, line) {

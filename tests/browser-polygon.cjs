@@ -20,7 +20,7 @@ module.exports=async page=>{
   assert.equal(await page.locator('[data-vertex="0"][data-edit="x"]').inputValue(),'-2');
   await page.mouse.up();assert.equal((await doc()).objects[0].vertices[0].x,-2);
   const changed=await doc();await page.locator('#undoBtn').click();assert.deepEqual((await doc()).objects[0].vertices,translated.vertices);await page.locator('#redoBtn').click();assert.deepEqual(await doc(),changed);
-  await page.locator('[data-toggle-label]').click();const label=await page.locator('.object-label').boundingBox();
+  await page.locator('[data-label-selection]').click();const label=await page.locator('.object-label').boundingBox();
   await page.mouse.move(label.x+label.width/2,label.y+label.height/2);await page.mouse.down();await page.mouse.move(label.x+label.width/2+20,label.y+label.height/2-10);await page.mouse.up();
   assert.ok((await doc()).objects[0].labelOffsetX>0);
   const download=page.waitForEvent('download');await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/<polygon /);assert.doesNotMatch(svg,/fzi-polygon-vertex|NaN|Infinity/);

@@ -27,9 +27,9 @@ module.exports = async function verifyLifecycle(page) {
   // Startup: all services are injected before the first render, including restored documents.
   await page.evaluate(data => localStorage.setItem(FZI.MathIllustration.DraftStore.key, JSON.stringify(data)), fixture);
   await page.reload();
-  assert.equal(await page.locator('[data-color-object="p"]').count(), 1);
+  assert.equal(await page.locator('#viewList [data-color-object]').count(), 0);assert.equal(await page.locator('[data-object-visibility="p"]').count(),1);
   assert.equal(await app(() => !!FZI.MathIllustration.editor.services.axis && !!FZI.MathIllustration.editor.services.resolver), true);
-  await page.locator('[data-color-object="p"]').evaluate(button => button.click());
+  await page.locator('[data-select-object="p"]').click();await page.locator('[data-fill-object]').click();
   await page.locator('[data-editor-color]').evaluate(input => { input.value = '#123456'; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#colorApply').click();
   assert.equal(await app(() => FZI.MathIllustration.editor.engine.get('p').style.fill), '#123456');
@@ -120,7 +120,7 @@ module.exports = async function verifyLifecycle(page) {
   await page.mouse.up();
   for (const [key, value] of Object.entries(view.patch)) close((await doc()).objects.find(o => o.id === 'l')[key], value);
   // Color/as changes go through full rendering, preserving hidden state and selection overlays.
-  await page.locator('[data-color-object="hidden"]').evaluate(button => button.click());
+  await page.locator('[data-select-object="hidden"]').click();await page.locator('[data-style-color]').click();
   await page.locator('[data-editor-color]').evaluate(input => { input.value = '#abcdef'; input.dispatchEvent(new Event('input')); input.dispatchEvent(new Event('change')); });
   await page.locator('#colorApply').click();
   await page.locator('[data-view-select="axes"]').click(); await page.locator('[data-axis-setting="showXAxis"]').click();

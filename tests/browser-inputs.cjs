@@ -23,15 +23,15 @@ module.exports = async page => {
     assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.length), 2);
     for (const id of ['p', object.id]) {
       const before = await page.evaluate(id => FZI.MathIllustration.editor.engine.get(id).style, id);
-      await page.locator(`[data-color-object="${id}"]`).click();
+      await page.locator(`[data-select-object="${id}"]`).click();await page.locator(id==='p'?'[data-fill-object]':'[data-style-color]').click();
       await page.locator('#colorDialog').waitFor({ state: 'visible' });
       await page.locator('[data-editor-color]').fill('#123456');
       await page.locator('#colorApply').click();
       const style = await page.evaluate(id => FZI.MathIllustration.editor.engine.get(id).style, id);
-      assert.equal(style.fill, '#123456'); if (id === 'p') assert.equal(style.stroke, '#123456');
+      assert.equal(style.fill, '#123456'); if (id === 'p') assert.equal(style.stroke, before.stroke);
       await page.locator('#undoBtn').click(); assert.deepEqual(await page.evaluate(id => FZI.MathIllustration.editor.engine.get(id).style, id), before);
       await page.locator('#redoBtn').click();
-      await page.locator(`[data-color-object="${id}"]`).click();
+      await page.locator(`[data-select-object="${id}"]`).click();await page.locator(id==='p'?'[data-fill-object]':'[data-style-color]').click();
       await page.locator('[data-editor-color]').fill('#abcdef'); await page.locator('#colorCancel').click();
       assert.deepEqual(await page.evaluate(id => FZI.MathIllustration.editor.engine.get(id).style, id), style);
     }
