@@ -391,3 +391,15 @@ test('M3b hidden group members clear hover on render and eligibility is cached p
   const h=appRuntime();h.engine.group(['p','l']);h.app.updateHover({...h.app.transform().mathToScreen({x:0,y:0}),clientX:h.app.transform().mathToScreen({x:0,y:0}).x,clientY:h.app.transform().mathToScreen({x:0,y:0}).y});assert.equal(h.app.hoverId,'p');h.engine.update('l',{visible:false});h.app.renderPresentation(true);assert.equal(h.app.hoverId,null);
   h.engine.update('l',{visible:true});let queries=0;const original=h.app.canvasSelectable.bind(h.app);h.app.canvasSelectable=o=>{queries++;return original(o);};assert.equal(h.app.groupCanvasSelectable('p'),true);const first=queries;assert.equal(h.app.groupCanvasSelectable('l'),true);assert.equal(queries,first);
 });
+
+
+test('M3c editor hidden layer invalidates hover and movement and undo restores presentation',()=>{
+  const h=appRuntime();h.engine.group(['p','l']);const layer=h.engine.createLayer('Top');h.engine.assignLayer(['p','l'],layer.id);h.app.selectObject('p');assert.equal(h.app.moveSelectionPlan().length,2);assert.equal(h.app.groupCanvasSelectable('p'),true);
+  h.app.changeDocument(()=>h.app.execute('layer.setVisibility',{id:layer.id,value:false}));assert.equal(h.app.canvasSelectable(h.engine.get('p')),false);assert.equal(h.app.moveSelectionPlan(),null);assert.equal(h.app.groupCanvasSelectable('p'),false);assert.doesNotMatch(h.doc.getElementById('canvas').innerHTML,/data-object-id="p"/);h.app.travelHistory();assert.equal(h.app.canvasSelectable(h.engine.get('p')),true);
+});
+test('M3c author layer controls and inspector assignment share existing document history',()=>{
+  const h=appRuntime();h.app.addLayer('Hulplijnen');assert.equal(h.engine.model.layers.length,2);assert.match(h.doc.getElementById('viewList').innerHTML,/data-layer-name/);h.app.selectObject('p');assert.match(h.doc.getElementById('selectionPanel').innerHTML,/data-layer-assign/);h.app.assignSelectionLayer(h.engine.model.layers.at(-1).id);assert.ok(h.engine.model.layers.at(-1).members.includes('p'));assert.equal(h.app.history.entries.length,2);h.app.travelHistory();assert.ok(h.engine.model.layers[0].members.includes('p'));h.app.travelHistory();assert.equal(h.engine.model.layers.length,0);
+});
+test('M3c layer edits cancel active group interaction before history changes',()=>{
+  const h=appRuntime();h.engine.group(['p','l']);const layer=h.engine.createLayer('Top');h.engine.assignLayer(['p','l'],layer.id);const before=plain(h.engine.model.objects);h.down({x:0,y:0});h.move({x:1,y:1});h.app.changeDocument(()=>h.app.execute('layer.setVisibility',{id:layer.id,value:false}));assert.equal(h.app.interaction,null);assert.deepEqual(plain(h.engine.model.objects),before);assert.equal(h.app.history.entries.length,1);
+});
