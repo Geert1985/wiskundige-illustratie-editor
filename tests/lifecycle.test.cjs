@@ -382,3 +382,7 @@ test('M3b locks hidden members and incomplete construction roots prevent partial
 test('M3b author initialization restores persistent document controls after restricted mounting',()=>{
   const h=appRuntime();for(const id of ['saveBtn','loadBtn','exportJsonBtn','exportSvgBtn','titleInput','descriptionInput'])h.doc.getElementById(id).disabled=true;h.app.dispose();h.app.init();for(const id of ['saveBtn','loadBtn','exportJsonBtn','exportSvgBtn','titleInput','descriptionInput'])assert.equal(h.doc.getElementById(id).disabled,false);
 });
+
+test('M3b select-all skips incomplete hidden groups while author list can inspect them',()=>{
+  const h=appRuntime();h.engine.group(['p','l']);h.engine.update('l',{visible:false});h.emit(h.win,'keydown',{key:'a',ctrlKey:true});assert.deepEqual(Array.from(h.app.selectedIds),[]);h.app.selectObject('p');assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);
+});
