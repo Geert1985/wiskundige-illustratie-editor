@@ -9,3 +9,26 @@ No new object types or coordinate transforms. New recipes require constructionSc
 UI: three construction tools; pick sources through the existing owner and hit/highlight path. Path click initializes t by projection/angle. Author inspector provides the existing source choices plus a position slider. Parameter edits use a dedicated author-only command, obey locks and form one undo step. Restricted runtimes may create recipes only with tool/source grants and may follow permitted parent edits; direct parameter changes/source rebinding remain denied. No learner parameter binding or new drag controller. M5b intersections, derived circles and M9 locus/trace remain out of scope.
 
 Acceptance: failing tests first; parent motion, endpoints/clamp/wrap, invalidity/recovery, schema/legacy roundtrip, cycles, immutable calculated fields, atomic failures, permissions, deterministic replay, creation and slider undo/redo in real Edge, full regressions.
+
+## Mathematical conventions and API
+
+Lengths at or below 1e-9 are treated as collapsed for the two segment recipes. Circle parameter 0 is the rightmost point, .25 the top, .5 the left and .75 the bottom in mathematical coordinates; increasing t runs counterclockwise. Rebinding keeps t, rather than the old world-space point. The editor slider quantizes subsequent edits to .001; stored/imported canonical parameters retain their full precision until edited. Position is changed with the inspector slider, not by a new constrained drag handler.
+
+```js
+const MI = FZI.MathIllustration;
+const commands = MI.AuthorCommands(engine);
+const create = (toolId, sources, parameter) => commands.execute(
+  commands.createCommand('construction.create', {
+    toolId, sources, ...(parameter !== undefined ? { parameter } : {})
+  })
+).result[0];
+const segment = create('construct:lineBetweenPoints', [
+  { objectId: 'A' }, { objectId: 'B' }
+]);
+const point = create('construct:pointOnSegment', [{ objectId: segment.id }], .25);
+commands.execute(commands.createCommand('construction.setParameter', {
+  id: point.id, value: .75
+}));
+```
+
+Engine.construct(kind, sources, parameter) and M4b SemanticSequence use the same recipes. A newly-created construction must exist geometrically; invalid creation retains the error message, adds nothing and allows retry. Existing invalid linked objects keep their last coordinate snapshot and their parameter, stay out of rendering/hit/snap, and can recover after a parent edit.

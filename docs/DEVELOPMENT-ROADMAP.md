@@ -65,3 +65,7 @@ All four UX checkpoints delivered against specification1.1 after explicit full-m
 ## M4b implementation checkpoint ? 2026-10-09
 
 User accepted the complete M2c/UI trajectory and explicitly requested M4b. Semantic command sequences and deterministic isolated replay, plus author-only construction source editing, are delivered; see M4b-COMMAND-REPLAY-CONTRACT.md and M4b-REPORT.md. Technical validation PASS (293 Node tests, full Edge suite and final targeted source/replay check). User acceptance pending. No automatic editor recording or playback UI; M14 remains separate. M5a has not started.
+
+## M5a implementation checkpoint ? 2026-10-09
+
+User accepted M4b and explicitly requested M5a. Linked segments between existing points and parameterized points on finite segments/polygon edges and circles are delivered in the existing graph and command path. New recipes use constructionSchema 2; old recipes and geometry golden fixtures retain their format. Author tools/source editor/position slider and deterministic replay are included. No constrained drag controller, learner parameter grant, intersections, derived circles, locus or trace added. See M5a-LINKED-PATH-CONTRACT.md and M5a-REPORT.md. User acceptance pending; M5b has not started.
