@@ -30,3 +30,7 @@ test('M3b linked group translation is rigid and incomplete roots or locks are at
 test('M3b complete linked group duplication remaps internal construction sources',()=>{
   const {MI}=runtime(),e=new MI.Engine({objects:[{id:'a',type:'point',x:0,y:0},{id:'b',type:'point',x:2,y:0}]});const m=e.construct('midpoint',[{objectId:'a'},{objectId:'b'}])[0];e.group(['a','b',m.id]);const copies=e.duplicateMany(['a','b',m.id]);assert.deepEqual(plain(e.get(copies[2].id).construction.sources.map(r=>r.objectId)),copies.slice(0,2).map(o=>o.id));e.update(copies[0].id,{x:2.5});assert.equal(e.get(copies[2].id).x,2.5);assert.equal(e.get(m.id).x,1);
 });
+
+test('M3b group snapping excludes selected derived members as well as translated free roots',()=>{
+  const {MI}=runtime(),e=new MI.Engine({objects:[{id:'a',type:'point',x:0,y:0},{id:'b',type:'point',x:2,y:0}]});const m=e.construct('midpoint',[{objectId:'a'},{objectId:'b'}])[0];e.group(['a','b',m.id]);e.renderer.showGrid=false;const r=MI.InteractionResolver.translateGroup(e,[e.get('a'),e.get('b')],{x:1,y:0},{excludeIds:['a','b',m.id]});assert.equal(r.result.snapped,false);assert.deepEqual(plain(r.delta),{x:1,y:0});
+});
