@@ -76,6 +76,8 @@
       this.on(n.undoBtn, "click", () => this.travelHistory());
       this.on(n.redoBtn, "click", () => this.travelHistory(true));
       this.on(n.canvasWrap, "pointerdown", e => this.pointerDown(e));
+      this.on(n.canvasWrap, 'contextmenu', e => { if(this.suppressMarqueeMenu || (this.interaction?.mode==='marquee' && this.interaction.active)) { e.preventDefault(); this.suppressMarqueeMenu=false; } });
+      this.on(this.document.getElementById('rectangleSelectBtn'), 'click', e => this.startKeyboardRectangle(e));
       this.on(this.window, "pointermove", e => this.pointerMove(e));
       this.on(this.window, "pointerup", e => this.pointerUp(e));
       this.on(this.window, "pointercancel", e => { if (this.interaction && e.pointerId === this.interaction.pointerId) this.cancel(); });
@@ -205,6 +207,45 @@
       if (this.nodes.canvasWrap.setPointerCapture) try { this.nodes.canvasWrap.setPointerCapture(event.pointerId); } catch (_) {}
     }
     release(state) { if (state && this.nodes.canvasWrap.hasPointerCapture && this.nodes.canvasWrap.hasPointerCapture(state.pointerId)) try { this.nodes.canvasWrap.releasePointerCapture(state.pointerId); } catch (_) {} }
+    rectangleService() { return this.services.selection || MI.RectangleSelection; }
+    textSelectionGeometry() {
+      const result={},svg=this.nodes.canvas.querySelector('svg');
+      if(!svg?.querySelectorAll)return result;
+      const groups=new Map(Array.from(svg.querySelectorAll('[data-object-id]'),n=>[n.getAttribute('data-object-id'),n]));
+      for(const o of this.engine.model.objects) {
+        if(o.type!=='text' && !o.measurementLabelOnly)continue;
+        const group=groups.get(o.id);
+        const text=group?.querySelector(o.type==='text'?'text':'[data-measurement-label] text');
+        if(!text?.getBBox)continue;
+        const box=text.getBBox(),matrix=text.getScreenCTM();if(!matrix || !box.width || !box.height)continue;
+        result[o.id]=[[box.x,box.y],[box.x+box.width,box.y],[box.x+box.width,box.y+box.height],[box.x,box.y+box.height]].map(([x,y])=>({x:matrix.a*x+matrix.c*y+matrix.e,y:matrix.b*x+matrix.d*y+matrix.f}));
+      }
+      return result;
+    }
+    updateRectangle(end) {
+      const state=this.interaction;if(!state || state.mode!=='marquee')return;
+      if(!Number.isFinite(end.x)||!Number.isFinite(end.y))return;
+      state.end={...end};
+      if(!state.keyboard)state.active=Math.hypot(end.x-state.startScreen.x,end.y-state.startScreen.y)>=3;
+      if(!state.active)return;
+      state.result=this.rectangleService().resolve(this.engine.model.objects,state.startScreen,end,{transform:state.transform,bounds:this.engine.renderer.bounds,textGeometry:state.textGeometry,base:state.selectionIdsBefore,operation:state.operation,mode:state.keyboard?state.rule:undefined});
+      this.selectedIds=state.result.ids;
+      this.status('Kader: '+(state.result.mode==='contain'?'omsluiten':'raken')+' · '+state.result.found.length+' objecten'+(state.keyboard?' · pijlen, Alt voor fijn, C wisselt, Enter bevestigt, Escape annuleert.':''));
+      this.invalidate(true);
+    }
+    startKeyboardRectangle(event={}) {
+      if(this.tool!=='select' || this.interaction)return;
+      const b=this.engine.renderer.bounds,t=this.transform();if(!t)return;
+      const p=t.mathToScreen({x:(b.xMin+b.xMax)/2,y:(b.yMin+b.yMax)/2});
+      this.flushEdits();this.interaction={mode:'marquee',keyboard:true,phase:'anchor',pointerId:null,active:true,rule:'contain',transform:t,startScreen:p,end:{...p},selectionIdsBefore:this.selectedIds.slice(),operation:this.rectangleService().operation(event),textGeometry:this.textSelectionGeometry()};
+      this.status('Kaderselectie: pijlen kiezen beginpunt, Enter zet vast; C wisselt omsluiten/raken; Escape annuleert.');this.invalidate();
+    }
+    renderRectangle(svg,r) {
+      const state=this.interaction;if(!svg || state?.mode!=='marquee' || !state.active)return;
+      const a=state.startScreen,b=state.end||a,points=[[a.x,a.y],[b.x,a.y],[b.x,b.y],[a.x,b.y]].map(([x,y])=>state.transform.screenToMath({x,y})).map(p=>r.mapX(p.x)+','+r.mapY(p.y)).join(' ');
+      const polygon=this.document.createElementNS('http://www.w3.org/2000/svg','polygon');
+      polygon.setAttribute('data-selection-rectangle','');polygon.setAttribute('points',points);polygon.setAttribute('fill',state.result?.mode==='cross'||state.rule==='cross'?'#16803b22':'#2463b422');polygon.setAttribute('stroke','#2463b4');polygon.setAttribute('stroke-width','1');polygon.setAttribute('vector-effect','non-scaling-stroke');polygon.setAttribute('stroke-dasharray',state.result?.mode==='cross'||state.rule==='cross'?'5 3':'none');polygon.setAttribute('pointer-events','none');svg.appendChild(polygon);
+    }
     polygonResult(point) {
       const state=this.interaction; let result=this.snap(point);
       if(state.shape==='rightAngle' && state.vertices.length===2) result=this.services.snap.free(MI.MeasurementGeometry.rightPoint(state.vertices,result.point),'right-angle');
@@ -237,6 +278,12 @@
       this.history.record(state.historyBefore); this.invalidate(); this.status(angle?'Hoek toegevoegd.':'Veelhoek toegevoegd.');
     }
     pointerDown(event) {
+      if(this.initialized && !this.interaction && this.tool==='select' && event.button===2 && event.isPrimary!==false) {
+        if(!this.pointer(event))return;
+        this.suppressMarqueeMenu=false;
+        this.begin({mode:'marquee',operation:this.rectangleService().operation(event),active:false,end:{x:event.clientX,y:event.clientY},textGeometry:this.textSelectionGeometry()},event);return;
+      }
+      if(!this.interaction)this.suppressMarqueeMenu=false;
       if (!this.initialized || (this.interaction && !['polygon','construction'].includes(this.interaction.mode)) || event.button !== 0 || event.isPrimary === false) return;
       const point = this.pointer(event); if (!point) return; event.preventDefault();
       if(this.tool.startsWith('construct:')) {this.constructionClick(point,event);return;}
@@ -307,6 +354,7 @@
       if(state.mode==='construction')return;
       if (state.mode==='polygon') { if(event.isPrimary===false || (state.pointerId!=null && event.pointerId!==state.pointerId)) return; const point=this.pointer(event); if(point) { state.result=this.polygonResult(point); this.polygonPreview(); } return; }
       if (event.pointerId !== state.pointerId) return;
+      if(state.mode==='marquee'){this.updateRectangle({x:event.clientX,y:event.clientY});return;}
       const point = this.pointer(event); if (!point) return;
       const delta = state.transform.screenDelta(event.clientX - state.startScreen.x, event.clientY - state.startScreen.y); if (!delta) return;
       if (state.mode === "draw") { state.lastRawPoint = point; this.resolveDraw(); }
@@ -325,6 +373,7 @@
       this.invalidate(true);
     }
     pointerUp(event) {
+      if(this.interaction?.mode==='marquee' && !this.interaction.keyboard && event.pointerId===this.interaction.pointerId){this.updateRectangle({x:event.clientX,y:event.clientY});this.commit();return;}
       if(this.interaction && ['polygon','construction'].includes(this.interaction.mode) && event.pointerId===this.interaction.pointerId) { const state=this.interaction,id=state.pointerId; state.pointerId=null; this.release({...state,pointerId:id}); return; }
       if (this.interaction && event.pointerId === this.interaction.pointerId) this.commit();
       else if (!this.interaction && this.feedback && (!event.target || this.nodes.canvasWrap.contains(event.target))) { this.feedback = null; this.invalidate(); }
@@ -332,6 +381,7 @@
     commit() {
       const state = this.interaction; if (!state) return;
       this.interaction = null; this.release(state); this.engine.renderer.preview = null; this.feedback = null;
+      if(state.mode==='marquee'){this.suppressMarqueeMenu=!state.keyboard && state.active;this.invalidate();return;}
       if (state.mode === "draw") {
         if (state.resolved && state.resolved.length >= .05) this.selectedId = this.engine.add(state.resolved.object).id;
         else this.status("Vorm te kort; geen object toegevoegd.");
@@ -355,6 +405,13 @@
       if (event.key === "Escape" && (this.pendingText || this.colorId)) { event.preventDefault(); this.closeDialogs(true); return; }
       const active = this.document.activeElement;
       const editable = active && (/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable);
+      if(!editable && !state && event.key.toLowerCase()==='k' && this.tool==='select'){event.preventDefault();this.startKeyboardRectangle(event);return;}
+      if(!editable && state?.mode==='marquee' && state.keyboard) {
+        const step=event.altKey?1:10,delta={ArrowLeft:[-step,0],ArrowRight:[step,0],ArrowUp:[0,-step],ArrowDown:[0,step]}[event.key];
+        if(delta){event.preventDefault();const end={x:state.end.x+delta[0],y:state.end.y+delta[1]};if(state.phase==='anchor'){state.startScreen=end;state.end=end;this.invalidate();}else this.updateRectangle(end);return;}
+        if(event.key.toLowerCase()==='c'){event.preventDefault();state.rule=state.rule==='contain'?'cross':'contain';if(state.phase!=='anchor')this.updateRectangle(state.end);else{this.status('Kader: '+(state.rule==='contain'?'omsluiten':'raken')+'; pijlen kiezen beginpunt, Enter zet vast.');this.invalidate();}return;}
+        if(event.key==='Enter'){event.preventDefault();if(state.phase==='anchor'){state.phase='end';this.updateRectangle(state.end);}else this.commit();return;}
+      }
       if (!editable && (event.ctrlKey || event.metaKey) && ["z", "y"].includes(event.key.toLowerCase())) {
         event.preventDefault(); this.travelHistory(event.key.toLowerCase() === "y" || event.shiftKey); return;
       }
@@ -444,6 +501,7 @@
       const svg = n.canvas.querySelector("svg"), object = this.selectedId && this.viewObject(this.selectedId);
       if (svg && svg.querySelectorAll) { Array.from(svg.querySelectorAll('[data-object-id]')).filter(node=>this.selectedIds.includes(node.getAttribute('data-object-id'))).forEach(node=>node.classList.add('selected')); }
       if (this.document.createElementNS) {
+        this.renderRectangle(svg,r);
         if (this.services.overlays) this.services.overlays.render(svg, r, this.selectedIds.length===1?object:null, this.tool, this.document);
         if (this.services.feedback) this.services.feedback.render(svg, r, this.feedback, this.document);
       }

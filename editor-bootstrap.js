@@ -9,6 +9,7 @@
     const storage = options.storage || (() => { try { return global.localStorage; } catch (e) { return { getItem() { throw e; } }; } })();
     const services = options.services || { history: MI.EditorHistory, transform: MI.CoordinateTransform, snap: MI.SnapService, resolver: MI.InteractionResolver, draft: MI.DraftStore, grid: MI.adaptiveGridStep && { step: MI.adaptiveGridStep, maxScale: MI.adaptiveGridMaxScale }, labels: MI.LabelOffsets, overlays: MI.EditorOverlays, feedback: MI.SnapFeedback, color: MI.EditorColor, axis: MI.AxisSettings };
     let startupStatus = null;
+    if (!services.selection) services.selection = MI.RectangleSelection;
     if (options.restoreDraft !== false && services.draft) try { if (services.draft.restore(engine, storage)) startupStatus = "Opgeslagen concept geladen."; } catch (e) { startupStatus = "Concept kon niet worden geladen; opgeslagen gegevens zijn behouden: " + e.message; }
     const app = new MI.EditorApp({ engine, services, document, window, storage });
     MI.editor = app; MI.activeEngine = engine; // Compatibility reference; never used for discovery by the app.
