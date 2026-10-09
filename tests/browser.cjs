@@ -111,7 +111,8 @@ const server = http.createServer((req, res) => {
     const importHistory=await require('./browser-import-history.cjs')(page);
     const persistentGroups=await require('./browser-persistent-groups.cjs')(page);
     const layers=await require('./browser-layers.cjs')(page);
+    const constructionContract=await require('./browser-construction-contract.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

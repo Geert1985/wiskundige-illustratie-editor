@@ -156,6 +156,13 @@
       if(this.hoverFrame!==null && this.window.cancelAnimationFrame)this.window.cancelAnimationFrame(this.hoverFrame);
       this.hoverFrame=null;this.hoverPointer=null;this.hoverId=null;this.hoverHit=null;this.renderPresentation();
     }
+    detachSelection(){const ids=this.selectedObjects().filter(o=>o.construction).map(o=>o.id);if(ids.length)this.changeDocument(()=>{this.execute('construction.detach',{ids});this.status('Constructie losgemaakt; het object volgt zijn bronnen niet meer.');});}
+    constructionPanel(object){
+      const info=this.engine.getConstructionInfo(object.id);if(!info)return '';
+      const messages={SOURCE_INVALID:'Een bronconstructie bestaat momenteel niet.',COINCIDENT_POINTS:'De twee bronpunten vallen samen.',DEGENERATE_DIRECTION:'De bronlijn heeft geen geldige richting.',DEGENERATE_ARM:'Een arm van de hoek heeft geen lengte.',ZERO_RADIUS:'De broncirkel heeft straal nul.',POINT_INSIDE_CIRCLE:'Het bronpunt ligt binnen de cirkel.',NON_FINITE_RESULT:'De berekening geeft geen eindige meetwaarde.',COORDINATE_LIMIT:'De berekende positie ligt buiten het ondersteunde bereik.'};
+      const link=id=>{const source=this.engine.get(id);return source?'<button type="button" class="secondary" data-construction-source="'+MI.escapeXml(id)+'"'+(this.runtime&&!this.capabilities(id).selectList?' disabled':'')+'>'+MI.escapeXml(source.name||id)+'</button>':'';};
+      return '<div class="construction-info" data-construction-mode="'+info.mode+'"><p class="help-text">'+(info.mode==='linked'?'Gekoppelde constructie.':'Vrij object.')+'</p>'+(info.mode==='linked'?'<div>Bronnen: '+info.sources.map(ref=>link(ref.objectId)+(ref.part?'<span class="help-text"> '+({start:'beginpunt',end:'eindpunt',vertex:'hoekpunt',edge:'zijde'}[ref.part]||'')+(ref.index!=null?' '+(ref.index+1):'')+'</span>':'')).join(' ')+(info.hasRestrictedSources?' <span class="help-text">Andere bronnen zijn afgeschermd.</span>':'')+'</div>':'')+(info.dependents.length?'<div>Gebruikt door: '+info.dependents.map(link).join(' ')+'</div>':'')+(!info.valid?'<p class="help-text" data-construction-reason="'+info.reasonCode+'">'+MI.escapeXml(messages[info.reasonCode]||'Constructie bestaat momenteel niet.')+'</p>':'')+'</div>';
+    }
     duplicateSelection() {
       if(!this.selectedIds.length)return;this.changeDocument(()=>{this.selectedIds=this.execute('object.duplicate',{ids:this.selectedIds}).result.map(o=>o.id);});
     }
@@ -245,6 +252,8 @@
         this.invalidate();
       });
       this.on(n.selectionPanel, "click", e => {
+        const source=e.target.closest('[data-construction-source]');if(source){this.selectObject(source.dataset.constructionSource);return;}
+        if(e.target.closest('[data-detach-construction]')){this.detachSelection();return;}
         if(e.target.closest('[data-group-selection]')) {this.groupSelection();return;}
         if(e.target.closest('[data-ungroup-selection]')) {this.ungroupSelection();return;}
         if(e.target.closest('[data-duplicate-selection]')) { this.duplicateSelection(); return; }
@@ -300,7 +309,7 @@
       this.invalidate();
     }
     closeDialogs(cancel = false) { this.closeText(); if (this.colorId) this.closeColor(cancel); }
-    constructionRole(kind,index) { return ['area','perimeter'].includes(kind)?'figure':['parallel','perpendicular'].includes(kind)&&index===0?'line':kind==='tangent'&&index===0?'circle':'point'; }
+    constructionRole(kind,index) { return MI.ConstructionService.contract(kind).sourceRoles[index]; }
     constructionHint(kind,index=0) { return ({area:'Klik een cirkel, driehoek of veelhoek voor de oppervlakte.',perimeter:'Klik een cirkel, driehoek of veelhoek voor de omtrek.',midpoint:'Middenpunt: kies twee punten, of klik een lijnstuk.',perpendicularBisector:'Middelloodlijn: kies twee punten, of klik een lijnstuk.',parallel:index?'Kies het punt waar de evenwijdige rechte doorheen gaat.':'Kies een lijn of zijde.',perpendicular:index?'Kies het punt waar de loodlijn doorheen gaat.':'Kies een lijn of zijde.',bisector:['Bissectrice: klik een bestaande hoek of een veelhoekhoekpunt, of kies een bestaand punt op de eerste arm.','Kies nu het hoekpunt (waar beide armen samenkomen).','Kies nu een bestaand punt op de tweede arm.'][index],tangent:index?'Kies een punt op of buiten de cirkel.':'Kies een cirkel.'})[kind]; }
     constructionPick(point,role) {
       const transform=this.transform(),screen=transform.mathToScreen(point),candidates=[];
@@ -309,18 +318,12 @@
       for(const o of this.engine.model.objects) {
         if(!this.engine.isDisplayed(o.id)||o.visible===false||(o.construction && o.constructionValid===false)||(this.runtime && !this.capabilities(o.id).sourceTools.includes(this.tool)))continue;
         const add=(s,d)=>{if(d<=12)candidates.push({source:{objectId:o.id,...s},distance:d,priority:o.type==='point'?0:1});};
-        if(role==='figure') {
-          if(o.type==='polygon')add({},MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
-          if(o.type==='circle'){const radial=Math.hypot(point.x-o.cx,point.y-o.cy),edge=radial?{x:o.cx+(point.x-o.cx)*o.r/radial,y:o.cy+(point.y-o.cy)*o.r/radial}:{x:o.cx+o.r,y:o.cy};add({},radial<=o.r?0:distance(edge));}
+        for(const ref of MI.ConstructionService.referenceOptions(o)[role]) {
+          if(role==='point')add(ref,distance(MI.ConstructionService.point(o,ref)));
+          else if(role==='line')add(ref,segment(o,ref));
+          else if(role==='figure'&&o.type==='polygon')add(ref,MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
+          else {const radial=Math.hypot(point.x-o.cx,point.y-o.cy),edge=radial?{x:o.cx+(point.x-o.cx)*o.r/radial,y:o.cy+(point.y-o.cy)*o.r/radial}:{x:o.cx+o.r,y:o.cy};add(ref,role==='figure'&&radial<=o.r?0:distance(edge));}
         }
-        else if(role==='point') {
-          if(o.type==='point')add({},distance(o));
-          if(MI.LinearGeometry.isLinear(o))for(const part of ['start','end'])add({part},distance(MI.ConstructionService.point(o,{part})));
-          if(o.vertices)o.vertices.forEach((v,index)=>add({part:'vertex',index},distance(v)));
-        } else if(role==='line') {
-          if(MI.LinearGeometry.isLinear(o))add({},segment(o,{}));
-          if(o.type==='polygon')o.vertices.forEach((v,index)=>add({part:'edge',index},segment(o,{part:'edge',index})));
-        } else if(o.type==='circle') {const radial=Math.hypot(point.x-o.cx,point.y-o.cy);const edge=radial?{x:o.cx+(point.x-o.cx)*o.r/radial,y:o.cy+(point.y-o.cy)*o.r/radial}:{x:o.cx+o.r,y:o.cy};add({},distance(edge));}
       }
       candidates.sort((a,b)=>a.distance-b.distance || a.priority-b.priority || a.source.objectId.localeCompare(b.source.objectId));return candidates[0]&&candidates[0].source;
     }
@@ -330,7 +333,7 @@
       if(['area','perimeter'].includes(kind)&&painted&&['polygon','circle'].includes(painted.type))state.sources=[{objectId:painted.id}];
       const angle=!state.sources.length&&kind==='bisector'&&(painted&&painted.type==='angle'?painted:(this.engine.selectAt(point.x,point.y,{transform:this.transform(),tolerancePx:12})||{}).object);
       if(angle&&angle.type==='angle'&&angle.visible!==false&&(!this.runtime || this.capabilities(angle.id).sourceTools.includes(this.tool)))state.sources=[0,1,2].map(index=>({objectId:angle.id,part:'vertex',index}));
-      let source=this.constructionPick(point,this.constructionRole(kind,state.sources.length));
+      let source=state.sources.length<MI.ConstructionService.kinds[kind]?this.constructionPick(point,this.constructionRole(kind,state.sources.length)):null;
       if(kind==='bisector' && !state.sources.length && source && source.part==='vertex') {const polygon=this.engine.get(source.objectId);if(polygon.type==='polygon')state.sources=[(source.index+polygon.vertices.length-1)%polygon.vertices.length,source.index,(source.index+1)%polygon.vertices.length].map(index=>({objectId:polygon.id,part:'vertex',index}));}
       if(state.sources.length===MI.ConstructionService.kinds[kind]) {}
       else if(!source && !state.sources.length && ['midpoint','perpendicularBisector'].includes(kind)) {const line=this.constructionPick(point,'line');if(line){const o=this.engine.get(line.objectId);state.sources=o.type==='polygon'?[{objectId:o.id,part:'vertex',index:line.index},{objectId:o.id,part:'vertex',index:(line.index+1)%o.vertices.length}]:[{objectId:o.id,part:'start'},{objectId:o.id,part:'end'}];}}
@@ -578,7 +581,7 @@
       const state = this.interaction; this.interaction = null;
       if (state) {
         if(this.runtime && state.transaction)try{this.runtime.cancel(state.transaction);}catch(_){}
-        if (!this.runtime && (state.mode === "object" || state.mode === "label") && this.engine.get(state.id)) this.engine.update(state.id, state.original);
+        if (!this.runtime && (state.mode === "object" || state.mode === "label") && this.engine.get(state.id)) this.engine.update(state.id, state.mode==="label"?{labelOffsetX:state.original.labelOffsetX,labelOffsetY:state.original.labelOffsetY}:state.original);
         if (!this.runtime && state.mode === "pan") this.engine.renderer.setBounds(state.bounds);
         if(!this.runtime && state.mode==='group')this.engine.updateMany(state.originals.map(o=>({id:o.id,patch:o})));
         this.selectedIds=state.selectionIdsBefore || (state.selectionBefore?[state.selectionBefore]:[]); this.release(state);
@@ -762,10 +765,11 @@
       panel.className = "selection-panel";
       const grouping=this.runtime?'':'<div class="selection-actions"><button type="button" data-group-selection'+(this.selectedIds.length<2?' disabled':'')+'>Groeperen</button><button type="button" data-ungroup-selection'+(!this.selectedGroups().length?' disabled':'')+'>Groep opheffen</button></div>';
       const layers=this.engine.model.layers||[],owner=MI.DocumentLayers.index(layers).owner,current=owner.get(this.selectedIds[0])?.id,same=this.selectedIds.every(id=>owner.get(id)?.id===current),assignment=!this.runtime&&layers.length?'<label>Laag<select data-layer-assign aria-label="Laag van selectie">'+(!same?'<option value="">Verschillende lagen</option>':'')+layers.slice().reverse().map(l=>'<option value="'+MI.escapeXml(l.id)+'"'+(same&&l.id===current?' selected':'')+'>'+MI.escapeXml(l.name)+(l.visible?'':' (verborgen)')+'</option>').join('')+'</select></label>':'';
-      const actions=assignment+grouping+'<div class="selection-actions"><button type="button" data-duplicate-selection>Dupliceren</button><button type="button" class="secondary" data-lock-selection>'+ (this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen')+'</button></div>';
+      const derived=this.selectedObjects().filter(o=>o.construction),detach=!this.runtime&&derived.length?'<button type="button" class="secondary" data-detach-construction'+(!this.allowed('construction.detach',{ids:derived.map(o=>o.id)})?' disabled':'')+'>Constructie losmaken</button>':'';
+      const info=this.selectedIds.length===1?this.constructionPanel(object):'';
+      const actions=info+detach+assignment+grouping+'<div class="selection-actions"><button type="button" data-duplicate-selection>Dupliceren</button><button type="button" class="secondary" data-lock-selection>'+ (this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen')+'</button></div>';
       if(this.selectedIds.length>1 || object.locked) {panel.innerHTML='<strong>'+ (this.selectedIds.length>1?this.selectedIds.length+' objecten geselecteerd':MI.escapeXml(object.name))+'</strong><p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+actions+'<button class="delete-btn" data-delete-selected'+(!this.editableSelection()?' disabled':'')+'>Verwijder selectie</button>';return;}
       let html = '<strong>' + MI.escapeXml(object.name) + '</strong><code>' + MI.escapeXml(object.id) + '</code><label>Naam<input data-edit="name" value="' + MI.escapeXml(object.name) + '"></label>';
-      if(object.construction) html+='<p class="help-text">Gekoppeld aan: '+object.construction.sources.map(s=>MI.escapeXml(s.objectId)).join(', ')+'.</p>'+((object.construction && object.constructionValid===false)?'<p>Constructie bestaat momenteel niet; wijzig de bronobjecten om te herstellen.</p>':'');
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
       for (const key of object.construction?[]:keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.1" value="' + MI.escapeXml(object[key]) + '"></label>';
       if(object.type==='polygon' || object.type==='angle') object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.1" value="'+MI.escapeXml(p[key])+'"></label>'; });
