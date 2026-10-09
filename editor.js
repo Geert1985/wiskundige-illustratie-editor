@@ -226,7 +226,7 @@
       const state=this.interaction;if(!state || state.mode!=='marquee')return;
       if(!Number.isFinite(end.x)||!Number.isFinite(end.y))return;
       state.end={...end};
-      if(!state.keyboard)state.active=Math.hypot(end.x-state.startScreen.x,end.y-state.startScreen.y)>=3;
+      if(!state.keyboard)state.active=state.active || Math.hypot(end.x-state.startScreen.x,end.y-state.startScreen.y)>=3;
       if(!state.active)return;
       state.result=this.rectangleService().resolve(this.engine.model.objects,state.startScreen,end,{transform:state.transform,bounds:this.engine.renderer.bounds,textGeometry:state.textGeometry,base:state.selectionIdsBefore,operation:state.operation,mode:state.keyboard?state.rule:undefined});
       this.selectedIds=state.result.ids;
@@ -245,6 +245,11 @@
       const a=state.startScreen,b=state.end||a,points=[[a.x,a.y],[b.x,a.y],[b.x,b.y],[a.x,b.y]].map(([x,y])=>state.transform.screenToMath({x,y})).map(p=>r.mapX(p.x)+','+r.mapY(p.y)).join(' ');
       const polygon=this.document.createElementNS('http://www.w3.org/2000/svg','polygon');
       polygon.setAttribute('data-selection-rectangle','');polygon.setAttribute('points',points);polygon.setAttribute('fill',state.result?.mode==='cross'||state.rule==='cross'?'#16803b22':'#2463b422');polygon.setAttribute('stroke','#2463b4');polygon.setAttribute('stroke-width','1');polygon.setAttribute('vector-effect','non-scaling-stroke');polygon.setAttribute('stroke-dasharray',state.result?.mode==='cross'||state.rule==='cross'?'5 3':'none');polygon.setAttribute('pointer-events','none');svg.appendChild(polygon);
+      if(state.keyboard) {
+        const cursor=this.document.createElementNS('http://www.w3.org/2000/svg','path');
+        const map=(x,y)=>{const p=state.transform.screenToMath({x,y});return r.mapX(p.x)+' '+r.mapY(p.y);};
+        cursor.setAttribute('data-selection-cursor','');cursor.setAttribute('d','M '+map(b.x-6,b.y)+' L '+map(b.x+6,b.y)+' M '+map(b.x,b.y-6)+' L '+map(b.x,b.y+6));cursor.setAttribute('stroke','#2463b4');cursor.setAttribute('stroke-width','2');cursor.setAttribute('vector-effect','non-scaling-stroke');cursor.setAttribute('pointer-events','none');svg.appendChild(cursor);
+      }
     }
     polygonResult(point) {
       const state=this.interaction; let result=this.snap(point);

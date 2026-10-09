@@ -109,6 +109,9 @@ test('M1 keyboard rectangle uses same resolver and does not intercept text entry
   for(let i=0;i<2;i++){h.emit(h.win,'keydown',{key:'ArrowRight'});h.emit(h.win,'keydown',{key:'ArrowDown'});}
   assert.deepEqual(Array.from(h.app.selectedIds),['p']);h.emit(h.win,'keydown',{key:'Enter'});assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,0);
 });
+test('M1 once a drag starts returning to its origin still suppresses its contextmenu',()=>{
+  const h=appRuntime();rightRectangle(h,{x:0,y:0},{x:.5,y:-.5});const p=h.app.transform().mathToScreen({x:0,y:0});h.emit(h.win,'pointermove',{clientX:p.x,clientY:p.y});assert.equal(h.app.interaction.active,true);h.emit(h.win,'pointerup',{clientX:p.x,clientY:p.y});let blocked=false;h.emit(h.doc.getElementById('canvasWrap'),'contextmenu',{preventDefault(){blocked=true;}});assert.equal(blocked,true);
+});
 test('style inspector edits font size and stroke without replacing other style fields',()=>{
   const {app,engine,emit,doc}=appRuntime();const o=engine.add({type:'text',x:1,y:1,text:'T',style:{fontSize:16,extension:{keep:true}}});app.selectedId=o.id;app.invalidate();
   assert.match(doc.getElementById('selectionPanel').innerHTML,/data-style="fontSize"/);
