@@ -526,7 +526,7 @@
           state.resolved=state.mode==='endpoint'?this.services.resolver.endpoint(this.engine,state.original,state.endpoint,point,{transform:this.transform()}):this.services.resolver.polygonVertex(this.engine,state.original,state.vertex,point,{transform:this.transform()});
           operation='object.setGeometry';payload={id:state.id,fields:MI.PermissionFields.patch(state.original,state.resolved.patch).filter(f=>MI.PermissionFields.geometry(state.original).includes(f.path))};this.feedback=state.resolved.result;
         }else {
-          const originals=state.mode==='group'?state.originals:[state.original];state.resolved=this.services.resolver.translateGroup(this.engine,originals,delta,{transform:this.transform()});
+          const originals=state.mode==='group'?state.originals:[state.original];state.resolved=this.services.resolver.translateGroup(this.engine,originals,delta,{transform:this.transform(),excludeIds:this.selectedIds});
           const a=MI.MeasurementGeometry.anchors(originals[0])[0],b=MI.MeasurementGeometry.anchors({...originals[0],...state.resolved.patches[0].patch})[0];
           operation='object.translate';payload={ids:state.mode==='group'?this.selectedIds:[state.id],delta:{x:b.x-a.x,y:b.y-a.y}};this.feedback=state.resolved.result;
         }
@@ -536,7 +536,7 @@
       if (state.mode === "label") this.updateObject(state.id, { labelOffsetX: state.offset.x + delta.x, labelOffsetY: state.offset.y + delta.y });
       if (state.mode === "endpoint") { state.resolved = this.services.resolver.endpoint(this.engine, state.original, state.endpoint, point, { transform: this.transform() }); this.feedback = state.resolved.result; }
       if(state.mode==='vertex') { state.resolved=this.services.resolver.polygonVertex(this.engine,state.original,state.vertex,point,{transform:this.transform()}); this.feedback=state.resolved.result; }
-      if(state.mode==='group') { state.resolved=this.services.resolver.translateGroup(this.engine,state.originals,delta,{transform:this.transform()});try{const desired=MI.MeasurementGeometry.anchors({...state.originals[0],...state.resolved.patches[0].patch})[0],current=MI.MeasurementGeometry.anchors(this.engine.get(state.originals[0].id))[0];this.execute('object.translate',{ids:this.selectedIds,delta:{x:desired.x-current.x,y:desired.y-current.y}});this.feedback=state.resolved.result;}catch(error){this.status(error.message);} }
+      if(state.mode==='group') { state.resolved=this.services.resolver.translateGroup(this.engine,state.originals,delta,{transform:this.transform(),excludeIds:this.selectedIds});try{const desired=MI.MeasurementGeometry.anchors({...state.originals[0],...state.resolved.patches[0].patch})[0],current=MI.MeasurementGeometry.anchors(this.engine.get(state.originals[0].id))[0];this.execute('object.translate',{ids:this.selectedIds,delta:{x:desired.x-current.x,y:desired.y-current.y}});this.feedback=state.resolved.result;}catch(error){this.status(error.message);} }
       if (state.mode === "object") {
         const o = state.original;
         if(o.type==='angle') { const r=this.services.resolver.translateGroup(this.engine,[o],delta,{transform:this.transform()});this.updateObjects(r.patches);this.feedback=r.result; }
