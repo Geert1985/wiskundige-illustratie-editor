@@ -386,3 +386,8 @@ test('M3b author initialization restores persistent document controls after rest
 test('M3b select-all skips incomplete hidden groups while author list can inspect them',()=>{
   const h=appRuntime();h.engine.group(['p','l']);h.engine.update('l',{visible:false});h.emit(h.win,'keydown',{key:'a',ctrlKey:true});assert.deepEqual(Array.from(h.app.selectedIds),[]);h.app.selectObject('p');assert.deepEqual(Array.from(h.app.selectedIds),['p','l']);
 });
+
+test('M3b hidden group members clear hover on render and eligibility is cached per immutable snapshot',()=>{
+  const h=appRuntime();h.engine.group(['p','l']);h.app.updateHover({...h.app.transform().mathToScreen({x:0,y:0}),clientX:h.app.transform().mathToScreen({x:0,y:0}).x,clientY:h.app.transform().mathToScreen({x:0,y:0}).y});assert.equal(h.app.hoverId,'p');h.engine.update('l',{visible:false});h.app.renderPresentation(true);assert.equal(h.app.hoverId,null);
+  h.engine.update('l',{visible:true});let queries=0;const original=h.app.canvasSelectable.bind(h.app);h.app.canvasSelectable=o=>{queries++;return original(o);};assert.equal(h.app.groupCanvasSelectable('p'),true);const first=queries;assert.equal(h.app.groupCanvasSelectable('l'),true);assert.equal(queries,first);
+});
