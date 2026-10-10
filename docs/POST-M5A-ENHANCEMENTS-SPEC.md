@@ -1,0 +1,74 @@
+# Post-M5a uitbreidingen — functionele specificatie
+
+Versie: 1.0.0
+Datum: 2026-10-10
+Status: goedgekeurde productwensen; technische uitwerking en implementatie nog te plannen
+Project: From Zero 2 Infinity — Wiskunde Illustrator
+Basis: main, na M5a; zie M5a-REPORT.md en DEVELOPMENT-ROADMAP.md.
+
+## Doel en afbakening
+Leg de in het overleg afgesproken uitbreidingen vast zonder te suggereren dat ze al geïmplementeerd of getest zijn. De bestaande roadmap blijft geldig. Concrete milestone-nummers na M5a zijn voorstellen en geen autorisatie voor Codex.
+
+## 1. Dynamische tekstobjecten
+- Tekstobjecten kunnen statische tekst of een dynamische verwijzing naar één of meer bestaande geometrische objecten bevatten.
+- Ondersteunde bronwaarden als doel: objectnaam/label, lengte, omtrek, oppervlakte, straal, hoek en coördinaten, voor zover mathematisch toepasselijk en door de meetengine ondersteund.
+- Het eigenschappenpaneel biedt bronobject, eigenschap, precisie, voor- en achtervoegsel. Latere uitbreiding: tekstsjablonen met meerdere velden, bijvoorbeeld `Lengte AB = {waarde}`.
+- Referenties zijn gebaseerd op stabiele object-ID's, niet op de zichtbare naam. Hernoemen en verplaatsen van bronnen werkt de weergave automatisch bij.
+- Bij verwijderde of tijdelijk ongeldige bron: duidelijk 'niet beschikbaar' tonen; gedrag bij definitieve verwijdering en cascade moet vooraf expliciet worden gespecificeerd.
+- Geen willekeurige JavaScript-expressies of onveilige evaluatie; gebruik gevalideerde, getypeerde bindings.
+- Metingen gebruiken de documenteenheid, schaal en precisie. Wiskundige notatie zoals |AB| en Opp(△ABC) is gewenst.
+
+## 2. Raster en standaardkleur constructies
+- Bij een nieuw document staat het raster standaard **aan**.
+- Bestaande opgeslagen documenten behouden hun opgeslagen rasterzichtbaarheid; geen ongevraagde migratie.
+- Nieuw aangemaakte constructieobjecten krijgen standaard een **rode lijnkleur**, waar een lijnstijl toepasselijk is (bijv. middelloodlijn, bissectrice, raaklijn, gekoppeld lijnstuk). Voor puntconstructies, zoals punt op cirkel, is een passende rode puntstijl gewenst.
+- De gebruiker kan de kleur/stijl achteraf wijzigen; herberekening van de afhankelijkheidsgraaf mag deze override niet wissen.
+- De exacte lijst constructietypes en het precieze rood (kleur-token) moeten bij implementatie centraal worden vastgelegd.
+
+## 3. Raaklijn via punt op cirkel
+- Behoud de bestaande raaklijnfunctionaliteit.
+- Laat bij de tool 'Raaklijn' een bestaand punt op een geselecteerde cirkel kiezen, met name een M5a gekoppeld punt-op-cirkel.
+- Gevalsonderscheid: punt buiten de cirkel -> twee mogelijke raaklijnen; punt op de cirkel -> één raaklijn; punt binnen de cirkel -> geen reële raaklijn. De UX moet duidelijk omgaan met twee oplossingen en degeneratie.
+- Voor cirkelmiddelpunt C=(a,b) en raakpunt P=(x0,y0) is de raaklijn `(x0-a)(x-x0)+(y0-b)(y-y0)=0`; deze staat loodrecht op CP.
+- De raaklijn volgt het gekoppelde raakpunt en de cirkel dynamisch, met stabiele objectidentiteit, correcte invalidatie, undo/redo, locks, permissies, import/export en replay.
+- Verifieer compatibiliteit met bestaande tangent-recepten en het constructionSchema; maak geen impliciete schemawijziging.
+
+## 4. Contextuele stapsgewijze instructies
+- Voor **elk** teken- en constructiegereedschap verschijnen bij activering onmiddellijk instructies bovenaan de rechterzijbalk 'Eigenschappen'.
+- Duidelijke stappen: 'Stap 1 van N', actieve stap groot/vet en visueel benadrukt, voltooide stappen met statusindicator.
+- De instructies volgen de werkelijke toolstatus en wijzigen na elke geldige bronselectie. Voor meervoudige oplossingswijzen, zoals raaklijnen, zijn contextafhankelijke stappen nodig.
+- Ongeldige selecties tonen een begrijpelijke melding en houden de huidige stap actief. Escape, annuleren, toolwissel en voltooien herstellen een consistente toestand.
+- Zonder actief tekengereedschap toont de zijbalk gewone objecteigenschappen. Instructies mogen noodzakelijke objecteigenschappen niet onbereikbaar maken.
+- Gebruik een centrale declaratieve instructiedefinitie per tool, met toegankelijkheid voor toetsenbord en schermlezers.
+
+## 5. Eenheden, schaal en meetnotatie — definitieve keuze
+- **Standaard bij nieuwe documenten: centimeter (cm)**; dit vervangt het eerdere voorstel voor abstracte eenheden als standaard.
+- Standaardschaal: **1 coördinateneenheid = 1 cm**; standaardprecisie: **2 decimalen**.
+- Lengte en omtrek: cm; oppervlakte: cm²; hoeken: graden (°).
+- Alternatieve lengte-eenheden: abstracte eenheid (e), mm, m, km; de oppervlakte-eenheid wordt overeenkomstig e², mm², m² of km².
+- Instellingen horen in het rechter eigenschappenpaneel bij **Assenstelsel → Eenheden en schaal**, niet in een afzonderlijke algemene instellingenpagina.
+- Aanpasbaar: lengte-eenheid, schaalfactor en aantal decimalen. Schaalfactor moet eindig en strikt positief zijn.
+- Fysieke eenheden worden toegepast op weergegeven meetwaarden: lengte = coördinatenlengte × schaal; oppervlakte = coördinatenoppervlakte × schaal². Hoeken worden niet door de lengteschaal beïnvloed.
+- Zoomniveau is onafhankelijk van fysieke schaal. Wijziging van eenheid/schaal wijzigt **geen** geometrische coördinaten, constructierelaties of objectidentiteiten.
+- Eenheden verschijnen automatisch bij lengtes, omtrekken, oppervlaktes, relevante meetlabels en dynamische tekstwaarden; geen dubbele suffixen.
+- Bewaar documentinstellingen in een versieerbare, compatibele vorm. Bestaande documenten zonder eenhedenmetadata krijgen een expliciet te bepalen legacy-weergave om onverwachte betekeniswijziging te vermijden; dit is een open migratiebesluit.
+
+## Voorgestelde fasering
+1. Kleine UX-correcties: raster aan bij nieuw document en rode standaardstijl voor constructies.
+2. Contextuele, toegankelijke stapsgewijze instructies voor alle tools.
+3. M5b-kandidaat: raaklijn in gekoppeld punt op cirkel.
+4. Eenheden/schaal/meetnotatie en dynamische tekstbindingen; technische afhankelijkheid: eenhedencontract vóór formattering van dynamische waarden.
+
+## Acceptatiecriteria (overkoepelend)
+- Node-unit- en regressietests; Edge-browserinteracties inclusief echte pointer-events waar relevant.
+- Undo/redo, opslag, import/export, vergrendeling, autorisatie (author/course/assessment), semantische replay en bestaande constructies blijven correct.
+- Bewijs dat eenheden/zoom geen geometrie wijzigen, kleur-override herberekening overleeft en dynamische bindings geen dangling/ongecontroleerde referenties introduceren.
+- Handmatige visuele acceptatie door de gebruiker na iedere afgebakende milestone.
+
+## Nog te beslissen tijdens technisch ontwerp
+- Exacte kleurcode en toepasselijke constructietypes.
+- Precies gedrag van dynamische tekst na definitieve bronverwijdering.
+- Legacy-documenten zonder eenhedenmetadata en gewenste migratie.
+- Schema/API-aanpassingen, precieze milestone-indeling en prioriteit.
+
+Dit document is een **specificatie en backlog-aanvulling**, geen implementatieopdracht.
