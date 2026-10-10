@@ -116,3 +116,7 @@ Center/perimeter-source circle delivered at a502c55 on chatgpt/math-illustration
 ## Linked shape menu refinement (2026-10-10)
 
 Cirkel via punten and Lijnstuk via punten now share one remembered split-button at user request. Browser/visual validation pass; see [report](LINKED-SHAPE-MENU-REPORT.md). Geometry milestone sequencing unchanged.
+
+## M5b technical completion (2026-10-10)
+
+Final linked-point tangent audit completed at 42fd06e: shared contact-count tolerance and selected path-point hit priority fix, existing tangent recipe/schema preserved. Full 326 Node tests and 39 Edge modules pass; see [report](M5b-LINKED-TANGENT-REPORT.md). M5b technical scope complete; manual acceptance pending for final checkpoint. After acceptance, agreed next addition is units/scale/measurement notation, then dynamic text, with explicit legacy policy first. M6 remains retained. Main unchanged; branch publication authorized.
