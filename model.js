@@ -63,6 +63,7 @@
     const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
     if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices);
     if (input.type === "angle") MI.MeasurementGeometry.validateAngle(input.vertices,input.angleMark || "arc");
+    if('angleSettings' in input){if(input.type!=='angle')throw Error('Hoekinstellingen zijn alleen voor hoeken.');MI.AngleMeasurements.settings(input.angleSettings);if(input.angleMark==='right'&&input.angleSettings.mode==='directed')throw Error('Een rechtehoekmarkering gebruikt de kleinste hoek.');}
     if('coordinateProjections' in input){if(input.type!=='point')throw Error('Projecties zijn alleen beschikbaar voor punten.');projectionSettings(input.coordinateProjections);}
     if(input.measurementMode!=null && !["computed","text"].includes(input.measurementMode)) throw Error("Ongeldige meetmodus.");
     if(input.measurementText!=null && typeof input.measurementText!=="string") throw Error("Ongeldige maattekst.");
@@ -204,7 +205,7 @@
       if (data.type != null && data.type !== "geometry") throw new Error("Niet-ondersteund documenttype.");
       if (data.meta != null && !record(data.meta)) throw new Error("Ongeldige documentmetadata.");
       const meta = clone(data.meta || {}), presentation = normalisePresentation(data.presentation);
-      if('measurement' in meta)meta.measurement=MI.MeasurementUnits.settings(meta.measurement);
+      if('measurement' in meta)meta.measurement=MI.MeasurementUnits.settings(meta.measurement);if('angleMeasurement' in meta)meta.angleMeasurement=MI.AngleMeasurements.document(meta.angleMeasurement);
       ["title", "description"].forEach(key => {
         if (meta[key] != null && typeof meta[key] !== "string") throw new Error("Ongeldige documentmetadata: " + key);
       });

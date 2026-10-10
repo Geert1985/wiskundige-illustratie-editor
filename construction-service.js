@@ -3,8 +3,8 @@
  const MI=global.FZI.MathIllustration;
  const freeze=v=>{if(v&&typeof v==='object'){Object.values(v).forEach(freeze);Object.freeze(v);}return v;};
  const failure=(code,message)=>{const error=new Error(message);error.code=code;throw error;};
- const recipes={circleByCenterPoint:['circle',['point','point']],circleCircleIntersection:['point',['circle','circle']],lineCircleIntersection:['point',['line','circle']],lineIntersection:['point',['line','line']],lineBetweenPoints:['line',['point','point']],pointOnSegment:['point',['segment']],pointOnCircle:['point',['circle']],perimeter:['text',['figure']],area:['text',['figure']],midpoint:['point',['point','point']],perpendicular:['straight',['line','point']],parallel:['straight',['line','point']],perpendicularBisector:['straight',['point','point']],bisector:['ray',['point','point','point']],tangent:['straight',['circle','point']]};
- const fields={circle:['cx','cy','r'],line:['x1','y1','x2','y2'],point:['x','y'],text:['x','y','text'],straight:['x1','y1','x2','y2'],ray:['x1','y1','x2','y2']};
+ const recipes={anglePoints:['angle',['point','point','point']],angleDirections:['angle',['line','line']],angleXAxis:['angle',['line']],circleByCenterPoint:['circle',['point','point']],circleCircleIntersection:['point',['circle','circle']],lineCircleIntersection:['point',['line','circle']],lineIntersection:['point',['line','line']],lineBetweenPoints:['line',['point','point']],pointOnSegment:['point',['segment']],pointOnCircle:['point',['circle']],perimeter:['text',['figure']],area:['text',['figure']],midpoint:['point',['point','point']],perpendicular:['straight',['line','point']],parallel:['straight',['line','point']],perpendicularBisector:['straight',['point','point']],bisector:['ray',['point','point','point']],tangent:['straight',['circle','point']]};
+ const fields={angle:['vertices'],circle:['cx','cy','r'],line:['x1','y1','x2','y2'],point:['x','y'],text:['x','y','text'],straight:['x1','y1','x2','y2'],ray:['x1','y1','x2','y2']};
  const definitions=freeze(Object.fromEntries(Object.entries(recipes).map(([kind,[resultType,sourceRoles]])=>[kind,{kind,resultType,sourceRoles,branches:['tangent','lineCircleIntersection','circleCircleIntersection'].includes(kind)?[0,1]:[],computedFields:fields[resultType]}])));
  const kinds=Object.fromEntries(Object.entries(definitions).map(([kind,d])=>[kind,d.sourceRoles.length]));
  function contract(kind){if(!Object.prototype.hasOwnProperty.call(definitions,kind))failure('INVALID_CONSTRUCTION_KIND','Onbekende constructie.');return definitions[kind];}
@@ -16,7 +16,7 @@
   return ref.part==null&&(role==='circle'?object.type==='circle':['circle','polygon'].includes(object.type));
  }
  const pathKind=kind=>['pointOnSegment','pointOnCircle'].includes(kind);
- const schema2=kind=>pathKind(kind)||['lineBetweenPoints','lineIntersection','lineCircleIntersection','circleCircleIntersection','circleByCenterPoint'].includes(kind);
+ const schema2=kind=>MI.AngleMeasurements.isLinked(kind)||pathKind(kind)||['lineBetweenPoints','lineIntersection','lineCircleIntersection','circleCircleIntersection','circleByCenterPoint'].includes(kind);
  function normaliseParameter(kind,value=0){if(!pathKind(kind)){if(value!==0)failure('INVALID_PARAMETER','Deze constructie heeft geen padparameter.');return undefined;}if(typeof value!=='number'||!Number.isFinite(value))failure('INVALID_PARAMETER','De padpositie moet eindig zijn.');if(kind==='pointOnSegment')return Math.max(0,Math.min(1,value));const t=value%1;return t<0?t+1:t===0?0:t;}
  function referencesForRole(o,role){const refs=referenceOptions(o);return role==='segment'?refs.line.filter(ref=>accepts(o,ref,'segment')):refs[role]||[];}
  function projectParameter(kind,o,ref,p){if(kind==='pointOnCircle')return normaliseParameter(kind,Math.atan2(p.y-o.cy,p.x-o.cx)/(2*Math.PI));const l=line(o,ref),dx=l.x2-l.x1,dy=l.y2-l.y1,n=dx*dx+dy*dy;return normaliseParameter(kind,n?((p.x-l.x1)*dx+(p.y-l.y1)*dy)/n:0);}
@@ -63,7 +63,7 @@
  function evaluate(c,objects){
   validateReferences(c,objects);const source=c.sources.map(ref=>objects.get(ref.objectId));if(source.some(o=>o.construction&&o.constructionValid===false))return {valid:false,reasonCode:'SOURCE_INVALID',geometry:null};
   const geometry=calculate(c,objects);let reasonCode='VALID';
-  if(!geometry){reasonCode=c.kind==='circleCircleIntersection'?circleCircleIntersection(c,source).reasonCode:c.kind==='lineCircleIntersection'?lineCircleIntersection(c,source).reasonCode:c.kind==='lineIntersection'?lineIntersection(c,source).reasonCode:['perpendicularBisector','lineBetweenPoints','pointOnSegment','circleByCenterPoint'].includes(c.kind)?'COINCIDENT_POINTS':c.kind==='pointOnCircle'?'ZERO_RADIUS':['parallel','perpendicular'].includes(c.kind)?'DEGENERATE_DIRECTION':c.kind==='bisector'?'DEGENERATE_ARM':c.kind==='tangent'?(source[0].r<=0?'ZERO_RADIUS':'POINT_INSIDE_CIRCLE'):'NON_FINITE_RESULT';}
+  if(!geometry){reasonCode=MI.AngleMeasurements.isLinked(c.kind)?(c.kind==='anglePoints'?'DEGENERATE_ARM':source.some((o,i)=>{const l=line(o,c.sources[i]);return Math.hypot(l.x2-l.x1,l.y2-l.y1)<=1e-9;})?'DEGENERATE_DIRECTION':'COORDINATE_LIMIT'):c.kind==='circleCircleIntersection'?circleCircleIntersection(c,source).reasonCode:c.kind==='lineCircleIntersection'?lineCircleIntersection(c,source).reasonCode:c.kind==='lineIntersection'?lineIntersection(c,source).reasonCode:['perpendicularBisector','lineBetweenPoints','pointOnSegment','circleByCenterPoint'].includes(c.kind)?'COINCIDENT_POINTS':c.kind==='pointOnCircle'?'ZERO_RADIUS':['parallel','perpendicular'].includes(c.kind)?'DEGENERATE_DIRECTION':c.kind==='bisector'?'DEGENERATE_ARM':c.kind==='tangent'?(source[0].r<=0?'ZERO_RADIUS':'POINT_INSIDE_CIRCLE'):'NON_FINITE_RESULT';}
   else for(const [key,value] of Object.entries(geometry))if(['x','y','x1','y1','x2','y2','cx','cy','r'].includes(key)){if(!Number.isFinite(value)){reasonCode='NON_FINITE_RESULT';break;}if(Math.abs(value)>1e12){reasonCode='COORDINATE_LIMIT';break;}}
   return {valid:reasonCode==='VALID',reasonCode,geometry:reasonCode==='VALID'?geometry:null};
  }
@@ -74,8 +74,16 @@
  function tangentOnCircle(circle,p){const d=Math.hypot(p.x-circle.cx,p.y-circle.cy);return Math.abs(d-circle.r)<=1e-9*Math.max(1,d,circle.r);}
  const unit=(x,y)=>{const l=Math.hypot(x,y);return l<1e-9?null:{x:x/l,y:y/l};};
  const linear=(type,p,d)=>d?{type,x1:p.x,y1:p.y,x2:p.x+d.x,y2:p.y+d.y}:null;
+ function angleGeometry(c,source){
+  if(c.kind==='anglePoints'){const vertices=source.map((o,i)=>point(o,c.sources[i]));return [0,2].some(i=>Math.hypot(vertices[i].x-vertices[1].x,vertices[i].y-vertices[1].y)<=1e-9)?null:{type:'angle',vertices};}
+  const lines=source.map((o,i)=>line(o,c.sources[i])),directions=lines.map(l=>{const dx=l.x2-l.x1,dy=l.y2-l.y1,n=Math.hypot(dx,dy);return n<=1e-9?null:{x:dx/n,y:dy/n};});if(directions.some(d=>!d))return null;
+  const first=lines[0];let v={x:first.x1,y:first.y1},a=c.kind==='angleXAxis'?{x:1,y:0}:directions[0],b=c.kind==='angleXAxis'?directions[0]:directions[1];
+  if(c.kind==='angleDirections'){const cross=a.x*b.y-a.y*b.x;if(Math.abs(cross)>1e-12){const second=lines[1],distance=((second.x1-first.x1)*b.y-(second.y1-first.y1)*b.x)/cross;v={x:first.x1+distance*a.x,y:first.y1+distance*a.y};}}
+  const vertices=[{x:v.x+a.x,y:v.y+a.y},v,{x:v.x+b.x,y:v.y+b.y}];return vertices.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&Math.abs(p.x)<=1e12&&Math.abs(p.y)<=1e12)?{type:'angle',vertices}:null;
+ }
  function calculate(c,objects){validateReferences(c,objects);const source=c.sources.map(s=>objects.get(s.objectId));
   if(source.some(o=>o.construction && o.constructionValid===false))return null;
+  if(MI.AngleMeasurements.isLinked(c.kind))return angleGeometry(c,source);
   if(['perimeter','area'].includes(c.kind)) {
    const o=source[0];if(!['circle','polygon'].includes(o.type))throw Error('Kies een cirkel, driehoek of veelhoek.');
    let amount,anchor;

@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
-  const SPLIT_TOOLS={linkedShape:['construct:circleByCenterPoint','construct:lineBetweenPoints'],pointConstruction:['construct:midpoint', 'construct:pointOnSegment', 'construct:pointOnCircle', 'construct:lineIntersection', 'construct:lineCircleIntersection', 'construct:circleCircleIntersection'],linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
+  const SPLIT_TOOLS={linkedShape:['construct:circleByCenterPoint','construct:lineBetweenPoints'],pointConstruction:['construct:midpoint', 'construct:pointOnSegment', 'construct:pointOnCircle', 'construct:lineIntersection', 'construct:lineCircleIntersection', 'construct:circleCircleIntersection'],linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['construct:anglePoints','construct:angleDirections','construct:angleXAxis','angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
   const TOOL_STEPS = {
     point:['Klik op het werkvlak om een punt te plaatsen.'],
     text:['Klik waar de tekst moet komen.','Voer de tekst in en bevestig met Toevoegen.'],
@@ -14,6 +14,9 @@
     dimension:['Druk op het eerste meetpunt.','Sleep naar het tweede meetpunt en laat los.'],
     triangle:['Klik het eerste hoekpunt.','Klik het tweede hoekpunt.','Klik het derde hoekpunt om af te sluiten.'],
     polygon:['Klik het eerste hoekpunt.','Klik het volgende hoekpunt. Vanaf drie punten: Enter of klik het beginpunt om af te sluiten. Backspace verwijdert het laatste punt.'],
+    'construct:anglePoints':['Kies een bestaand punt op de eerste arm.','Kies het bestaande hoekpunt.','Kies een bestaand punt op de tweede arm.'],
+    'construct:angleDirections':['Kies de eerste richting (begin naar einde).','Kies de tweede richting.'],
+    'construct:angleXAxis':['Kies de richting voor de hoek van de positieve x-as naar deze richting.'],
     angle:['Klik een punt op de eerste arm.','Klik het hoekpunt.','Klik een punt op de tweede arm.'],
     rightAngle:['Klik een punt op de eerste arm.','Klik het hoekpunt.','Klik een punt op de tweede arm voor de rechtehoekmarkering.'],
     'construct:circleByCenterPoint':['Kies een bestaand punt als middelpunt.','Kies een tweede bestaand punt op de cirkel. De cirkel blijft beide punten volgen.'],
@@ -49,7 +52,7 @@
       this.hoverId=null; this.hoverHit=null; this.hoverFrame=null; this.hoverPointer=null; this.presentationKey=null;
       this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
       this.history = new (this.runtime ? MI.RuntimeHistory : services.history || MI.EditorHistory)(this); this.editBefore = null;
-      this.linearTool='line';this.figureTool='triangle';this.splitMenuOpen=null;
+      this.linearTool='line';this.figureTool='triangle';this.angleTool='construct:anglePoints';this.splitMenuOpen=null;
       for(const [group,tools] of Object.entries(SPLIT_TOOLS))try{const saved=storage?.getItem('fzi-math-illustration-'+group+'-tool');if(tools.includes(saved))this[group+'Tool']=saved;}catch(_){}
       this.nodes = {};
       for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
@@ -159,8 +162,8 @@
       catch(error) {state.rejected=true;this.status(error.message);}
     }
     get selectedId() { return this.selectedIds[this.selectedIds.length-1] || null; }
-    set selectedId(id) { this.selectedIds=id ? this.groupLeaves(id) : [];this.openFullscreenPointProperties(); }
-    openFullscreenPointProperties(){if(this.canvasFullscreen&&this.tool==='select'&&this.selectedIds.length===1&&this.engine.get(this.selectedIds[0])?.type==='point'){this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');}}
+    set selectedId(id) { this.selectedIds=id ? this.groupLeaves(id) : [];this.openFullscreenObjectProperties(); }
+    openFullscreenObjectProperties(){if(this.canvasFullscreen&&this.tool==='select'&&this.selectedIds.length===1&&['point','angle'].includes(this.engine.get(this.selectedIds[0])?.type)){this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');}}
     selectedObjects() { return this.selectedIds.map(id=>this.engine.get(id)).filter(Boolean); }
     groupIndex() {
       const groups=this.engine.model.groups||[],objects=this.engine.model.objects;
@@ -187,7 +190,7 @@
       const leaves=this.groupLeaves(id);if(source==='canvas'&&!leaves.every(id=>this.canvasSelectable(this.engine.get(id))))return;
       if(additive)this.selectedIds=leaves.every(id=>this.selectedIds.includes(id))?this.selectedIds.filter(id=>!leaves.includes(id)):[...new Set([...this.selectedIds,...leaves])];else this.selectedIds=leaves;
       if(this.runtime)this.selectedIds=this.execute("object.select",{ids:this.selectedIds,source}).selectedIds;
-      this.openFullscreenPointProperties();this.invalidate();
+      this.openFullscreenObjectProperties();this.invalidate();
     }
     editableSelection() { return !this.selectedObjects().some(o=>o.locked); }
     canvasSelectable(o) { return !!o && o.visible!==false && !(o.construction && o.constructionValid===false) && this.engine.isDisplayed(o.id) && (!this.runtime || this.capabilities(o.id).selectCanvas); }
@@ -379,6 +382,8 @@
         if(slider?.type==='range'){const value=slider.parentElement.querySelector('output');if(value)value.textContent=slider.value+(slider.dataset.style==='opacity'?'%':' px');}
       });
       this.on(n.selectionPanel, "change", e => {
+        const angleDoc=e.target.closest('[data-angle-document]');if(angleDoc?.dataset?.angleDocument){try{const settings=MI.AngleMeasurements.document({...this.engine.model.meta.angleMeasurement||{schema:1,unit:'deg',precision:this.engine.model.meta.measurement?.precision??2},[angleDoc.dataset.angleDocument]:angleDoc.dataset.angleDocument==='precision'?angleDoc.valueAsNumber:angleDoc.value});this.changeDocument(()=>this.execute('document.setAngleMeasurement',{settings}));}catch(error){this.status(error.message);this.invalidate();}return;}
+        const angleControl=e.target.closest('[data-angle-setting]');if(angleControl?.dataset?.angleSetting&&this.selectedId){try{const object=this.engine.get(this.selectedId),key=angleControl.dataset.angleSetting,value=key==='showArc'?angleControl.checked:key==='precision'?(angleControl.value===''?null:angleControl.valueAsNumber):angleControl.value,settings=MI.AngleMeasurements.settings({...MI.AngleMeasurements.defaults,...object.angleSettings,[key]:value});this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields:[{path:'angleSettings',value:settings}]}));}catch(error){this.status(error.message);this.invalidate();}return;}
         const projection=e.target.closest('[data-point-projection]');if(projection?.dataset?.pointProjection&&this.selectedId){try{const object=this.engine.get(this.selectedId),key=projection.dataset.pointProjection,settings=MI.PointProjections.settings({...MI.PointProjections.defaults,...object.coordinateProjections,[key]:key==='showValues'?projection.checked:projection.value});this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields:[{path:'coordinateProjections',value:settings}]}));}catch(error){this.status(error.message);this.invalidate();}return;}
         const unitInput=e.target.closest('[data-measurement-setting]');if(unitInput?.dataset?.measurementSetting){try{const old=this.engine.model.meta.measurement||{schema:1,unit:'e',scale:1,precision:2},key=unitInput.dataset.measurementSetting,settings=key==='unit'?MI.MeasurementUnits.convert(old,unitInput.value):MI.MeasurementUnits.settings({...old,[key]:unitInput.valueAsNumber});this.changeDocument(()=>this.execute('document.setMeasurement',{settings}));}catch(error){this.status(error.message);this.invalidate();}return;}
 
@@ -470,7 +475,7 @@
     }
     closeDialogs(cancel = false) { this.closeText(); if (this.colorId) this.closeColor(cancel); }
     constructionRole(kind,index) { return MI.ConstructionService.contract(kind).sourceRoles[index]; }
-    constructionHint(kind,index=0) { return ({circleByCenterPoint:index?'Kies het punt op de cirkel.':'Kies het middelpunt.',circleCircleIntersection:index?'Kies de tweede cirkel.':'Kies de eerste cirkel.',lineCircleIntersection:index?'Kies de cirkel.':'Kies een lijn of veelhoekzijde.',lineIntersection:index?'Kies de tweede lijn of zijde.':'Kies de eerste lijn of zijde.',lineBetweenPoints:index?'Kies het tweede eindpunt.':'Gekoppeld lijnstuk: kies het eerste punt.',pointOnSegment:'Klik een lijnstuk of veelhoekzijde voor een gekoppeld punt.',pointOnCircle:'Klik op een cirkel voor een gekoppeld punt.',area:'Klik een cirkel, driehoek of veelhoek voor de oppervlakte.',perimeter:'Klik een cirkel, driehoek of veelhoek voor de omtrek.',midpoint:'Middenpunt: kies twee punten, of klik een lijnstuk.',perpendicularBisector:'Middelloodlijn: kies twee punten, of klik een lijnstuk.',parallel:index?'Kies het punt waar de evenwijdige rechte doorheen gaat.':'Kies een lijn of zijde.',perpendicular:index?'Kies het punt waar de loodlijn doorheen gaat.':'Kies een lijn of zijde.',bisector:['Bissectrice: klik een bestaande hoek of een veelhoekhoekpunt, of kies een bestaand punt op de eerste arm.','Kies nu het hoekpunt (waar beide armen samenkomen).','Kies nu een bestaand punt op de tweede arm.'][index],tangent:index?'Kies een punt op of buiten de cirkel.':'Kies een cirkel.'})[kind]; }
+    constructionHint(kind,index=0) { return ({anglePoints:['Kies de eerste armbron.','Kies het hoekpunt.','Kies de tweede armbron.'][index],angleDirections:index?'Kies de tweede richting.':'Kies de eerste richting (begin naar einde).',angleXAxis:'Kies de richting tegenover de positieve x-as.',circleByCenterPoint:index?'Kies het punt op de cirkel.':'Kies het middelpunt.',circleCircleIntersection:index?'Kies de tweede cirkel.':'Kies de eerste cirkel.',lineCircleIntersection:index?'Kies de cirkel.':'Kies een lijn of veelhoekzijde.',lineIntersection:index?'Kies de tweede lijn of zijde.':'Kies de eerste lijn of zijde.',lineBetweenPoints:index?'Kies het tweede eindpunt.':'Gekoppeld lijnstuk: kies het eerste punt.',pointOnSegment:'Klik een lijnstuk of veelhoekzijde voor een gekoppeld punt.',pointOnCircle:'Klik op een cirkel voor een gekoppeld punt.',area:'Klik een cirkel, driehoek of veelhoek voor de oppervlakte.',perimeter:'Klik een cirkel, driehoek of veelhoek voor de omtrek.',midpoint:'Middenpunt: kies twee punten, of klik een lijnstuk.',perpendicularBisector:'Middelloodlijn: kies twee punten, of klik een lijnstuk.',parallel:index?'Kies het punt waar de evenwijdige rechte doorheen gaat.':'Kies een lijn of zijde.',perpendicular:index?'Kies het punt waar de loodlijn doorheen gaat.':'Kies een lijn of zijde.',bisector:['Bissectrice: klik een bestaande hoek of een veelhoekhoekpunt, of kies een bestaand punt op de eerste arm.','Kies nu het hoekpunt (waar beide armen samenkomen).','Kies nu een bestaand punt op de tweede arm.'][index],tangent:index?'Kies een punt op of buiten de cirkel.':'Kies een cirkel.'})[kind]; }
     constructionPick(point,role) {
       const transform=this.transform(),screen=transform.mathToScreen(point),candidates=[];
       const distance=p=>{const q=transform.mathToScreen(p);return Math.hypot(q.x-screen.x,q.y-screen.y);};
@@ -826,7 +831,7 @@
       this.closeDialogs(true); this.cancel(); this.flushEdits(); this.invalidateImport();
       let failure = null; if (this.services.draft) try { this.services.draft.clear(this.storage); } catch (e) { failure = e; }
       const r = this.engine.renderer;
-      this.execute("document.replace",{document:{ version: 2, type: "geometry", meta: {measurement:{...MI.MeasurementUnits.defaults}}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: true, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } }});
+      this.execute("document.replace",{document:{ version: 2, type: "geometry", meta: {measurement:{...MI.MeasurementUnits.defaults},angleMeasurement:{schema:1,unit:'deg',precision:2}}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: true, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } }});
       this.history.clear(); this.editBefore = null; this.selectedId = null; this.inspectorTarget="objects";this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");this.savedDocument=JSON.stringify(this.engine.toJSON());
     }
     loadDocument(data) { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.closeDialogs(true); this.cancel(); this.flushEdits(); this.execute("document.replace",{document:data}); this.invalidateImport(); this.history.clear(); this.editBefore = null; this.selectedId = null; this.inspectorTarget="objects";this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen.");this.savedDocument=JSON.stringify(this.engine.toJSON()); }
@@ -920,7 +925,7 @@
       if(this.runtime && svg)for(const handle of svg.querySelectorAll('.fzi-line-endpoint, .fzi-polygon-vertex')){const id=handle.getAttribute('data-line-id')||handle.getAttribute('data-polygon-id'),caps=this.capabilities(id),part=handle.getAttribute('data-endpoint'),fields=part?[part==='start'?'x1':'x2',part==='start'?'y1':'y2']:['x','y'].map(k=>'vertices['+handle.getAttribute('data-vertex')+'].'+k);if(!fields.every(k=>caps.geometryFields.includes(k)))handle.remove();}
       this.renderPresentation(true);
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
-      const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput','measurementSetting','pointProjection'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
+      const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput','measurementSetting','pointProjection','angleSetting','angleDocument'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
       this.renderInstructions();this.renderViewList(); this.renderInspector(object);this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
       if(focusKey.length && focusIds===JSON.stringify(this.selectedIds)){const replacement=Array.from(n.selectionPanel.querySelectorAll('input,select')).find(el=>focusKey.every(([k,v])=>el.dataset[k]===v));if(replacement && !replacement.disabled){replacement.focus?.({preventScroll:true});if(caret!=null && replacement.type==='text')replacement.setSelectionRange?.(caret,caret);}}
       if(n.zoomPercent)n.zoomPercent.textContent=Math.round(this.engine.renderer.scale()/((this.engine.renderer.width-2*this.engine.renderer.padding)/10)*100)+"%";
@@ -957,6 +962,10 @@
       const host=this.nodes.viewList.parentElement,previousScroll=host?.scrollTop||0;this.nodes.viewList.innerHTML = rows.join("");
       if(host){const section=this.nodes.layersSection,available=section?.getBoundingClientRect().height-(section?.querySelector('summary')?.getBoundingClientRect().height||40)-8;if(Number.isFinite(available) && available>0)host.style.maxHeight=Math.max(0,available)+'px';host.scrollTop=previousScroll;const key=JSON.stringify(this.selectedIds);if(key!==this.layerScrollSelectionKey){this.layerScrollSelectionKey=key;const selected=Array.from(this.nodes.viewList.querySelectorAll('[data-select-object]')).find(node=>node.dataset.selectObject===this.selectedId);if(selected){const row=selected.getBoundingClientRect(),bounds=host.getBoundingClientRect();if(row.bottom>bounds.bottom)host.scrollTop+=row.bottom-bounds.bottom+4;else if(row.top<bounds.top)host.scrollTop-=bounds.top-row.top+4;}}}
     }
+    angleInspector(object){
+      if(object.type!=='angle'||this.selectedIds.length!==1)return '';const config=object.angleSettings||MI.AngleMeasurements.defaults,disabled=object.locked||!this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'angleSettings',value:{...config}}]})?' disabled':'',select=(key,label,options,extra='')=>'<label>'+label+'<select data-angle-setting="'+key+'" aria-label="'+label+'"'+disabled+extra+'>'+options.map(([value,text])=>'<option value="'+value+'"'+(config[key]===value?' selected':'')+'>'+text+'</option>').join('')+'</select></label>';
+      return '<details data-property-section="angle-measurement" open><summary>Hoekmeting</summary>'+select('mode','Hoekbereik',[['smallest','Kleinste (0-180&#176;)'],['directed','Gericht (0-360&#176;)']],object.angleMark==='right'?' disabled':'')+select('unit','Hoekeenheid',[['document','Documentstandaard'],['deg','Graden (&#176;)'],['rad','Radialen (rad)']])+'<label>Hoekdecimalen<input data-angle-setting="precision" aria-label="Hoekdecimalen" type="number" min="0" max="10" step="1" placeholder="Documentstandaard" value="'+(config.precision??'')+'"'+disabled+'></label><label class="style-toggle"><input type="checkbox" data-angle-setting="showArc"'+(config.showArc?' checked':'')+disabled+'>Hoekboog tonen</label><p class="help-text">Referentieframe: cartesische documentassen. Richtingen lopen van begin naar einde; een gerichte hoek loopt van de eerste naar de tweede arm, tegen de klok in.</p></details>';
+    }
     pointProjectionInspector(object) {
       if(object.type!=='point'||this.selectedIds.length!==1)return '';
       const config=object.coordinateProjections||MI.PointProjections.defaults,disabled=object.locked||!this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'coordinateProjections',value:{...config}}]})?' disabled':'';
@@ -964,7 +973,7 @@
     }
     renderInspector(object) {
       const panel = this.nodes.selectionPanel;
-      if(this.inspectorTarget==='axes' && !this.selectedId){panel.className='selection-panel';panel.innerHTML=this.services.axis?.html(this.engine.renderer,{adaptive:!!this.services.grid,measurement:this.engine.model.meta.measurement,readOnly:!!this.runtime})||'';this.decorateInspector();return;}
+      if(this.inspectorTarget==='axes' && !this.selectedId){panel.className='selection-panel';panel.innerHTML=this.services.axis?.html(this.engine.renderer,{adaptive:!!this.services.grid,measurement:this.engine.model.meta.measurement,angleMeasurement:this.engine.model.meta.angleMeasurement,readOnly:!!this.runtime})||'';this.decorateInspector();return;}
       if (!object) { panel.className = "selection-empty"; panel.textContent = this.tool==='select'?"Selecteer een object of het assenstelsel.":""; return; }
       this.inspectorTarget='objects';
 
@@ -980,18 +989,18 @@
       const actions=info+this.constructionInputs(object)+pathParameter+detach+assignment;
       const kind=MI.escapeXml(({point:'Punt',line:'Lijnstuk',straight:'Rechte',ray:'Halfrechte',vector:'Vector',circle:'Cirkel',text:'Tekst',polygon:'Veelhoek',dimension:'Lengtemaat',angle:'Hoek'})[object.type]||object.type);
       const heading='<div class="object-heading"><div>'+(this.selectedIds.length>1?'<strong>'+this.selectedIds.length+' objecten geselecteerd</strong>':'<input class="object-name-input" type="text" data-edit="name" aria-label="Objectnaam" value="'+MI.escapeXml(object.name)+'"'+(object.locked?' disabled':'')+'>')+'<span class="object-kind">'+(this.selectedIds.length>1?'Multiselectie':kind)+'</span></div>'+toolbar+'</div>';
-      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions+this.pointProjectionInspector(object);return;}
+      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions+this.pointProjectionInspector(object)+this.angleInspector(object);return;}
       const displayNumber=value=>String(Number(Number(value).toFixed(2)));
       let html = '';
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
       for (const key of object.construction?[]:keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.01" value="' + displayNumber(object[key]) + '"></label>';
-      if(object.type==='polygon' || object.type==='angle') object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.01" value="'+displayNumber(p[key])+'"></label>'; });
+      if(!object.construction&&(object.type==='polygon' || object.type==='angle')) object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.01" value="'+displayNumber(p[key])+'"></label>'; });
       if (object.type === "text" && !object.construction) html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
       html+='<details data-property-section="labels" open><summary>Label en meting</summary>';
       if(MI.LinearGeometry.isLinear(object)||['circle','angle'].includes(object.type)) {
         if(['dimension','angle'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-edit="measurementLabelOnly"'+(object.measurementLabelOnly?' checked':'')+'>Alleen meetlabel tonen</label>';
         if(!['dimension','angle'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-edit="showMeasurement"'+(object.showMeasurement?' checked':'')+'>Maat tonen</label>';
-        if(object.showMeasurement || ['dimension','angle'].includes(object.type)) {const mode=object.measurementMode||'computed';html+='<label>Maatweergave<select data-edit="measurementMode"><option value="computed"'+(mode==='computed'?' selected':'')+'>Berekende waarde</option><option value="text"'+(mode==='text'?' selected':'')+'>Vrije tekst</option></select></label>';if(mode==='text')html+='<label>Maattekst<input data-edit="measurementText" value="'+MI.escapeXml(object.measurementText||'')+'"></label>';else html+='<p data-measurement-value>'+MI.escapeXml(MI.MeasurementGeometry.label(object,this.engine.model.meta.measurement))+'</p>';}
+        if(object.showMeasurement || ['dimension','angle'].includes(object.type)) {const mode=object.measurementMode||'computed';html+='<label>Maatweergave<select data-edit="measurementMode"><option value="computed"'+(mode==='computed'?' selected':'')+'>Berekende waarde</option><option value="text"'+(mode==='text'?' selected':'')+'>Vrije tekst</option></select></label>';if(mode==='text')html+='<label>Maattekst<input data-edit="measurementText" value="'+MI.escapeXml(object.measurementText||'')+'"></label>';else html+='<p data-measurement-value>'+MI.escapeXml(object.constructionValid===false?'niet beschikbaar':MI.MeasurementGeometry.label(object,this.engine.model.meta.measurement,this.engine.model.meta.angleMeasurement))+'</p>';}
       }
       html+='</details>';
       const style=object.style,esc=MI.escapeXml;
@@ -1008,7 +1017,7 @@
       const split=html.indexOf('<details data-property-section="labels"'),appearance=html.indexOf('<fieldset');
       html='<details data-property-section="appearance" open><summary>Uiterlijk</summary>'+html.slice(appearance)+'</details><details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       html=html.replace('<details data-property-section="labels" open><summary>Label en meting</summary></details>','');
-      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+html;
+      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+html;
     }
     download(name, content, type) { const blob = new this.window.Blob([content], { type }), url = this.window.URL.createObjectURL(blob), link = this.document.createElement("a"); link.href = url; link.download = name; link.click(); this.window.setTimeout(() => this.window.URL.revokeObjectURL(url), 500); }
   }

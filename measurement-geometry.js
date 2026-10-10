@@ -1,5 +1,11 @@
 (function(global) {
   const MI=global.FZI.MathIllustration;
+  const angleDefaults=Object.freeze({schema:1,frame:'cartesian',mode:'smallest',unit:'document',precision:null,showArc:true});
+  const precision=v=>Number.isInteger(v)&&v>=0&&v<=10;
+  function angleSettings(v){if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!['schema','frame','mode','unit','precision','showArc'].includes(k))||v.schema!==1||v.frame!=='cartesian'||!['smallest','directed'].includes(v.mode)||!['document','deg','rad'].includes(v.unit)||v.precision!==null&&!precision(v.precision)||typeof v.showArc!=='boolean')throw Error('Ongeldige hoekinstellingen.');return {...v};}
+  function angleDocument(v){if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!['schema','unit','precision'].includes(k))||v.schema!==1||!['deg','rad'].includes(v.unit)||!precision(v.precision))throw Error('Ongeldige hoekeenheid of precisie.');return {...v};}
+  function angleLabel(o,measurement,document){const a=o.angleSettings;if(!a&&!document)return format(value(o),'angle',measurement);const config=a?angleSettings(a):angleDefaults,doc=document?angleDocument(document):{unit:'deg',precision:measurement?.precision??2},unit=config.unit==='document'?doc.unit:config.unit,digits=config.precision??doc.precision,amount=value(o)*(unit==='rad'?Math.PI/180:1);let text=amount.toFixed(digits);if(config.mode==='directed'&&unit==='deg'&&Number(text)>=360)text=(0).toFixed(digits);return text.replace('.',',')+(unit==='rad'?' rad':'\u00b0');}
+  MI.AngleMeasurements=Object.freeze({defaults:angleDefaults,settings:angleSettings,document:angleDocument,label:angleLabel,isLinked:kind=>['anglePoints','angleDirections','angleXAxis'].includes(kind)});
   function validateAngle(input,mark='arc') {
     if(!Array.isArray(input)||input.length!==3) throw Error('Een hoek vereist drie punten: arm, hoekpunt, arm.');
     const points=input.map(p=>{if(!p||['x','y'].some(k=>!['number','string'].includes(typeof p[k])||String(p[k]).trim()===''||!Number.isFinite(Number(p[k]))||Math.abs(Number(p[k]))>1e12))throw Error('Ongeldig hoekpunt.');return {...p,x:Number(p.x),y:Number(p.y)};});
@@ -12,7 +18,7 @@
     if(o.type==='circle')return o.r;
     if(o.type!=='angle')return Math.hypot(o.x2-o.x1,o.y2-o.y1);
     const [a,v,b]=o.vertices,ax=a.x-v.x,ay=a.y-v.y,bx=b.x-v.x,by=b.y-v.y;
-    return Math.atan2(Math.abs(ax*by-ay*bx),ax*bx+ay*by)*180/Math.PI;
+    const al=Math.hypot(ax,ay),bl=Math.hypot(bx,by),signed=Math.atan2((ax/al)*(by/bl)-(ay/al)*(bx/bl),(ax/al)*(bx/bl)+(ay/al)*(by/bl))*180/Math.PI;return o.angleSettings?.mode==='directed'?(signed<0?signed+360:signed===0?0:signed):Math.abs(signed);
   }
   function rightPoint(points,raw) {
     const [a,v]=points,dx=a.x-v.x,dy=a.y-v.y,l=Math.hypot(dx,dy),r=Math.hypot(raw.x-v.x,raw.y-v.y);
@@ -36,5 +42,5 @@
   function convert(config,unit){const v=settings(config);if(typeof unit!=='string'||!Object.prototype.hasOwnProperty.call(unitFactors,unit))throw Error('Onbekende eenheid.');return settings({...v,unit,scale:unitFactors[unit]&&unitFactors[v.unit]?v.scale*unitFactors[v.unit]/unitFactors[unit]:v.scale});}
   function figureValue(o,kind){if(o.type==='circle')return kind==='area'?Math.PI*o.r*o.r:2*Math.PI*o.r;const vs=o.vertices;if(kind==='perimeter')return vs.reduce((sum,p,i)=>{const q=vs[(i+1)%vs.length];return sum+Math.hypot(q.x-p.x,q.y-p.y);},0);return Math.abs(vs.reduce((sum,p,i)=>{const q=vs[(i+1)%vs.length];return sum+(p.x-vs[0].x)*(q.y-vs[0].y)-(q.x-vs[0].x)*(p.y-vs[0].y);},0))/2;}
   MI.MeasurementUnits=Object.freeze({defaults,settings,format,convert,figureValue});
-  MI.MeasurementGeometry={validateAngle,value,rightPoint,anchors,translate,edges,label:(o,config)=>o.measurementMode==='text'?String(o.measurementText||''):format(value(o),o.type==='angle'?'angle':'length',config)+(o.type==='circle'?' (r)':'')};
+  MI.MeasurementGeometry={validateAngle,value,rightPoint,anchors,translate,edges,label:(o,config,angleDocument)=>o.measurementMode==='text'?String(o.measurementText||''):o.type==='angle'?angleLabel(o,config,angleDocument):format(value(o),'length',config)+(o.type==='circle'?' (r)':'')};
 })(window);

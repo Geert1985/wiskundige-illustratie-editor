@@ -163,3 +163,6 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .tool-grid .point-construction-split{grid-column:1/-1}.point-construction-split .split-tool-menu{width:100%;max-height:300px;overflow-y:auto}
 
 .tool-grid .linked-shape-split{grid-column:1/-1}.linked-shape-split .split-tool-menu{width:100%}
+
+/* Linked-angle choices retain their complete names in the tool sidebar. */
+.tool-grid > [data-tool-split="angle"]{grid-column:1 / -1}

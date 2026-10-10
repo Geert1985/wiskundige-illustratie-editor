@@ -86,7 +86,7 @@
         ? data
         : new MI.IllustrationModel(data);
       this.renderer = createDocumentRenderer(Object.assign({}, presentationOptions(this.model.presentation), rendererOptions || {}));
-      this.renderer.measurement=this.model.meta.measurement;
+      this.renderer.measurement=this.model.meta.measurement;this.renderer.angleMeasurement=this.model.meta.angleMeasurement;
     }
 
     updateMany(updates) {
@@ -115,7 +115,7 @@
       const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.evaluate(recipe,map).geometry;
       if(!first)throw Error('Deze constructie bestaat niet voor de gekozen geometrie.');
       const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&!MI.ConstructionService.tangentOnCircle(map.get(sources[0].objectId),{x:first.x1,y:first.y1})?2:1;
-      const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,style:{...first.style,stroke:MI.CONSTRUCTION_COLOR,...(first.type==='point'?{fill:MI.CONSTRUCTION_COLOR}:{})},construction:{...recipe, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
+      const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,...(MI.AngleMeasurements.isLinked(kind)?{angleSettings:{...MI.AngleMeasurements.defaults}}:{}),style:{...first.style,stroke:MI.CONSTRUCTION_COLOR,...(first.type==='point'?{fill:MI.CONSTRUCTION_COLOR}:{})},construction:{...recipe, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
     }
     getConstructionInfo(id){return MI.ConstructionService.describe(this.model.objects,id);}
     detachConstructions(ids){return this.model.detachConstructions(ids);}
@@ -188,7 +188,7 @@
       MI.PRESENTATION_FLAGS.forEach(key => { options[key] = key === "showSnapPoints" ? current[key] !== false : current[key]; });
       Object.assign(options, presentationOptions(model.presentation));
       const renderer = createDocumentRenderer(options);
-      renderer.measurement=model.meta.measurement;this.model = model; this.renderer = renderer;
+      renderer.measurement=model.meta.measurement;renderer.angleMeasurement=model.meta.angleMeasurement;this.model = model; this.renderer = renderer;
       return this;
     }
     renderSVG() {

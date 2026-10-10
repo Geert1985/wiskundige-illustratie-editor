@@ -7,7 +7,7 @@
     if ('runtimeSession' in options && !MI.RuntimeSession.isSession(runtime)) throw new MI.PermissionError('INVALID_POLICY');
     if (MI.editor) MI.editor.dispose();
     const document = options.document || global.document, window = options.window || global;
-    const engine = runtime ? runtime.engine : options.engine || new MI.Engine({objects:[],meta:{measurement:{...MI.MeasurementUnits.defaults}}}, { width: 1000, padding: 30, showGrid: true, bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, background: "#f7f7f4" });
+    const engine = runtime ? runtime.engine : options.engine || new MI.Engine({objects:[],meta:{measurement:{...MI.MeasurementUnits.defaults},angleMeasurement:{schema:1,unit:'deg',precision:2}}}, { width: 1000, padding: 30, showGrid: true, bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, background: "#f7f7f4" });
     const storage = options.storage || (() => { try { return global.localStorage; } catch (e) { return { getItem() { throw e; } }; } })();
     const services = {...(options.services || { history: MI.EditorHistory, transform: MI.CoordinateTransform, snap: MI.SnapService, resolver: MI.InteractionResolver, draft: MI.DraftStore, grid: MI.adaptiveGridStep && { step: MI.adaptiveGridStep, maxScale: MI.adaptiveGridMaxScale }, labels: MI.LabelOffsets, overlays: MI.EditorOverlays, feedback: MI.SnapFeedback, color: MI.EditorColor, axis: MI.AxisSettings })};
     if(runtime){services.runtime=runtime;services.draft=null;services.grid=null;}

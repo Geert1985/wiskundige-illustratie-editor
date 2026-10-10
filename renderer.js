@@ -164,7 +164,7 @@
     }
 
     render(model,{editorCanvas=false,clipBounds=this.bounds}={}) {
-      this.projectionLabels=new Set();this.measurement=model.meta?.measurement;this.measurementSources=new Map(model.all().map(o=>[o.id,o]));
+      this.projectionLabels=new Set();this.angleMeasurement=model.meta?.angleMeasurement;this.measurement=model.meta?.measurement;this.measurementSources=new Map(model.all().map(o=>[o.id,o]));
       this.syncAspectRatio();
       const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object,clipBounds||this.bounds)).join("\n");
       const background = this.background === "transparent" ? "" : '<rect x="0" y="0" width="' + esc(this.width) + '" height="' + esc(this.height) + '" fill="' + esc(this.background) + '"/>';
@@ -262,6 +262,7 @@
         }
         else if (object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6);
       }
+      if(object.type==='angle'&&MI.AngleMeasurements.isLinked(object.construction?.kind))svg='';
       if(object.measurementLabelOnly && ['dimension','angle'].includes(object.type)) svg='';
       if(object.type==='angle'||object.type==='dimension'||(object.showMeasurement && (MI.LinearGeometry.isLinear(object)||object.type==='circle'))) svg+=this.renderMeasurement({...object,style});
       return '<g data-object-id="' + esc(object.id) + '" data-object-type="' + esc(object.type) + '" aria-label="' + esc(object.name || object.id) + '"'+(opacity!==1?' opacity="'+esc(number(opacity))+'"':'')+'>' + svg + '</g>';
@@ -272,19 +273,20 @@
       const text=(attribute,x,y,label)=>'<text '+attribute+' x="'+number(this.mapX(x))+'" y="'+number(this.mapY(y)-10)+'" fill="#6f5925" font-size="12" text-anchor="middle">'+esc(label)+'</text>';
       let svg=text('data-preview-length',(a.x+b.x)/2,(a.y+b.y)/2,MI.MeasurementUnits.format(Math.hypot(b.x-a.x,b.y-a.y),'length',this.measurement));
       if(points.length>=3 && Math.hypot(b.x-a.x,b.y-a.y)>1e-9) {
-        const c=points[points.length-3];if(Math.hypot(c.x-a.x,c.y-a.y)>1e-9)svg+=text('data-preview-angle',a.x,a.y,MI.MeasurementGeometry.label({type:'angle',vertices:[c,a,b]},this.measurement));
+        const c=points[points.length-3];if(Math.hypot(c.x-a.x,c.y-a.y)>1e-9)svg+=text('data-preview-angle',a.x,a.y,MI.MeasurementGeometry.label({type:'angle',vertices:[c,a,b]},this.measurement,this.angleMeasurement));
       }
       return svg;
     }
     renderMeasurement(object) {
-      const style=object.style||{},label=MI.MeasurementGeometry.label(object,this.measurement);let svg='',anchor;
+      const style=object.style||{},label=MI.MeasurementGeometry.label(object,this.measurement,this.angleMeasurement);let svg='',anchor;
       if(object.type==='angle') {
         const [a,v,b]=object.vertices,map=p=>({x:this.mapX(p.x),y:this.mapY(p.y)}),c=map(v),pa=map(a),pb=map(b),la=Math.hypot(pa.x-c.x,pa.y-c.y),lb=Math.hypot(pb.x-c.x,pb.y-c.y);
-        const ua={x:(pa.x-c.x)/la,y:(pa.y-c.y)/la},ub={x:(pb.x-c.x)/lb,y:(pb.y-c.y)/lb},r=Math.min(28,la*.35,lb*.35);
+        const ua={x:(pa.x-c.x)/la,y:(pa.y-c.y)/la},ub={x:(pb.x-c.x)/lb,y:(pb.y-c.y)/lb},r=MI.AngleMeasurements.isLinked(object.construction?.kind)?28:Math.min(28,la*.35,lb*.35);
         const p={x:c.x+ua.x*r,y:c.y+ua.y*r},q={x:c.x+ub.x*r,y:c.y+ub.y*r};
-        const path=object.angleMark==='right'?'M '+number(p.x)+' '+number(p.y)+' L '+number(p.x+ub.x*r)+' '+number(p.y+ub.y*r)+' L '+number(q.x)+' '+number(q.y):'M '+number(p.x)+' '+number(p.y)+' A '+number(r)+' '+number(r)+' 0 0 '+(ua.x*ub.y-ua.y*ub.x>=0?1:0)+' '+number(q.x)+' '+number(q.y);
-        svg='<path '+(object.angleMark==='right'?'data-right-angle':'data-angle-arc')+' d="'+path+'" fill="none" '+strokeAttrs(style)+'/>';
-        let ux=ua.x+ub.x,uy=ua.y+ub.y,l=Math.hypot(ux,uy);if(l<1e-9){ux=-ua.y;uy=ua.x;l=1;}
+        const directed=object.angleSettings?.mode==='directed',degrees=MI.MeasurementGeometry.value(object),large=directed&&degrees>180?1:0,sweep=directed?0:(ua.x*ub.y-ua.y*ub.x>=0?1:0);
+        const path=object.angleMark==='right'?'M '+number(p.x)+' '+number(p.y)+' L '+number(p.x+ub.x*r)+' '+number(p.y+ub.y*r)+' L '+number(q.x)+' '+number(q.y):'M '+number(p.x)+' '+number(p.y)+' A '+number(r)+' '+number(r)+' 0 '+large+' '+sweep+' '+number(q.x)+' '+number(q.y);
+        if(degrees>1e-10&&object.angleSettings?.showArc!==false)svg='<path '+(object.angleMark==='right'?'data-right-angle':'data-angle-arc')+' d="'+path+'" fill="none" '+strokeAttrs(style)+'/>';
+        let ux=ua.x+ub.x,uy=ua.y+ub.y,l=Math.hypot(ux,uy);if(directed){const theta=Math.atan2(-ua.y,ua.x)+degrees*Math.PI/360;ux=Math.cos(theta);uy=-Math.sin(theta);l=1;}else if(l<1e-9){ux=-ua.y;uy=ua.x;l=1;}
         anchor={x:v.x+ux/l*(r+16)/this.scale(),y:v.y-uy/l*(r+16)/this.scale()};
       } else if(object.type==='circle') anchor={x:object.cx+object.r,y:object.cy};
       else {
