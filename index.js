@@ -86,6 +86,7 @@
         ? data
         : new MI.IllustrationModel(data);
       this.renderer = createDocumentRenderer(Object.assign({}, presentationOptions(this.model.presentation), rendererOptions || {}));
+      this.renderer.measurement=this.model.meta.measurement;
     }
 
     updateMany(updates) {
@@ -187,7 +188,7 @@
       MI.PRESENTATION_FLAGS.forEach(key => { options[key] = key === "showSnapPoints" ? current[key] !== false : current[key]; });
       Object.assign(options, presentationOptions(model.presentation));
       const renderer = createDocumentRenderer(options);
-      this.model = model; this.renderer = renderer;
+      renderer.measurement=model.meta.measurement;this.model = model; this.renderer = renderer;
       return this;
     }
     renderSVG() {

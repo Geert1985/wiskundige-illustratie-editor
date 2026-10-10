@@ -164,6 +164,7 @@
     }
 
     render(model,{editorCanvas=false,clipBounds=this.bounds}={}) {
+      this.measurement=model.meta?.measurement;this.measurementSources=new Map(model.all().map(o=>[o.id,o]));
       this.syncAspectRatio();
       const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object,clipBounds||this.bounds)).join("\n");
       const background = this.background === "transparent" ? "" : '<rect x="0" y="0" width="' + esc(this.width) + '" height="' + esc(this.height) + '" fill="' + esc(this.background) + '"/>';
@@ -232,7 +233,11 @@
       if (object.type === "text") {
         const transform = object.rotation ? ' transform="rotate(' + number(object.rotation) + ' ' + number(this.mapX(object.x)) + ' ' + number(this.mapY(object.y)) + ')"' : "";
         svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(object.text) + '</text>';
-        if(object.construction && ['area','perimeter'].includes(object.construction.kind)) svg=this.renderLabel(object,object.text,6,-6);
+        if(object.construction && ['area','perimeter'].includes(object.construction.kind)) {
+          const kind=object.construction.kind,source=this.measurementSources?.get(object.construction.sources[0].objectId),amount=source?MI.MeasurementUnits.figureValue(source,kind):(this.measurementValueFor?.(object)??Number(object.text.split('=').at(-1)));
+          const label=this.measurement?(kind==='area'?'Oppervlakte = ':'Omtrek = ')+MI.MeasurementUnits.format(amount,kind==='area'?'area':'length',this.measurement):object.text;
+          svg=this.renderLabel(object,label,6,-6);
+        }
         else if (object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6);
       }
       if(object.measurementLabelOnly && ['dimension','angle'].includes(object.type)) svg='';
@@ -243,14 +248,14 @@
       if(!preview.showMeasurements || preview.vertices.length<2)return '';
       const points=preview.vertices,a=points[points.length-2],b=points[points.length-1];
       const text=(attribute,x,y,label)=>'<text '+attribute+' x="'+number(this.mapX(x))+'" y="'+number(this.mapY(y)-10)+'" fill="#6f5925" font-size="12" text-anchor="middle">'+esc(label)+'</text>';
-      let svg=text('data-preview-length',(a.x+b.x)/2,(a.y+b.y)/2,Number(Math.hypot(b.x-a.x,b.y-a.y).toFixed(2)));
+      let svg=text('data-preview-length',(a.x+b.x)/2,(a.y+b.y)/2,MI.MeasurementUnits.format(Math.hypot(b.x-a.x,b.y-a.y),'length',this.measurement));
       if(points.length>=3 && Math.hypot(b.x-a.x,b.y-a.y)>1e-9) {
-        const c=points[points.length-3];if(Math.hypot(c.x-a.x,c.y-a.y)>1e-9)svg+=text('data-preview-angle',a.x,a.y,MI.MeasurementGeometry.label({type:'angle',vertices:[c,a,b]}));
+        const c=points[points.length-3];if(Math.hypot(c.x-a.x,c.y-a.y)>1e-9)svg+=text('data-preview-angle',a.x,a.y,MI.MeasurementGeometry.label({type:'angle',vertices:[c,a,b]},this.measurement));
       }
       return svg;
     }
     renderMeasurement(object) {
-      const style=object.style||{},label=MI.MeasurementGeometry.label(object);let svg='',anchor;
+      const style=object.style||{},label=MI.MeasurementGeometry.label(object,this.measurement);let svg='',anchor;
       if(object.type==='angle') {
         const [a,v,b]=object.vertices,map=p=>({x:this.mapX(p.x),y:this.mapY(p.y)}),c=map(v),pa=map(a),pb=map(b),la=Math.hypot(pa.x-c.x,pa.y-c.y),lb=Math.hypot(pb.x-c.x,pb.y-c.y);
         const ua={x:(pa.x-c.x)/la,y:(pa.y-c.y)/la},ub={x:(pb.x-c.x)/lb,y:(pb.y-c.y)/lb},r=Math.min(28,la*.35,lb*.35);
