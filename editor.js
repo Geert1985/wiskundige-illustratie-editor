@@ -28,7 +28,7 @@
     'construct:parallel':['Kies een rechte, lijnstuk, halfrechte, vector of veelhoekzijde.','Kies het punt waar de evenwijdige rechte doorheen gaat.'],
     'construct:perpendicular':['Kies een rechte, lijnstuk, halfrechte, vector of veelhoekzijde.','Kies het punt waar de loodlijn doorheen gaat.'],
     'construct:bisector':['Kies een punt op de eerste arm, of klik een bestaande hoek of veelhoekhoekpunt om meteen de bissectrice te maken.','Kies het hoekpunt waar de armen samenkomen.','Kies een punt op de tweede arm.'],
-    'construct:tangent':['Kies een cirkel.','Kies een punt: buiten de cirkel geeft twee raaklijnen, op de cirkel één, binnen de cirkel geen reële raaklijn.'],
+    'construct:tangent':['Kies een cirkel.','Kies een bestaand punt op deze cirkel, ook een gekoppeld Punt op cirkel. Buiten de cirkel geeft twee raaklijnen, op de cirkel één, binnen de cirkel geen reële raaklijn.'],
     'construct:area':['Klik een cirkel of veelhoek voor de oppervlakte.'],
     'construct:perimeter':['Klik een cirkel of veelhoek voor de omtrek.']
   };
@@ -207,6 +207,11 @@
       if(target && !n.canvasWrap.contains(target))return null;
       const rect=n.canvasWrap.getBoundingClientRect();
       if(Number.isFinite(rect.right) && (event.clientX<rect.left || event.clientX>rect.right || event.clientY<rect.top || event.clientY>rect.bottom))return null;
+      const selectedPathPoint=this.selectedIds.length===1&&this.engine.get(this.selectedId);
+      if(!this.runtime&&this.tool==='select'&&this.canvasSelectable(selectedPathPoint)&&MI.ConstructionService.pathKind(selectedPathPoint.construction?.kind)) {
+        const position=this.transform()?.mathToScreen({x:selectedPathPoint.x,y:selectedPathPoint.y});
+        if(position&&Math.hypot(position.x-event.clientX,position.y-event.clientY)<=8)return {object:selectedPathPoint,kind:'object'};
+      }
       for(const [selector,attribute,kind] of [['.fzi-polygon-vertex','data-polygon-id','vertex'],['.fzi-line-endpoint','data-line-id','endpoint'],['.object-label','data-label-id','label'],['[data-object-id]','data-object-id','object']]) {
         const node=target?.closest?.(selector),object=node && n.canvas.contains(node) && this.engine.get(node.getAttribute(attribute));
         if(this.canvasSelectable(object))return {object,kind:kind==='label' && this.selectedIds.length>1 && this.selectedIds.includes(object.id)?'object':kind};

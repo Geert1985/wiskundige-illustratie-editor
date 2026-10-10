@@ -113,7 +113,7 @@
       }
       const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.evaluate(recipe,map).geometry;
       if(!first)throw Error('Deze constructie bestaat niet voor de gekozen geometrie.');
-      const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&Math.abs(Math.hypot(first.x1-map.get(sources[0].objectId).cx,first.y1-map.get(sources[0].objectId).cy)-map.get(sources[0].objectId).r)>1e-9?2:1;
+      const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&!MI.ConstructionService.tangentOnCircle(map.get(sources[0].objectId),{x:first.x1,y:first.y1})?2:1;
       const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,style:{...first.style,stroke:MI.CONSTRUCTION_COLOR,...(first.type==='point'?{fill:MI.CONSTRUCTION_COLOR}:{})},construction:{...recipe, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
     }
     getConstructionInfo(id){return MI.ConstructionService.describe(this.model.objects,id);}
