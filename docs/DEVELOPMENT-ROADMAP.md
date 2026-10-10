@@ -100,3 +100,7 @@ Main baseline e3db593 was published after merging the accepted authoring work wi
 ## M5b line-circle checkpoint (2026-10-10)
 
 User accepted line-line intersections. Line-circle intersections delivered at f218e47 on chatgpt/math-illustration-m5b: 311 Node tests, 36 Edge modules pass. See [report](M5b-LINE-CIRCLE-REPORT.md) and [contract](M5b-LINE-CIRCLE-CONTRACT.md). Manual acceptance pending. Next separate checkpoint: circle-circle, then derived circles and tangent-at-linked-circle-point audit. Main unchanged.
+
+## M5b circle-circle checkpoint (2026-10-10)
+
+Line-circle manually accepted. Circle-circle delivered at 785c10f on chatgpt/math-illustration-m5b: 316 Node tests and 37 Edge modules pass, visual review complete. See [report](M5b-CIRCLE-CIRCLE-REPORT.md) and [contract](M5b-CIRCLE-CIRCLE-CONTRACT.md). Manual acceptance pending. Next checkpoint: derived circles; linked-point tangent audit still pending. Main unchanged.
