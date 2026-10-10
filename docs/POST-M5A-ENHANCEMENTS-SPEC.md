@@ -1,6 +1,6 @@
 # Post-M5a uitbreidingen — functionele specificatie
 
-Versie: 1.2.0
+Versie: 1.3.0
 Datum: 2026-10-10
 Status: goedgekeurde productwensen; technische uitwerking en implementatie nog te plannen
 Project: From Zero 2 Infinity — Wiskunde Illustrator
@@ -115,3 +115,14 @@ Status: productvoorstel, nog niet geïmplementeerd; definitieve UX-acceptatie bi
 - Behoud objectidentiteit en handmatig aangepaste stijlen bij herberekening. Compatibiliteit met metingen, dynamische tekst, eenheden, locks, undo/redo, import/export, permissions en semantische replay vereist.
 - Node-tests op invariantie van zijden/hoeken, rotatie, metingen en degeneratie; Edge-tests op creëren, wijzigen en slepen.
 - Plan als afgebakende toekomstige milestone; geen implementatie zonder afzonderlijke opdracht.
+
+## 8. Vectoren — uitbreiding van bestaand vectorgereedschap (2026-10-10)
+Status: productvoorstel; de editor heeft al een basisgereedschap Vector, maar de hieronder beschreven bewerkingen zijn niet automatisch als geïmplementeerd te beschouwen.
+
+- Behoud het bestaande vectorgereedschap. Voorzie gekoppelde vector AB met begin- en eindpunt als stabiele bronreferenties en een vrije vector gedefinieerd door componenten.
+- Eigenschappen: componenten (vx, vy), grootte/norm, richting/hoek, naam en stijl; waar passend eenheden volgens documentinstellingen. Vectorcomponenten en norm hebben lengtedimensie, hoek in graden, inproduct heeft kwadratische dimensie wanneer beide vectoren lengtedimensie hebben.
+- Semantische vectoroperaties: optellen, aftrekken, scalair vermenigvuldigen, inproduct, hoek tussen niet-nulvectoren, projectie op niet-nulvector, eventueel loodrechte component. Definieer nulvectorgevallen en degeneratie expliciet.
+- Visualisaties: kop-staartmethode, parallellogramregel, componenten langs assen en vectorprojecties. Een vrije vector moet kunnen worden verplaatst zonder componenten te veranderen; een gebonden vector volgt zijn bronpunten.
+- Alle afgeleide objecten volgen bronwijzigingen via de bestaande constructiegraaf; objectidentiteit, stijloverrides, locks, permissies, undo/redo, import/export en semantische replay blijven correct.
+- Toekomstige integratie met dynamische tekstlabels, animaties, fysica en oefeningen; geen impliciete uitbreiding naar 3D in deze scope.
+- Ontwerp eerst een mathematisch en technisch contract, met Node- en Edge-regressietests, en deel implementatie op in kleine milestones.
