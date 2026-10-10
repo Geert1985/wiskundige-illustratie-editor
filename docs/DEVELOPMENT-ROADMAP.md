@@ -108,3 +108,7 @@ Line-circle manually accepted. Circle-circle delivered at 785c10f on chatgpt/mat
 ## Point construction menu refinement (2026-10-10)
 
 At user request, all six point-producing construction tools are grouped in one remembered split-button, preserving full-screen and permission behavior. Browser validation and visual review pass; see [report](POINT-CONSTRUCTION-MENU-REPORT.md). Geometry milestone sequencing unchanged.
+
+## M5b derived circle checkpoint (2026-10-10)
+
+Center/perimeter-source circle delivered at a502c55 on chatgpt/math-illustration-m5b, with 321 Node tests and 38 Edge modules passing. See [report](M5b-DERIVED-CIRCLE-REPORT.md) and [contract](M5b-DERIVED-CIRCLE-CONTRACT.md). Manual acceptance pending. Next: linked-point tangent audit/extension; M6 triangle circles remain separate. Main unchanged.
