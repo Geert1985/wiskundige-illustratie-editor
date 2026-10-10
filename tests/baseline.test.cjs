@@ -11,10 +11,10 @@ test('supported geometry, metadata, styles and explicit label offsets survive JS
   assert.equal(engine.get('AB').style.dash, '4 2');
   assert.equal(engine.get('A').labelOffsetX, 0.2);
 });
-test('representative exported SVG matches the pre-fix fixture', () => {
+test('representative exported SVG matches the XML-valid compatibility fixture', () => {
   const { MI } = runtime();
   const engine = new MI.Engine(fixture('geometry.json'), { width: 800, padding: 20, showGrid: true });
-  assert.equal(engine.renderSVG(), fs.readFileSync(path.join(__dirname, 'fixtures', 'geometry.svg'), 'utf8'));
+  assert.equal(engine.renderSVG(), fs.readFileSync(path.join(__dirname, 'fixtures', 'geometry.svg'), 'utf8').replace(/\r\n/g,'\n'));
 });
 test('equal scales, upward mathematical y and exact circle radius', () => {
   const { MI } = runtime();

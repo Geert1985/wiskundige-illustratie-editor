@@ -51,12 +51,19 @@
   function numeric(value) {
     return (typeof value === "number" || (typeof value === "string" && value.trim() !== "")) && Number.isFinite(Number(value));
   }
+  const projectionDefaults=Object.freeze({schema:1,frame:'cartesian',mode:'none',showValues:true});
+  function projectionSettings(value) {
+    if(!record(value)||Object.keys(value).some(k=>!['schema','frame','mode','showValues'].includes(k))||value.schema!==1||value.frame!=='cartesian'||!['none','x','y','both'].includes(value.mode)||typeof value.showValues!=='boolean')throw Error('Ongeldige co'+String.fromCharCode(246)+'rdinatenprojecties.');
+    return {...value};
+  }
+  MI.PointProjections=Object.freeze({defaults:projectionDefaults,settings:projectionSettings});
   function validateImportedObject(input) {
     if (!record(input) || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
     if (!((typeof input.id === "string" && input.id.trim() !== "") || (typeof input.id === "number" && Number.isFinite(input.id)))) throw new Error("Elk illustratie-object heeft een geldige id nodig.");
     const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
     if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices);
     if (input.type === "angle") MI.MeasurementGeometry.validateAngle(input.vertices,input.angleMark || "arc");
+    if('coordinateProjections' in input){if(input.type!=='point')throw Error('Projecties zijn alleen beschikbaar voor punten.');projectionSettings(input.coordinateProjections);}
     if(input.measurementMode!=null && !["computed","text"].includes(input.measurementMode)) throw Error("Ongeldige meetmodus.");
     if(input.measurementText!=null && typeof input.measurementText!=="string") throw Error("Ongeldige maattekst.");
     (fields || []).forEach(key => {

@@ -20,7 +20,7 @@
   const number=v=>{if(typeof v!=='number'||!Number.isFinite(v))fail('INVALID_COMMAND');return v;};
   const identifier=v=>{if(typeof v!=='string'||!v.trim())fail('INVALID_COMMAND');return v;};
   const available=(o,engine)=>!!o&&o.visible!==false&&!(o.construction&&o.constructionValid===false)&&(!engine||MI.DocumentLayers.visible(engine.model.layers||[],o.id));
-  const propertyFields=['name','text','rotation','label','labelDx','labelDy','labelOffsetX','labelOffsetY','showLabel','showMeasurement','measurementLabelOnly','measurementMode','measurementText','style.stroke','style.fill','style.strokeWidth','style.opacity','style.radius','style.fontSize','style.fontFamily','style.anchor','style.dash'];
+  const propertyFields=['coordinateProjections','name','text','rotation','label','labelDx','labelDy','labelOffsetX','labelOffsetY','showLabel','showMeasurement','measurementLabelOnly','measurementMode','measurementText','style.stroke','style.fill','style.strokeWidth','style.opacity','style.radius','style.fontSize','style.fontFamily','style.anchor','style.dash'];
   const resultTypes={triangle:'polygon',rightAngle:'angle',...Object.fromEntries(Object.keys(MI.ConstructionService.kinds).map(kind=>[kind,MI.ConstructionService.contract(kind).resultType]))};
   const tools=[...MI.OBJECT_TYPES.map(t=>'create:'+t),'create:triangle','create:rightAngle',...Object.keys(MI.ConstructionService.kinds).map(t=>'construct:'+t)];
   function geometryFields(o){if(o.vertices)return o.vertices.flatMap((p,i)=>[`vertices[${i}].x`,`vertices[${i}].y`]);if(MI.LinearGeometry.isLinear(o))return ['x1','y1','x2','y2'];return o.type==='circle'?['cx','cy','r']:['x','y'];}
@@ -98,6 +98,7 @@
   function grant(s,o,key){if(!effective(s,o)[key])fail('PERMISSION_DENIED');}
   function writable(s,o,path,kind,parameter=false){const r=effective(s,o);if(o.locked)fail('LOCKED');if(r.immutableFields?.includes(path))fail('IMMUTABLE_FIELD');if(o.construction&&(kind==='geometry'||MI.ConstructionService.contract(o.construction.kind).computedFields.includes(path)))fail('MODE_DENIED');if(!s.author&&!parameter&&!(r[kind==='geometry'?'geometryFields':'propertyFields']||[]).includes(path))fail('PERMISSION_DENIED');}
   function validateValue(path,value,geometric=false) {
+    if(path==='coordinateProjections'){MI.PointProjections.settings(value);return;}
     if(geometric || ['rotation','labelDx','labelDy','style.strokeWidth','style.opacity','style.radius','style.fontSize'].includes(path))number(value);
     else if(['labelOffsetX','labelOffsetY'].includes(path)){if(value!==null)number(value);}
     else if(['showLabel','showMeasurement','measurementLabelOnly'].includes(path)){if(typeof value!=='boolean')fail('INVALID_COMMAND');}

@@ -164,11 +164,11 @@
     }
 
     render(model,{editorCanvas=false,clipBounds=this.bounds}={}) {
-      this.measurement=model.meta?.measurement;this.measurementSources=new Map(model.all().map(o=>[o.id,o]));
+      this.projectionLabels=new Set();this.measurement=model.meta?.measurement;this.measurementSources=new Map(model.all().map(o=>[o.id,o]));
       this.syncAspectRatio();
       const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object,clipBounds||this.bounds)).join("\n");
       const background = this.background === "transparent" ? "" : '<rect x="0" y="0" width="' + esc(this.width) + '" height="' + esc(this.height) + '" fill="' + esc(this.background) + '"/>';
-      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(clipBounds||this.bounds),this.renderAxes(editorCanvas),body,this.renderPreview(clipBounds||this.bounds),'</svg>'].join("\n");
+      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(clipBounds||this.bounds),this.renderAxes(editorCanvas),body,this.renderPreview(clipBounds||this.bounds),'</svg>'].join("\n").replace(/<[^>]*>/g,tag=>tag.replace(/("[^"]*"|'[^']*')|(\sdata-[\w-]+)(?=\s|\/?>)(?!\s*=)/g,(match,quoted,attribute)=>quoted||attribute+'=""'));
     }
 
     renderLabel(object, label, defaultDx, defaultDy, line) {
@@ -201,12 +201,34 @@
       return svg;
     }
 
+    renderPointProjections(object,bounds) {
+      const config=object.coordinateProjections;
+      if(!config||config.mode==='none'||object.style?.opacity===0||!this.showAxes||this.coordinateSystem!=='cartesian')return '';
+      const style=object.style||{},color=style.stroke&&style.stroke!=='none'?style.stroke:(style.fill&&style.fill!=='none'?style.fill:'#777'),font=style.fontSize||14;
+      const left=this.mapX(bounds.xMin),right=this.mapX(bounds.xMax),top=this.mapY(bounds.yMax),bottom=this.mapY(bounds.yMin),parts=[];
+      this.projectionLabels??=new Set();
+      for(const axis of ['x','y']) {
+        if(config.mode!==axis&&config.mode!=='both'||(axis==='x'?!this.showXAxis:!this.showYAxis))continue;
+        const foot=axis==='x'?{x:object.x,y:0}:{x:0,y:object.y};
+        const line=MI.LinearGeometry.clip({type:'line',x1:object.x,y1:object.y,x2:foot.x,y2:foot.y},bounds);
+        if(line&&(line.start.x!==line.end.x||line.start.y!==line.end.y))parts.push('<line data-projection-line="'+axis+'" x1="'+number(this.mapX(line.start.x))+'" y1="'+number(this.mapY(line.start.y))+'" x2="'+number(this.mapX(line.end.x))+'" y2="'+number(this.mapY(line.end.y))+'" stroke="'+esc(color)+'" stroke-width="'+number(Math.max(.75,Math.min(2,style.strokeWidth??1)))+'" stroke-dasharray="2 5" opacity="0.65"/>');
+        if(!config.showValues||foot.x<bounds.xMin||foot.x>bounds.xMax||foot.y<bounds.yMin||foot.y>bounds.yMax)continue;
+        const key=axis+':'+object[axis];if(this.projectionLabels.has(key))continue;this.projectionLabels.add(key);
+        const label=axis+' = '+MI.MeasurementUnits.format(object[axis],'length',this.measurement),width=label.length*font*.6;
+        let x=this.mapX(foot.x)+(axis==='y'?10:0),y=this.mapY(foot.y)+(axis==='y'?(foot.y===0?font+20:font+2):(object.y===0?-30:-10)),anchor=axis==='x'?'middle':'start';
+        x=axis==='x'?Math.max(left+width/2,Math.min(right-width/2,x)):Math.max(left+2,Math.min(right-width-2,x));x=Math.max(left+2,Math.min(right-2,x));y=Math.max(top+Math.min(font,bottom-top-3),Math.min(bottom-3,y));
+        parts.push('<text data-projection-value="'+axis+'" x="'+number(x)+'" y="'+number(y)+'" fill="'+esc(color)+'" font-size="'+number(font)+'" font-family="'+esc(style.fontFamily||'Source Sans 3, sans-serif')+'" text-anchor="'+anchor+'">'+esc(label)+'</text>');
+      }
+      if(!parts.length)return '';const id='fzi-point-projection-'+Array.from(String(object.id),c=>c.codePointAt(0).toString(16)).join('-');
+      return '<g data-point-projections="'+esc(object.id)+'" data-projection-frame="cartesian" pointer-events="none" aria-hidden="true"><defs><clipPath id="'+id+'"><rect x="'+number(left)+'" y="'+number(top)+'" width="'+number(right-left)+'" height="'+number(bottom-top)+'"/></clipPath></defs><g clip-path="url(#'+id+')">'+parts.join('')+'</g></g>';
+    }
+
     renderObject(object,clipBounds=this.bounds) {
       if ((object.visible === false || (object.construction && object.constructionValid===false))) return "";
       const opacity=object.style && object.style.opacity != null ? object.style.opacity : 1;
       const style = {...(object.style || {}),opacity:1}; let svg = "";
       if (object.type === "point") {
-        svg = '<circle cx="' + number(this.mapX(object.x)) + '" cy="' + number(this.mapY(object.y)) + '" r="' + number(style.radius || 4) + '" ' + strokeAttrs(style) + ' fill="' + esc(style.fill || style.stroke) + '"/>';
+        svg = this.renderPointProjections(object,clipBounds)+'<circle cx="' + number(this.mapX(object.x)) + '" cy="' + number(this.mapY(object.y)) + '" r="' + number(style.radius || 4) + '" ' + strokeAttrs(style) + ' fill="' + esc(style.fill || style.stroke) + '"/>';
         if (object.showLabel) svg += this.renderLabel(object, object.name || object.label || object.id, 8, -8);
       }
       if (object.type === "line" || object.type==='dimension') {

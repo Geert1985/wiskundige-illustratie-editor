@@ -159,7 +159,8 @@
       catch(error) {state.rejected=true;this.status(error.message);}
     }
     get selectedId() { return this.selectedIds[this.selectedIds.length-1] || null; }
-    set selectedId(id) { this.selectedIds=id ? this.groupLeaves(id) : []; }
+    set selectedId(id) { this.selectedIds=id ? this.groupLeaves(id) : [];this.openFullscreenPointProperties(); }
+    openFullscreenPointProperties(){if(this.canvasFullscreen&&this.tool==='select'&&this.selectedIds.length===1&&this.engine.get(this.selectedIds[0])?.type==='point'){this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');}}
     selectedObjects() { return this.selectedIds.map(id=>this.engine.get(id)).filter(Boolean); }
     groupIndex() {
       const groups=this.engine.model.groups||[],objects=this.engine.model.objects;
@@ -186,7 +187,7 @@
       const leaves=this.groupLeaves(id);if(source==='canvas'&&!leaves.every(id=>this.canvasSelectable(this.engine.get(id))))return;
       if(additive)this.selectedIds=leaves.every(id=>this.selectedIds.includes(id))?this.selectedIds.filter(id=>!leaves.includes(id)):[...new Set([...this.selectedIds,...leaves])];else this.selectedIds=leaves;
       if(this.runtime)this.selectedIds=this.execute("object.select",{ids:this.selectedIds,source}).selectedIds;
-      this.invalidate();
+      this.openFullscreenPointProperties();this.invalidate();
     }
     editableSelection() { return !this.selectedObjects().some(o=>o.locked); }
     canvasSelectable(o) { return !!o && o.visible!==false && !(o.construction && o.constructionValid===false) && this.engine.isDisplayed(o.id) && (!this.runtime || this.capabilities(o.id).selectCanvas); }
@@ -378,6 +379,7 @@
         if(slider?.type==='range'){const value=slider.parentElement.querySelector('output');if(value)value.textContent=slider.value+(slider.dataset.style==='opacity'?'%':' px');}
       });
       this.on(n.selectionPanel, "change", e => {
+        const projection=e.target.closest('[data-point-projection]');if(projection?.dataset?.pointProjection&&this.selectedId){try{const object=this.engine.get(this.selectedId),key=projection.dataset.pointProjection,settings=MI.PointProjections.settings({...MI.PointProjections.defaults,...object.coordinateProjections,[key]:key==='showValues'?projection.checked:projection.value});this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields:[{path:'coordinateProjections',value:settings}]}));}catch(error){this.status(error.message);this.invalidate();}return;}
         const unitInput=e.target.closest('[data-measurement-setting]');if(unitInput?.dataset?.measurementSetting){try{const old=this.engine.model.meta.measurement||{schema:1,unit:'e',scale:1,precision:2},key=unitInput.dataset.measurementSetting,settings=key==='unit'?MI.MeasurementUnits.convert(old,unitInput.value):MI.MeasurementUnits.settings({...old,[key]:unitInput.valueAsNumber});this.changeDocument(()=>this.execute('document.setMeasurement',{settings}));}catch(error){this.status(error.message);this.invalidate();}return;}
 
         const position=e.target.closest('[data-path-parameter]');if(position?.hasAttribute?.('data-path-parameter')){try{this.changeDocument(()=>this.execute('construction.setParameter',{id:this.selectedId,value:position.valueAsNumber}));}catch(error){this.status(error.message);}this.invalidate();return;}
@@ -918,7 +920,7 @@
       if(this.runtime && svg)for(const handle of svg.querySelectorAll('.fzi-line-endpoint, .fzi-polygon-vertex')){const id=handle.getAttribute('data-line-id')||handle.getAttribute('data-polygon-id'),caps=this.capabilities(id),part=handle.getAttribute('data-endpoint'),fields=part?[part==='start'?'x1':'x2',part==='start'?'y1':'y2']:['x','y'].map(k=>'vertices['+handle.getAttribute('data-vertex')+'].'+k);if(!fields.every(k=>caps.geometryFields.includes(k)))handle.remove();}
       this.renderPresentation(true);
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
-      const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput','measurementSetting'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
+      const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput','measurementSetting','pointProjection'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
       this.renderInstructions();this.renderViewList(); this.renderInspector(object);this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
       if(focusKey.length && focusIds===JSON.stringify(this.selectedIds)){const replacement=Array.from(n.selectionPanel.querySelectorAll('input,select')).find(el=>focusKey.every(([k,v])=>el.dataset[k]===v));if(replacement && !replacement.disabled){replacement.focus?.({preventScroll:true});if(caret!=null && replacement.type==='text')replacement.setSelectionRange?.(caret,caret);}}
       if(n.zoomPercent)n.zoomPercent.textContent=Math.round(this.engine.renderer.scale()/((this.engine.renderer.width-2*this.engine.renderer.padding)/10)*100)+"%";
@@ -955,6 +957,11 @@
       const host=this.nodes.viewList.parentElement,previousScroll=host?.scrollTop||0;this.nodes.viewList.innerHTML = rows.join("");
       if(host){const section=this.nodes.layersSection,available=section?.getBoundingClientRect().height-(section?.querySelector('summary')?.getBoundingClientRect().height||40)-8;if(Number.isFinite(available) && available>0)host.style.maxHeight=Math.max(0,available)+'px';host.scrollTop=previousScroll;const key=JSON.stringify(this.selectedIds);if(key!==this.layerScrollSelectionKey){this.layerScrollSelectionKey=key;const selected=Array.from(this.nodes.viewList.querySelectorAll('[data-select-object]')).find(node=>node.dataset.selectObject===this.selectedId);if(selected){const row=selected.getBoundingClientRect(),bounds=host.getBoundingClientRect();if(row.bottom>bounds.bottom)host.scrollTop+=row.bottom-bounds.bottom+4;else if(row.top<bounds.top)host.scrollTop-=bounds.top-row.top+4;}}}
     }
+    pointProjectionInspector(object) {
+      if(object.type!=='point'||this.selectedIds.length!==1)return '';
+      const config=object.coordinateProjections||MI.PointProjections.defaults,disabled=object.locked||!this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'coordinateProjections',value:{...config}}]})?' disabled':'';
+      return '<details data-property-section="point-projections" open><summary>Co&#246;rdinatenprojecties</summary><label>Projecties<select data-point-projection="mode" aria-label="Projecties"'+disabled+'>'+[['none','Geen'],['both','Beide'],['x','Alleen x'],['y','Alleen y']].map(([value,label])=>'<option value="'+value+'"'+(config.mode===value?' selected':'')+'>'+label+'</option>').join('')+'</select></label><label class="style-toggle"><input type="checkbox" data-point-projection="showValues"'+(config.showValues?' checked':'')+disabled+'>Co&#246;rdinaatwaarden tonen</label><p class="help-text">Referentieframe: cartesische documentassen. Waarden volgen de documenteenheid en schaal. Projecties verschijnen bij zichtbare assen.</p></details>';
+    }
     renderInspector(object) {
       const panel = this.nodes.selectionPanel;
       if(this.inspectorTarget==='axes' && !this.selectedId){panel.className='selection-panel';panel.innerHTML=this.services.axis?.html(this.engine.renderer,{adaptive:!!this.services.grid,measurement:this.engine.model.meta.measurement,readOnly:!!this.runtime})||'';this.decorateInspector();return;}
@@ -973,7 +980,7 @@
       const actions=info+this.constructionInputs(object)+pathParameter+detach+assignment;
       const kind=MI.escapeXml(({point:'Punt',line:'Lijnstuk',straight:'Rechte',ray:'Halfrechte',vector:'Vector',circle:'Cirkel',text:'Tekst',polygon:'Veelhoek',dimension:'Lengtemaat',angle:'Hoek'})[object.type]||object.type);
       const heading='<div class="object-heading"><div>'+(this.selectedIds.length>1?'<strong>'+this.selectedIds.length+' objecten geselecteerd</strong>':'<input class="object-name-input" type="text" data-edit="name" aria-label="Objectnaam" value="'+MI.escapeXml(object.name)+'"'+(object.locked?' disabled':'')+'>')+'<span class="object-kind">'+(this.selectedIds.length>1?'Multiselectie':kind)+'</span></div>'+toolbar+'</div>';
-      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions;return;}
+      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions+this.pointProjectionInspector(object);return;}
       const displayNumber=value=>String(Number(Number(value).toFixed(2)));
       let html = '';
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
@@ -1001,7 +1008,7 @@
       const split=html.indexOf('<details data-property-section="labels"'),appearance=html.indexOf('<fieldset');
       html='<details data-property-section="appearance" open><summary>Uiterlijk</summary>'+html.slice(appearance)+'</details><details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       html=html.replace('<details data-property-section="labels" open><summary>Label en meting</summary></details>','');
-      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+html;
+      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+html;
     }
     download(name, content, type) { const blob = new this.window.Blob([content], { type }), url = this.window.URL.createObjectURL(blob), link = this.document.createElement("a"); link.href = url; link.download = name; link.click(); this.window.setTimeout(() => this.window.URL.revokeObjectURL(url), 500); }
   }

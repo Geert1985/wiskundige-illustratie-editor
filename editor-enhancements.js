@@ -15,6 +15,7 @@
         const holder=document.createElementNS(ns,'g');holder.setAttribute(isHover?'data-hover-highlight':'data-selection-highlight',source.getAttribute('data-object-id'));
         for(const [color,width] of [['#ffffff',isHover?8:14],[isHover?'#087d92':'#f0bd45',isHover?4:10]]) {
           const copy=source.cloneNode(true);
+          for(const helper of copy.querySelectorAll('[data-point-projections]'))helper.remove();
           for(const node of [copy,...copy.querySelectorAll('*')]) {
             for(const name of Array.from(node.attributes,n=>n.name))if(name==='id'||name==='class'||name.startsWith('data-'))node.removeAttribute(name);
             node.setAttribute('opacity','1');node.setAttribute('pointer-events','none');
@@ -29,7 +30,7 @@
       selected.forEach(group=>halo(group,false));if(hover && !selected.includes(hover))halo(hover,true);
       // A labelled dashed screen-space frame is presentation, never a transform handle.
       if(showFrame && selected.length>1) {
-        const m=transform.matrix,points=selected.flatMap(group=>{const b=group.getBBox();return [[b.x,b.y],[b.x+b.width,b.y],[b.x+b.width,b.y+b.height],[b.x,b.y+b.height]].map(([x,y])=>({x:m.a*x+m.c*y+m.e,y:m.b*x+m.d*y+m.f}));});
+        const m=transform.matrix,points=selected.flatMap(group=>{let b;if(group.querySelector('[data-point-projections]')){const copy=group.cloneNode(true);for(const helper of copy.querySelectorAll('[data-point-projections]'))helper.remove();copy.setAttribute('visibility','hidden');svg.appendChild(copy);try{b=copy.getBBox();}finally{copy.remove();}}else b=group.getBBox();return [[b.x,b.y],[b.x+b.width,b.y],[b.x+b.width,b.y+b.height],[b.x,b.y+b.height]].map(([x,y])=>({x:m.a*x+m.c*y+m.e,y:m.b*x+m.d*y+m.f}));});
         const left=Math.min(...points.map(p=>p.x))-8,right=Math.max(...points.map(p=>p.x))+8,top=Math.min(...points.map(p=>p.y))-8,bottom=Math.max(...points.map(p=>p.y))+8;
         const map=(x,y)=>{const p=transform.screenToMath({x,y});return [renderer.mapX(p.x),renderer.mapY(p.y)];};
         for(const [color,width] of [['#fff',4],['#b88715',1.5]]) {
