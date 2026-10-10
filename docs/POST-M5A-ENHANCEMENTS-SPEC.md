@@ -1,6 +1,6 @@
 # Post-M5a uitbreidingen — functionele specificatie
 
-Versie: 1.0.0
+Versie: 1.1.0
 Datum: 2026-10-10
 Status: goedgekeurde productwensen; technische uitwerking en implementatie nog te plannen
 Project: From Zero 2 Infinity — Wiskunde Illustrator
@@ -72,3 +72,33 @@ Leg de in het overleg afgesproken uitbreidingen vast zonder te suggereren dat ze
 - Schema/API-aanpassingen, precieze milestone-indeling en prioriteit.
 
 Dit document is een **specificatie en backlog-aanvulling**, geen implementatieopdracht.
+
+## 6. Verzamelingen — drie representaties (besloten 2026-10-10)
+De editor moet **alle drie** de onderstaande representaties ondersteunen. Dit is een productvereiste, nog niet geïmplementeerd.
+
+### 6.1 Venn- en Euler-diagrammen
+- Universele verzameling U; benoemde verzamelingen A, B, C enz.; elementen en lidmaatschapsrelaties.
+- Venn-diagrammen voor 2 en 3 verzamelingen; Euler-diagrammen voor deelverzamelingen en disjuncte verzamelingen.
+- Semantische operaties unie (∪), doorsnede (∩), verschil (\\), complement en deelverzameling (⊆), inclusief leegte (∅).
+- Gebieden semantisch correct arceren/inkleuren; de geometrische overlap van getekende vormen mag niet zonder meer de verzamelingenrelatie bepalen.
+- Elementen kunnen visueel geplaatst worden; toekomstig gebruik in interactieve oefeningen is gewenst.
+
+### 6.2 Verzamelingen op de getallenlijn
+- Intervallen met open, gesloten en halfopen grenzen; onbegrensde intervallen en oneindigheid.
+- Correcte eindpuntmarkeringen, inkleuring en intervalnotatie, bijvoorbeeld [a,b], (a,b], (-∞,b).
+- Unie, doorsnede en verschil van intervallen; meerdere losse intervalcomponenten.
+- Coördinaatwaarden en grenzen blijven consistent bij verschuiven, zoomen en aanpassen van het assenstelsel.
+
+### 6.3 Verzamelingen in het coördinatenvlak
+- Puntenverzamelingen en vlakgebieden, met grenzen uit eenvoudige ongelijkheden, zoals x ≥ a, y < b, x²+y² ≤ r², voor zover het systeem de representatie betrouwbaar kan evalueren.
+- Open/gesloten grens zichtbaar onderscheiden (bijvoorbeeld gestreept versus doorgetrokken).
+- Gebieden kleuren/arceren, combinaties via ∪, ∩ en verschil, en waar mogelijk bijbehorende wiskundige notatie tonen.
+- Maak onderscheid tussen een louter getekende vorm en een **semantisch gedefinieerde verzameling**.
+- Domeinbegrenzing, numerieke robuustheid en correcte weergave bij zoom/assenstelselwijzigingen expliciet specificeren.
+
+### Technische en pedagogische randvoorwaarden
+- Eén gedeelde, getypeerde semantische representatie voor verzamelingen en operaties, met afzonderlijke weergaven voor Venn/Euler, getallenlijn en coördinatenvlak waar toepasselijk.
+- Definieer zorgvuldig welke conversies tussen representaties wiskundig geldig zijn; niet elke abstracte verzameling heeft een interval- of vlakweergave.
+- Geen interpretatie van willekeurige gebruikerscode; gevalideerde expressies en veilige evaluatie.
+- Respecteer bestaande permissies, objectvergrendeling, undo/redo, import/export, versiebeheer, toegankelijkheid en de teststrategie.
+- Plan als afzonderlijke toekomstige milestone **Verzamelingen en diagrammen**; scope eerst opdelen in kleine, toetsbare submilestones.
