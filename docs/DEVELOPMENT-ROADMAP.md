@@ -112,3 +112,7 @@ At user request, all six point-producing construction tools are grouped in one r
 ## M5b derived circle checkpoint (2026-10-10)
 
 Center/perimeter-source circle delivered at a502c55 on chatgpt/math-illustration-m5b, with 321 Node tests and 38 Edge modules passing. See [report](M5b-DERIVED-CIRCLE-REPORT.md) and [contract](M5b-DERIVED-CIRCLE-CONTRACT.md). Manual acceptance pending. Next: linked-point tangent audit/extension; M6 triangle circles remain separate. Main unchanged.
+
+## Linked shape menu refinement (2026-10-10)
+
+Cirkel via punten and Lijnstuk via punten now share one remembered split-button at user request. Browser/visual validation pass; see [report](LINKED-SHAPE-MENU-REPORT.md). Geometry milestone sequencing unchanged.
