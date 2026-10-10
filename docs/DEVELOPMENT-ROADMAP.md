@@ -79,7 +79,7 @@ Product source: [Post-M5a specification 1.3.0](POST-M5A-ENHANCEMENTS-SPEC.md). A
 | Before M5b: defaults | New editor document grid on; centrally red newly created constructions | Preserve saved presentation, existing styles and overrides; no import recoloring |
 | Before M5b: instructions | Declarative step instructions for every draw/measure/construction tool | Existing interaction owner; valid/invalid source progress, alternatives, cancel, keyboard/screen reader and fullscreen |
 | M5b, separate checkpoint | Tangent at a linked point on circle | Preserve existing external/on/interior cases, branches, identity and schema; audit what already works before extending |
-| After M5b, before dynamic text | Units, scale and measurement notation | New default cm, 1 coordinate unit = 1 cm, precision 2; axis inspector; length scale and area scale squared; decide legacy migration first |
+| After M5b, before dynamic text | Units, scale and measurement notation | New default cm, 1 coordinate unit = 1 cm, precision 2; axis inspector; length scale and area scale squared; preserve legacy display without migration (see UNITS-SCALE-CONTRACT.md) |
 | Directly after units | Dynamic text bindings | Stable typed references and common unit formatting; define invalid/deleted source semantics first; templates later |
 | M8 alongside parallelogram, optionally separate after M5b | Regular polygon | Center/vertex/n contract, consistent side/angle/area, zero-radius policy and referenced topology policy |
 | M7a | Linked vector AB and component representation | Useful input for vector translation; fixed/free vector semantics |
@@ -120,3 +120,7 @@ Cirkel via punten and Lijnstuk via punten now share one remembered split-button 
 ## M5b technical completion (2026-10-10)
 
 Final linked-point tangent audit completed at 42fd06e: shared contact-count tolerance and selected path-point hit priority fix, existing tangent recipe/schema preserved. Full 326 Node tests and 39 Edge modules pass; see [report](M5b-LINKED-TANGENT-REPORT.md). M5b technical scope complete; manual acceptance pending for final checkpoint. After acceptance, agreed next addition is units/scale/measurement notation, then dynamic text, with explicit legacy policy first. M6 remains retained. Main unchanged; branch publication authorized.
+
+## Units, scale and measurement notation checkpoint (2026-10-10)
+
+User accepted the M5b checkpoint and authorized the full units/scale/notation step. Delivered at 77733a7, with 331 Node tests and 40 Edge modules passing: document meta.measurement schema 1 with cm/1/2 defaults for new author documents; absent metadata preserves legacy display until an explicit edit. Length/radius/perimeter scale linearly; area scales quadratically; angles remain degrees. Axis inspector, display-unit exact drawing, physical-unit conversion, author command/history/replay, JSON/SVG persistence and restricted read-only display/export included. See [contract](UNITS-SCALE-CONTRACT.md) and [report](UNITS-SCALE-REPORT.md) for test evidence and manual acceptance. Dynamic text bindings are next, separately scoped; M6 and all later roadmap requirements remain retained. Publication on chatgpt/math-illustration-m5b authorized; main unchanged.

@@ -109,9 +109,13 @@ See [functional specification](POST-M5A-ENHANCEMENTS-SPEC.md) and the sequencing
 
 - Current authorized work: grid enabled for new editor documents; red default construction styles; central accessible step instructions for every tool.
 - M5b addition: tangent through a linked point on a circle, preserving current tangent cases.
-- Before dynamic text: document units/scale/precision in axis properties, default cm for new documents; decide legacy policy. Then safe typed dynamic text bindings with explicit source-deletion behavior.
+- Before dynamic text: document units/scale/precision in axis properties, default cm for new documents; preserve absent-metadata legacy display. Then safe typed dynamic text bindings with explicit source-deletion behavior.
 - M8: regular polygons from center/vertex/n; possible independent checkpoint after M5b.
 - M7a/M7f: linked/component vectors, then vector operations and their visualizations.
 - Dedicated sets stream: shared typed semantics, Venn/Euler, interval number line; coordinate-plane sets at/after M11 numeric/expression groundwork. All three representations retained.
 
 The later items remain planned until individually requested. No milestone number is silently reassigned.
+
+## Units/scale/notation implementation status (2026-10-10)
+
+Document units, positive physical scale and fixed decimal precision are delivered before dynamic text, with explicit legacy preservation. New author editor documents use cm, scale 1, two decimal places. Length, radius, perimeter, area, angle and live polygon labels share validated notation; free measurement text is preserved. Source geometry/graph, coordinate axes and zoom remain independent. Author-only settings command with undo/replay and restricted display/export; see UNITS-SCALE-CONTRACT.md and UNITS-SCALE-REPORT.md. Manual acceptance pending. Dynamic text references, formulas/templates, source deletion/invalidity behavior and additional mathematical notation remain planned, not included in this checkpoint.

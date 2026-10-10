@@ -1,6 +1,6 @@
 # Post-M5a uitbreidingen — functionele specificatie
 
-Versie: 1.3.0
+Versie: 1.4.0
 Datum: 2026-10-10
 Status: goedgekeurde productwensen; technische uitwerking en implementatie nog te plannen
 Project: From Zero 2 Infinity — Wiskunde Illustrator
@@ -51,7 +51,7 @@ Leg de in het overleg afgesproken uitbreidingen vast zonder te suggereren dat ze
 - Fysieke eenheden worden toegepast op weergegeven meetwaarden: lengte = coördinatenlengte × schaal; oppervlakte = coördinatenoppervlakte × schaal². Hoeken worden niet door de lengteschaal beïnvloed.
 - Zoomniveau is onafhankelijk van fysieke schaal. Wijziging van eenheid/schaal wijzigt **geen** geometrische coördinaten, constructierelaties of objectidentiteiten.
 - Eenheden verschijnen automatisch bij lengtes, omtrekken, oppervlaktes, relevante meetlabels en dynamische tekstwaarden; geen dubbele suffixen.
-- Bewaar documentinstellingen in een versieerbare, compatibele vorm. Bestaande documenten zonder eenhedenmetadata krijgen een expliciet te bepalen legacy-weergave om onverwachte betekeniswijziging te vermijden; dit is een open migratiebesluit.
+- Bewaar documentinstellingen als `meta.measurement` met schema 1. Bestaande documenten zonder metadata behouden hun oorspronkelijke meetweergave; de eerste expliciete wijziging activeert eenheden. Geen automatische migratie. Zie UNITS-SCALE-CONTRACT.md.
 
 ## Voorgestelde fasering
 1. Kleine UX-correcties: raster aan bij nieuw document en rode standaardstijl voor constructies.
@@ -126,3 +126,7 @@ Status: productvoorstel; de editor heeft al een basisgereedschap Vector, maar de
 - Alle afgeleide objecten volgen bronwijzigingen via de bestaande constructiegraaf; objectidentiteit, stijloverrides, locks, permissies, undo/redo, import/export en semantische replay blijven correct.
 - Toekomstige integratie met dynamische tekstlabels, animaties, fysica en oefeningen; geen impliciete uitbreiding naar 3D in deze scope.
 - Ontwerp eerst een mathematisch en technisch contract, met Node- en Edge-regressietests, en deel implementatie op in kleine milestones.
+
+## Implementatie eenheden, schaal en meetnotatie (2026-10-10)
+
+Deze stap is technisch uitgewerkt; zie UNITS-SCALE-CONTRACT.md en UNITS-SCALE-REPORT.md. Nieuwe author-documenten starten met cm/1/2. Fysieke eenheidswisseling rekent de schaal om en bewaart de fysieke lengte; abstracte eenheden behouden de numerieke schaal. Berekende meetwaarden gebruiken vaste decimalen en een decimale komma, vrije maattekst blijft ongewijzigd. Exact getypte tekenlengte/straal gebruikt de weergave-eenheid. Instellingen staan bij Assenstelsel, ook in volledig scherm; course/assessment mogen ze weergeven en exporteren maar niet wijzigen. Het eerder open legacy-besluit is hiermee vastgelegd. Dynamische tekstobjecten blijven een volgende, afzonderlijke stap.
