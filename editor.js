@@ -3,6 +3,38 @@
   "use strict";
   const MI = global.FZI.MathIllustration;
   const SPLIT_TOOLS={linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
+  const TOOL_STEPS = {
+    point:['Klik op het werkvlak om een punt te plaatsen.'],
+    text:['Klik waar de tekst moet komen.','Voer de tekst in en bevestig met Toevoegen.'],
+    line:['Druk op het beginpunt.','Sleep naar het eindpunt en laat los. Typ eventueel een exacte lengte.'],
+    straight:['Druk op een punt van de rechte.','Sleep naar een tweede punt en laat los.'],
+    ray:['Druk op het beginpunt.','Sleep in de richting van de halfrechte en laat los.'],
+    vector:['Druk op de staart van de vector.','Sleep naar de pijlpunt en laat los.'],
+    circle:['Druk op het middelpunt.','Sleep voor de straal en laat los. Typ eventueel een exacte straal.'],
+    dimension:['Druk op het eerste meetpunt.','Sleep naar het tweede meetpunt en laat los.'],
+    triangle:['Klik het eerste hoekpunt.','Klik het tweede hoekpunt.','Klik het derde hoekpunt om af te sluiten.'],
+    polygon:['Klik het eerste hoekpunt.','Klik het volgende hoekpunt. Vanaf drie punten: Enter of klik het beginpunt om af te sluiten. Backspace verwijdert het laatste punt.'],
+    angle:['Klik een punt op de eerste arm.','Klik het hoekpunt.','Klik een punt op de tweede arm.'],
+    rightAngle:['Klik een punt op de eerste arm.','Klik het hoekpunt.','Klik een punt op de tweede arm voor de rechtehoekmarkering.'],
+    'construct:lineBetweenPoints':['Kies het eerste bestaande eindpunt.','Kies het tweede bestaande eindpunt.'],
+    'construct:pointOnSegment':['Klik op een lijnstuk of veelhoekzijde waar het gekoppelde punt moet komen.'],
+    'construct:pointOnCircle':['Klik op de cirkel waar het gekoppelde punt moet komen.'],
+    'construct:midpoint':['Kies het eerste punt, of klik een lijnstuk of zijde om meteen het middenpunt te maken.','Kies het tweede punt.'],
+    'construct:perpendicularBisector':['Kies het eerste punt, of klik een lijnstuk of zijde om meteen de middelloodlijn te maken.','Kies het tweede punt.'],
+    'construct:parallel':['Kies een rechte, lijnstuk, halfrechte, vector of veelhoekzijde.','Kies het punt waar de evenwijdige rechte doorheen gaat.'],
+    'construct:perpendicular':['Kies een rechte, lijnstuk, halfrechte, vector of veelhoekzijde.','Kies het punt waar de loodlijn doorheen gaat.'],
+    'construct:bisector':['Kies een punt op de eerste arm, of klik een bestaande hoek of veelhoekhoekpunt om meteen de bissectrice te maken.','Kies het hoekpunt waar de armen samenkomen.','Kies een punt op de tweede arm.'],
+    'construct:tangent':['Kies een cirkel.','Kies een punt: buiten de cirkel geeft twee raaklijnen, op de cirkel één, binnen de cirkel geen reële raaklijn.'],
+    'construct:area':['Klik een cirkel of veelhoek voor de oppervlakte.'],
+    'construct:perimeter':['Klik een cirkel of veelhoek voor de omtrek.']
+  };
+  Object.values(TOOL_STEPS).forEach(Object.freeze);Object.freeze(TOOL_STEPS);
+  MI.ToolInstructions=Object.freeze({definitions:TOOL_STEPS,describe(tool,state,pendingText=false){
+    const definition=TOOL_STEPS[tool];if(!definition)return null;
+    let index=state?.mode==='construction'?state.sources.length:state?.mode==='polygon'?state.vertices.length:state?.mode==='draw'?1:tool==='text'&&pendingText?1:0;
+    const variable=tool==='polygon',steps=variable?Array.from({length:index+1},(_,i)=>i===0?definition[0]:definition[1]):definition;
+    index=Math.min(index,steps.length-1);return {steps,index,total:variable?null:steps.length};
+  }});
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
@@ -16,7 +48,7 @@
       this.linearTool='line';this.figureTool='triangle';this.splitMenuOpen=null;
       for(const [group,tools] of Object.entries(SPLIT_TOOLS))try{const saved=storage?.getItem('fzi-math-illustration-'+group+'-tool');if(tools.includes(saved))this[group+'Tool']=saved;}catch(_){}
       this.nodes = {};
-      for (const id of ["canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
+      for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
     }
     renderCanvasTools() {
       const menu=this.nodes.canvasToolsMenu;if(!menu||typeof menu.append!=='function')return;
@@ -258,7 +290,13 @@
       this.listeners.push(() => target.removeEventListener && target.removeEventListener(type, guarded, options));
     }
     toolHint(tool) { return ({point:'Klik op het werkvlak om een punt te plaatsen.',line:'Sleep van begin- naar eindpunt voor een lijnstuk. Typ voor een exacte lengte.',straight:'Sleep tussen twee punten voor een rechte.',ray:'Sleep van het beginpunt in de richting van de halfrechte.',vector:'Sleep van staart naar pijlpunt voor een vector.',circle:'Klik het middelpunt en sleep voor de straal. Typ voor een exacte straal.',triangle:'Klik drie hoekpunten. Escape annuleert.',polygon:'Klik de hoekpunten; Enter sluit af, Backspace verwijdert het laatste punt, Escape annuleert.',dimension:'Sleep tussen twee punten om de lengte te meten.',angle:'Klik arm, hoekpunt en tweede arm voor een hoek.',rightAngle:'Klik arm, hoekpunt en tweede arm voor een rechte hoek.',text:'Klik op het werkvlak en voer tekst in.',select:'Selecteer een object of het assenstelsel.'})[tool]||''; }
-    status(text) { this.nodes.status.textContent = text;if(this.nodes.fullscreenHint)this.nodes.fullscreenHint.textContent=text; }
+    status(text) { this.nodes.status.textContent = text;this.instructionMessage=text;this.renderInstructions(); }
+    renderInstructions() {
+      const guide=MI.ToolInstructions.describe(this.tool,this.interaction,!!this.pendingText),esc=MI.escapeXml;
+      const html=guide?'<div class="tool-step-counter">Stap '+(guide.index+1)+(guide.total?' van '+guide.total:' - veelhoek')+'</div><ol>'+guide.steps.map((text,i)=>'<li'+(i===guide.index?' aria-current="step" class="active-step"':i<guide.index?' class="completed-step"':'')+'><span aria-hidden="true">'+(i<guide.index?'&#10003;':i+1)+'</span> '+esc(text)+'</li>').join('')+'</ol><p class="tool-cancel-help">Escape annuleert; kies een ander gereedschap om te wisselen.</p>'+((this.instructionMessage&&this.instructionMessage!==this.toolHint(this.tool)&&this.instructionMessage!==this.constructionHint(this.tool.slice(10),this.interaction?.sources?.length||0))?'<p class="tool-message">'+esc(this.instructionMessage)+'</p>':''):'';
+      const node=this.nodes.toolInstructions;if(node){node.hidden=!guide;if(node.innerHTML!==html)node.innerHTML=html;}
+      if(this.nodes.fullscreenHint){const hint=guide?html:esc(this.nodes.status.textContent);if(this.nodes.fullscreenHint.innerHTML!==hint)this.nodes.fullscreenHint.innerHTML=hint;}
+    }
     hydrate() { this.nodes.titleInput.value = this.engine.model.meta.title || ""; this.nodes.descriptionInput.value = this.engine.model.meta.description || ""; }
     updateMeta() {const fields=[{path:'title',value:this.nodes.titleInput.value.trim()},{path:'description',value:this.nodes.descriptionInput.value.trim()}].filter(f=>this.engine.model.meta[f.path]!==f.value);if(fields.length)this.execute('document.setMeta',{fields});}
     flushEdits() { if (this.editBefore) { this.history.record(this.editBefore); this.editBefore = null; } }
@@ -401,7 +439,7 @@
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
       this.engine.renderer.preview = null; this.feedback = null;
     }
-    closeText() { this.pendingText = null; if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close(); }
+    closeText() { this.pendingText = null; if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close(); this.renderInstructions(); }
     submitText() {
       const text = this.nodes.textValue.value.trim(), pending = this.pendingText;
       if (!pending || !text) return;
@@ -455,12 +493,12 @@
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
       const sources=this.constructionSourcesAt(point,event,state.sources);
       if(!sources){this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}
-      state.sources=sources;
+      const previousSources=state.sources.slice();state.sources=sources;
       state.pointerId=event.pointerId; this.interaction=state;
       if(this.nodes.canvasWrap.setPointerCapture)try{this.nodes.canvasWrap.setPointerCapture(event.pointerId);}catch(_){}
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       this.interaction=null;this.release(state);
-      try {let created=false;this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{})}).result.map(o=>o.id);created=true;});if(created){this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}}
+      try {let created=false;this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{})}).result.map(o=>o.id);created=true;});if(created){this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}else this.interaction={...state,sources:previousSources,pointerId:null};}
       catch(error){this.status(error.message);}
       this.invalidate();
     }
@@ -592,7 +630,7 @@
       if (this.tool === "point" || this.tool === "text") {
         const result = this.snap(point); const object = { type: this.tool, x: result.point.x, y: result.point.y };
         if (this.tool === "text") {
-          this.flushEdits(); this.pendingText = result; this.nodes.textValue.value = "";
+          this.flushEdits(); this.pendingText = result; this.renderInstructions();this.nodes.textValue.value = "";
           this.nodes.textDialog.showModal(); this.nodes.textValue.focus(); return;
         }
         this.changeDocument(() => { this.selectedId = this.createObject(object).id; }); this.feedback = result; this.invalidate(); return;
@@ -775,7 +813,7 @@
       this.closeDialogs(true); this.cancel(); this.flushEdits(); this.invalidateImport();
       let failure = null; if (this.services.draft) try { this.services.draft.clear(this.storage); } catch (e) { failure = e; }
       const r = this.engine.renderer;
-      this.execute("document.replace",{document:{ version: 2, type: "geometry", meta: {}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: r.showGrid, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } }});
+      this.execute("document.replace",{document:{ version: 2, type: "geometry", meta: {}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: true, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } }});
       this.history.clear(); this.editBefore = null; this.selectedId = null; this.inspectorTarget="objects";this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");this.savedDocument=JSON.stringify(this.engine.toJSON());
     }
     loadDocument(data) { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.closeDialogs(true); this.cancel(); this.flushEdits(); this.execute("document.replace",{document:data}); this.invalidateImport(); this.history.clear(); this.editBefore = null; this.selectedId = null; this.inspectorTarget="objects";this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen.");this.savedDocument=JSON.stringify(this.engine.toJSON()); }
@@ -870,7 +908,7 @@
       this.renderPresentation(true);
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
       const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
-      this.renderViewList(); this.renderInspector(object);this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
+      this.renderInstructions();this.renderViewList(); this.renderInspector(object);this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
       if(focusKey.length && focusIds===JSON.stringify(this.selectedIds)){const replacement=Array.from(n.selectionPanel.querySelectorAll('input,select')).find(el=>focusKey.every(([k,v])=>el.dataset[k]===v));if(replacement && !replacement.disabled){replacement.focus?.({preventScroll:true});if(caret!=null && replacement.type==='text')replacement.setSelectionRange?.(caret,caret);}}
       if(n.zoomPercent)n.zoomPercent.textContent=Math.round(this.engine.renderer.scale()/((this.engine.renderer.width-2*this.engine.renderer.padding)/10)*100)+"%";
       if(n.panBtn){n.panBtn.classList.toggle("active",this.navigationMode==="pan");n.panBtn.disabled=!this.allowed("view.pan",{bounds:{...r.bounds}});}for(const node of [n.zoomInBtn,n.zoomOutBtn,n.resetViewBtn])if(node)node.disabled=!this.allowed("view.zoom",{bounds:{...r.bounds}});

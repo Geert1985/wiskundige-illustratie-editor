@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict');
 module.exports=async page=>{
- await page.setViewportSize({width:1543,height:884});await page.reload();await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[]}));
+ await page.setViewportSize({width:1543,height:884});await page.reload();await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[],presentation:{showGrid:false}}));
  const before=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
  await page.locator('#canvasFullscreenBtn').click();await page.waitForFunction(()=>document.body.classList.contains('canvas-fullscreen'));
  const native=await page.evaluate(()=>!!document.fullscreenElement);assert.ok(native,'native fullscreen entered');
