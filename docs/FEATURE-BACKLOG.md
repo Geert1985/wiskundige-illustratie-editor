@@ -123,3 +123,7 @@ Document units, positive physical scale and fixed decimal precision are delivere
 ## Coordinate projections implementation status (2026-10-10)
 
 Specification 1.4.0 section 9 implemented at a39a779: optional x/y/both point projections, separately controlled signed values using document units, explicit Cartesian document frame, clipped dotted presentation, persistence/history/replay and existing property grants. Full 338 Node tests and 41 Edge modules pass; manual acceptance pending. See POINT-PROJECTIONS-REPORT.md. Future multiple/skew coordinate frames remain retained; this presentation adds no construction graph objects. Dynamic text remains next separately scoped addition.
+
+## Dynamic angle measurement implementation (2026-10-10)
+
+Specification 1.5.0 section 10 delivered at 78d0259 with 346 Node tests and 42 Edge modules passing. Stable source-based three-point, direction/direction and direction/Cartesian-positive-x angles; explicit smallest/directed interpretation; degree/radian document standard and per-angle overrides/precision/arc. Existing static options retained. See DYNAMIC-ANGLES-REPORT.md for contract, compatibility, policy and acceptance. Future multiple frames, broad length/perimeter/area measurement architecture and dynamic text remain retained, not implemented by this checkpoint.

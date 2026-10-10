@@ -1,6 +1,6 @@
 # Post-M5a uitbreidingen — functionele specificatie
 
-Versie: 1.4.0
+Versie: 1.5.0
 Datum: 2026-10-10
 Status: goedgekeurde productwensen; technische uitwerking en implementatie nog te plannen
 Project: From Zero 2 Infinity — Wiskunde Illustrator
@@ -147,3 +147,19 @@ Status: technisch uitgevoerd op 2026-10-10 (a39a779); handmatige acceptatie pend
 ### Technische invulling sectie 9
 
 Uitgevoerd na expliciete opdracht. Zie POINT-PROJECTIONS-CONTRACT.md en POINT-PROJECTIONS-REPORT.md voor referentieframe, gegevensschema, zichtbaarheid/clipping, formattering, permissies, geschiedenis, export en testbewijs. 338 Node-tests en 41 Edge-testmodules geslaagd. Het huidige cartesische documentframe is expliciet opgeslagen; toekomstige scheve/meerdere frames worden niet stilzwijgend ondersteund. Geen extra constructieobjecten of dependencies; standaard blijft Geen. Dynamische tekst blijft een afzonderlijke volgende stap.
+
+## 10. Dynamische hoekmetingen en hoekeenheden (2026-10-10)
+Status: technisch uitgevoerd op 2026-10-10 (78d0259); handmatige acceptatie pending.
+
+- Breid **Meten → Hoek** uit met semantisch gekoppelde hoekmetingen op bestaande lijnen, stralen, vectoren, segmenten of drie punten. De meting bewaart stabiele bronobject-ID's en volgt wijzigingen in de constructiegraaf.
+- Ondersteun hoek t.o.v. de positieve x-as van een actief coördinatenstelsel en hoek tussen twee richtingen; onderscheid expliciet gerichte hoek [0°,360°) en kleinste hoek [0°,180°]. Definieer het oriëntatie- en vertexbeleid in een wiskundig contract.
+- Teken optioneel een hoekboog en dynamisch label. Houd labelpositionering en handmatige stijloverrides stabiel bij herberekening.
+- **Eenheden:** kies graden (°) of radialen (rad). Voorzie een documentstandaard met override per hoekmeting, en instelbare precisie; herformatteer labels bij eenheidswisseling zonder geometrische mutatie.
+- Rekenkern: atan2 van determinant en inproduct voor twee niet-nul richtingsvectoren; normaliseer gericht bereik. Nulvectoren, verdwenen bronnen, parallelle/tegengestelde richtingen en degeneraties expliciet behandelen.
+- In toekomstige uitbreidingen: dynamische lengtes, omtrekken en oppervlaktes op dezelfde getypeerde meetobjectarchitectuur; maak dynamische koppeling standaard waar bestaande bronnen beschikbaar zijn, met bewuste statische keuze indien zinvol.
+- Volledige compatibiliteit met undo/redo, permissies, locks, import/export, schema, semantische replay, SVG/PNG en Edge/Node-tests.
+- Plan als afzonderlijke M5-checkpoint vóór brede meetobjectuitbreidingen; geen implementatie zonder opdracht.
+
+### Technische invulling sectie 10
+
+Na expliciete opdracht uitgevoerd: drie gekoppelde hoekgereedschappen, documentstandaard graden/radialen en overrides, precisie en boog, kleinste/gerichte interpretatie, bestaande graaf en autorisatie. Zie DYNAMIC-ANGLES-CONTRACT.md en DYNAMIC-ANGLES-REPORT.md. 346 Node-tests en 42 Edge-testmodules geslaagd. Cartesisch referentieframe en hoekpunt-/oriëntatiebeleid expliciet vastgelegd; toekomstige brede meetobjecten/dynamische tekst blijven afzonderlijk gepland.
