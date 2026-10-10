@@ -254,7 +254,7 @@
       }
       if (object.type === "text") {
         const transform = object.rotation ? ' transform="rotate(' + number(object.rotation) + ' ' + number(this.mapX(object.x)) + ' ' + number(this.mapY(object.y)) + ')"' : "";
-        svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(object.text) + '</text>';
+        svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(MI.DynamicText.value(object,this.measurementSources,{measurement:this.measurement,angleMeasurement:this.angleMeasurement})) + '</text>';
         if(object.construction && ['area','perimeter'].includes(object.construction.kind)) {
           const kind=object.construction.kind,source=this.measurementSources?.get(object.construction.sources[0].objectId),amount=source?MI.MeasurementUnits.figureValue(source,kind):(this.measurementValueFor?.(object)??Number(object.text.split('=').at(-1)));
           const label=this.measurement?(kind==='area'?'Oppervlakte = ':'Omtrek = ')+MI.MeasurementUnits.format(amount,kind==='area'?'area':'length',this.measurement):object.text;

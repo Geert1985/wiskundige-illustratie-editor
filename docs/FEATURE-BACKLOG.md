@@ -127,3 +127,8 @@ Specification 1.4.0 section 9 implemented at a39a779: optional x/y/both point pr
 ## Dynamic angle measurement implementation (2026-10-10)
 
 Specification 1.5.0 section 10 delivered at 78d0259 with 346 Node tests and 42 Edge modules passing. Stable source-based three-point, direction/direction and direction/Cartesian-positive-x angles; explicit smallest/directed interpretation; degree/radian document standard and per-angle overrides/precision/arc. Existing static options retained. See DYNAMIC-ANGLES-REPORT.md for contract, compatibility, policy and acceptance. Future multiple frames, broad length/perimeter/area measurement architecture and dynamic text remain retained, not implemented by this checkpoint.
+
+
+## Dynamic text delivered (2026-10-10)
+
+One typed value reference per free text object implemented with source/value/precision/prefix/suffix UI and shared notation. Missing/invalid/inaccessible sources remain visibly unavailable; deletion does not cascade to text. 352 Node tests, 43 Edge modules pass; manual acceptance pending. DYNAMIC-TEXT-CONTRACT.md defines persistence/locks/permissions/replay. Multi-field templates, formulas and later broad measurement architecture remain planned.

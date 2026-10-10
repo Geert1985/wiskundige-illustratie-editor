@@ -132,3 +132,8 @@ User authorized specification 1.4.0 section 9, newly added on main f166078. Impl
 ## Dynamic angles and angle units checkpoint (2026-10-10)
 
 User authorized specification 1.5.0 section 10. Delivered at 78d0259: linked three-point, two-direction and positive-x-axis measurements, smallest/directed range, document degree/radian defaults with independent measurement overrides, precision and arc controls. Existing graph/identity, style/label offsets, locks, policy, schema 2, history/replay and exports retained. Full 346 Node tests and 42 Edge modules pass; see [contract](DYNAMIC-ANGLES-CONTRACT.md) and [report](DYNAMIC-ANGLES-REPORT.md). Manual acceptance pending. Multiple/skew frames, broad dynamic measurement expansion and dynamic text remain separately scoped; all other roadmap requirements retained. Publication to development branch authorized; main unchanged.
+
+
+## Dynamic text checkpoint (2026-10-10)
+
+User authorized the next step while postponing manual angle testing. Dynamic text bindings delivered: one stable geometry-source value per free text object, source/value/precision/prefix/suffix inspector, shared units and angle notation, explicit unavailable-on-deletion policy, locks/property permissions/history/replay/persistence/fullscreen. 352 Node tests and 43 Edge modules pass; see DYNAMIC-TEXT-CONTRACT.md and DYNAMIC-TEXT-REPORT.md. Both current manual tests remain pending. Multi-field templates are deferred as specified. Next retained original geometry milestone: M6 triangle centers/circles. Development branch publication authorized; main unchanged.

@@ -57,12 +57,31 @@
     return {...value};
   }
   MI.PointProjections=Object.freeze({defaults:projectionDefaults,settings:projectionSettings});
+  const textProperties=['name','label','length','radius','perimeter','area','angle','x','y'];
+  function textBinding(value){
+    if(value===null)return null;
+    if(!record(value)||Object.keys(value).some(k=>!['schema','sourceId','property','precision','prefix','suffix'].includes(k))||value.schema!==1||typeof value.sourceId!=='string'||!value.sourceId.trim()||!textProperties.includes(value.property)||value.precision!==null&&(!Number.isInteger(value.precision)||value.precision<0||value.precision>10)||['prefix','suffix'].some(k=>typeof value[k]!=='string'||value[k].length>2000))throw Error('Ongeldige dynamische tekstverwijzing.');
+    return {...value};
+  }
+  function textPropertiesFor(o){if(!o||o.type==='text')return [];return ['name','label',...(['line','vector','dimension'].includes(o.type)?['length']:[]),...(o.type==='circle'?['radius','perimeter','area']:[]),...(o.type==='polygon'?['perimeter','area']:[]),...(o.type==='angle'?['angle']:[]),...(o.type==='point'?['x','y']:[])];}
+  function dynamicText(o,sources,meta={}){
+    if(!o.textBinding)return o.text;
+    const b=textBinding(o.textBinding),source=sources?.get(b.sourceId);let result='niet beschikbaar';
+    if(source&&source.constructionValid!==false&&textPropertiesFor(source).includes(b.property)){
+      if(['name','label'].includes(b.property))result=String(source[b.property]||source.name||source.id);
+      else if(b.property==='angle'){const settings={...(source.angleSettings||MI.AngleMeasurements.defaults),...(b.precision===null?{}:{precision:b.precision})};result=MI.AngleMeasurements.label({...source,angleSettings:settings},meta.measurement,meta.angleMeasurement);}
+      else {const amount=['area','perimeter'].includes(b.property)?MI.MeasurementUnits.figureValue(source,b.property):b.property==='length'?MI.MeasurementGeometry.value(source):b.property==='radius'?source.r:source[b.property],config=b.precision===null?meta.measurement:{...(meta.measurement||{schema:1,unit:'e',scale:1,precision:2}),precision:b.precision};result=MI.MeasurementUnits.format(amount,b.property==='area'?'area':'length',config);}
+    }
+    return b.prefix+result+b.suffix;
+  }
+  MI.DynamicText=Object.freeze({settings:textBinding,propertiesFor:textPropertiesFor,value:dynamicText});
   function validateImportedObject(input) {
     if (!record(input) || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
     if (!((typeof input.id === "string" && input.id.trim() !== "") || (typeof input.id === "number" && Number.isFinite(input.id)))) throw new Error("Elk illustratie-object heeft een geldige id nodig.");
     const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
     if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices);
     if (input.type === "angle") MI.MeasurementGeometry.validateAngle(input.vertices,input.angleMark || "arc");
+    if('textBinding' in input){if(input.type!=='text'||input.construction)throw Error('Dynamische tekst vereist een vrij tekstobject.');textBinding(input.textBinding);if(input.textBinding?.sourceId===String(input.id))throw Error('Tekst kan niet naar zichzelf verwijzen.');}
     if('angleSettings' in input){if(input.type!=='angle')throw Error('Hoekinstellingen zijn alleen voor hoeken.');MI.AngleMeasurements.settings(input.angleSettings);if(input.angleMark==='right'&&input.angleSettings.mode==='directed')throw Error('Een rechtehoekmarkering gebruikt de kleinste hoek.');}
     if('coordinateProjections' in input){if(input.type!=='point')throw Error('Projecties zijn alleen beschikbaar voor punten.');projectionSettings(input.coordinateProjections);}
     if(input.measurementMode!=null && !["computed","text"].includes(input.measurementMode)) throw Error("Ongeldige meetmodus.");

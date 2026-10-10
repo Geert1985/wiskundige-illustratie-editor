@@ -163,3 +163,8 @@ Status: technisch uitgevoerd op 2026-10-10 (78d0259); handmatige acceptatie pend
 ### Technische invulling sectie 10
 
 Na expliciete opdracht uitgevoerd: drie gekoppelde hoekgereedschappen, documentstandaard graden/radialen en overrides, precisie en boog, kleinste/gerichte interpretatie, bestaande graaf en autorisatie. Zie DYNAMIC-ANGLES-CONTRACT.md en DYNAMIC-ANGLES-REPORT.md. 346 Node-tests en 42 Edge-testmodules geslaagd. Cartesisch referentieframe en hoekpunt-/oriëntatiebeleid expliciet vastgelegd; toekomstige brede meetobjecten/dynamische tekst blijven afzonderlijk gepland.
+
+
+## Uitvoeringsbesluit dynamische tekst (2026-10-10)
+
+Na expliciete opdracht voor de volgende stap uitgevoerd: een getypeerde bronwaarde per vrij tekstobject, bron/eigenschap/precisie/voor-/achtervoegsel in de inspector, stabiele IDs en gedeelde meetnotatie. Verwijderde of ongeldige bron: tekst blijft bestaan met niet beschikbaar; undo herstelt. Geen evaluatie of cascade naar tekst. DYNAMIC-TEXT-CONTRACT.md en DYNAMIC-TEXT-REPORT.md bevatten het contract en bewijs: 352 Node-tests en 43 Edge-modules geslaagd. Handmatige acceptatie, ook van hoekmetingen, blijft open. Sjablonen met meerdere velden zijn de eerder genoemde latere uitbreiding.
