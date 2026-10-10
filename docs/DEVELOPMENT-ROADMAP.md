@@ -96,3 +96,7 @@ Defaults and tool instructions delivered at 29f4d49: 302 Node tests and 34 Edge 
 ## M5b first family checkpoint (2026-10-10)
 
 Main baseline e3db593 was published after merging the accepted authoring work with main. New branch chatgpt/math-illustration-m5b. Linked line intersection delivered at cdc6f0a; 306 Node tests and 35 Edge modules pass. See [report](M5b-LINE-INTERSECTION-REPORT.md) and [contract](M5b-LINE-INTERSECTION-CONTRACT.md). Manual acceptance pending. Next separate families: line-circle, circle-circle and derived circles, plus tangent-at-linked-circle-point audit. M5b as a whole remains in progress. New changes may be pushed to this development branch under user authorization; merging future changes into main requires another request.
+
+## M5b line-circle checkpoint (2026-10-10)
+
+User accepted line-line intersections. Line-circle intersections delivered at f218e47 on chatgpt/math-illustration-m5b: 311 Node tests, 36 Edge modules pass. See [report](M5b-LINE-CIRCLE-REPORT.md) and [contract](M5b-LINE-CIRCLE-CONTRACT.md). Manual acceptance pending. Next separate checkpoint: circle-circle, then derived circles and tangent-at-linked-circle-point audit. Main unchanged.
