@@ -119,3 +119,7 @@ The later items remain planned until individually requested. No milestone number
 ## Units/scale/notation implementation status (2026-10-10)
 
 Document units, positive physical scale and fixed decimal precision are delivered before dynamic text, with explicit legacy preservation. New author editor documents use cm, scale 1, two decimal places. Length, radius, perimeter, area, angle and live polygon labels share validated notation; free measurement text is preserved. Source geometry/graph, coordinate axes and zoom remain independent. Author-only settings command with undo/replay and restricted display/export; see UNITS-SCALE-CONTRACT.md and UNITS-SCALE-REPORT.md. Manual acceptance pending. Dynamic text references, formulas/templates, source deletion/invalidity behavior and additional mathematical notation remain planned, not included in this checkpoint.
+
+## Coordinate projections implementation status (2026-10-10)
+
+Specification 1.4.0 section 9 implemented at a39a779: optional x/y/both point projections, separately controlled signed values using document units, explicit Cartesian document frame, clipped dotted presentation, persistence/history/replay and existing property grants. Full 338 Node tests and 41 Edge modules pass; manual acceptance pending. See POINT-PROJECTIONS-REPORT.md. Future multiple/skew coordinate frames remain retained; this presentation adds no construction graph objects. Dynamic text remains next separately scoped addition.

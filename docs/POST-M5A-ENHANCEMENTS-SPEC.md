@@ -130,3 +130,20 @@ Status: productvoorstel; de editor heeft al een basisgereedschap Vector, maar de
 ## Implementatie eenheden, schaal en meetnotatie (2026-10-10)
 
 Deze stap is technisch uitgewerkt; zie UNITS-SCALE-CONTRACT.md en UNITS-SCALE-REPORT.md. Nieuwe author-documenten starten met cm/1/2. Fysieke eenheidswisseling rekent de schaal om en bewaart de fysieke lengte; abstracte eenheden behouden de numerieke schaal. Berekende meetwaarden gebruiken vaste decimalen en een decimale komma, vrije maattekst blijft ongewijzigd. Exact getypte tekenlengte/straal gebruikt de weergave-eenheid. Instellingen staan bij Assenstelsel, ook in volledig scherm; course/assessment mogen ze weergeven en exporteren maar niet wijzigen. Het eerder open legacy-besluit is hiermee vastgelegd. Dynamische tekstobjecten blijven een volgende, afzonderlijke stap.
+
+## 9. Coördinatenprojecties bij punten (2026-10-10)
+Status: technisch uitgevoerd op 2026-10-10 (a39a779); handmatige acceptatie pending.
+
+- Voeg in **Eigenschappen → Punt** een sectie **Coördinatenprojecties** toe, standaard uit voor bestaande en nieuwe punten.
+- Toon optioneel een verticale gestippelde hulplijn van P=(x,y) naar (x,0) op de x-as en een horizontale gestippelde hulplijn naar (0,y) op de y-as. Toon bij de betreffende as de waarde x respectievelijk y.
+- Bedieningsopties: beide projecties, alleen x, alleen y of geen; afzonderlijke schakelaar voor coördinaatwaarden. Gebruik de bestaande presentatie-/stijlinstellingen waar mogelijk, met duidelijk onderscheid tussen hulplijnen en echte constructieobjecten.
+- Hulplijnen en waarden volgen puntverplaatsing, gekoppelde punten en relevante as-/coördinatenstelselwijzigingen; houd rekening met de latere ondersteuning van meerdere of scheve coördinatenframes en leg het actieve referentieframe expliciet vast.
+- Gebruik de centrale formattering voor documenteenheden, schaal en decimalen zodra beschikbaar; toon negatieve, nul- en decimale waarden correct. Geen dubbele verwarrende aslabels.
+- Hulplijnen zijn presentatie van het punt, geen onafhankelijke meetkundige objecten; niet afzonderlijk selecteerbaar of snappend, en veroorzaken geen nieuwe constructiegraafafhankelijkheden.
+- Definieer exportgedrag voor SVG/PNG, viewport-clipping, zichtbaarheid, objectlocks, permissies, undo/redo, import/export en achterwaartse compatibiliteit.
+- Test horizontale/verticale asgevallen, oorsprong, verplaatsen, negatieve coördinaten, zoom/pan, gekoppelde punten en fullscreen in Node/Edge.
+- Plan als kleine zelfstandige UX/meetkunde-checkpoint, eventueel samen met de eenheden- en meetnotatiemilestone; implementatie pas na expliciete opdracht.
+
+### Technische invulling sectie 9
+
+Uitgevoerd na expliciete opdracht. Zie POINT-PROJECTIONS-CONTRACT.md en POINT-PROJECTIONS-REPORT.md voor referentieframe, gegevensschema, zichtbaarheid/clipping, formattering, permissies, geschiedenis, export en testbewijs. 338 Node-tests en 41 Edge-testmodules geslaagd. Het huidige cartesische documentframe is expliciet opgeslagen; toekomstige scheve/meerdere frames worden niet stilzwijgend ondersteund. Geen extra constructieobjecten of dependencies; standaard blijft Geen. Dynamische tekst blijft een afzonderlijke volgende stap.
