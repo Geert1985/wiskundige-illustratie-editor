@@ -92,3 +92,7 @@ Each checkpoint requires its own contract, tests and manual acceptance. Unit leg
 The M5a status above is historical: direct author dragging of path points has since been added in the existing pointer lifecycle, with parameter projection, cancellation and one-step undo. Inspector heading names are editable and relations precede appearance. Both changes were pushed at bfc5c79.
 
 Defaults and tool instructions delivered at 29f4d49: 302 Node tests and 34 Edge modules pass; manual acceptance pending. See [report](POST-M5A-UX-REPORT.md). Later additions remain planned.
+
+## M5b first family checkpoint (2026-10-10)
+
+Main baseline e3db593 was published after merging the accepted authoring work with main. New branch chatgpt/math-illustration-m5b. Linked line intersection delivered at cdc6f0a; 306 Node tests and 35 Edge modules pass. See [report](M5b-LINE-INTERSECTION-REPORT.md) and [contract](M5b-LINE-INTERSECTION-CONTRACT.md). Manual acceptance pending. Next separate families: line-circle, circle-circle and derived circles, plus tangent-at-linked-circle-point audit. M5b as a whole remains in progress. New changes may be pushed to this development branch under user authorization; merging future changes into main requires another request.
