@@ -3,7 +3,7 @@
  const MI=global.FZI.MathIllustration;
  const freeze=v=>{if(v&&typeof v==='object'){Object.values(v).forEach(freeze);Object.freeze(v);}return v;};
  const failure=(code,message)=>{const error=new Error(message);error.code=code;throw error;};
- const recipes={lineBetweenPoints:['line',['point','point']],pointOnSegment:['point',['segment']],pointOnCircle:['point',['circle']],perimeter:['text',['figure']],area:['text',['figure']],midpoint:['point',['point','point']],perpendicular:['straight',['line','point']],parallel:['straight',['line','point']],perpendicularBisector:['straight',['point','point']],bisector:['ray',['point','point','point']],tangent:['straight',['circle','point']]};
+ const recipes={lineIntersection:['point',['line','line']],lineBetweenPoints:['line',['point','point']],pointOnSegment:['point',['segment']],pointOnCircle:['point',['circle']],perimeter:['text',['figure']],area:['text',['figure']],midpoint:['point',['point','point']],perpendicular:['straight',['line','point']],parallel:['straight',['line','point']],perpendicularBisector:['straight',['point','point']],bisector:['ray',['point','point','point']],tangent:['straight',['circle','point']]};
  const fields={line:['x1','y1','x2','y2'],point:['x','y'],text:['x','y','text'],straight:['x1','y1','x2','y2'],ray:['x1','y1','x2','y2']};
  const definitions=freeze(Object.fromEntries(Object.entries(recipes).map(([kind,[resultType,sourceRoles]])=>[kind,{kind,resultType,sourceRoles,branches:kind==='tangent'?[0,1]:[],computedFields:fields[resultType]}])));
  const kinds=Object.fromEntries(Object.entries(definitions).map(([kind,d])=>[kind,d.sourceRoles.length]));
@@ -16,7 +16,7 @@
   return ref.part==null&&(role==='circle'?object.type==='circle':['circle','polygon'].includes(object.type));
  }
  const pathKind=kind=>['pointOnSegment','pointOnCircle'].includes(kind);
- const schema2=kind=>pathKind(kind)||kind==='lineBetweenPoints';
+ const schema2=kind=>pathKind(kind)||['lineBetweenPoints','lineIntersection'].includes(kind);
  function normaliseParameter(kind,value=0){if(!pathKind(kind)){if(value!==0)failure('INVALID_PARAMETER','Deze constructie heeft geen padparameter.');return undefined;}if(typeof value!=='number'||!Number.isFinite(value))failure('INVALID_PARAMETER','De padpositie moet eindig zijn.');if(kind==='pointOnSegment')return Math.max(0,Math.min(1,value));const t=value%1;return t<0?t+1:t===0?0:t;}
  function referencesForRole(o,role){const refs=referenceOptions(o);return role==='segment'?refs.line.filter(ref=>accepts(o,ref,'segment')):refs[role]||[];}
  function projectParameter(kind,o,ref,p){if(kind==='pointOnCircle')return normaliseParameter(kind,Math.atan2(p.y-o.cy,p.x-o.cx)/(2*Math.PI));const l=line(o,ref),dx=l.x2-l.x1,dy=l.y2-l.y1,n=dx*dx+dy*dy;return normaliseParameter(kind,n?((p.x-l.x1)*dx+(p.y-l.y1)*dy)/n:0);}
@@ -27,10 +27,20 @@
   if(current.construction)for(const key of contract(current.construction.kind).computedFields)if(key in patch&&JSON.stringify(patch[key])!==JSON.stringify(current[key]))failure('COMPUTED_FIELD','Deze waarde wordt berekend. Maak de constructie eerst los om ze vrij te bewerken.');
   if(current.vertices&&Array.isArray(patch.vertices)&&patch.vertices.length!==current.vertices.length&&objects.some(o=>o.construction?.sources.some(ref=>ref.objectId===current.id&&['vertex','edge'].includes(ref.part))))failure('TOPOLOGY_REFERENCED','Dit object heeft gekoppelde hoekpunten of zijden; het aantal hoekpunten kan niet worden gewijzigd.');
  }
+ function lineIntersection(c,source){
+  const lines=source.map((o,i)=>({...line(o,c.sources[i]),type:c.sources[i].part==='edge'?'line':o.type}));
+  const [a,b]=lines,ax=a.x2-a.x1,ay=a.y2-a.y1,bx=b.x2-b.x1,by=b.y2-b.y1,al=Math.hypot(ax,ay),bl=Math.hypot(bx,by);
+  const invalid=reasonCode=>({geometry:null,reasonCode});if(al<=1e-9||bl<=1e-9)return invalid('DEGENERATE_DIRECTION');
+  const ux=ax/al,uy=ay/al,vx=bx/bl,vy=by/bl,cross=ux*vy-uy*vx,qx=b.x1-a.x1,qy=b.y1-a.y1;
+  if(Math.abs(cross)<=1e-12)return invalid(Math.abs(qx*uy-qy*ux)<=1e-9?'COINCIDENT_LINES':'PARALLEL_LINES');
+  const distance=(qx*vy-qy*vx)/cross,other=(qx*uy-qy*ux)/cross;
+  if(!MI.LinearGeometry.accepts(a,distance/al)||!MI.LinearGeometry.accepts(b,other/bl))return invalid('OUTSIDE_DOMAINS');
+  return {geometry:{type:'point',x:a.x1+distance*ux,y:a.y1+distance*uy},reasonCode:'VALID'};
+ }
  function evaluate(c,objects){
   validateReferences(c,objects);const source=c.sources.map(ref=>objects.get(ref.objectId));if(source.some(o=>o.construction&&o.constructionValid===false))return {valid:false,reasonCode:'SOURCE_INVALID',geometry:null};
   const geometry=calculate(c,objects);let reasonCode='VALID';
-  if(!geometry){reasonCode=['perpendicularBisector','lineBetweenPoints','pointOnSegment'].includes(c.kind)?'COINCIDENT_POINTS':c.kind==='pointOnCircle'?'ZERO_RADIUS':['parallel','perpendicular'].includes(c.kind)?'DEGENERATE_DIRECTION':c.kind==='bisector'?'DEGENERATE_ARM':c.kind==='tangent'?(source[0].r<=0?'ZERO_RADIUS':'POINT_INSIDE_CIRCLE'):'NON_FINITE_RESULT';}
+  if(!geometry){reasonCode=c.kind==='lineIntersection'?lineIntersection(c,source).reasonCode:['perpendicularBisector','lineBetweenPoints','pointOnSegment'].includes(c.kind)?'COINCIDENT_POINTS':c.kind==='pointOnCircle'?'ZERO_RADIUS':['parallel','perpendicular'].includes(c.kind)?'DEGENERATE_DIRECTION':c.kind==='bisector'?'DEGENERATE_ARM':c.kind==='tangent'?(source[0].r<=0?'ZERO_RADIUS':'POINT_INSIDE_CIRCLE'):'NON_FINITE_RESULT';}
   else for(const [key,value] of Object.entries(geometry))if(['x','y','x1','y1','x2','y2'].includes(key)){if(!Number.isFinite(value)){reasonCode='NON_FINITE_RESULT';break;}if(Math.abs(value)>1e12){reasonCode='COORDINATE_LIMIT';break;}}
   return {valid:reasonCode==='VALID',reasonCode,geometry:reasonCode==='VALID'?geometry:null};
  }
@@ -51,6 +61,7 @@
   }
   if(c.kind==='pointOnCircle'){const o=source[0];return o.r>0?{type:'point',x:o.cx+o.r*Math.cos(2*Math.PI*c.parameter),y:o.cy+o.r*Math.sin(2*Math.PI*c.parameter)}:null;}
   if(c.kind==='pointOnSegment'){const l=line(source[0],c.sources[0]);return Math.hypot(l.x2-l.x1,l.y2-l.y1)>1e-9?{type:'point',x:l.x1+c.parameter*(l.x2-l.x1),y:l.y1+c.parameter*(l.y2-l.y1)}:null;}
+  if(c.kind==='lineIntersection')return lineIntersection(c,source).geometry;
   const ps=()=>source.map((o,i)=>point(o,c.sources[i]));
   if(c.kind==='lineBetweenPoints'){const [a,b]=ps();return Math.hypot(b.x-a.x,b.y-a.y)>1e-9?{type:'line',x1:a.x,y1:a.y,x2:b.x,y2:b.y}:null;}
   if(c.kind==='midpoint'||c.kind==='perpendicularBisector'){const [a,b]=ps(),p={x:(a.x+b.x)/2,y:(a.y+b.y)/2};return c.kind==='midpoint'?{type:'point',...p}:linear('straight',p,unit(-(b.y-a.y),b.x-a.x));}
