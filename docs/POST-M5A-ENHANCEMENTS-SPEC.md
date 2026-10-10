@@ -1,6 +1,6 @@
 # Post-M5a uitbreidingen — functionele specificatie
 
-Versie: 1.1.0
+Versie: 1.2.0
 Datum: 2026-10-10
 Status: goedgekeurde productwensen; technische uitwerking en implementatie nog te plannen
 Project: From Zero 2 Infinity — Wiskunde Illustrator
@@ -102,3 +102,16 @@ De editor moet **alle drie** de onderstaande representaties ondersteunen. Dit is
 - Geen interpretatie van willekeurige gebruikerscode; gevalideerde expressies en veilige evaluatie.
 - Respecteer bestaande permissies, objectvergrendeling, undo/redo, import/export, versiebeheer, toegankelijkheid en de teststrategie.
 - Plan als afzonderlijke toekomstige milestone **Verzamelingen en diagrammen**; scope eerst opdelen in kleine, toetsbare submilestones.
+
+## 7. Regelmatige veelhoeken — nieuw voorgesteld gereedschap (2026-10-10)
+Status: productvoorstel, nog niet geïmplementeerd; definitieve UX-acceptatie bij milestone.
+
+- Voeg gereedschap **Regelmatige veelhoek** toe naast de bestaande vrije veelhoek.
+- Aantal zijden n is geheel en minimaal 3; voorgestelde praktische UI-grens 100, technisch te valideren.
+- Interactie: kies middelpunt en hoekpunt op de omgeschreven cirkel; genereer n gelijkmatig verdeelde hoekpunten, gelijke zijden en gelijke binnenhoeken.
+- Eigenschappen: n, middelpunt, omgeschreven straal, rotatiehoek, zijde, omtrek en oppervlakte. Wijzigingen moeten de figuur consistent herberekenen.
+- Wiskunde: hoekstap 2π/n; zijde s=2R sin(π/n); omtrek P=ns; oppervlakte A=(n/2)R² sin(2π/n). Definieer degenerate invoer (R=0) expliciet.
+- Optioneel in latere stap: constructie op basis van één zijde of twee aangrenzende hoekpunten; ingeschreven cirkel/apothema.
+- Behoud objectidentiteit en handmatig aangepaste stijlen bij herberekening. Compatibiliteit met metingen, dynamische tekst, eenheden, locks, undo/redo, import/export, permissions en semantische replay vereist.
+- Node-tests op invariantie van zijden/hoeken, rotatie, metingen en degeneratie; Edge-tests op creëren, wijzigen en slepen.
+- Plan als afgebakende toekomstige milestone; geen implementatie zonder afzonderlijke opdracht.
