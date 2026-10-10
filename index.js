@@ -105,6 +105,12 @@
     }
     construct(kind,sources,parameter) {
       if(parameter!==undefined&&!MI.ConstructionService.pathKind(kind))throw Error('Deze constructie heeft geen padparameter.');const recipe={kind,sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.normaliseParameter(kind,parameter)}:{})};
+      if(kind==='lineCircleIntersection') {
+        const map=new Map(this.model.all().map(o=>[o.id,o])),solutions=[0,1].map(branch=>({recipe:{...recipe,branch},evaluation:MI.ConstructionService.evaluate({...recipe,branch},map)})).filter(s=>s.evaluation.valid);
+        if(!solutions.length)throw Error('Geen snijpunt binnen de gekozen lijn en cirkel.');
+        const model=new MI.IllustrationModel(this.model.toJSON()),created=solutions.map(s=>model.add({...s.evaluation.geometry,style:{stroke:MI.CONSTRUCTION_COLOR,fill:MI.CONSTRUCTION_COLOR},construction:s.recipe}));
+        this.model=model;return created;
+      }
       const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.evaluate(recipe,map).geometry;
       if(!first)throw Error('Deze constructie bestaat niet voor de gekozen geometrie.');
       const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&Math.abs(Math.hypot(first.x1-map.get(sources[0].objectId).cx,first.y1-map.get(sources[0].objectId).cy)-map.get(sources[0].objectId).r)>1e-9?2:1;
