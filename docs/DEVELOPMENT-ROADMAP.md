@@ -69,3 +69,26 @@ User accepted the complete M2c/UI trajectory and explicitly requested M4b. Seman
 ## M5a implementation checkpoint ? 2026-10-09
 
 User accepted M4b and explicitly requested M5a. Linked segments between existing points and parameterized points on finite segments/polygon edges and circles are delivered in the existing graph and command path. New recipes use constructionSchema 2; old recipes and geometry golden fixtures retain their format. Author tools/source editor/position slider and deterministic replay are included. No constrained drag controller, learner parameter grant, intersections, derived circles, locus or trace added. See M5a-LINKED-PATH-CONTRACT.md and M5a-REPORT.md. User acceptance pending; M5b has not started.
+
+## Post-M5a additions - agreed sequencing (2026-10-10)
+
+Product source: [Post-M5a specification 1.3.0](POST-M5A-ENHANCEMENTS-SPEC.md). All original milestones remain in scope. The user authorized the first two additions and roadmap documentation only. Later rows are planned, not implementation authorization.
+
+| Placement | Addition | Dependencies and acceptance |
+|---|---|---|
+| Before M5b: defaults | New editor document grid on; centrally red newly created constructions | Preserve saved presentation, existing styles and overrides; no import recoloring |
+| Before M5b: instructions | Declarative step instructions for every draw/measure/construction tool | Existing interaction owner; valid/invalid source progress, alternatives, cancel, keyboard/screen reader and fullscreen |
+| M5b, separate checkpoint | Tangent at a linked point on circle | Preserve existing external/on/interior cases, branches, identity and schema; audit what already works before extending |
+| After M5b, before dynamic text | Units, scale and measurement notation | New default cm, 1 coordinate unit = 1 cm, precision 2; axis inspector; length scale and area scale squared; decide legacy migration first |
+| Directly after units | Dynamic text bindings | Stable typed references and common unit formatting; define invalid/deleted source semantics first; templates later |
+| M8 alongside parallelogram, optionally separate after M5b | Regular polygon | Center/vertex/n contract, consistent side/angle/area, zero-radius policy and referenced topology policy |
+| M7a | Linked vector AB and component representation | Useful input for vector translation; fixed/free vector semantics |
+| M7f | Vector algebra and visualizations | Add/subtract/scalar/dot/angle/projection; units and zero-vector cases; small checkpoints |
+| Separate stream after M5-M6 | Sets: semantic core, then Venn/Euler and number-line views separately | Typed operations; mathematically valid conversions only; intervals/open boundaries/unbounded components |
+| At/after M11 | Sets in coordinate plane | Reuse safe expression/numeric groundwork where appropriate; robust boundary and region evaluation, no arbitrary code |
+
+Each checkpoint requires its own contract, tests and manual acceptance. Unit legacy behavior, dynamic-text deletion, vector degeneracy and set schemas are design decisions rather than implicit defaults. No M5b or later feature is implemented by this addition.
+
+The M5a status above is historical: direct author dragging of path points has since been added in the existing pointer lifecycle, with parameter projection, cancellation and one-step undo. Inspector heading names are editable and relations precede appearance. Both changes were pushed at bfc5c79.
+
+Defaults and tool instructions delivered at 29f4d49: 302 Node tests and 34 Edge modules pass; manual acceptance pending. See [report](POST-M5A-UX-REPORT.md). Later additions remain planned.
