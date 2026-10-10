@@ -104,3 +104,7 @@ User accepted line-line intersections. Line-circle intersections delivered at f2
 ## M5b circle-circle checkpoint (2026-10-10)
 
 Line-circle manually accepted. Circle-circle delivered at 785c10f on chatgpt/math-illustration-m5b: 316 Node tests and 37 Edge modules pass, visual review complete. See [report](M5b-CIRCLE-CIRCLE-REPORT.md) and [contract](M5b-CIRCLE-CIRCLE-CONTRACT.md). Manual acceptance pending. Next checkpoint: derived circles; linked-point tangent audit still pending. Main unchanged.
+
+## Point construction menu refinement (2026-10-10)
+
+At user request, all six point-producing construction tools are grouped in one remembered split-button, preserving full-screen and permission behavior. Browser validation and visual review pass; see [report](POINT-CONSTRUCTION-MENU-REPORT.md). Geometry milestone sequencing unchanged.

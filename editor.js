@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
-  const SPLIT_TOOLS={linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
+  const SPLIT_TOOLS={pointConstruction:['construct:midpoint', 'construct:pointOnSegment', 'construct:pointOnCircle', 'construct:lineIntersection', 'construct:lineCircleIntersection', 'construct:circleCircleIntersection'],linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
   const TOOL_STEPS = {
     point:['Klik op het werkvlak om een punt te plaatsen.'],
     text:['Klik waar de tekst moet komen.','Voer de tekst in en bevestig met Toevoegen.'],
@@ -96,7 +96,7 @@
         const enabled=items.filter(b=>this.toolAllowed(b.dataset.tool)),item=enabled.find(b=>b.dataset.tool===this[group+'Tool'])||enabled[0]||items[0];
         main.innerHTML=item.innerHTML;main.dataset.choice=item.dataset.tool;main.disabled=!this.toolAllowed(item.dataset.tool);main.classList.toggle('active',this.tool===item.dataset.tool);
         main.setAttribute('aria-label',item.textContent.trim());main.setAttribute('title',item.textContent.trim());toggle.disabled=!enabled.length;toggle.setAttribute('aria-expanded',String(this.splitMenuOpen===group));menu.hidden=this.splitMenuOpen!==group;
-        if(!menu.hidden){menu.style.left='0px';menu.style.right='auto';menu.style.top='calc(100% + 5px)';menu.style.bottom='auto';const side=main.closest('.sidebar')?.getBoundingClientRect(),anchor=main.getBoundingClientRect(),box=menu.getBoundingClientRect();if(side){menu.style.left=Math.max(side.left+8-anchor.left,Math.min(0,side.right-8-anchor.left-box.width))+'px';if(box.bottom>side.bottom && anchor.top-box.height-5>=side.top){menu.style.top='auto';menu.style.bottom='calc(100% + 5px)';}}}
+        if(!menu.hidden){menu.style.left='0px';menu.style.right='auto';menu.style.top='calc(100% + 5px)';menu.style.bottom='auto';const side=main.closest('.sidebar')?.getBoundingClientRect(),anchor=main.getBoundingClientRect();if(side&&group==='pointConstruction')menu.style.maxHeight=Math.max(0,Math.min(300,Math.max(side.bottom-anchor.bottom-13,anchor.top-side.top-13)))+'px';const box=menu.getBoundingClientRect();if(side){menu.style.left=Math.max(side.left+8-anchor.left,Math.min(0,side.right-8-anchor.left-box.width))+'px';if(box.bottom>side.bottom && anchor.top-box.height-5>=side.top){menu.style.top='auto';menu.style.bottom='calc(100% + 5px)';}}}
 
       }
     }
