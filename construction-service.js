@@ -3,9 +3,9 @@
  const MI=global.FZI.MathIllustration;
  const freeze=v=>{if(v&&typeof v==='object'){Object.values(v).forEach(freeze);Object.freeze(v);}return v;};
  const failure=(code,message)=>{const error=new Error(message);error.code=code;throw error;};
- const recipes={lineCircleIntersection:['point',['line','circle']],lineIntersection:['point',['line','line']],lineBetweenPoints:['line',['point','point']],pointOnSegment:['point',['segment']],pointOnCircle:['point',['circle']],perimeter:['text',['figure']],area:['text',['figure']],midpoint:['point',['point','point']],perpendicular:['straight',['line','point']],parallel:['straight',['line','point']],perpendicularBisector:['straight',['point','point']],bisector:['ray',['point','point','point']],tangent:['straight',['circle','point']]};
+ const recipes={circleCircleIntersection:['point',['circle','circle']],lineCircleIntersection:['point',['line','circle']],lineIntersection:['point',['line','line']],lineBetweenPoints:['line',['point','point']],pointOnSegment:['point',['segment']],pointOnCircle:['point',['circle']],perimeter:['text',['figure']],area:['text',['figure']],midpoint:['point',['point','point']],perpendicular:['straight',['line','point']],parallel:['straight',['line','point']],perpendicularBisector:['straight',['point','point']],bisector:['ray',['point','point','point']],tangent:['straight',['circle','point']]};
  const fields={line:['x1','y1','x2','y2'],point:['x','y'],text:['x','y','text'],straight:['x1','y1','x2','y2'],ray:['x1','y1','x2','y2']};
- const definitions=freeze(Object.fromEntries(Object.entries(recipes).map(([kind,[resultType,sourceRoles]])=>[kind,{kind,resultType,sourceRoles,branches:['tangent','lineCircleIntersection'].includes(kind)?[0,1]:[],computedFields:fields[resultType]}])));
+ const definitions=freeze(Object.fromEntries(Object.entries(recipes).map(([kind,[resultType,sourceRoles]])=>[kind,{kind,resultType,sourceRoles,branches:['tangent','lineCircleIntersection','circleCircleIntersection'].includes(kind)?[0,1]:[],computedFields:fields[resultType]}])));
  const kinds=Object.fromEntries(Object.entries(definitions).map(([kind,d])=>[kind,d.sourceRoles.length]));
  function contract(kind){if(!Object.prototype.hasOwnProperty.call(definitions,kind))failure('INVALID_CONSTRUCTION_KIND','Onbekende constructie.');return definitions[kind];}
  function accepts(object,ref,role){
@@ -16,7 +16,7 @@
   return ref.part==null&&(role==='circle'?object.type==='circle':['circle','polygon'].includes(object.type));
  }
  const pathKind=kind=>['pointOnSegment','pointOnCircle'].includes(kind);
- const schema2=kind=>pathKind(kind)||['lineBetweenPoints','lineIntersection','lineCircleIntersection'].includes(kind);
+ const schema2=kind=>pathKind(kind)||['lineBetweenPoints','lineIntersection','lineCircleIntersection','circleCircleIntersection'].includes(kind);
  function normaliseParameter(kind,value=0){if(!pathKind(kind)){if(value!==0)failure('INVALID_PARAMETER','Deze constructie heeft geen padparameter.');return undefined;}if(typeof value!=='number'||!Number.isFinite(value))failure('INVALID_PARAMETER','De padpositie moet eindig zijn.');if(kind==='pointOnSegment')return Math.max(0,Math.min(1,value));const t=value%1;return t<0?t+1:t===0?0:t;}
  function referencesForRole(o,role){const refs=referenceOptions(o);return role==='segment'?refs.line.filter(ref=>accepts(o,ref,'segment')):refs[role]||[];}
  function projectParameter(kind,o,ref,p){if(kind==='pointOnCircle')return normaliseParameter(kind,Math.atan2(p.y-o.cy,p.x-o.cx)/(2*Math.PI));const l=line(o,ref),dx=l.x2-l.x1,dy=l.y2-l.y1,n=dx*dx+dy*dy;return normaliseParameter(kind,n?((p.x-l.x1)*dx+(p.y-l.y1)*dy)/n:0);}
@@ -47,10 +47,23 @@
   if(!MI.LinearGeometry.accepts(l,position/len))return invalid('OUTSIDE_DOMAINS');
   return {geometry:{type:'point',x:l.x1+position*ux,y:l.y1+position*uy},reasonCode:'VALID'};
  }
+ function circleCircleIntersection(c,source){
+  const [a,b]=source,dx=b.cx-a.cx,dy=b.cy-a.cy,d=Math.hypot(dx,dy),r=a.r,s=b.r,invalid=reasonCode=>({geometry:null,reasonCode}),tolerance=1e-9*Math.max(1,r,s,d);
+  if(r<=0||s<=0)return invalid('ZERO_RADIUS');
+  if(d<=1e-9)return invalid(Math.abs(r-s)<=tolerance?'COINCIDENT_CIRCLES':'CONCENTRIC_CIRCLES');
+  if(d>r+s+tolerance)return invalid('SEPARATE_CIRCLES');
+  if(d<Math.abs(r-s)-tolerance)return invalid('CONTAINED_CIRCLES');
+  const tangent=Math.abs(d-r-s)<=tolerance||Math.abs(d-Math.abs(r-s))<=tolerance;
+  if(tangent&&c.branch===1)return invalid('MERGED_INTERSECTION');
+  const scale=Math.max(r,s,d),rn=r/scale,sn=s/scale,dn=d/scale,along=(dn*dn+(rn-sn)*(rn+sn))/(2*dn),heightSquared=rn*rn-along*along;
+  if(!tangent&&heightSquared<0)return invalid('CONTAINED_CIRCLES');
+  const h=tangent?0:scale*Math.sqrt(Math.max(0,heightSquared)),offset=along*scale,ux=dx/d,uy=dy/d,sign=c.branch===1?-1:1;
+  return {geometry:{type:'point',x:a.cx+offset*ux-sign*h*uy,y:a.cy+offset*uy+sign*h*ux},reasonCode:'VALID'};
+ }
  function evaluate(c,objects){
   validateReferences(c,objects);const source=c.sources.map(ref=>objects.get(ref.objectId));if(source.some(o=>o.construction&&o.constructionValid===false))return {valid:false,reasonCode:'SOURCE_INVALID',geometry:null};
   const geometry=calculate(c,objects);let reasonCode='VALID';
-  if(!geometry){reasonCode=c.kind==='lineCircleIntersection'?lineCircleIntersection(c,source).reasonCode:c.kind==='lineIntersection'?lineIntersection(c,source).reasonCode:['perpendicularBisector','lineBetweenPoints','pointOnSegment'].includes(c.kind)?'COINCIDENT_POINTS':c.kind==='pointOnCircle'?'ZERO_RADIUS':['parallel','perpendicular'].includes(c.kind)?'DEGENERATE_DIRECTION':c.kind==='bisector'?'DEGENERATE_ARM':c.kind==='tangent'?(source[0].r<=0?'ZERO_RADIUS':'POINT_INSIDE_CIRCLE'):'NON_FINITE_RESULT';}
+  if(!geometry){reasonCode=c.kind==='circleCircleIntersection'?circleCircleIntersection(c,source).reasonCode:c.kind==='lineCircleIntersection'?lineCircleIntersection(c,source).reasonCode:c.kind==='lineIntersection'?lineIntersection(c,source).reasonCode:['perpendicularBisector','lineBetweenPoints','pointOnSegment'].includes(c.kind)?'COINCIDENT_POINTS':c.kind==='pointOnCircle'?'ZERO_RADIUS':['parallel','perpendicular'].includes(c.kind)?'DEGENERATE_DIRECTION':c.kind==='bisector'?'DEGENERATE_ARM':c.kind==='tangent'?(source[0].r<=0?'ZERO_RADIUS':'POINT_INSIDE_CIRCLE'):'NON_FINITE_RESULT';}
   else for(const [key,value] of Object.entries(geometry))if(['x','y','x1','y1','x2','y2'].includes(key)){if(!Number.isFinite(value)){reasonCode='NON_FINITE_RESULT';break;}if(Math.abs(value)>1e12){reasonCode='COORDINATE_LIMIT';break;}}
   return {valid:reasonCode==='VALID',reasonCode,geometry:reasonCode==='VALID'?geometry:null};
  }
@@ -71,6 +84,7 @@
   }
   if(c.kind==='pointOnCircle'){const o=source[0];return o.r>0?{type:'point',x:o.cx+o.r*Math.cos(2*Math.PI*c.parameter),y:o.cy+o.r*Math.sin(2*Math.PI*c.parameter)}:null;}
   if(c.kind==='pointOnSegment'){const l=line(source[0],c.sources[0]);return Math.hypot(l.x2-l.x1,l.y2-l.y1)>1e-9?{type:'point',x:l.x1+c.parameter*(l.x2-l.x1),y:l.y1+c.parameter*(l.y2-l.y1)}:null;}
+  if(c.kind==='circleCircleIntersection')return circleCircleIntersection(c,source).geometry;
   if(c.kind==='lineCircleIntersection')return lineCircleIntersection(c,source).geometry;
   if(c.kind==='lineIntersection')return lineIntersection(c,source).geometry;
   const ps=()=>source.map((o,i)=>point(o,c.sources[i]));
