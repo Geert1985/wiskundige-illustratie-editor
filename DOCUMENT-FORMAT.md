@@ -72,3 +72,5 @@ Version-3 construction kinds area/perimeter create linked text labels from one c
 ## Cartesian axis source extension
 
 Documents containing built-in source references `{kind:"axis",frame:"cartesian",axis:"x"|"y"}` use constructionSchema 3. These constants are accepted only by angleDirections, not emitted as objects, and do not have objectId/parts/index or editable geometry. Schema 1/2 documents and legacy angleXAxis remain supported unchanged. Older readers lacking schema 3 must reject new files rather than treat axes as missing objects. See docs/AXIS-REFERENCES-CONTRACT.md.
+
+Construction schema 4: angleDirections object sources may carry arm:start/end, selecting the negative/positive stored endpoint direction from the intersection. Only undirected line, straight, dimension and polygon edge sources allow this; axis, ray and vector references reject it. Explicit-arm documents require schema 4; schemas 1-3 remain readable.
