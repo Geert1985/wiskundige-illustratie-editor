@@ -155,3 +155,5 @@ After manual angle feedback, user authorized inventory/contract-first revision: 
 ## Standalone repository (2026-10-11)
 
 Editor moved to Geert1985/wiskundige-illustratie-editor with 244 historical editor commits and latest implementation from 73333a0. New project root replaces math-illustration/. Source-main cleanup: 94a6d4a; standalone baseline: c4bf129. All future editor changes belong on chatgpt/editor-development in the new repository; earlier main-publication restrictions referred to the old repository. Roadmap scope and pending manual acceptance remain unchanged. See REPOSITORY-MIGRATION.md.
+
+2026-10-11 axis-arm extension: explicit clicked start/end arms now apply to undirected lines in angleDirections axis combinations as well. The Cartesian axis remains positive; axis sources never carry arm. Legacy combinations without an explicit arm preserve their stored-direction behavior. Rays/vectors retain orientation. Schema 4 persists the line arm and schema 3 remains unchanged for axis-only/legacy refs.
