@@ -1,15 +1,17 @@
-# JavaScript-refactoringrapport — R1–R3
+# JavaScript-refactoringrapport — R1–R4
 
 **Repository:** `Geert1985/wiskundige-illustratie-editor`
 **Branch:** `chatgpt/editor-development`
 **Uitgangs-HEAD vóór R1:** `123c40b744ccaa70b51367a743201b350c2b4697`
-**Rapportstatus:** R1, R2 en R3 uitgevoerd; R4 is niet gestart.
+**Rapportstatus:** R1, R2, R3 en R4 uitgevoerd.
 
 ## Samenvatting
 
 De refactoring is uitgevoerd in drie afzonderlijke commits. R1 verwijderde één aantoonbaar ongebruikt stubbestand. R2 bracht twee tijdelijke SVG-presentatieoverlays onder in één module met behoud van hun bestaande service-interfaces. R3 haalde toolinstructies en de presentatie daarvan uit `editor.js` naar een kleine, expliciete instructiemodule. Er zijn geen wiskundige algoritmen, opgeslagen documentstructuren, permissies, canvasrender-eigenaars of pointerinteracties gewijzigd.
 
 De volledige Node-suite slaagde na elke fase. De volledige Edge-regressiesuite slaagde na elke fase; de browseruitvoer rapporteerde `pageErrors: []`. Handmatige gebruikersacceptatiecontroles zijn niet uitgevoerd.
+
+R4 heeft de klassieke scriptarchitectuur geïnventariseerd, een afhankelijkheidscontract vastgelegd en een automatische controle toegevoegd. Het wijzigt geen productiecode of runtimefunctionaliteit.
 
 ## R1 — Verwijderen van het ongebruikte stubbestand
 
@@ -114,4 +116,29 @@ Niet uitgevoerd: handmatige controle van elk gereedschap, alle schermformaten, f
 
 R3 beperkte zich tot een aantoonbaar laagrisico UI-extractie. De complexere pointerlifecycle, documentmutaties, inspectoren, dialoogvensters en navigatie zijn niet opgesplitst omdat de extractiegrenzen en karakterisering daarvan meer risico vragen. Er zijn geen productieafhankelijkheden toegevoegd. Playwright is uit de bestaande lockfile geïnstalleerd als reeds gedeclareerde ontwikkeldependency om de verplichte Edge-suite te kunnen uitvoeren; packagebestanden zijn niet gewijzigd.
 
-R4 (afhankelijkheden, laadvolgorde en automatische architectuurcontrole) is niet gestart.
+## R4 — Afhankelijkheden, laadvolgorde en architectuurcontrole
+
+### Inventaris en contract
+
+`editor.html` laadt 25 lokale klassieke scripts synchroon en die publiceren samen 53 geïnventariseerde services/helpers. `docs/JAVASCRIPT-DEPENDENCIES.md` documenteert per module de belangrijkste exports, servicegebruik, laadvoorwaarden, laat gebonden runtimekoppelingen, grenzen van de controle en voor- en nadelen van een mogelijke latere ES-module-/bundlermigratie. Er is geen migratie of bundlerkeuze gemaakt.
+
+`tests/architecture.test.cjs` controleert de scriptinventaris en volgorde, bestandsexistentie, unieke en daadwerkelijk toegewezen providers, statische `MI.X`-referenties, verklaarde load-afhankelijkheden en cycli in die graaf. Ook evalueert de test de scripts in volgorde in een minimale VM-browsercontext zonder de editor-bootstrap te starten. Dynamische runtime-callgraphs en visuele output vallen buiten deze statische controle en worden door bestaande functionele/Edge-tests gedekt.
+
+### Tests
+
+| Controle | Resultaat |
+| --- | --- |
+| Gerichte architectuurtest `node --test tests/architecture.test.cjs` | **PASS** — 3 tests, 3 geslaagd, 0 mislukt |
+| Volledige Node-suite `npm.cmd test` | **PASS** — 370 tests, 370 geslaagd, 0 mislukt, 0 overgeslagen |
+| Volledige Edge-suite `npm.cmd run test:edge` | **PASS** — browserregressie-uitvoer rapporteerde alle opgenomen checks als geslaagd en `pageErrors: []` |
+| Handmatige gebruikersacceptatie | **Niet uitgevoerd** |
+
+PowerShell blokkeerde de `.ps1`-shim voor `npm`; de gelijkwaardige `npm.cmd`-commando's zijn gebruikt. Edge moest buiten de sandbox worden uitgevoerd omdat Playwright anders de tijdelijke Edge-profielbestanden niet kon schrijven. De eerste sandboxrun kon de browser daardoor niet starten; de toegestane herhaling buiten de sandbox slaagde.
+
+### Beperkingen en risico
+
+De architectuurtest is bewust gekoppeld aan de expliciete inventaris: bij een bewuste scriptwijziging moet de manifestvolgorde worden bijgewerkt. Statische analyse kan dynamische naamopbouw of alle runtime-relaties niet bewijzen. De test detecteert alleen cycli in gedeclareerde laad-/evaluatievoorwaarden; wederzijdse late runtime-aanroepen moeten afzonderlijk worden beoordeeld. De huidige globale namespace, klassieke scriptsemantiek, documentformaten en deployment zijn behouden.
+
+### Commit
+
+R4-implementatiecommit: `df3e88fe45d9bcbf19bd6fd4f0eae74ec7a0e849` — `test: add JavaScript architecture inventory`. De rapportwijziging wordt als afzonderlijke documentatiecommit vastgelegd.

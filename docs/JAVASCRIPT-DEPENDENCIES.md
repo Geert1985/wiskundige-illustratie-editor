@@ -1,7 +1,7 @@
 # JavaScript-afhankelijkheden en klassieke scriptvolgorde
 
-**Status:** R4 inventarisatie  
-**Applicatie-entrypoint:** `editor.html`  
+**Status:** R4 inventarisatie
+**Applicatie-entrypoint:** `editor.html`
 **Runtimevorm:** synchrone klassieke scripts; geen `type="module"` en geen bundler.
 
 ## Contract
