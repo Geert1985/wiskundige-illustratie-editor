@@ -86,6 +86,12 @@
   const lines=source.map((o,i)=>line(o,c.sources[i])),directions=lines.map(l=>{const dx=l.x2-l.x1,dy=l.y2-l.y1,n=Math.hypot(dx,dy);return n<=1e-9?null:{x:dx/n,y:dy/n};});if(directions.some(d=>!d))return null;
   const first=lines[0];let v=c.sources.some(isAxis)?{x:0,y:0}:{x:first.x1,y:first.y1},a=c.kind==='angleXAxis'?{x:1,y:0}:directions[0],b=c.kind==='angleXAxis'?directions[0]:directions[1];
   if(c.kind==='angleDirections'){const cross=a.x*b.y-a.y*b.x;if(Math.abs(cross)>1e-12){const second=lines[1],distance=((second.x1-first.x1)*b.y-(second.y1-first.y1)*b.x)/cross;v={x:first.x1+distance*a.x,y:first.y1+distance*a.y};}}
+  // Finite undirected arms point away from their intersection, toward the
+  // farther endpoint. Axes, rays and vectors retain their positive direction.
+  if(c.kind==='angleDirections'&&!c.sources.some(isAxis)){
+   const arm=(i,d)=>{const l=lines[i],finite=c.sources[i].part==='edge'||['line','dimension'].includes(source[i].type);if(!finite)return d;const dx=l.x2-l.x1,dy=l.y2-l.y1,n=dx*dx+dy*dy,t=((v.x-l.x1)*dx+(v.y-l.y1)*dy)/n;if(t<-1e-9||t>1+1e-9)return d;return t>.5?{x:-d.x,y:-d.y}:d;};
+   a=arm(0,a);b=arm(1,b);
+  }
   const vertices=[{x:v.x+a.x,y:v.y+a.y},v,{x:v.x+b.x,y:v.y+b.y}];return vertices.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&Math.abs(p.x)<=1e12&&Math.abs(p.y)<=1e12)?{type:'angle',vertices}:null;
  }
  function calculate(c,objects){validateReferences(c,objects);const source=c.sources.map(s=>sourceObject(s,objects));

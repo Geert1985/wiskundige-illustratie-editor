@@ -147,3 +147,5 @@ After manual angle feedback, user authorized inventory/contract-first revision: 
 
 - Sidebar follow-up: static angle and right-angle drawing moved into the basic linear split button; measuring retains linked angle tools. All editor assets receive version 20261011-tool-sidebar to refresh cached CSS/JavaScript.
   Validation: complete Edge regression suite passed; stacked layout and menu containment checked at five widths, including 1159 pixels; zero page errors.
+
+2026-10-11 angle-arm correction: for object-only angleDirections, finite undirected line/dimension/polygon-edge sources whose intersection lies within their segment use the outward arm toward the farther endpoint (midpoint tie retains stored direction). This makes shared endpoint angles independent of endpoint order and chooses the longer arm for interior crossings. Ray/vector and axis combinations retain directed semantics; supporting intersection and outside-domain fallback remain unchanged. Smallest/directed settings continue to use the resolved arms. Saved angleDirections measurements recalculate using this corrected policy; angleXAxis remains unchanged.
