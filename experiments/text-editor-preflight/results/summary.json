@@ -1,0 +1,715 @@
+{
+  "node": {
+    "experiment": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "baseline": {
+      "passed": 364,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "edge": {
+    "passed": 24,
+    "failed": 1,
+    "notExecuted": 2
+  },
+  "environment": {
+    "node": "v22.18.0",
+    "platform": "win32",
+    "release": "10.0.26200",
+    "cpu": "AMD Ryzen 7 5800H with Radeon Graphics         ",
+    "logicalCores": 16,
+    "memoryGiB": 15.346668243408203,
+    "edge": "155.0.4283.45"
+  },
+  "coldFontMs": 400.89999997615814,
+  "bundles": {
+    "probe": {
+      "rawBytes": 466485,
+      "gzipBytes": 138467,
+      "sha256": "bea113c7f3fd3a22af35669b77f73d162fe40927332c2de3ca180f94c8247ea2",
+      "inputs": [
+        "node_modules/orderedmap/dist/index.js",
+        "node_modules/prosemirror-model/dist/index.js",
+        "node_modules/prosemirror-transform/dist/index.js",
+        "node_modules/prosemirror-state/dist/index.js",
+        "node_modules/prosemirror-view/dist/index.js",
+        "node_modules/prosemirror-commands/dist/index.js",
+        "node_modules/rope-sequence/dist/index.js",
+        "node_modules/prosemirror-history/dist/index.js",
+        "node_modules/w3c-keyname/index.js",
+        "node_modules/prosemirror-keymap/dist/index.js",
+        "content.cjs",
+        "adapter.js",
+        "node_modules/opentype.js/dist/opentype.js",
+        "render.js",
+        "probe.js"
+      ]
+    },
+    "editor": {
+      "rawBytes": 214102,
+      "gzipBytes": 66985,
+      "sha256": "c5e07d3c905554e758aad4b1296963bb57e49cae4b4f94c371738a1b6bc87bec",
+      "inputs": [
+        "node_modules/orderedmap/dist/index.js",
+        "node_modules/prosemirror-model/dist/index.js",
+        "node_modules/prosemirror-transform/dist/index.js",
+        "node_modules/prosemirror-state/dist/index.js",
+        "node_modules/prosemirror-view/dist/index.js",
+        "node_modules/prosemirror-commands/dist/index.js",
+        "node_modules/rope-sequence/dist/index.js",
+        "node_modules/prosemirror-history/dist/index.js",
+        "node_modules/w3c-keyname/index.js",
+        "node_modules/prosemirror-keymap/dist/index.js",
+        "content.cjs",
+        "adapter.js"
+      ]
+    },
+    "renderer": {
+      "rawBytes": 250243,
+      "gzipBytes": 70484,
+      "sha256": "53eafd26f4c9bb83a74131fc6ce03bcedac5288b9bc0748486ee322ab782e5f2",
+      "inputs": [
+        "node_modules/opentype.js/dist/opentype.js",
+        "render.js"
+      ]
+    },
+    "dependencies": {
+      "esbuild": {
+        "version": "0.28.2",
+        "license": "MIT"
+      },
+      "fsevents": {
+        "version": "2.3.2",
+        "license": "MIT"
+      },
+      "opentype.js": {
+        "version": "2.0.0",
+        "license": "MIT"
+      },
+      "orderedmap": {
+        "version": "2.1.1",
+        "license": "MIT"
+      },
+      "playwright": {
+        "version": "1.62.1",
+        "license": "Apache-2.0"
+      },
+      "playwright-core": {
+        "version": "1.62.1",
+        "license": "Apache-2.0"
+      },
+      "pngjs": {
+        "version": "7.0.0",
+        "license": "MIT"
+      },
+      "prosemirror-commands": {
+        "version": "1.7.2",
+        "license": "MIT"
+      },
+      "prosemirror-history": {
+        "version": "1.5.1",
+        "license": "MIT"
+      },
+      "prosemirror-keymap": {
+        "version": "1.2.3",
+        "license": "MIT"
+      },
+      "prosemirror-model": {
+        "version": "1.25.12",
+        "license": "MIT"
+      },
+      "prosemirror-state": {
+        "version": "1.4.4",
+        "license": "MIT"
+      },
+      "prosemirror-transform": {
+        "version": "1.12.2",
+        "license": "MIT"
+      },
+      "prosemirror-view": {
+        "version": "1.42.6",
+        "license": "MIT"
+      },
+      "rope-sequence": {
+        "version": "1.3.4",
+        "license": "MIT"
+      },
+      "w3c-keyname": {
+        "version": "2.2.8",
+        "license": "MIT"
+      }
+    }
+  },
+  "fonts": [
+    {
+      "name": "SourceSans3-Regular.ttf",
+      "rawBytes": 431196,
+      "gzipBytes": 204207
+    },
+    {
+      "name": "SourceSans3-Bold.ttf",
+      "rawBytes": 428176,
+      "gzipBytes": 204530
+    },
+    {
+      "name": "SourceSans3-It.ttf",
+      "rawBytes": 315812,
+      "gzipBytes": 158271
+    },
+    {
+      "name": "SourceSans3-BoldIt.ttf",
+      "rawBytes": 318700,
+      "gzipBytes": 159140
+    },
+    {
+      "name": "SourceSerif4-Regular.ttf",
+      "rawBytes": 261868,
+      "gzipBytes": 111475
+    }
+  ],
+  "fontTotalBytes": 1755752,
+  "fontTotalGzipBytes": 837623,
+  "kerning": [
+    {
+      "face": "regular",
+      "size": 12,
+      "text": "AV",
+      "nativeSvgError": 0.0005487813039579179,
+      "pathError": 0.013397671755771648
+    },
+    {
+      "face": "regular",
+      "size": 12,
+      "text": "To",
+      "nativeSvgError": 0.0010102177748068776,
+      "pathError": 0.06521897601109732
+    },
+    {
+      "face": "regular",
+      "size": 12,
+      "text": "fi",
+      "nativeSvgError": 0.0019758922240605058,
+      "pathError": 9.832190970653157e-7
+    },
+    {
+      "face": "regular",
+      "size": 16,
+      "text": "AV",
+      "nativeSvgError": 0.000860589124818277,
+      "pathError": 0.013397980033967418
+    },
+    {
+      "face": "regular",
+      "size": 16,
+      "text": "To",
+      "nativeSvgError": 0.0006879277167019425,
+      "pathError": 0.06521830679314491
+    },
+    {
+      "face": "regular",
+      "size": 16,
+      "text": "fi",
+      "nativeSvgError": 0.00016130947843859516,
+      "pathError": 0.0000015740968885624316
+    },
+    {
+      "face": "regular",
+      "size": 32,
+      "text": "AV",
+      "nativeSvgError": 0.00039287746466726563,
+      "pathError": 0.013397517616744311
+    },
+    {
+      "face": "regular",
+      "size": 32,
+      "text": "To",
+      "nativeSvgError": 0.0002049646683318279,
+      "pathError": 0.06521780488023238
+    },
+    {
+      "face": "regular",
+      "size": 32,
+      "text": "fi",
+      "nativeSvgError": 0.00016042302043753828,
+      "pathError": 6.877804633750526e-7
+    },
+    {
+      "face": "bold",
+      "size": 12,
+      "text": "AV",
+      "nativeSvgError": 0.0008824286817934705,
+      "pathError": 0.016202727402786922
+    },
+    {
+      "face": "bold",
+      "size": 12,
+      "text": "To",
+      "nativeSvgError": 0.00015234238705777708,
+      "pathError": 0.07343142872587713
+    },
+    {
+      "face": "bold",
+      "size": 12,
+      "text": "fi",
+      "nativeSvgError": 0.0003050112524421509,
+      "pathError": 0.0000011211224415174303
+    },
+    {
+      "face": "bold",
+      "size": 16,
+      "text": "AV",
+      "nativeSvgError": 0.0002952870808468559,
+      "pathError": 0.01620156433481435
+    },
+    {
+      "face": "bold",
+      "size": 16,
+      "text": "To",
+      "nativeSvgError": 0.00015203519845200525,
+      "pathError": 0.07343109903019993
+    },
+    {
+      "face": "bold",
+      "size": 16,
+      "text": "fi",
+      "nativeSvgError": 0.00030604201122154043,
+      "pathError": 0.0000021515680788793133
+    },
+    {
+      "face": "bold",
+      "size": 32,
+      "text": "AV",
+      "nativeSvgError": 0.00029571640410569396,
+      "pathError": 0.016202000484992075
+    },
+    {
+      "face": "bold",
+      "size": 32,
+      "text": "To",
+      "nativeSvgError": 0.0001515744158971616,
+      "pathError": 0.07343060448706362
+    },
+    {
+      "face": "bold",
+      "size": 32,
+      "text": "fi",
+      "nativeSvgError": 0.00030526894193784725,
+      "pathError": 0.000001378733651677394
+    },
+    {
+      "face": "italic",
+      "size": 12,
+      "text": "AV",
+      "nativeSvgError": 0.00003321751493127296,
+      "pathError": 0.051202264105817644
+    },
+    {
+      "face": "italic",
+      "size": 12,
+      "text": "To",
+      "nativeSvgError": 0.0008664306267181533,
+      "pathError": 0.07676250173820962
+    },
+    {
+      "face": "italic",
+      "size": 12,
+      "text": "fi",
+      "nativeSvgError": 0.001026565757784382,
+      "pathError": 0.000002959645430518569
+    },
+    {
+      "face": "italic",
+      "size": 16,
+      "text": "AV",
+      "nativeSvgError": 0.00003388188773934066,
+      "pathError": 0.05120296247281975
+    },
+    {
+      "face": "italic",
+      "size": 16,
+      "text": "To",
+      "nativeSvgError": 0.0001815091331183971,
+      "pathError": 0.07676214180777081
+    },
+    {
+      "face": "italic",
+      "size": 16,
+      "text": "fi",
+      "nativeSvgError": 0.0010253394829201963,
+      "pathError": 0.0000017346245016036
+    },
+    {
+      "face": "italic",
+      "size": 32,
+      "text": "AV",
+      "nativeSvgError": 0.00003288532885827121,
+      "pathError": 0.051201914922664675
+    },
+    {
+      "face": "italic",
+      "size": 32,
+      "text": "To",
+      "nativeSvgError": 0.0001810076359149234,
+      "pathError": 0.0767616019125638
+    },
+    {
+      "face": "italic",
+      "size": 32,
+      "text": "fi",
+      "nativeSvgError": 0.00008360735413962061,
+      "pathError": 8.15860774493868e-7
+    },
+    {
+      "face": "boldItalic",
+      "size": 12,
+      "text": "AV",
+      "nativeSvgError": 0.0009136260440993525,
+      "pathError": 0.08464690731326362
+    },
+    {
+      "face": "boldItalic",
+      "size": 12,
+      "text": "To",
+      "nativeSvgError": 0.001002998813712063,
+      "pathError": 0.06406618773897595
+    },
+    {
+      "face": "boldItalic",
+      "size": 12,
+      "text": "fi",
+      "nativeSvgError": 0.0007582152515105237,
+      "pathError": 0.0000015980514082958063
+    },
+    {
+      "face": "boldItalic",
+      "size": 16,
+      "text": "AV",
+      "nativeSvgError": 0.0005932311574014974,
+      "pathError": 0.08464690731326369
+    },
+    {
+      "face": "boldItalic",
+      "size": 16,
+      "text": "To",
+      "nativeSvgError": 0.000024820386319766764,
+      "pathError": 0.06406551054580047
+    },
+    {
+      "face": "boldItalic",
+      "size": 16,
+      "text": "fi",
+      "nativeSvgError": 0.0013080824027476175,
+      "pathError": 0.0000015980514084208315
+    },
+    {
+      "face": "boldItalic",
+      "size": 32,
+      "text": "AV",
+      "nativeSvgError": 0.00011170006561205534,
+      "pathError": 0.08464588920292156
+    },
+    {
+      "face": "boldItalic",
+      "size": 32,
+      "text": "To",
+      "nativeSvgError": 0.000024343059578922346,
+      "pathError": 0.0640650026514844
+    },
+    {
+      "face": "boldItalic",
+      "size": 32,
+      "text": "fi",
+      "nativeSvgError": 0.0004824758178126206,
+      "pathError": 7.925813102008302e-7
+    },
+    {
+      "face": "serif",
+      "size": 12,
+      "text": "AV",
+      "nativeSvgError": 0.0008637055890513843,
+      "pathError": 0.09762169695199556
+    },
+    {
+      "face": "serif",
+      "size": 12,
+      "text": "To",
+      "nativeSvgError": 0.0003087923635531082,
+      "pathError": 0.06463634239554777
+    },
+    {
+      "face": "serif",
+      "size": 12,
+      "text": "fi",
+      "nativeSvgError": 0.0017680428352368424,
+      "pathError": 0.07413559464056776
+    },
+    {
+      "face": "serif",
+      "size": 16,
+      "text": "AV",
+      "nativeSvgError": 0.0005969271162161549,
+      "pathError": 0.09762198319059506
+    },
+    {
+      "face": "serif",
+      "size": 16,
+      "text": "To",
+      "nativeSvgError": 0.000007925276966415319,
+      "pathError": 0.06463602989414474
+    },
+    {
+      "face": "serif",
+      "size": 16,
+      "text": "fi",
+      "nativeSvgError": 0.0006960101180703395,
+      "pathError": 0.07413615717573849
+    },
+    {
+      "face": "serif",
+      "size": 32,
+      "text": "AV",
+      "nativeSvgError": 0.00019597665022314347,
+      "pathError": 0.0976215538327518
+    },
+    {
+      "face": "serif",
+      "size": 32,
+      "text": "To",
+      "nativeSvgError": 0.000007925276966415319,
+      "pathError": 0.06463602989414474
+    },
+    {
+      "face": "serif",
+      "size": 32,
+      "text": "fi",
+      "nativeSvgError": 0.0006952240074597143,
+      "pathError": 0.07413531337320317
+    }
+  ],
+  "performance": [
+    {
+      "kind": "text",
+      "medianMs": 36.89999997615814,
+      "p95Ms": 45.89999997615814,
+      "pass": true
+    },
+    {
+      "kind": "path",
+      "medianMs": 47.94999998807907,
+      "p95Ms": 52,
+      "pass": true
+    }
+  ],
+  "sizes": [
+    {
+      "kind": "text",
+      "count": 1,
+      "unique": false,
+      "rawBytes": 576361,
+      "gzipBytes": 255124
+    },
+    {
+      "kind": "path",
+      "count": 1,
+      "unique": false,
+      "rawBytes": 30164,
+      "gzipBytes": 10785
+    },
+    {
+      "kind": "text",
+      "count": 1,
+      "unique": true,
+      "rawBytes": 576367,
+      "gzipBytes": 255128
+    },
+    {
+      "kind": "path",
+      "count": 1,
+      "unique": true,
+      "rawBytes": 30661,
+      "gzipBytes": 10937
+    },
+    {
+      "kind": "text",
+      "count": 10,
+      "unique": false,
+      "rawBytes": 2351873,
+      "gzipBytes": 1043224
+    },
+    {
+      "kind": "path",
+      "count": 10,
+      "unique": false,
+      "rawBytes": 282264,
+      "gzipBytes": 98140
+    },
+    {
+      "kind": "text",
+      "count": 10,
+      "unique": true,
+      "rawBytes": 2351906,
+      "gzipBytes": 1043286
+    },
+    {
+      "kind": "path",
+      "count": 10,
+      "unique": true,
+      "rawBytes": 288067,
+      "gzipBytes": 100203
+    },
+    {
+      "kind": "text",
+      "count": 100,
+      "unique": false,
+      "rawBytes": 2443689,
+      "gzipBytes": 1047685
+    },
+    {
+      "kind": "path",
+      "count": 100,
+      "unique": false,
+      "rawBytes": 2872130,
+      "gzipBytes": 987699
+    },
+    {
+      "kind": "text",
+      "count": 100,
+      "unique": true,
+      "rawBytes": 2444235,
+      "gzipBytes": 1048903
+    },
+    {
+      "kind": "path",
+      "count": 100,
+      "unique": true,
+      "rawBytes": 2986043,
+      "gzipBytes": 1028960
+    }
+  ],
+  "renderMatrixCases": 36,
+  "previewExport": [
+    {
+      "size": 12,
+      "text": {
+        "sameDimensions": true,
+        "pixels": 693000,
+        "differingPixels": 6817,
+        "ratio": 0.009836940836940837,
+        "inkRelative": 0.7117352265608686,
+        "interiorDiff": 217,
+        "interiorRatio": 0.0003131313131313131
+      },
+      "path": {
+        "sameDimensions": true,
+        "pixels": 693000,
+        "differingPixels": 0,
+        "ratio": 0,
+        "inkRelative": 0,
+        "interiorDiff": 0,
+        "interiorRatio": 0
+      }
+    },
+    {
+      "size": 16,
+      "text": {
+        "sameDimensions": true,
+        "pixels": 693000,
+        "differingPixels": 9818,
+        "ratio": 0.014167388167388167,
+        "inkRelative": 0.5953911461491813,
+        "interiorDiff": 189,
+        "interiorRatio": 0.00027272727272727274
+      },
+      "path": {
+        "sameDimensions": true,
+        "pixels": 693000,
+        "differingPixels": 0,
+        "ratio": 0,
+        "inkRelative": 0,
+        "interiorDiff": 0,
+        "interiorRatio": 0
+      }
+    },
+    {
+      "size": 32,
+      "text": {
+        "sameDimensions": true,
+        "pixels": 693000,
+        "differingPixels": 21208,
+        "ratio": 0.030603174603174604,
+        "inkRelative": 0.46370474024838204,
+        "interiorDiff": 882,
+        "interiorRatio": 0.0012727272727272728
+      },
+      "path": {
+        "sameDimensions": true,
+        "pixels": 693000,
+        "differingPixels": 0,
+        "ratio": 0,
+        "inkRelative": 0,
+        "interiorDiff": 0,
+        "interiorRatio": 0
+      }
+    }
+  ],
+  "standalone": [
+    {
+      "kind": "text",
+      "bounds": {
+        "x": 20,
+        "y": 21.799999237060547,
+        "width": 468.5370788574219,
+        "height": 503
+      },
+      "expected": {
+        "x": 20,
+        "y": 21.799999237060547,
+        "width": 468.5370788574219,
+        "height": 503
+      }
+    },
+    {
+      "kind": "path",
+      "bounds": {
+        "x": 20,
+        "y": 25.51999855041504,
+        "width": 470.8255615234375,
+        "height": 499.2799987792969
+      },
+      "expected": {
+        "x": 20,
+        "y": 25.51999855041504,
+        "width": 470.8255615234375,
+        "height": 499.2799987792969
+      }
+    }
+  ],
+  "qualification": {
+    "proseMirror": "conditional: automatic interaction checks pass; real OS-IME and screenreader evidence not executed",
+    "nativeSvg": "conditional: offline and performance evidence; manual accessibility and full baseline/selection semantics still require approval",
+    "path": "rejected for tested OpenType.js/font/serialization pipeline: non-finite paths, glyph loss and kerning errors"
+  },
+  "limits": {
+    "nativeSvgKerningMaxError": 0.0019758922240605058,
+    "pathKerningMaxError": 0.09762198319059506,
+    "maxPreviewTextInteriorPixelRatio": 0.0012727272727272728,
+    "maxPreviewTextAllPixelRatio": 0.030603174603174604,
+    "maxPreviewTextInkRelative": 0.7117352265608686
+  },
+  "manual": [
+    {
+      "id": "real-os-ime",
+      "status": "not executed",
+      "reason": "Headless automation cannot provide real OS-IME composition evidence."
+    },
+    {
+      "id": "screenreader",
+      "status": "not executed",
+      "reason": "No manual Edge screenreader session in this automated experiment."
+    }
+  ]
+}

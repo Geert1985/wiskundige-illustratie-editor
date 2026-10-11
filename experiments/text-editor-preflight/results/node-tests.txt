@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: own storage canonical JSON roundtrip without editor dependency
+ok 1 - own storage canonical JSON roundtrip without editor dependency
+  ---
+  duration_ms: 3.8487
+  type: 'test'
+  ...
+# Subtest: text preserves decomposed Unicode and supplementary codepoints
+ok 2 - text preserves decomposed Unicode and supplementary codepoints
+  ---
+  duration_ms: 0.4581
+  type: 'test'
+  ...
+# Subtest: canonical merges equivalent adjacent text and strips editor-only attributes
+ok 3 - canonical merges equivalent adjacent text and strips editor-only attributes
+  ---
+  duration_ms: 0.6868
+  type: 'test'
+  ...
+# Subtest: text and paragraph quotas reject oversized draft
+ok 4 - text and paragraph quotas reject oversized draft
+  ---
+  duration_ms: 1.3413
+  type: 'test'
+  ...
+# Subtest: unknown fragment rejects rather than silently disappears
+ok 5 - unknown fragment rejects rather than silently disappears
+  ---
+  duration_ms: 0.5093
+  type: 'test'
+  ...
+# Subtest: fixture atom payload identities survive serialization
+ok 6 - fixture atom payload identities survive serialization
+  ---
+  duration_ms: 0.4058
+  type: 'test'
+  ...
+# Subtest: vendored font and license assets match pinned manifest hashes
+ok 7 - vendored font and license assets match pinned manifest hashes
+  ---
+  duration_ms: 21.0769
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 208.5864

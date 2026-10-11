@@ -1,0 +1,11 @@
+{
+  "name": "text-editor-preflight", "version": "0.1.0", "private": true,
+  "description": "Isolated P0-tech experiment; never imported by production",
+  "scripts": {"build":"node build.cjs", "test":"node --test tests/*.test.cjs", "test:edge":"node tests/edge.cjs"},
+  "dependencies": {
+    "prosemirror-model":"1.25.12", "prosemirror-state":"1.4.4", "prosemirror-view":"1.42.6",
+    "prosemirror-commands":"1.7.2", "prosemirror-history":"1.5.1", "prosemirror-keymap":"1.2.3",
+    "opentype.js":"2.0.0"
+  },
+  "devDependencies": {"esbuild":"0.28.2", "pngjs":"7.0.0", "playwright":"1.62.1"}
+}

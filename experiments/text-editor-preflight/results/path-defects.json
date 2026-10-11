@@ -1,0 +1,960 @@
+{
+  "opentypeVersion": "2.0.0",
+  "findings": [
+    {
+      "file": "SourceSans3-Bold.ttf",
+      "nonFiniteInput": 0,
+      "nonFiniteSerialized": true,
+      "minimalPrefix": "Nederlands: café, naïef, één",
+      "names": {
+        "windows": {
+          "256": {
+            "el": "Απλό λατινικό a",
+            "en": "Simple a",
+            "ru": "Простая а",
+            "en-GB": "Simple a"
+          },
+          "257": {
+            "el": "Απλό λατινικό g",
+            "en": "Simple g",
+            "ru": "Простая латинская g",
+            "en-GB": "Simple g"
+          },
+          "258": {
+            "el": "Απλό λατινικό l (▼ L)",
+            "en": "Simple l (▼ L)",
+            "ru": "Простая ӏ (▼ Ӏ)",
+            "en-GB": "Simple l (▼ L)"
+          },
+          "259": {
+            "el": "Λατινικό a με πατούρα",
+            "en": "Serifed a",
+            "ru": "а с засечкам",
+            "en-GB": "Serifed a"
+          },
+          "260": {
+            "el": "Κεντρικά ογκονεκ [ Ą Ę ą ę ų ] (Να-Ντενέ)",
+            "en": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)",
+            "ru": "Огонэки центрированные [ Ą Ę ą ę ų ] (На-Дене)",
+            "en-GB": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)"
+          },
+          "261": {
+            "el": "Γράμμα Ενγκ σε σχήμα Ν [ Ŋ ] (Σάμη)",
+            "en": "N-shaped Eng [ Ŋ ] (Sami)",
+            "ru": "Энг N-образная [ Ŋ ] (Саамская)",
+            "en-GB": "N-shaped Eng [ Ŋ ] (Sami)"
+          },
+          "262": {
+            "el": "Εναλλακτικά φωνητικά γράμματα [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (ΔΦΑ)",
+            "en": "Greek alternates for phonetics [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (IPA)",
+            "ru": "Греческие альтернативные буквы для фонетики [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (МФА)",
+            "en-GB": "Greek alternates for phonetics [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (IPA)"
+          },
+          "263": {
+            "el": "Ρέων β",
+            "en": "Greek cursive beta [ β ]",
+            "ru": "Греческая бета курсивная [ β ]",
+            "en-GB": "Greek cursive beta [ β ]"
+          },
+          "264": {
+            "el": "Εναλλακτικό θ",
+            "en": "Greek alternate theta [ θ ]",
+            "ru": "Греческая тета альтернативная [ θ ]",
+            "en-GB": "Greek alternate theta [ θ ]"
+          },
+          "265": {
+            "el": "Εναλλακτικό φ",
+            "en": "Greek alternate phi [ φ ]",
+            "ru": "Греческая фита альтернативная [ φ ]",
+            "en-GB": "Greek alternate phi [ φ ]"
+          },
+          "266": {
+            "el": "Κυριλλικό μικρό γράμμα με κάθετη επέκταση [ ж к ю ] (Βουλγαρικά)",
+            "en": "Cyrillic lowercase alternates with ascenders [ ж к ю ] (Bulgarian)",
+            "ru": "Строчные альтернативные с восходящими [ ж к ю ] (Болгарские)",
+            "en-GB": "Cyrillic lowercase alternates with ascenders [ ж к ю ] (Bulgarian)"
+          },
+          "267": {
+            "el": "Κυριλλικό ρέων μπε [ б ] (Σέρβικα)",
+            "en": "Cyrillic cursive be [ б ] (Serbian)",
+            "ru": "Курсивная б (Сербская)",
+            "en-GB": "Cyrillic cursive be [ б ] (Serbian)"
+          },
+          "268": {
+            "el": "Κυριλλικά ρέων γράμματα [ в г д з и й п т ц ш щ ѝ ]",
+            "en": "Cyrillic cursive forms [ в г д з и й п т ц ш щ ѝ ]",
+            "ru": "Курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Cyrillic cursive forms [ в г д з и й п т ц ш щ ѝ ]"
+          },
+          "269": {
+            "el": "Κυριλλικά γεωμετρικά γράμματα [ Д Л Љ д л љ ]",
+            "en": "Cyrillic geometric forms [ Д Л Љ д л љ ]",
+            "ru": "Кириллические курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Cyrillic geometric forms [ Д Л Љ д л љ ]"
+          },
+          "270": {
+            "el": "Κυριλλικά απλά γράμματα [ Ж К ж к ӏ ]",
+            "en": "Cyrillic simple forms [ Ж К ж к ӏ ]",
+            "ru": "Простые буквы [ Ж К ж к ӏ ]",
+            "en-GB": "Cyrillic simple forms [ Ж К ж к ӏ ]"
+          },
+          "271": {
+            "el": "Κεφαλαίοι αριθμοί",
+            "en": "Capital figures",
+            "ru": "Заглавные цифры",
+            "en-GB": "Capital figures"
+          },
+          "272": {
+            "el": "Μηδέν με κεντρική τελεία [ 0 ]",
+            "en": "Dotted zero [ 0 ]",
+            "ru": "Ноль с пунктиром [ 0 ]",
+            "en-GB": "Dotted zero [ 0 ]"
+          },
+          "273": {
+            "el": "Μηδέν με κάθετο [ 0 ]",
+            "en": "Slashed zero [ 0 ]",
+            "ru": "Перечеркнутый ноль [ 0 ]",
+            "en-GB": "Slashed zero [ 0 ]"
+          },
+          "274": {
+            "el": "Ι με πατούρα (▲ ι )",
+            "en": "Serifed I (▲ i)",
+            "ru": "І с засечками (▲ і)",
+            "en-GB": "Serifed I (▲ i)"
+          },
+          "275": {
+            "el": "Ι με πατούρα (▲ ι )",
+            "en": "Serifed I (▲ i)",
+            "ru": "І с засечками (▲ і)",
+            "en-GB": "Serifed I (▲ i)"
+          },
+          "276": {
+            "el": "Εναλλακτικά β θ φ",
+            "en": "Simple a g l",
+            "ru": "Простые, геометрические буквы [ Д Ж К Л Љ д ж к л љ ӏ ]",
+            "en-GB": "Simple a g l"
+          },
+          "277": {
+            "el": "Ρέων β",
+            "en": "Simple a",
+            "ru": "Простая а",
+            "en-GB": "Simple a"
+          },
+          "278": {
+            "el": "Εναλλακτικό θ",
+            "en": "Simple g",
+            "ru": "Кириллические курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Simple g"
+          },
+          "279": {
+            "el": "Εναλλακτικό φ",
+            "en": "Simple l (▼ L)",
+            "ru": "Простые буквы [ Ж К ж к ӏ ]",
+            "en-GB": "Simple l (▼ L)"
+          },
+          "280": {
+            "el": "Λατινικό a με πατούρα",
+            "en": "Serifed a",
+            "ru": "а с засечкам",
+            "en-GB": "Serifed a"
+          },
+          "281": {
+            "el": "Κεντρικά ογκονεκ [ Ą Ę ą ę ų ] (Να-Ντενέ)",
+            "en": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)",
+            "ru": "Курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)"
+          },
+          "282": {
+            "el": "ΓράμμαΕνγκ σε σχήμα Ν [ Ŋ ] (Σάμη)",
+            "en": "N-shaped Eng [ Ŋ ] (Sami)",
+            "ru": "Сербский б",
+            "en-GB": "N-shaped Eng [ Ŋ ] (Sami)"
+          },
+          "283": {
+            "el": "Κεφαλαίοι αριθμοί",
+            "en": "Capital figures",
+            "ru": "Заглавные цифры",
+            "en-GB": "Capital figures"
+          },
+          "284": {
+            "el": "Μηδέν με κεντρική τελεία [ 0 ]",
+            "en": "Dotted zero [ 0 ]",
+            "ru": "Ноль с пунктиром [ 0 ]",
+            "en-GB": "Dotted zero [ 0 ]"
+          },
+          "copyright": {
+            "en": "© 2023 Adobe (http://www.adobe.com/), with Reserved Font Name ‘Source’"
+          },
+          "fontFamily": {
+            "en": "Source Sans 3"
+          },
+          "fontSubfamily": {
+            "en": "Bold"
+          },
+          "uniqueID": {
+            "en": "3.052;ADBO;SourceSans3-Bold;ADOBE"
+          },
+          "fullName": {
+            "en": "Source Sans 3 Bold"
+          },
+          "version": {
+            "en": "Version 3.052;hotconv 1.1.0;makeotfexe 2.6.0"
+          },
+          "postScriptName": {
+            "en": "SourceSans3-Bold"
+          },
+          "trademark": {
+            "en": "Source is a trademark of Adobe in the United States and/or other countries."
+          },
+          "manufacturer": {
+            "en": "Adobe"
+          },
+          "designer": {
+            "en": "Paul D. Hunt"
+          },
+          "manufacturerURL": {
+            "en": "http://www.adobe.com/type"
+          },
+          "license": {
+            "en": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL. This Font Software is distributed on an ‘AS IS’ BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+          },
+          "licenseURL": {
+            "en": "http://scripts.sil.org/OFL"
+          }
+        }
+      }
+    },
+    {
+      "file": "SourceSans3-BoldIt.ttf",
+      "nonFiniteInput": 0,
+      "nonFiniteSerialized": true,
+      "minimalPrefix": "Nederlands: café, naï",
+      "names": {
+        "windows": {
+          "256": {
+            "el": "Απλό λατινικό a",
+            "en": "Simple a",
+            "ru": "Простая а",
+            "en-GB": "Simple a"
+          },
+          "257": {
+            "el": "Απλό λατινικό g",
+            "en": "Simple g",
+            "ru": "Простая латинская g",
+            "en-GB": "Simple g"
+          },
+          "258": {
+            "el": "Απλό λατινικό l (▼ L)",
+            "en": "Simple l (▼ L)",
+            "ru": "Простая ӏ (▼ Ӏ)",
+            "en-GB": "Simple l (▼ L)"
+          },
+          "259": {
+            "el": "Λατινικό a με πατούρα",
+            "en": "Serifed a",
+            "ru": "а с засечкам",
+            "en-GB": "Serifed a"
+          },
+          "260": {
+            "el": "Κεντρικά ογκονεκ [ Ą Ę ą ę ų ] (Να-Ντενέ)",
+            "en": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)",
+            "ru": "Огонэки центрированные [ Ą Ę ą ę ų ] (На-Дене)",
+            "en-GB": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)"
+          },
+          "261": {
+            "el": "Γράμμα Ενγκ σε σχήμα Ν [ Ŋ ] (Σάμη)",
+            "en": "N-shaped Eng [ Ŋ ] (Sami)",
+            "ru": "Энг N-образная [ Ŋ ] (Саамская)",
+            "en-GB": "N-shaped Eng [ Ŋ ] (Sami)"
+          },
+          "262": {
+            "el": "Εναλλακτικά φωνητικά γράμματα [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (ΔΦΑ)",
+            "en": "Greek alternates for phonetics [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (IPA)",
+            "ru": "Греческие альтернативные буквы для фонетики [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (МФА)",
+            "en-GB": "Greek alternates for phonetics [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (IPA)"
+          },
+          "263": {
+            "el": "Ρέων β",
+            "en": "Greek cursive beta [ β ]",
+            "ru": "Греческая бета курсивная [ β ]",
+            "en-GB": "Greek cursive beta [ β ]"
+          },
+          "264": {
+            "el": "Εναλλακτικό θ",
+            "en": "Greek alternate theta [ θ ]",
+            "ru": "Греческая тета альтернативная [ θ ]",
+            "en-GB": "Greek alternate theta [ θ ]"
+          },
+          "265": {
+            "el": "Εναλλακτικό φ",
+            "en": "Greek alternate phi [ φ ]",
+            "ru": "Греческая фита альтернативная [ φ ]",
+            "en-GB": "Greek alternate phi [ φ ]"
+          },
+          "266": {
+            "el": "Κυριλλικό μικρό γράμμα με κάθετη επέκταση [ ж к ю ] (Βουλγαρικά)",
+            "en": "Cyrillic lowercase alternates with ascenders [ ж к ю ] (Bulgarian)",
+            "ru": "Строчные альтернативные с восходящими [ ж к ю ] (Болгарские)",
+            "en-GB": "Cyrillic lowercase alternates with ascenders [ ж к ю ] (Bulgarian)"
+          },
+          "267": {
+            "el": "Κυριλλικό ρέων μπε [ б ] (Σέρβικα)",
+            "en": "Cyrillic cursive be [ б ] (Serbian)",
+            "ru": "Курсивная б (Сербская)",
+            "en-GB": "Cyrillic cursive be [ б ] (Serbian)"
+          },
+          "268": {
+            "el": "Κυριλλικά ρέων γράμματα [ в г д з и й п т ц ш щ ѝ ]",
+            "en": "Cyrillic cursive forms [ в г д з и й п т ц ш щ ѝ ]",
+            "ru": "Курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Cyrillic cursive forms [ в г д з и й п т ц ш щ ѝ ]"
+          },
+          "269": {
+            "el": "Κυριλλικά γεωμετρικά γράμματα [ Д Л Љ д л љ ]",
+            "en": "Cyrillic geometric forms [ Д Л Љ д л љ ]",
+            "ru": "Кириллические курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Cyrillic geometric forms [ Д Л Љ д л љ ]"
+          },
+          "270": {
+            "el": "Κυριλλικά απλά γράμματα [ Ж К ж к ӏ ]",
+            "en": "Cyrillic simple forms [ Ж К ж к ӏ ]",
+            "ru": "Простые буквы [ Ж К ж к ӏ ]",
+            "en-GB": "Cyrillic simple forms [ Ж К ж к ӏ ]"
+          },
+          "271": {
+            "el": "Κεφαλαίοι αριθμοί",
+            "en": "Capital figures",
+            "ru": "Заглавные цифры",
+            "en-GB": "Capital figures"
+          },
+          "272": {
+            "el": "Μηδέν με κεντρική τελεία [ 0 ]",
+            "en": "Dotted zero [ 0 ]",
+            "ru": "Ноль с пунктиром [ 0 ]",
+            "en-GB": "Dotted zero [ 0 ]"
+          },
+          "273": {
+            "el": "Μηδέν με κάθετο [ 0 ]",
+            "en": "Slashed zero [ 0 ]",
+            "ru": "Перечеркнутый ноль [ 0 ]",
+            "en-GB": "Slashed zero [ 0 ]"
+          },
+          "274": {
+            "el": "Ι με πατούρα (▲ ι )",
+            "en": "Serifed I (▲ i)",
+            "ru": "І с засечками (▲ і)",
+            "en-GB": "Serifed I (▲ i)"
+          },
+          "275": {
+            "el": "Ι με πατούρα (▲ ι )",
+            "en": "Serifed I (▲ i)",
+            "ru": "І с засечками (▲ і)",
+            "en-GB": "Serifed I (▲ i)"
+          },
+          "276": {
+            "el": "Εναλλακτικά β θ φ",
+            "en": "Simple a g l",
+            "ru": "Простые, геометрические буквы [ Д Ж К Л Љ д ж к л љ ӏ ]",
+            "en-GB": "Simple a g l"
+          },
+          "277": {
+            "el": "Ρέων β",
+            "en": "Simple a",
+            "ru": "Простая а",
+            "en-GB": "Simple a"
+          },
+          "278": {
+            "el": "Εναλλακτικό θ",
+            "en": "Simple g",
+            "ru": "Кириллические курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Simple g"
+          },
+          "279": {
+            "el": "Εναλλακτικό φ",
+            "en": "Simple l (▼ L)",
+            "ru": "Простые буквы [ Ж К ж к ӏ ]",
+            "en-GB": "Simple l (▼ L)"
+          },
+          "280": {
+            "el": "Λατινικό a με πατούρα",
+            "en": "Serifed a",
+            "ru": "а с засечкам",
+            "en-GB": "Serifed a"
+          },
+          "281": {
+            "el": "Κεντρικά ογκονεκ [ Ą Ę ą ę ų ] (Να-Ντενέ)",
+            "en": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)",
+            "ru": "Курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)"
+          },
+          "282": {
+            "el": "ΓράμμαΕνγκ σε σχήμα Ν [ Ŋ ] (Σάμη)",
+            "en": "N-shaped Eng [ Ŋ ] (Sami)",
+            "ru": "Сербский б",
+            "en-GB": "N-shaped Eng [ Ŋ ] (Sami)"
+          },
+          "283": {
+            "el": "Κεφαλαίοι αριθμοί",
+            "en": "Capital figures",
+            "ru": "Заглавные цифры",
+            "en-GB": "Capital figures"
+          },
+          "284": {
+            "el": "Μηδέν με κεντρική τελεία [ 0 ]",
+            "en": "Dotted zero [ 0 ]",
+            "ru": "Ноль с пунктиром [ 0 ]",
+            "en-GB": "Dotted zero [ 0 ]"
+          },
+          "copyright": {
+            "en": "© 2023 Adobe (http://www.adobe.com/), with Reserved Font Name ‘Source’"
+          },
+          "fontFamily": {
+            "en": "Source Sans 3"
+          },
+          "fontSubfamily": {
+            "en": "Bold Italic"
+          },
+          "uniqueID": {
+            "en": "3.052;ADBO;SourceSans3-BoldIt;ADOBE"
+          },
+          "fullName": {
+            "en": "Source Sans 3 Bold Italic"
+          },
+          "version": {
+            "en": "Version 3.052;hotconv 1.1.0;makeotfexe 2.6.0"
+          },
+          "postScriptName": {
+            "en": "SourceSans3-BoldIt"
+          },
+          "trademark": {
+            "en": "Source is a trademark of Adobe in the United States and/or other countries."
+          },
+          "manufacturer": {
+            "en": "Adobe"
+          },
+          "designer": {
+            "en": "Paul D. Hunt"
+          },
+          "manufacturerURL": {
+            "en": "http://www.adobe.com/type"
+          },
+          "license": {
+            "en": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL. This Font Software is distributed on an ‘AS IS’ BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+          },
+          "licenseURL": {
+            "en": "http://scripts.sil.org/OFL"
+          }
+        }
+      }
+    },
+    {
+      "file": "SourceSans3-It.ttf",
+      "nonFiniteInput": 0,
+      "nonFiniteSerialized": false,
+      "minimalPrefix": null,
+      "names": {
+        "windows": {
+          "256": {
+            "el": "Απλό λατινικό a",
+            "en": "Simple a",
+            "ru": "Простая а",
+            "en-GB": "Simple a"
+          },
+          "257": {
+            "el": "Απλό λατινικό g",
+            "en": "Simple g",
+            "ru": "Простая латинская g",
+            "en-GB": "Simple g"
+          },
+          "258": {
+            "el": "Απλό λατινικό l (▼ L)",
+            "en": "Simple l (▼ L)",
+            "ru": "Простая ӏ (▼ Ӏ)",
+            "en-GB": "Simple l (▼ L)"
+          },
+          "259": {
+            "el": "Λατινικό a με πατούρα",
+            "en": "Serifed a",
+            "ru": "а с засечкам",
+            "en-GB": "Serifed a"
+          },
+          "260": {
+            "el": "Κεντρικά ογκονεκ [ Ą Ę ą ę ų ] (Να-Ντενέ)",
+            "en": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)",
+            "ru": "Огонэки центрированные [ Ą Ę ą ę ų ] (На-Дене)",
+            "en-GB": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)"
+          },
+          "261": {
+            "el": "Γράμμα Ενγκ σε σχήμα Ν [ Ŋ ] (Σάμη)",
+            "en": "N-shaped Eng [ Ŋ ] (Sami)",
+            "ru": "Энг N-образная [ Ŋ ] (Саамская)",
+            "en-GB": "N-shaped Eng [ Ŋ ] (Sami)"
+          },
+          "262": {
+            "el": "Εναλλακτικά φωνητικά γράμματα [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (ΔΦΑ)",
+            "en": "Greek alternates for phonetics [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (IPA)",
+            "ru": "Греческие альтернативные буквы для фонетики [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (МФА)",
+            "en-GB": "Greek alternates for phonetics [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (IPA)"
+          },
+          "263": {
+            "el": "Ρέων β",
+            "en": "Greek cursive beta [ β ]",
+            "ru": "Греческая бета курсивная [ β ]",
+            "en-GB": "Greek cursive beta [ β ]"
+          },
+          "264": {
+            "el": "Εναλλακτικό θ",
+            "en": "Greek alternate theta [ θ ]",
+            "ru": "Греческая тета альтернативная [ θ ]",
+            "en-GB": "Greek alternate theta [ θ ]"
+          },
+          "265": {
+            "el": "Εναλλακτικό φ",
+            "en": "Greek alternate phi [ φ ]",
+            "ru": "Греческая фита альтернативная [ φ ]",
+            "en-GB": "Greek alternate phi [ φ ]"
+          },
+          "266": {
+            "el": "Κυριλλικό μικρό γράμμα με κάθετη επέκταση [ ж к ю ] (Βουλγαρικά)",
+            "en": "Cyrillic lowercase alternates with ascenders [ ж к ю ] (Bulgarian)",
+            "ru": "Строчные альтернативные с восходящими [ ж к ю ] (Болгарские)",
+            "en-GB": "Cyrillic lowercase alternates with ascenders [ ж к ю ] (Bulgarian)"
+          },
+          "267": {
+            "el": "Κυριλλικό ρέων μπε [ б ] (Σέρβικα)",
+            "en": "Cyrillic cursive be [ б ] (Serbian)",
+            "ru": "Курсивная б (Сербская)",
+            "en-GB": "Cyrillic cursive be [ б ] (Serbian)"
+          },
+          "268": {
+            "el": "Κυριλλικά ρέων γράμματα [ в г д з и й п т ц ш щ ѝ ]",
+            "en": "Cyrillic cursive forms [ в г д з и й п т ц ш щ ѝ ]",
+            "ru": "Курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Cyrillic cursive forms [ в г д з и й п т ц ш щ ѝ ]"
+          },
+          "269": {
+            "el": "Κυριλλικά γεωμετρικά γράμματα [ Д Л Љ д л љ ]",
+            "en": "Cyrillic geometric forms [ Д Л Љ д л љ ]",
+            "ru": "Кириллические курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Cyrillic geometric forms [ Д Л Љ д л љ ]"
+          },
+          "270": {
+            "el": "Κυριλλικά απλά γράμματα [ Ж К ж к ӏ ]",
+            "en": "Cyrillic simple forms [ Ж К ж к ӏ ]",
+            "ru": "Простые буквы [ Ж К ж к ӏ ]",
+            "en-GB": "Cyrillic simple forms [ Ж К ж к ӏ ]"
+          },
+          "271": {
+            "el": "Κεφαλαίοι αριθμοί",
+            "en": "Capital figures",
+            "ru": "Заглавные цифры",
+            "en-GB": "Capital figures"
+          },
+          "272": {
+            "el": "Μηδέν με κεντρική τελεία [ 0 ]",
+            "en": "Dotted zero [ 0 ]",
+            "ru": "Ноль с пунктиром [ 0 ]",
+            "en-GB": "Dotted zero [ 0 ]"
+          },
+          "273": {
+            "el": "Μηδέν με κάθετο [ 0 ]",
+            "en": "Slashed zero [ 0 ]",
+            "ru": "Перечеркнутый ноль [ 0 ]",
+            "en-GB": "Slashed zero [ 0 ]"
+          },
+          "274": {
+            "el": "Ι με πατούρα (▲ ι )",
+            "en": "Serifed I (▲ i)",
+            "ru": "І с засечками (▲ і)",
+            "en-GB": "Serifed I (▲ i)"
+          },
+          "275": {
+            "el": "Ι με πατούρα (▲ ι )",
+            "en": "Serifed I (▲ i)",
+            "ru": "І с засечками (▲ і)",
+            "en-GB": "Serifed I (▲ i)"
+          },
+          "276": {
+            "el": "Εναλλακτικά β θ φ",
+            "en": "Simple a g l",
+            "ru": "Простые, геометрические буквы [ Д Ж К Л Љ д ж к л љ ӏ ]",
+            "en-GB": "Simple a g l"
+          },
+          "277": {
+            "el": "Ρέων β",
+            "en": "Simple a",
+            "ru": "Простая а",
+            "en-GB": "Simple a"
+          },
+          "278": {
+            "el": "Εναλλακτικό θ",
+            "en": "Simple g",
+            "ru": "Кириллические курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Simple g"
+          },
+          "279": {
+            "el": "Εναλλακτικό φ",
+            "en": "Simple l (▼ L)",
+            "ru": "Простые буквы [ Ж К ж к ӏ ]",
+            "en-GB": "Simple l (▼ L)"
+          },
+          "280": {
+            "el": "Λατινικό a με πατούρα",
+            "en": "Serifed a",
+            "ru": "а с засечкам",
+            "en-GB": "Serifed a"
+          },
+          "281": {
+            "el": "Κεντρικά ογκονεκ [ Ą Ę ą ę ų ] (Να-Ντενέ)",
+            "en": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)",
+            "ru": "Курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)"
+          },
+          "282": {
+            "el": "ΓράμμαΕνγκ σε σχήμα Ν [ Ŋ ] (Σάμη)",
+            "en": "N-shaped Eng [ Ŋ ] (Sami)",
+            "ru": "Сербский б",
+            "en-GB": "N-shaped Eng [ Ŋ ] (Sami)"
+          },
+          "283": {
+            "el": "Κεφαλαίοι αριθμοί",
+            "en": "Capital figures",
+            "ru": "Заглавные цифры",
+            "en-GB": "Capital figures"
+          },
+          "284": {
+            "el": "Μηδέν με κεντρική τελεία [ 0 ]",
+            "en": "Dotted zero [ 0 ]",
+            "ru": "Ноль с пунктиром [ 0 ]",
+            "en-GB": "Dotted zero [ 0 ]"
+          },
+          "copyright": {
+            "en": "© 2023 Adobe (http://www.adobe.com/), with Reserved Font Name ‘Source’"
+          },
+          "fontFamily": {
+            "en": "Source Sans 3"
+          },
+          "fontSubfamily": {
+            "en": "Italic"
+          },
+          "uniqueID": {
+            "en": "3.052;ADBO;SourceSans3-It;ADOBE"
+          },
+          "fullName": {
+            "en": "Source Sans 3 Italic"
+          },
+          "version": {
+            "en": "Version 3.052;hotconv 1.1.0;makeotfexe 2.6.0"
+          },
+          "postScriptName": {
+            "en": "SourceSans3-It"
+          },
+          "trademark": {
+            "en": "Source is a trademark of Adobe in the United States and/or other countries."
+          },
+          "manufacturer": {
+            "en": "Adobe"
+          },
+          "designer": {
+            "en": "Paul D. Hunt"
+          },
+          "manufacturerURL": {
+            "en": "http://www.adobe.com/type"
+          },
+          "license": {
+            "en": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL. This Font Software is distributed on an ‘AS IS’ BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+          },
+          "licenseURL": {
+            "en": "http://scripts.sil.org/OFL"
+          }
+        }
+      }
+    },
+    {
+      "file": "SourceSans3-Regular.ttf",
+      "nonFiniteInput": 0,
+      "nonFiniteSerialized": true,
+      "minimalPrefix": "Nederlands: café, naïe",
+      "names": {
+        "windows": {
+          "256": {
+            "el": "Απλό λατινικό a",
+            "en": "Simple a",
+            "ru": "Простая а",
+            "en-GB": "Simple a"
+          },
+          "257": {
+            "el": "Απλό λατινικό g",
+            "en": "Simple g",
+            "ru": "Простая латинская g",
+            "en-GB": "Simple g"
+          },
+          "258": {
+            "el": "Απλό λατινικό l (▼ L)",
+            "en": "Simple l (▼ L)",
+            "ru": "Простая ӏ (▼ Ӏ)",
+            "en-GB": "Simple l (▼ L)"
+          },
+          "259": {
+            "el": "Λατινικό a με πατούρα",
+            "en": "Serifed a",
+            "ru": "а с засечкам",
+            "en-GB": "Serifed a"
+          },
+          "260": {
+            "el": "Κεντρικά ογκονεκ [ Ą Ę ą ę ų ] (Να-Ντενέ)",
+            "en": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)",
+            "ru": "Огонэки центрированные [ Ą Ę ą ę ų ] (На-Дене)",
+            "en-GB": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)"
+          },
+          "261": {
+            "el": "Γράμμα Ενγκ σε σχήμα Ν [ Ŋ ] (Σάμη)",
+            "en": "N-shaped Eng [ Ŋ ] (Sami)",
+            "ru": "Энг N-образная [ Ŋ ] (Саамская)",
+            "en-GB": "N-shaped Eng [ Ŋ ] (Sami)"
+          },
+          "262": {
+            "el": "Εναλλακτικά φωνητικά γράμματα [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (ΔΦΑ)",
+            "en": "Greek alternates for phonetics [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (IPA)",
+            "ru": "Греческие альтернативные буквы для фонетики [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (МФА)",
+            "en-GB": "Greek alternates for phonetics [ ɑ ꞵ ɣ ɩ ʊ ɸ ꭓ ] (IPA)"
+          },
+          "263": {
+            "el": "Ρέων β",
+            "en": "Greek cursive beta [ β ]",
+            "ru": "Греческая бета курсивная [ β ]",
+            "en-GB": "Greek cursive beta [ β ]"
+          },
+          "264": {
+            "el": "Εναλλακτικό θ",
+            "en": "Greek alternate theta [ θ ]",
+            "ru": "Греческая тета альтернативная [ θ ]",
+            "en-GB": "Greek alternate theta [ θ ]"
+          },
+          "265": {
+            "el": "Εναλλακτικό φ",
+            "en": "Greek alternate phi [ φ ]",
+            "ru": "Греческая фита альтернативная [ φ ]",
+            "en-GB": "Greek alternate phi [ φ ]"
+          },
+          "266": {
+            "el": "Κυριλλικό μικρό γράμμα με κάθετη επέκταση [ ж к ю ] (Βουλγαρικά)",
+            "en": "Cyrillic lowercase alternates with ascenders [ ж к ю ] (Bulgarian)",
+            "ru": "Строчные альтернативные с восходящими [ ж к ю ] (Болгарские)",
+            "en-GB": "Cyrillic lowercase alternates with ascenders [ ж к ю ] (Bulgarian)"
+          },
+          "267": {
+            "el": "Κυριλλικό ρέων μπε [ б ] (Σέρβικα)",
+            "en": "Cyrillic cursive be [ б ] (Serbian)",
+            "ru": "Курсивная б (Сербская)",
+            "en-GB": "Cyrillic cursive be [ б ] (Serbian)"
+          },
+          "268": {
+            "el": "Κυριλλικά ρέων γράμματα [ в г д з и й п т ц ш щ ѝ ]",
+            "en": "Cyrillic cursive forms [ в г д з и й п т ц ш щ ѝ ]",
+            "ru": "Курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Cyrillic cursive forms [ в г д з и й п т ц ш щ ѝ ]"
+          },
+          "269": {
+            "el": "Κυριλλικά γεωμετρικά γράμματα [ Д Л Љ д л љ ]",
+            "en": "Cyrillic geometric forms [ Д Л Љ д л љ ]",
+            "ru": "Кириллические курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Cyrillic geometric forms [ Д Л Љ д л љ ]"
+          },
+          "270": {
+            "el": "Κυριλλικά απλά γράμματα [ Ж К ж к ӏ ]",
+            "en": "Cyrillic simple forms [ Ж К ж к ӏ ]",
+            "ru": "Простые буквы [ Ж К ж к ӏ ]",
+            "en-GB": "Cyrillic simple forms [ Ж К ж к ӏ ]"
+          },
+          "271": {
+            "el": "Κεφαλαίοι αριθμοί",
+            "en": "Capital figures",
+            "ru": "Заглавные цифры",
+            "en-GB": "Capital figures"
+          },
+          "272": {
+            "el": "Μηδέν με κεντρική τελεία [ 0 ]",
+            "en": "Dotted zero [ 0 ]",
+            "ru": "Ноль с пунктиром [ 0 ]",
+            "en-GB": "Dotted zero [ 0 ]"
+          },
+          "273": {
+            "el": "Μηδέν με κάθετο [ 0 ]",
+            "en": "Slashed zero [ 0 ]",
+            "ru": "Перечеркнутый ноль [ 0 ]",
+            "en-GB": "Slashed zero [ 0 ]"
+          },
+          "274": {
+            "el": "Ι με πατούρα (▲ ι )",
+            "en": "Serifed I (▲ i)",
+            "ru": "І с засечками (▲ і)",
+            "en-GB": "Serifed I (▲ i)"
+          },
+          "275": {
+            "el": "Ι με πατούρα (▲ ι )",
+            "en": "Serifed I (▲ i)",
+            "ru": "І с засечками (▲ і)",
+            "en-GB": "Serifed I (▲ i)"
+          },
+          "276": {
+            "el": "Εναλλακτικά β θ φ",
+            "en": "Simple a g l",
+            "ru": "Простые, геометрические буквы [ Д Ж К Л Љ д ж к л љ ӏ ]",
+            "en-GB": "Simple a g l"
+          },
+          "277": {
+            "el": "Ρέων β",
+            "en": "Simple a",
+            "ru": "Простая а",
+            "en-GB": "Simple a"
+          },
+          "278": {
+            "el": "Εναλλακτικό θ",
+            "en": "Simple g",
+            "ru": "Кириллические курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Simple g"
+          },
+          "279": {
+            "el": "Εναλλακτικό φ",
+            "en": "Simple l (▼ L)",
+            "ru": "Простые буквы [ Ж К ж к ӏ ]",
+            "en-GB": "Simple l (▼ L)"
+          },
+          "280": {
+            "el": "Λατινικό a με πατούρα",
+            "en": "Serifed a",
+            "ru": "а с засечкам",
+            "en-GB": "Serifed a"
+          },
+          "281": {
+            "el": "Κεντρικά ογκονεκ [ Ą Ę ą ę ų ] (Να-Ντενέ)",
+            "en": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)",
+            "ru": "Курсивные буквы [ в г д з и й п т ц ш щ ѝ ]",
+            "en-GB": "Centered ogoneks [ Ą Ę ą ę ų ] (Na-Dené)"
+          },
+          "282": {
+            "el": "ΓράμμαΕνγκ σε σχήμα Ν [ Ŋ ] (Σάμη)",
+            "en": "N-shaped Eng [ Ŋ ] (Sami)",
+            "ru": "Сербский б",
+            "en-GB": "N-shaped Eng [ Ŋ ] (Sami)"
+          },
+          "283": {
+            "el": "Κεφαλαίοι αριθμοί",
+            "en": "Capital figures",
+            "ru": "Заглавные цифры",
+            "en-GB": "Capital figures"
+          },
+          "284": {
+            "el": "Μηδέν με κεντρική τελεία [ 0 ]",
+            "en": "Dotted zero [ 0 ]",
+            "ru": "Ноль с пунктиром [ 0 ]",
+            "en-GB": "Dotted zero [ 0 ]"
+          },
+          "copyright": {
+            "en": "© 2023 Adobe (http://www.adobe.com/), with Reserved Font Name ‘Source’"
+          },
+          "fontFamily": {
+            "en": "Source Sans 3"
+          },
+          "fontSubfamily": {
+            "en": "Regular"
+          },
+          "uniqueID": {
+            "en": "3.052;ADBO;SourceSans3-Regular;ADOBE"
+          },
+          "fullName": {
+            "en": "Source Sans 3"
+          },
+          "version": {
+            "en": "Version 3.052;hotconv 1.1.0;makeotfexe 2.6.0"
+          },
+          "postScriptName": {
+            "en": "SourceSans3-Regular"
+          },
+          "trademark": {
+            "en": "Source is a trademark of Adobe in the United States and/or other countries."
+          },
+          "manufacturer": {
+            "en": "Adobe"
+          },
+          "designer": {
+            "en": "Paul D. Hunt"
+          },
+          "manufacturerURL": {
+            "en": "http://www.adobe.com/type"
+          },
+          "license": {
+            "en": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL. This Font Software is distributed on an ‘AS IS’ BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+          },
+          "licenseURL": {
+            "en": "http://scripts.sil.org/OFL"
+          }
+        }
+      }
+    },
+    {
+      "file": "SourceSerif4-Regular.ttf",
+      "nonFiniteInput": 0,
+      "nonFiniteSerialized": true,
+      "minimalPrefix": "Nede",
+      "names": {
+        "windows": {
+          "256": {
+            "bg": "Кирилица: варианти за български",
+            "en": "Cyrillic: Bulgarian alternates",
+            "ru": "Кириллица: варианты для болгарского",
+            "mk": "Кирилица: опции за бугарски",
+            "sr": "Ћирилица: опције за бугарски"
+          },
+          "257": {
+            "bg": "Кирилица: варианти за сръбски и македонски",
+            "en": "Cyrillic: Serbian and Macedonian alternates",
+            "ru": "Кириллица: варианты для сербского и македонского",
+            "mk": "Кирилица: опции за српски и македонски",
+            "sr": "Ћирилица: опције за српски и македонски"
+          },
+          "copyright": {
+            "en": "© 2014 - 2023 Adobe (http://www.adobe.com/), with Reserved Font Name ‘Source’."
+          },
+          "fontFamily": {
+            "en": "Source Serif 4"
+          },
+          "fontSubfamily": {
+            "en": "Regular"
+          },
+          "uniqueID": {
+            "en": "4.005;ADBO;SourceSerif4-Regular;ADOBE"
+          },
+          "fullName": {
+            "en": "Source Serif 4"
+          },
+          "version": {
+            "en": "Version 4.005;hotconv 1.1.0;makeotfexe 2.6.0"
+          },
+          "postScriptName": {
+            "en": "SourceSerif4-Regular"
+          },
+          "trademark": {
+            "en": "Source is a trademark of Adobe in the United States and/or other countries."
+          },
+          "manufacturer": {
+            "en": "Adobe"
+          },
+          "designer": {
+            "en": "Frank Grießhammer"
+          },
+          "manufacturerURL": {
+            "en": "http://www.adobe.com/type"
+          },
+          "license": {
+            "en": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is available with a FAQ at: http://scripts.sil.org/OFL. This Font Software is distributed on an ‘AS IS’ BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software."
+          },
+          "licenseURL": {
+            "en": "http://scripts.sil.org/OFL"
+          }
+        }
+      }
+    }
+  ]
+}
