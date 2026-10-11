@@ -144,3 +144,6 @@ User authorized the next step while postponing manual angle testing. Dynamic tex
 After manual angle feedback, user authorized inventory/contract-first revision: typed positive x/y sources in angleDirections only, origin/intersection policy, explicit restricted per-axis grants, constructionSchema 3, interaction feedback and legacy angleXAxis compatibility. Separate x-axis menu entry removed. See AXIS-REFERENCES-CONTRACT.md and AXIS-REFERENCES-REPORT.md. Manual acceptance pending; this feedback is not a PASS for the earlier angle step. Original M6 and later additions remain retained; dynamic text acceptance also pending. Publication authorized on chatgpt/math-illustration-m5b only; main unchanged.
 
 - 2026-10-11 sidebar refinement: vertically stacked, equally wide tool buttons in a 220px sidebar; long names and split-menu bounds verified at desktop, tablet and mobile widths.
+
+- Sidebar follow-up: static angle and right-angle drawing moved into the basic linear split button; measuring retains linked angle tools. All editor assets receive version 20261011-tool-sidebar to refresh cached CSS/JavaScript.
+  Validation: complete Edge regression suite passed; stacked layout and menu containment checked at five widths, including 1159 pixels; zero page errors.

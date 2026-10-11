@@ -1,6 +1,12 @@
 const assert=require('node:assert/strict');
 module.exports=async page=>{
  const viewport=page.viewportSize();
+ await page.reload();
+ for(const tool of ['angle','rightAngle']){
+  assert.equal(await page.locator('[data-tool-category=basis] #linearToolMenu [data-tool="'+tool+'"]').count(),1);
+  assert.equal(await page.locator('[data-tool-category=meten] [data-tool="'+tool+'"]').count(),0);
+ }
+
  for(const width of [1446,1159,1024,760,390]){
   await page.setViewportSize({width,height:668});await page.reload();
   if(width<760)await page.evaluate(()=>document.body.classList.add('tools-open'));
