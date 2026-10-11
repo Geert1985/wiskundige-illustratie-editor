@@ -31,7 +31,7 @@ test('standalone engine construction/render cannot replace an explicit editor co
 });
 
 test('source has one canvas render owner and no alternative feature interaction/engine trackers', () => {
-  const files = ['editor.js', 'editor-bootstrap.js', 'editor-adaptive-grid.js', 'editor-axis-settings.js', 'editor-color.js', 'editor-label-drag.js', 'editor-enhancements.js'];
+  const files = ['editor.js', 'editor-bootstrap.js', 'editor-adaptive-grid.js', 'editor-axis-settings.js', 'editor-color.js', 'editor-label-drag.js', 'editor-enhancements.js', 'editor-tool-instructions.js'];
   const source = files.map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
   assert.equal((source.match(/canvas\.innerHTML\s*=/g) || []).length, 1);
   assert.equal((source.match(/"pointerdown"/g) || []).length, 1);
@@ -42,6 +42,7 @@ test('source has one canvas render owner and no alternative feature interaction/
 // The lifecycle API is exercised without relying on a real DOM parser.
 function appRuntime() {
   const { MI, context } = runtime();
+  vm.runInContext(fs.readFileSync(path.join(root, 'editor-tool-instructions.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(root, 'editor.js'), 'utf8'), context);
   const events = new Map();
   function target() { return { value: '', style: {}, dataset: {}, events: new Map(), classList: { add() {}, remove() {}, toggle() {} },
