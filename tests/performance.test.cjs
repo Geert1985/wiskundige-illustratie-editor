@@ -62,7 +62,7 @@ test('pointer bursts render once per frame while the latest resolver result rema
   for (const x of [1, 2, 3]) h.move(x, 1);
   assert.equal(h.count(), initial); assert.equal(h.frames.size, 1); assert.equal(h.e.renderer.preview.end.x, 3);
   h.flush(); assert.equal(h.count(), initial + 1);
-  h.app.pointerUp({ pointerId: 1 }); const segment=h.e.model.objects.find(o=>o.type==='line');assert.equal(segment.x2, 3); assert.equal(segment.y2, 1);
+  h.app.pointerUp({ pointerId: 1 }); const segment=h.e.model.objects.find(o=>o.type==='line');assert.equal(h.e.model.objects.length,1);assert.equal(segment.x2, 3); assert.equal(segment.y2, 1);
 });
 
 test('commit/keyboard flush the latest result and cancel/New/dispose cannot resurrect pending rendering', () => {
@@ -71,7 +71,7 @@ test('commit/keyboard flush the latest result and cancel/New/dispose cannot resu
     assert.equal(h.frames.size, 1);
     if (action === 'commit') h.app.keyDown({ key: '1', preventDefault() {} });
     h.app[action](); assert.equal(h.frames.size, 0); const count = h.count(); h.flush(); assert.equal(h.count(), count);
-    assert.equal(h.e.model.objects.length, action === 'commit' ? 3 : 0);
+    assert.equal(h.e.model.objects.length, action === 'commit' ? 1 : 0);
     if (action === 'commit') assert.equal(h.e.model.objects.find(o=>o.type==='line').x2, 1);
     assert.equal(h.e.renderer.preview, null);
   }

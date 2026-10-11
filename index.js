@@ -143,13 +143,14 @@
       const screen = options && options.transform.mathToScreen({ x, y });
       let best = null;
       let bestDistance = Infinity;
+      let bestPriority = -1;
 
       MI.DocumentLayers.ordered(this.model.objects,this.model.layers||[]).forEach((object) => {
         if (!MI.DocumentLayers.visible(this.model.layers||[],object.id) || object.visible === false || (object.construction && object.constructionValid===false)) return;
         const distance = options ? screenHit(object, screen, options.transform) : hitDistance(object, x, y);
-        if (distance <= maxDistance + (options ? 1e-9 : 0) && (options || this.model.layers?.length ? distance <= bestDistance + 1e-9 : distance < bestDistance)) {
-          best = object;
-          bestDistance = distance;
+        const priority=object.type==='point'?1:0,epsilon=options?1e-9:0,tied=Math.abs(distance-bestDistance)<=epsilon;
+        if (distance <= maxDistance + epsilon && (distance < bestDistance - epsilon || tied&&priority>bestPriority || tied&&priority===bestPriority&&(options||this.model.layers?.length))) {
+          best = object;bestDistance = distance;bestPriority=priority;
         }
       });
 

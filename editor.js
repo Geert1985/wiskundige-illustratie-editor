@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
-  const SPLIT_TOOLS={linkedShape:['construct:circleByCenterPoint','construct:lineBetweenPoints'],pointConstruction:['construct:midpoint', 'construct:pointOnSegment', 'construct:pointOnCircle', 'construct:lineIntersection', 'construct:lineCircleIntersection', 'construct:circleCircleIntersection'],linear:['line','straight','ray','vector','angle','rightAngle'],figure:['triangle','polygon'],angle:['construct:anglePoints','construct:angleDirections'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
+  const SPLIT_TOOLS={pointConstruction:['construct:midpoint', 'construct:pointOnSegment', 'construct:pointOnCircle', 'construct:lineIntersection', 'construct:lineCircleIntersection', 'construct:circleCircleIntersection'],linear:['line','straight','ray','vector','angle','rightAngle'],figure:['triangle','polygon'],angle:['construct:anglePoints','construct:angleDirections'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
@@ -177,9 +177,6 @@
         const position=this.transform()?.mathToScreen({x:selectedPathPoint.x,y:selectedPathPoint.y});
         if(position&&Math.hypot(position.x-event.clientX,position.y-event.clientY)<=8)return {object:selectedPathPoint,kind:'object'};
       }
-      // A linked endpoint point is rendered underneath its segment. Prefer that
-      // point when the pointer is close to it so users can drag the actual
-      // document point instead of repeatedly selecting the covering segment.
       const paintedObject=target?.closest?.('[data-object-id]'),painted=paintedObject&&n.canvas.contains(paintedObject)&&this.engine.get(paintedObject.getAttribute('data-object-id'));
       if(painted&&MI.LinearGeometry.isLinear(painted)) {
         let nearest=null,nearestDistance=8;
@@ -191,12 +188,16 @@
         }
         if(nearest)return {object:nearest,kind:'object'};
       }
-      for(const [selector,attribute,kind] of [['.fzi-polygon-vertex','data-polygon-id','vertex'],['.fzi-line-endpoint','data-line-id','endpoint'],['.object-label','data-label-id','label'],['[data-object-id]','data-object-id','object']]) {
+      for(const [selector,attribute,kind] of [['.fzi-polygon-vertex','data-polygon-id','vertex'],['.fzi-line-endpoint','data-line-id','endpoint'],['.object-label','data-label-id','label']]) {
         const node=target?.closest?.(selector),object=node && n.canvas.contains(node) && this.engine.get(node.getAttribute(attribute));
         if(this.canvasSelectable(object))return {object,kind:kind==='label' && this.selectedIds.length>1 && this.selectedIds.includes(object.id)?'object':kind};
       }
       const transform=this.transform(),point=transform?.screenToMath({x:event.clientX,y:event.clientY});
-      return point ? this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8}):null;
+      const object=painted;
+      if(this.canvasSelectable(object))return {object};
+      const hit=point&&this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8});
+      if(hit&&this.canvasSelectable(hit.object))return hit;
+      return null;
     }
     cursorFor(hit) {
       const state=this.interaction;
@@ -454,13 +455,14 @@
     constructionRole(kind,index) { return MI.ConstructionService.contract(kind).sourceRoles[index]; }
     constructionHint(kind,index=0) { return MI.ToolInstructions.constructionHint(kind,index); }
     constructionPick(point,role) {
-      const transform=this.transform(),screen=transform.mathToScreen(point),candidates=[];
+      const kind=this.tool.slice(10),transform=this.transform(),screen=transform.mathToScreen(point),candidates=[];
       const distance=p=>{const q=transform.mathToScreen(p);return Math.hypot(q.x-screen.x,q.y-screen.y);};
       const segment=(o,s)=>{const l=MI.ConstructionService.line(o,s),a=transform.mathToScreen({x:l.x1,y:l.y1}),b=transform.mathToScreen({x:l.x2,y:l.y2}),dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy;if(!length)return distance({x:l.x1,y:l.y1});const domain=o.type==='polygon'?[0,1]:MI.LinearGeometry.domain(o),t=Math.max(domain[0],Math.min(domain[1],((screen.x-a.x)*dx+(screen.y-a.y)*dy)/length));return Math.hypot(screen.x-a.x-t*dx,screen.y-a.y-t*dy);};
       for(const o of this.engine.model.objects) {
         if(!this.engine.isDisplayed(o.id)||o.visible===false||(o.construction && o.constructionValid===false)||(this.runtime && !this.capabilities(o.id).sourceTools.includes(this.tool)))continue;
         const add=(s,d)=>{if(d<=12)candidates.push({source:{objectId:o.id,...s},distance:d,priority:o.type==='point'?0:1});};
-        for(const ref of MI.ConstructionService.referencesForRole(o,role)) {
+        const references=MI.ConstructionService.referencesForRole(o,role).filter(ref=>kind!=='lineBetweenPoints'||o.type==='point'&&!ref.part);
+        for(const ref of references) {
           if(role==='point')add(ref,distance(MI.ConstructionService.point(o,ref)));
           else if(role==='line'||role==='segment')add(ref,segment(o,ref));
           else if(role==='figure'&&o.type==='polygon')add(ref,MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
@@ -490,6 +492,12 @@
       const sources=this.constructionSourcesAt(point,event,state.sources);
       if(!sources){this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}
       const previousSources=state.sources.slice();state.sources=sources;
+      if(kind==='lineBetweenPoints'&&sources.length===2) {
+        const firstObject=this.engine.get(sources[0].objectId),secondObject=this.engine.get(sources[1].objectId),first=MI.ConstructionService.point(firstObject,sources[0]),second=MI.ConstructionService.point(secondObject,sources[1]);
+        if(sources[0].objectId===sources[1].objectId||Math.hypot(second.x-first.x,second.y-first.y)<=1e-9) {
+          this.interaction={...state,sources:previousSources.slice(0,1),pointerId:null};this.status('Kies twee verschillende punten met verschillende posities. '+this.constructionHint(kind,1));this.invalidate();return;
+        }
+      }
       if(kind==='angleDirections'){state.anglePicks=state.anglePicks||[];state.anglePicks.push({...point});}
       state.pointerId=event.pointerId; this.interaction=state;
       if(this.nodes.canvasWrap.setPointerCapture)try{this.nodes.canvasWrap.setPointerCapture(event.pointerId);}catch(_){}

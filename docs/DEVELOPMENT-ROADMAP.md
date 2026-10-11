@@ -115,7 +115,7 @@ Center/perimeter-source circle delivered at a502c55 on chatgpt/math-illustration
 
 ## Linked shape menu refinement (2026-10-10)
 
-Cirkel via punten and Lijnstuk via punten now share one remembered split-button at user request. Browser/visual validation pass; see [report](LINKED-SHAPE-MENU-REPORT.md). Geometry milestone sequencing unchanged.
+Cirkel via punten and Lijnstuk door twee punten are now separate visible choices in Constructies. The linked segment is available directly instead of only inside the former split menu; see [line segment behavior report](LINE-SEGMENT-BEHAVIOR-REPORT.md). Geometry milestone sequencing unchanged.
 
 ## M5b technical completion (2026-10-10)
 

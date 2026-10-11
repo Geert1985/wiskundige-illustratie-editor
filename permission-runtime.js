@@ -140,10 +140,9 @@
     else if(op==='parameter.set'){identifier(p.parameterId);number(p.value);const b=s.policy?.parameters[p.parameterId];if(!b)fail('PERMISSION_DENIED');if(!inDomain(p.value,b))fail('OUT_OF_RANGE');for(const t of b.targets){const o=s.kernel.get(t.objectId);if(!o || o.locked || o.construction)fail('INVALID_POLICY');direct.add(o.id);applyFields(s,e,o,[{path:t.fieldPath,value:p.value}],'geometry',true);}}
     else if(op==='linear.draw') {
       if(!['line','ray'].includes(p.shape))fail('INVALID_COMMAND');for(const k of ['x1','y1','x2','y2'])number(p[k]);const toolId='create:'+p.shape;if(!s.author&&!s.policy.allowedTools.includes(toolId))fail('PERMISSION_DENIED');
-      if(!s.author){const rule={...s.policy.defaultCapabilities,...s.policy.createdObjectRules.point};if(!rule.read||!rule.display||!rule.selectCanvas||!rule.selectList||!rule.translate||!['x','y'].every(k=>(rule.geometryFields||[]).includes(k)))fail('PERMISSION_DENIED');}
       if(Math.hypot(p.x2-p.x1,p.y2-p.y1)<1e-9)fail('INVALID_COMMAND');
-      if(p.shape==='line'){const a=e.add({type:'point',x:p.x1,y:p.y1}),b=e.add({type:'point',x:p.x2,y:p.y2});result=[...e.construct('lineBetweenPoints',[{objectId:a.id},{objectId:b.id}]),a,b];}
-      else {const ray=e.add({type:'ray',x1:p.x1,y1:p.y1,x2:p.x2,y2:p.y2});result=[ray,...e.construct('rayOrigin',[{objectId:ray.id}])];}
+      if(p.shape==='line')result=[e.add({type:'line',x1:p.x1,y1:p.y1,x2:p.x2,y2:p.y2})];
+      else {const rule={...(s.policy?.defaultCapabilities||{}),...(s.policy?.createdObjectRules?.point||{})};if(!s.author&&(!rule.read||!rule.display||!rule.selectCanvas||!rule.selectList||!rule.translate||!['x','y'].every(k=>(rule.geometryFields||[]).includes(k))))fail('PERMISSION_DENIED');const ray=e.add({type:'ray',x1:p.x1,y1:p.y1,x2:p.x2,y2:p.y2});result=[ray,...e.construct('rayOrigin',[{objectId:ray.id}])];}
       result.forEach(o=>direct.add(o.id));
     }else if(op==='object.create') {
       if(typeof p.toolId!=='string'||!tools.includes(p.toolId)||!p.toolId.startsWith('create:'))fail('INVALID_COMMAND');if(!s.author&&!s.policy.allowedTools.includes(p.toolId))fail('PERMISSION_DENIED');const recipe=p.toolId.slice(7),type=resultTypes[recipe]||recipe;

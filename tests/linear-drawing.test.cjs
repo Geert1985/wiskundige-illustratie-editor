@@ -4,22 +4,33 @@ const { runtime, plain } = require('./helpers.cjs');
 
 const payload = shape => ({ shape, x1: -2, y1: 1, x2: 3, y2: 4 });
 
-test('drawing a segment creates two movable point sources and one linked segment atomically', () => {
+test('basic segment drawing creates one free line object without point sources', () => {
   const { MI } = runtime();
   const engine = new MI.Engine();
   const commands = MI.AuthorCommands(engine);
-  const result = commands.execute(commands.createCommand('linear.draw', payload('line'))).result;
-  assert.equal(result.length, 3);
-  const line = result.find(object => object.type === 'line');
-  const points = result.filter(object => object.type === 'point');
-  assert.equal(points.length, 2);
-  assert.deepEqual(plain(line.construction.sources), plain(points.map(point => ({ objectId: point.id }))));
+  const line = commands.execute(commands.createCommand('linear.draw', payload('line'))).result[0];
+  assert.equal(engine.model.objects.length, 1);
+  assert.equal(line.type, 'line');
+  assert.equal(line.construction, undefined);
   assert.deepEqual([line.x1, line.y1, line.x2, line.y2], [-2, 1, 3, 4]);
-  engine.update(points[0].id, { x: -4, y: 2 });
-  assert.deepEqual([engine.get(line.id).x1, engine.get(line.id).y1], [-4, 2]);
-  engine.remove(points[0].id);
+  engine.move(line.id, 2, -1);
+  assert.deepEqual([engine.get(line.id).x1, engine.get(line.id).y1, engine.get(line.id).x2, engine.get(line.id).y2], [2, -1, 7, 2]);
+  engine.update(line.id, { x1: -4, y1: 2 });
+  assert.deepEqual([engine.get(line.id).x1, engine.get(line.id).y1, engine.get(line.id).x2, engine.get(line.id).y2], [-4, 2, 7, 2]);
+  engine.remove(line.id);
   assert.equal(engine.get(line.id), null);
-  assert.ok(engine.get(points[1].id));
+  assert.equal(engine.model.objects.length, 0);
+});
+
+test('a point lying exactly on a segment has stable selection priority in either document order', () => {
+  const { MI } = runtime();
+  for (const objects of [
+    [{ id: 'P', type: 'point', x: 0, y: 0 }, { id: 'L', type: 'line', x1: -1, y1: 0, x2: 1, y2: 0 }],
+    [{ id: 'L', type: 'line', x1: -1, y1: 0, x2: 1, y2: 0 }, { id: 'P', type: 'point', x: 0, y: 0 }],
+  ]) {
+    const engine = new MI.Engine({ objects });
+    assert.equal(engine.selectAt(0, 0, 0.01).object.id, 'P');
+  }
 });
 
 test('drawing a ray creates one linked origin point; dragging or translating the ray moves that point', () => {
@@ -60,11 +71,11 @@ test('linear drawing is one restricted command with atomic undo/redo and determi
     const result = session.execute(session.createCommand('linear.draw', payload(shape))).result;
     assert.ok(result.some(object => object.type === shape));
     assert.equal(session.documentRevision, beforeRevision + 1);
-    assert.equal(session.engine.model.objects.length, shape === 'line' ? 3 : 2);
+    assert.equal(session.engine.model.objects.length, shape === 'line' ? 1 : 2);
     session.execute(session.createCommand('history.undo', {}));
     assert.equal(session.engine.model.objects.length, 0);
     session.execute(session.createCommand('history.redo', {}));
-    assert.equal(session.engine.model.objects.length, shape === 'line' ? 3 : 2);
+    assert.equal(session.engine.model.objects.length, shape === 'line' ? 1 : 2);
   }
   const sequence = new MI.SemanticSequence({ objects: [] });
   sequence.execute('linear.draw', payload('line'));

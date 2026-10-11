@@ -43,7 +43,7 @@ test('keyboard edits use the last valid pointer and Enter commits the displayed 
   const { e, tool, down, move, key } = editor();
   tool('line'); down(0, 0); move(0, 2); key('1'); key('2'); key('Backspace');
   assert.ok(Math.abs(e.renderer.preview.end.x) < 1e-10); assert.equal(e.renderer.preview.end.y, 1);
-  key('Enter'); assert.equal(e.model.objects.length, 3); assert.equal(e.model.objects.find(o => o.type === 'line').y2, 1);
+  key('Enter'); assert.equal(e.model.objects.length, 1); assert.equal(e.model.objects[0].type, 'line'); assert.equal(e.model.objects[0].y2, 1);
 });
 test('rejected short shapes clear previews, typed measurement and do not poison the next drawing', () => {
   for (const shape of ['line', 'circle']) {
