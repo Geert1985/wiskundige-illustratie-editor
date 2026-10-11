@@ -11,6 +11,13 @@
   const MODEL_VERSION = 2;
   const TYPES = new Set(["point", "line", "circle", "text", "straight", "ray", "vector", "polygon", "dimension", "angle"]);
   const LINEAR = new Set(['line', 'straight', 'ray', 'vector', 'dimension']);
+  const TEXT_LIMITS = Object.freeze({ codePoints: 20000, runs: 2048, paragraphs: 128, bytes: 1048576 });
+  const TEXT_MARKS = new Set(['bold','italic','underline','strike','script','fontId','fontSize','color']);
+  const TEXT_FONTS = new Set(['sans','serif']);
+  const TEXT_COLORS = /^(#[0-9a-f]{6}|#[0-9a-f]{3})$/i;
+  function textColor(value){const color=value.toLowerCase();return color.length===4?'#'+[...color.slice(1)].map(c=>c+c).join(''):color;}
+  function richUpgradeConflict(extra){return ['groups','groupSchema','layers','layerSchema','circleDistributionSchema','circleDistributions','textSchema'].some(k=>Object.prototype.hasOwnProperty.call(extra||{},k));}
+  function utf8Length(value){let bytes=0;for(const c of value){const n=c.codePointAt(0);bytes+=n<0x80?1:n<0x800?2:n<0x10000?3:4;}return bytes;}
 
   function clone(value) { return JSON.parse(JSON.stringify(value)); }
   function finite(value, fallback) { return Number.isFinite(Number(value)) ? Number(value) : fallback; }
@@ -51,6 +58,24 @@
   function numeric(value) {
     return (typeof value === "number" || (typeof value === "string" && value.trim() !== "")) && Number.isFinite(Number(value));
   }
+  function validateTextContent(input) {
+    if(!record(input) || Object.keys(input).some(k=>!['schema','defaults','width','paragraphs'].includes(k)) || input.schema!==1 || !record(input.defaults) || Object.keys(input.defaults).some(k=>!['fontId','fontSize','color'].includes(k)) || !Array.isArray(input.paragraphs) || !input.paragraphs.length || input.paragraphs.length>TEXT_LIMITS.paragraphs) throw Error('Ongeldige gestructureerde tekst.');
+    const defaults={fontId:input.defaults.fontId,fontSize:input.defaults.fontSize,color:typeof input.defaults.color==='string'&&TEXT_COLORS.test(input.defaults.color)?textColor(input.defaults.color):input.defaults.color};
+    if(!TEXT_FONTS.has(defaults.fontId)||!Number.isFinite(defaults.fontSize)||defaults.fontSize<6||defaults.fontSize>120||!TEXT_COLORS.test(defaults.color))throw Error('Ongeldige standaardopmaak voor tekst.');
+    if(input.width!==null&&(!Number.isFinite(input.width)||input.width<=0||input.width>1e6))throw Error('Ongeldige tekstbreedte.');
+    let chars=0,runs=0;const ids=new Set();
+    const paragraphs=input.paragraphs.map(p=>{
+      if(!record(p)||Object.keys(p).some(k=>!['id','align','lineHeight','runs'].includes(k))||typeof p.id!=='string'||!p.id.trim()||ids.has(p.id)||!['left','center','right'].includes(p.align)||!Number.isFinite(p.lineHeight)||p.lineHeight<0.75||p.lineHeight>3||!Array.isArray(p.runs))throw Error('Ongeldige tekstalinea.');ids.add(p.id);
+      const out=[];for(const r of p.runs){if(!record(r)||Object.keys(r).some(k=>!['id','kind','text','marks'].includes(k))||typeof r.id!=='string'||!r.id.trim()||ids.has(r.id)||!['text','hardBreak'].includes(r.kind)||(r.kind==='text'&&!record(r.marks))||(r.kind==='hardBreak'&&r.marks!=null)||Object.keys(r.marks||{}).some(k=>!TEXT_MARKS.has(k)))throw Error('Ongeldig tekstfragment.');ids.add(r.id);if(++runs>TEXT_LIMITS.runs)throw Error('Tekst bevat te veel fragmenten.');
+        if(r.kind==='hardBreak'){if('text'in r)throw Error('Ongeldige regeleinde.');out.push({id:r.id,kind:'hardBreak'});continue;}
+        if(typeof r.text!=='string')throw Error('Ongeldige tekstinhoud.');chars+=Array.from(r.text).length;if(chars>TEXT_LIMITS.codePoints)throw Error('Tekst is te lang.');
+        const marks={};for(const [k,v] of Object.entries(r.marks)){if(k==='bold'||k==='italic'||k==='underline'||k==='strike'){if(typeof v!=='boolean')throw Error('Ongeldige tekstopmaak.');if(v)marks[k]=true;}else if(k==='script'){if(!['super','sub'].includes(v))throw Error('Ongeldig superscript of subscript.');marks[k]=v;}else if(k==='fontId'){if(!TEXT_FONTS.has(v))throw Error('Ongeldig lettertype.');marks[k]=v;}else if(k==='fontSize'){if(!Number.isFinite(v)||v<6||v>120)throw Error('Ongeldige lettergrootte.');marks[k]=v;}else if(k==='color'){if(typeof v!=='string'||!TEXT_COLORS.test(v))throw Error('Ongeldige tekstkleur.');marks[k]=textColor(v);}}
+        out.push({id:r.id,kind:'text',text:r.text,marks});
+      }return {id:p.id,align:p.align,lineHeight:p.lineHeight,runs:out};
+    });
+    const canonical={schema:1,defaults,width:input.width,paragraphs};if(utf8Length(JSON.stringify(canonical))>TEXT_LIMITS.bytes)throw Error('Gestructureerde tekst overschrijdt de opslaglimiet.');return canonical;
+  }
+  MI.TextContent=Object.freeze({validate:validateTextContent,limits:TEXT_LIMITS});
   const projectionDefaults=Object.freeze({schema:1,frame:'cartesian',mode:'none',showValues:true});
   function projectionSettings(value) {
     if(!record(value)||Object.keys(value).some(k=>!['schema','frame','mode','showValues'].includes(k))||value.schema!==1||value.frame!=='cartesian'||!['none','x','y','both'].includes(value.mode)||typeof value.showValues!=='boolean')throw Error('Ongeldige co'+String.fromCharCode(246)+'rdinatenprojecties.');
@@ -81,13 +106,14 @@
     const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
     if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices);
     if (input.type === "angle") MI.MeasurementGeometry.validateAngle(input.vertices,input.angleMark || "arc");
-    if('textBinding' in input){if(input.type!=='text'||input.construction)throw Error('Dynamische tekst vereist een vrij tekstobject.');textBinding(input.textBinding);if(input.textBinding?.sourceId===String(input.id))throw Error('Tekst kan niet naar zichzelf verwijzen.');}
+    if('textBinding' in input){if(input.type!=='text'||input.construction||input.textContent)throw Error('Dynamische tekst vereist een vrij tekstobject zonder rich text.');textBinding(input.textBinding);if(input.textBinding?.sourceId===String(input.id))throw Error('Tekst kan niet naar zichzelf verwijzen.');}
+    if('textContent' in input){if(input.type!=='text'||input.construction||'textBinding' in input)throw Error('Gestructureerde tekst vereist een vrij, niet-gebonden tekstobject.');validateTextContent(input.textContent);}
     if('angleSettings' in input){if(input.type!=='angle')throw Error('Hoekinstellingen zijn alleen voor hoeken.');MI.AngleMeasurements.settings(input.angleSettings);if(input.angleMark==='right'&&input.angleSettings.mode==='directed')throw Error('Een rechtehoekmarkering gebruikt de kleinste hoek.');}
     if('coordinateProjections' in input){if(input.type!=='point')throw Error('Projecties zijn alleen beschikbaar voor punten.');projectionSettings(input.coordinateProjections);}
     if(input.measurementMode!=null && !["computed","text"].includes(input.measurementMode)) throw Error("Ongeldige meetmodus.");
     if(input.measurementText!=null && typeof input.measurementText!=="string") throw Error("Ongeldige maattekst.");
     (fields || []).forEach(key => {
-      if (key in input && !numeric(input[key])) throw new Error("Ongeldige objectcoÃ¶rdinaat: " + key);
+      if (key in input && !numeric(input[key])) throw new Error("Ongeldige objectcoördinaat: " + key);
     });
     if (input.type === "circle" && input.r != null && Number(input.r) < 0) throw new Error("Straal mag niet negatief zijn.");
     ["visible", "showLabel", "locked", "showMeasurement", "measurementLabelOnly"].forEach(key => {
@@ -148,7 +174,7 @@
     if (['straight', 'ray', 'vector','dimension'].includes(type) && !Number.isFinite(Math.hypot(object.x2 - object.x1, object.y2 - object.y1))) throw new Error('Ongeldige richting: afstand tussen de punten moet eindig zijn.');
     if ((type === 'straight' || type === 'ray') && Math.hypot(object.x2 - object.x1, object.y2 - object.y1) === 0) throw new Error('Een rechte of halfrechte vereist twee verschillende punten.');
     if (type === "circle") { object.cx = finite(input.cx, 0); object.cy = finite(input.cy, 0); object.r = Math.max(0, finite(input.r, 1)); if (input.label != null) object.label = String(input.label); }
-    if (type === "text") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); object.text = String(input.text == null ? "" : input.text); object.rotation = finite(input.rotation, 0); }
+    if (type === "text") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); object.text = String(input.text == null ? "" : input.text); object.rotation = finite(input.rotation, 0); if(input.textContent)object.textContent=validateTextContent(input.textContent); }
     if (type === 'polygon') object.vertices = MI.PolygonGeometry.validate(object.vertices);
     if (type === 'angle') { object.angleMark = input.angleMark || 'arc'; object.vertices = MI.MeasurementGeometry.validateAngle(object.vertices, object.angleMark); }
     return object;
@@ -167,6 +193,7 @@
     _generateId(type) { let id; do { id = (type || "object") + "-" + this._nextId; this._nextId = this._nextId >= Number.MAX_SAFE_INTEGER - 1 ? 1 : this._nextId + 1; } while (this.get(id) || this.#groups.some(g=>g.id===id) || this.#layers.some(l=>l.id===id)||this.#circleDistributions.some(d=>d.id===id)); return id; }
     add(input) {
       if (!record(input)) throw new Error('Ongeldig illustratie-object.');
+      if(input.textContent&&richUpgradeConflict(this._extra))throw Error('Rijke tekst kan niet worden toegevoegd zolang legacy documentvelden botsen met het tekstformaat.');
       if(input.construction?.kind==='distributedPointOnCircle')throw Error('Distributiepunten worden uitsluitend via de centrale puntenverdeling beheerd.');
       const nextId = this._nextId;
       try {
@@ -181,6 +208,7 @@
       const index = this.#objects.findIndex(o => o.id === id); if (index === -1) throw new Error('Object niet gevonden: ' + id);
       if (patch != null && !record(patch)) throw new Error('Ongeldige objectupdate.'); patch = patch || {};
       const current = this.#objects[index];
+      if(patch.textContent&&!current.textContent&&richUpgradeConflict(this._extra))throw Error('Rijke tekst kan niet worden toegevoegd zolang legacy documentvelden botsen met het tekstformaat.');
       if(patch.construction?.kind==='distributedPointOnCircle'||current.construction?.kind==='distributedPointOnCircle'&&'construction' in patch)throw Error('Distributiepunten worden uitsluitend via de centrale puntenverdeling beheerd.');
       MI.ConstructionService.validateUpdate(this.#objects,current,patch);
       if (('id' in patch && patch.id !== id) || ('type' in patch && patch.type !== current.type)) throw new Error('ID en objecttype kunnen niet worden gewijzigd.');
@@ -243,11 +271,11 @@
     get(id) { const object = this.#objects.find(o => o.id === id); return object ? clone(object) : null; }
     all() { return clone(MI.DocumentLayers.ordered(this.objects,this.#layers)); }
     clear() { this.#objects = Object.freeze([]); this.#groups=Object.freeze([]); this.#layers=Object.freeze([]);this.#circleDistributions=Object.freeze([]); }
-    toJSON() { const hasDistributions=this.#circleDistributions.length>0,version=hasDistributions?6:this.#layers.length?5:this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION;return { ...clone(this._extra), type: this.type, version, ...(this.#layers.length?{layerSchema:1,layers:clone(this.#layers)}:{}), ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(hasDistributions?{circleDistributionSchema:1,circleDistributions:clone(this.#circleDistributions)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:this.#objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))?4:this.#objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))?3:this.#objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))?2:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
+    toJSON() { const hasDistributions=this.#circleDistributions.length>0,hasRichText=this.#objects.some(o=>o.textContent),version=hasRichText?7:hasDistributions?6:this.#layers.length?5:this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION;return { ...clone(this._extra), type: this.type, version, ...(hasRichText?{textSchema:1}:{}), ...(this.#layers.length?{layerSchema:1,layers:clone(this.#layers)}:{}), ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(hasDistributions?{circleDistributionSchema:1,circleDistributions:clone(this.#circleDistributions)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:this.#objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))?4:this.#objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))?3:this.#objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))?2:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
     load(data) {
       if (!record(data) || !Array.isArray(data.objects)) throw new Error("Ongeldig illustratiemodel: objects-array vereist.");
       const version = data.version == null ? 1 : Number(data.version);
-      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || version>6 || (version===6&&(data.circleDistributionSchema!==1||!Array.isArray(data.circleDistributions)))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
+      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || version>7 || (version===6&&(data.circleDistributionSchema!==1||!Array.isArray(data.circleDistributions))) || (version===7&&(data.textSchema!==1))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
       if (data.type != null && data.type !== "geometry") throw new Error("Niet-ondersteund documenttype.");
       if (data.meta != null && !record(data.meta)) throw new Error("Ongeldige documentmetadata.");
       const meta = clone(data.meta || {}), presentation = normalisePresentation(data.presentation);
@@ -255,7 +283,7 @@
       ["title", "description"].forEach(key => {
         if (meta[key] != null && typeof meta[key] !== "string") throw new Error("Ongeldige documentmetadata: " + key);
       });
-      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version>=5?["layers","layerSchema"]:[]), ...(version===6?["circleDistributionSchema","circleDistributions"]:[])].includes(key))));
+      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version>=5?["layers","layerSchema"]:[]), ...(version>=6?["circleDistributionSchema","circleDistributions"]:[]), ...(version>=7?["textSchema"]:[])].includes(key))));
       const seen = new Set();
       let nextId = 1;
       const objects = data.objects.map(input => {
@@ -273,13 +301,15 @@
       if(objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))&&data.constructionSchema!==4)throw Error('Hoekarmen vereisen constructieschema 4.');
       if(objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))&&![3,4].includes(data.constructionSchema))throw Error('Asreferenties vereisen constructieschema 3.');
       if(objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))&&![2,3,4].includes(data.constructionSchema))throw Error('Deze gekoppelde geometrie vereist constructieschema 2.');
-      const distributions=[],distIds=new Set();if(version===6){if(!data.circleDistributions.length)throw Error('Documentversie 6 vereist minstens Ã©Ã©n puntenverdeling.');const pointIds=new Set();for(const d of data.circleDistributions){if(!record(d)||Object.keys(d).some(k=>!['id','circleId','count','startAngle','pointIds'].includes(k))||typeof d.id!=='string'||!d.id.trim()||typeof d.circleId!=='string'||!d.circleId.trim()||!Number.isSafeInteger(d.count)||d.count<1||d.count>MI.RegularGeometry.MAX_COUNT||!Number.isFinite(d.startAngle)||d.startAngle<0||d.startAngle>=2*Math.PI||!Array.isArray(d.pointIds)||d.pointIds.length!==d.count||new Set(d.pointIds).size!==d.count||distIds.has(d.id)||seen.has(d.id))throw Error('Ongeldige cirkelpuntenverdeling.');distIds.add(d.id);seen.add(d.id);const dsuffix=Number(d.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(dsuffix)&&dsuffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,dsuffix+1);const circle=objects.find(o=>o.id===d.circleId);if(!circle||circle.type!=='circle')throw Error('Puntenverdeling verwijst naar een ongeldige cirkel.');d.pointIds.forEach((id,index)=>{const p=objects.find(o=>o.id===id),c=p?.construction;if(!p||p.type!=='point'||!c||c.kind!=='distributedPointOnCircle'||c.distributionId!==d.id||c.index!==index||Object.keys(c).some(k=>!['kind','sources','distributionId','index'].includes(k))||c.sources.length!==1||Object.keys(c.sources[0]).some(k=>k!=='objectId')||c.sources[0].objectId!==d.circleId||pointIds.has(id))throw Error('Puntenverdeling en puntconstructie komen niet overeen.');pointIds.add(id);});distributions.push(clone(d));}if(objects.some(o=>o.construction?.kind==='distributedPointOnCircle'&&!pointIds.has(o.id)))throw Error('Los distributiepunt zonder register gevonden.');}
+      const distributions=[],distIds=new Set();if(version===6||data.circleDistributionSchema!=null||data.circleDistributions!=null){if(!Array.isArray(data.circleDistributions)||data.circleDistributionSchema!==1||(version===6&&!data.circleDistributions.length))throw Error('Ongeldige cirkelpuntenverdeling.');const pointIds=new Set();for(const d of data.circleDistributions){if(!record(d)||Object.keys(d).some(k=>!['id','circleId','count','startAngle','pointIds'].includes(k))||typeof d.id!=='string'||!d.id.trim()||typeof d.circleId!=='string'||!d.circleId.trim()||!Number.isSafeInteger(d.count)||d.count<1||d.count>MI.RegularGeometry.MAX_COUNT||!Number.isFinite(d.startAngle)||d.startAngle<0||d.startAngle>=2*Math.PI||!Array.isArray(d.pointIds)||d.pointIds.length!==d.count||new Set(d.pointIds).size!==d.count||distIds.has(d.id)||seen.has(d.id))throw Error('Ongeldige cirkelpuntenverdeling.');distIds.add(d.id);seen.add(d.id);const dsuffix=Number(d.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(dsuffix)&&dsuffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,dsuffix+1);const circle=objects.find(o=>o.id===d.circleId);if(!circle||circle.type!=='circle')throw Error('Puntenverdeling verwijst naar een ongeldige cirkel.');d.pointIds.forEach((id,index)=>{const p=objects.find(o=>o.id===id),c=p?.construction;if(!p||p.type!=='point'||!c||c.kind!=='distributedPointOnCircle'||c.distributionId!==d.id||c.index!==index||Object.keys(c).some(k=>!['kind','sources','distributionId','index'].includes(k))||c.sources.length!==1||Object.keys(c.sources[0]).some(k=>k!=='objectId')||c.sources[0].objectId!==d.circleId||pointIds.has(id))throw Error('Puntenverdeling en puntconstructie komen niet overeen.');pointIds.add(id);});distributions.push(clone(d));}if(objects.some(o=>o.construction?.kind==='distributedPointOnCircle'&&!pointIds.has(o.id)))throw Error('Los distributiepunt zonder register gevonden.');}
       else if(objects.some(o=>o.construction?.kind==='distributedPointOnCircle'))throw Error('Distributiepunten vereisen documentschema 6.');
       const resolved = MI.ConstructionService.resolve(objects,distributions);
       if(version>=4 && objects.some(o=>o.construction) && ![1,2,3,4].includes(data.constructionSchema))throw Error("Constructieschema vereist.");
       if(version>=4 && data.groups!=null && data.groupSchema!==1)throw Error("Groepsschema vereist.");
       const groups=version>=4&&data.groups!=null?MI.PersistentGroups.validate(data.groups,resolved):[];
       if(version===5&&(!Array.isArray(data.layers)||data.layerSchema!==1))throw Error('Laagschema vereist.');if(version>=5&&data.layers!=null&&data.layerSchema!==1)throw Error('Laagschema vereist.');const layers=version>=5&&data.layers!=null?MI.DocumentLayers.validate(data.layers,resolved,groups):[];
+      if(version===7){if(!objects.some(o=>o.textContent)||objects.some(o=>o.textContent&&o.textContent.schema>data.textSchema)||objects.some(o=>o.textContent&&o.textBinding))throw Error('Documentversie 7 vereist geldige gestructureerde tekst en textSchema.');if(data.groups!=null&&data.groupSchema!==1||data.layers!=null&&data.layerSchema!==1)throw Error('Organisatieschema vereist voor documentversie 7.');}
+      if(version<7&&(data.textSchema!=null||objects.some(o=>o.textContent)))throw Error('Gestructureerde tekst vereist documentversie 7.');
       for(const group of [...groups,...layers]){if(distIds.has(group.id))throw Error('Document-ID is niet uniek.');}
       for(const group of [...groups,...layers]){const suffix=Number(group.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(suffix)&&suffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,suffix+1);}
       // Commit only after every object, migration and document field has succeeded.

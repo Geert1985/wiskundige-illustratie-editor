@@ -172,3 +172,5 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .sidebar .tool-grid>.tool,.sidebar .tool-grid>.tool-split{width:100%;min-width:0}
 .sidebar .tool-grid .tool span{white-space:normal;overflow-wrap:break-word}
 .sidebar .split-tool-menu{width:100%;max-width:100%;box-sizing:border-box}
+
+.rich-text-toolbar{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}.rich-text-toolbar button,.rich-text-toolbar select,.rich-text-toolbar input{min-height:32px;padding:4px 7px}.rich-text-toolbar input[type=number]{width:72px}.rich-text-surface{min-height:180px;max-height:45vh;overflow:auto;padding:12px;background:#fff;color:#222;border:1px solid #7a8991;border-radius:7px;font:16px 'Source Sans 3',sans-serif;outline:none}.rich-text-surface:focus{border-color:#e9c46a;box-shadow:0 0 0 2px #e9c46a55}.rich-text-surface p{margin:0 0 1em}.rich-text-surface p:last-child{margin-bottom:0}#textValue[hidden]{display:none}

@@ -198,7 +198,7 @@
     }
     renderSVG() {
       if (MI.adaptiveGridStep) this.renderer.axisStep = MI.adaptiveGridStep(this.renderer);
-      return this.renderer.render(this.model);
+      return this.renderer.render(this.model,{embedFonts:true});
     }
   }
 

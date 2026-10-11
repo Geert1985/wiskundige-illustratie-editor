@@ -10,7 +10,10 @@ const root = path.join(__dirname, '..');
 // documented separately and must not be mistaken for initialization edges.
 const modules = [
   { file: 'regular-geometry.js', provides: ['RegularGeometry'], after: [] },
-  { file: 'model.js', provides: ['PointProjections', 'DynamicText', 'MODEL_VERSION', 'OBJECT_TYPES', 'LINEAR_OBJECT_TYPES', 'IllustrationModel', 'normaliseObject', 'PRESENTATION_FLAGS'], after: ['regular-geometry.js'] },
+  { file: 'model.js', provides: ['PointProjections', 'DynamicText', 'TextContent', 'MODEL_VERSION', 'OBJECT_TYPES', 'LINEAR_OBJECT_TYPES', 'IllustrationModel', 'normaliseObject', 'PRESENTATION_FLAGS'], after: ['regular-geometry.js'] },
+  { file: 'rich-text-editor-loader.js', provides: ['RichTextEditor'], after: ['model.js'] },
+  { file: 'font-assets.js', provides: ['TextFontData'], after: ['model.js'] },
+  { file: 'text-fonts.js', provides: ['TextFonts'], after: ['font-assets.js'] },
   { file: 'persistent-groups.js', provides: ['PersistentGroups'], after: ['model.js'] },
   { file: 'document-layers.js', provides: ['DocumentLayers'], after: ['model.js', 'persistent-groups.js'] },
   { file: 'polygon-geometry.js', provides: ['PolygonGeometry'], after: ['model.js'] },
@@ -39,7 +42,7 @@ const modules = [
 
 function modulesBeforeEditor() {
   return [
-    'model.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
+    'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
     'linear-geometry.js', 'measurement-geometry.js', 'construction-service.js',
     'renderer.js', 'index.js', 'semantic-sequence.js', 'coordinate-transform.js',
     'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js',

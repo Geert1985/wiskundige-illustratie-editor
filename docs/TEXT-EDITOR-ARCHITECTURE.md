@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.1.0 — 2026-10-11 — **gecorrigeerd voorstel, fase 0; niet definitief goedgekeurd**.
+Versie 1.2.0 - 2026-10-12 - T1 geimplementeerd op de goedgekeurde ontwikkelbranch; gebruikersacceptatie staat open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -68,11 +68,11 @@ Een AST bewaart stabiele bron-IDs; zichtbare namen zijn geen sleutels. Eventuele
 
 ## 3. Formaat en migratie
 
-Voorstel: document v6 zodra rich text aanwezig is, met afzonderlijke tekstschemaversie. Tekstschema 1=T1, 2=T2, 3=T3, 4=T5c. Onbekende toekomstige fragmenten worden vóór mutatie afgewezen. Constructieschema's blijven onafhankelijk. Vervang exacte versievergelijkingen voor lagen door feature-/minimumversiechecks.
+Oud voorstel: document v6 zodra rich text aanwezig is, met afzonderlijke tekstschemaversie; dit is door T1-amendement sectie 19 bijgewerkt naar v7. Tekstschema 1=T1, 2=T2, 3=T3, 4=T5c. Onbekende toekomstige fragmenten worden vóór mutatie afgewezen. Constructieschema's blijven onafhankelijk. Vervang exacte versievergelijkingen voor lagen door feature-/minimumversiechecks.
 
 Ongewijzigde legacydocumenten blijven v1–5 lezen en hun bestaande writerpad gebruiken. Statische tekst wordt pas bij bevestigen van een bewerking naar textContent omgezet. Annuleren migreert niets. T1 behoudt bestaande dynamische bindings en hun inspector; gebonden inhoud wordt niet tot statische tekst afgevlakt. T3 kan die binding bij een bevestigde bewerking omzetten naar prefix + dynamicValue + suffix; bewaar de bestaande statische terugval voor expliciet ontkoppelen. textBinding en textContent zijn wederzijds uitsluitend.
 
-Constructietekst voor oppervlakte/omtrek blijft receptgestuurd; vrij bewerken vraagt eerst bewust losmaken. Ontbrekende bron-IDs blijven in auteursdocumenten bewaard zodat undo herstel mogelijk maakt. Duplicatie van alleen tekst behoudt bron-IDs; duplicatie met bronnen remapt uitsluitend meegekopieerde IDs. Import, duplicatie, exportprojectie en replay krijgen dezelfde validator. Oude applicatieversies mogen v6 afwijzen; stil verlies van opmaak is geen downgradebeleid.
+Constructietekst voor oppervlakte/omtrek blijft receptgestuurd; vrij bewerken vraagt eerst bewust losmaken. Ontbrekende bron-IDs blijven in auteursdocumenten bewaard zodat undo herstel mogelijk maakt. Duplicatie van alleen tekst behoudt bron-IDs; duplicatie met bronnen remapt uitsluitend meegekopieerde IDs. Import, duplicatie, exportprojectie en replay krijgen dezelfde validator. Oude applicatieversies mogen v7 afwijzen; stil verlies van opmaak is geen downgradebeleid.
 
 ## 4. Modules en transacties
 
@@ -179,7 +179,7 @@ Nieuwe regressies dekken schema/malformed input, legacyv1–5 en v6, groepen/lag
 
 Edge: echte fragmentselectie, sneltoetsen, IME/plakken, caret rond atomen, fullscreen/Escape, modal focus, responsive 390/760/1159/1446 px, late async-resultaten en ingetrokken rechten. Visueel: alle fontfaces, 12/16/32 pt-equivalent, Grieks, super/sub, lege regels, breuken/wortels, rotatie, zoom en veranderende dynamische breedte. Zelfstandige SVG/PNG testen met netwerk geblokkeerd. Belastingsmetingen met 10/100/500 objecten en 1/10/100 velden; thresholds pas na baseline vastleggen.
 
-Belangrijkste risico's: fontshaping en exportgelijkheid; libraryomvang; async races; bronlekken via caches/fallbacks; onjuiste dubbele schaal/hoekconversie; v6-compatibiliteit met oude readers; IME/selectiecomplexiteit. Securityfixtures omvatten HTML/SVG/TeX-injectie, diepe AST, prototype-invoer en veranderende permissies.
+Belangrijkste risico's: fontshaping en exportgelijkheid; libraryomvang; async races; bronlekken via caches/fallbacks; onjuiste dubbele schaal/hoekconversie; v7-compatibiliteit met oude readers; IME/selectiecomplexiteit. Securityfixtures omvatten HTML/SVG/TeX-injectie, diepe AST, prototype-invoer en veranderende permissies.
 
 Besluitstatus en goedkeuringspoorten staan in sectie 18. ProseMirror, fonttechniek en formulebibliotheek zijn geen definitieve keuzes. Het verfijnde rekencontract moet vóór T5a afzonderlijk definitief worden goedgekeurd.
 
@@ -189,44 +189,35 @@ Op de ongewijzigde runtimebaseline uitgevoerd: `node --test tests/*.test.cjs`: *
 
 Geen T1–T5-featuretests uitgevoerd: de features zijn nog niet geïmplementeerd. Fase 0 wijzigt uitsluitend documentatie. Rapporten T1-REPORT t/m T5d-REPORT worden pas na uitvoering van het betreffende checkpoint aangemaakt.
 
-## 11. B1 — Formele compatibiliteits- en migratiematrix
+## 11. B1 - Compatibiliteits- en migratiematrix
 
-De huidige constante MODEL_VERSION is 2, geen maximum-reader-versie. `model.version` blijft intern 2; de writer kiest 2–5 op features. Deze twee begrippen worden in T1 expliciet gescheiden: legacy basisversie 2, reader maximum 6 en minimale schrijfversie per feature. Het verhogen van MODEL_VERSION alleen zou v3–5-validatie omzeilen en is verboden.
+Het goedgekeurde voorstel v1.1.0 wees versie 6 toe aan rijke tekst. Die versie was al in gebruik voor verdeling van cirkelpunten. Daarom gebruikt T1 documentversie 7 voor rijke tekst en blijft v6 ongewijzigd. Deze correctie vervangt eerdere verwijzingen die rich text aan v6 koppelen.
 
-| Invoer | Huidige toelating/interpretatie | Nieuwe reader en migratie | Schrijven zonder rich text / met rich text |
-|---|---|---|---|
-| v1 of ontbrekende versie | Legacy objecten; distinct label herstelt name wanneer name leeg/ID is | Zelfde eenmalige labelmigratie; geen textContent bij alleen openen | Minimaal v2 / v6 na expliciet bevestigd omzetten |
-| v2 | Basisobjecten; historische onbekende rootextensions blijven opaque | Zelfde gedrag; bekende rich-textsleutels mogen niet als opaque doorglippen | v2, of 3/4/5 door bestaande features / v6 |
-| v3 | constructionSchema 1–4 vereist voor v3-toelating | Bestaande recept-/asschema's valideren; geen nieuwe tekstmigratie bij openen | v3 zolang constructies aanwezig zijn / v6 |
-| v4 | groupSchema 1 en groups-array vereist; constructies vragen geldig schema | Groepen, leden en constructies blijven intact | v4 zolang groepen aanwezig zijn, anders minimumfeatures / v6 |
-| v5 | layerSchema 1 en layers-array vereist; groups indien aanwezig vragen schema 1 | Lagen/groepen volledig valideren en behouden | v5 zolang lagen aanwezig zijn / v6 |
-| v6 | Wordt nu afgewezen | Vereist root textSchema 1–4 én ten minste één textContent; arrays/schemaversies voor aanwezige groups/layers; constructionSchema voor aanwezige recepten. Alle onderdelen vóór commit valideren | v6 zolang rich text aanwezig is; zonder rich text alleen door expliciete normalisatie naar minimale featureversie |
+De interne MODEL_VERSION blijft 2 en is niet de maximale reader-versie. De writer kiest de minimale featureversie: v2 basis, v3 constructies, v4 groepen, v5 lagen, v6 cirkelpuntenverdelingen, v7 rijke tekst. Rijke tekst krijgt voorrang, met behoud van alle aanwezige featureschema's.
 
-v6 root `textSchema` is de hoogste vereiste inhoudsversie van aanwezige tekstobjecten. Iedere textContent houdt zijn eigen schema; een fragment mag alleen in zijn minimale/latere ondersteunde schema voorkomen. T1 accepteert root/object 1, T2 tot 2, T3 tot 3, T5c tot 4. Root lager dan een object, onbekende hogere versie of textContent in v1–5: atomair afwijzen. Geen stil fallback-renderen van onbekende rijke inhoud.
-
-Een bestaande opaque root `layers`/`groups`-extension in oudere documenten mag bij v6-upgrade niet overschreven of stil als organisatie geïnterpreteerd worden. Detecteer gereserveerde-sleutelconflict vóór bevestiging en weiger migratie met duidelijke melding; bestaande legacy opslag blijft intact. Deze randgevallen zijn al bekend in tests/layers.test.cjs. Een oudere reader wijst v6 expliciet af. Er is geen automatische v6→v5-afvlakexport.
-
-### Volledige inventaris van productie-documentversiecontroles
-
-Repositoryzoekactie over alle eigen JavaScriptbestanden, exclusief node_modules/vendor. Onderstaande locaties bevatten de gevonden documentversievertakkingen; regelnummers verwijzen naar runtimebaseline 64ba1a2 (documentatiecommit cc23585 wijzigt ze niet).
-
-| Locatie | Huidige controle | Vereiste T1-wijziging en regressie |
+| Invoer | Lezen en valideren | Schrijven zonder/met rijke tekst |
 |---|---|---|
-| model.js:11,164,256,262 | MODEL_VERSION=2, interne versie en publieke constante | Readermaximum apart introduceren; alle oude invalid-schemafixtures blijven afwijzen |
-| model.js:219 | Writer kiest lagen 5, groepen 4, constructies 3, anders 2 | Rich text heeft prioriteit 6; overige schemas onafhankelijk; mixed rich+groups+layers+axis-arm recepten roundtrip |
-| model.js:222–223 | Ontbrekend→1, numeric/integer/range; exacte uitzonderingen 3/4/5 | Expliciete dispatch per v1–6, geen open `>=6`; v0, fractioneel, v7, verkeerd/missend schema atomair afwijzen |
-| model.js:231 | Root exclusions groups bij >=4; layers bij ===5 | v6 textSchema/organisatie uit opaque extras houden; legacy extensions en conflicten testen |
-| model.js:238 | ===1 label→name | Alleen v1; openen/herladen mag name niet opnieuw veranderen |
-| model.js:250 | >=4 constructieschema vereist | Voor v6 eveneens; schema 1–4 en vereisten voor axis/arm blijven exact |
-| model.js:251–253 | ===5 groepsschemacheck/lagen; >=4 groepsvalidatie | Featurevalidatie voor v6, ontbrekende members/schema afwijzen, bestaande v4/v5-regels bewaren |
-| permission-runtime.js:177 | Restricted JSON-lagen alleen doc.version===5 | Aanwezige lagen valideren/exporteren voor v5 én v6; textSchema berekenen uit geprojecteerde inhoud, niet alleen origineel overnemen |
-| editor.js:844 | Nieuw leeg document literal version:2 | Bewust v2 houden; eerste rich commit kiest v6 via writer |
+| v1 of ontbrekend | Legacy objectformaat; bestaande eenmalige label-naar-name-migratie. Geen tekstmigratie bij openen. | Bestaande minimale featureversie / v7 pas na expliciete rich-tekstbewerking. |
+| v2 | Basisgeometrie; onbekende root-extensies blijven opaque. | v2 of v3-v6 als bestaande features dat vereisen / v7. |
+| v3 | constructionSchema 1-4 valideren voor recepten en as-/hoekreferenties. | v3 wanneer constructies dat vereisen / v7. |
+| v4 | groupSchema 1 en groups valideren; recepten behouden. | v4 wanneer groepen dat vereisen / v7. |
+| v5 | layerSchema 1 en layers valideren; groepen indien aanwezig valideren. | v5 wanneer lagen dat vereisen / v7. |
+| v6 | circleDistributionSchema 1 en een geldige niet-lege verdeling vereisen; leden en constructies wederzijds controleren. Groepen/lagen blijven geldig. | v6 zolang verdelingen dat vereisen / v7. |
+| v7 | textSchema 1 en ten minste een geldig textContent-object vereisen; aanwezige constructies, verdelingen, groepen en lagen valideren voor commit. | v7 zodra rijke tekst aanwezig is. |
 
-Aanvullende paden zonder eigen documentversievergelijking: `index.js:185–199` Engine.load (stagingmodel; createDocumentRenderer:20–28 doet presentation/grid/axes-preflight, geen tekstpreflight); `editor.js:847–879` JSON/import; `editor-startup.js:13–15` DraftStore.restore via Engine.load en `editor-bootstrap.js:12–16` koppeling (geen draft in restricted); `editor-history.js:9,27–33` snapshots/restore; `permission-runtime.js:155–166` undo/reset/replace/meta changes via e.load; `persistent-groups.js` en `document-layers.js` valideren structuren maar kiezen geen documentversie; `semantic-sequence.js:13–18` baseline/candidates via Engine. Deze moeten v6-fixtures krijgen en mogen geen zelfstandig permissieverruimende decoder toevoegen. T1 voegt expliciet rich-schema/lay-outpreflight toe vóór documentvervanging; bestaande presentation-preflight is geen bewijs daarvan.
+T1 ondersteunt alleen root textSchema 1. textContent is verboden in v1-v6; onbekende hogere tekstschema's worden geweigerd. Onbekende rijke inhoud wordt nooit stil teruggebracht tot platte tekst. Readers ouder dan v7 moeten het document weigeren in plaats van opmaak weg te laten.
 
-`semantic-sequence.js:17–18` gebruikt **artifact version 1**, niet documentversie. Die blijft 1; voeg text.commit expliciet aan commandallowlist toe. Record bevat operation/payload/createdIds; live revisie/epoch worden tijdens replay opnieuw gebonden, niet als historische globale revisie meegesleept. Test v2-baseline→v6 via commit, v6-baseline met lagen, deterministische IDs en gedeeltelijke replay. Oude artefacten blijven hetzelfde resultaat opleveren. Runtime policy/command/schema-versies zijn eveneens aparte contracten.
+Een v7-document mag rijke tekst combineren met de v6-cirkelpuntenverdeling en de v3-v5 schema's voor constructies, groepen en lagen. Een conflict tussen een gereserveerde root-key en een opaque legacy-extensie blokkeert de upgrade voordat er iets verandert. Een mislukte load/import behoudt model, renderer, selectie en geschiedenis. Bestaande textBinding blijft exact gelijk; T1 migreert of opent zulke teksten niet automatisch in de rich editor.
 
-Regressiematrix: elk v1–v6-fixture via model, Engine, browserimport, lokale draft, history, author JSON/SVG, restricted JSON/SVG en replay waar toegestaan; geldige/ongeldige schema's, groepen/lagen, ontbrekende bron, provenance-onafhankelijke extensions. Bij geweigerde import blijft zowel document als selectie/history onaangeroerd. Voor alle exportuitvoer moet opnieuw importeren slagen of de route expliciet vooraf geweigerd zijn.
+### Versiecontroles en regressies
+
+- model.js houdt interne MODEL_VERSION apart; de writer kiest v7 voor textContent en importeert expliciet v1-v7. Test onbekende/fractionele versies, ontbrekend/verkeerd textSchema, rich text in v1-v6, gemengde v6-verdeling plus v7-tekst en atomaire fouten.
+- model.js behoudt afzonderlijke validatie van constructionSchema, groupSchema, layerSchema en circleDistributionSchema in v7. Test groepen, lagen en verdelingen samen met rijke tekst, plus conflicten met gereserveerde extensies.
+- Engine.load, JSON-import, lokale draft, geschiedenis en semantische replay gebruiken dezelfde loader en zijn atomair.
+- Restricted JSON-export bepaalt de versie opnieuw op basis van de geprojecteerde leesbare objecten. Een projectie met rijke tekst gebruikt v7/textSchema 1, neemt alleen geldige toegestane groepen/lagen/verdelingen mee en weigert onvolledige bronrelaties. Restricted SVG embedt lokale fonts alleen als rich text aanwezig is.
+- Policy- en commandoversies staan los van documentversies; semantische sequence blijft artifact version 1. text.commit wordt als een enkele bewerking opnieuw afgespeeld.
+
+Regressiepoort: v1-v7-fixtures door model, Engine, import, draft, geschiedenis, author/restricted JSON en SVG, replay en legacy statische/dynamische tekst. Iedere geweigerde import behoudt de bestaande status. Export moet opnieuw importeerbaar zijn of vooraf worden geweigerd.
 
 ## 12. B2 — Permissiematrix en text.commit
 
@@ -292,7 +283,7 @@ Geen clientclaim `changedCategories` vertrouwen. Canonical diff scheidt marks/fo
 5. Nieuwe rechte bron met read/display maar zonder textSourceProperties: geen inline binding. Bestaande legacy textBinding blijft volgens schema-1 readbeleid werken; geen automatische uitbreiding naar schema-2 grants.
 6. Bestaande verborgen auteurbron blijft uitleesbaar. Restricted nieuwe bron vereist effectieve display inclusief laag/objectbeschikbaarheid. Bron geometrisch ongeldig: beschikbaarheidsplaceholder, geen NaN; schema en ID mogen behouden blijven in author document.
 7. Restricted renderer/preview/projectie/JSON/SVG verwijdert niet-toegestane brongegevens en vervangt het hele verboden atom door plain "niet beschikbaar". Geen AST/ID/naam/resultaat in fallback, title/desc, errors of cached SVG. Rest van tekst blijft opgemaakt.
-8. Restricted JSON na redactie bepaalt opnieuw textSchema/documentversion en bewaart lagen/groepen volgens bestaande closureweigering. Geen origineel v6 met ontbrekend textSchema of onleesbare raw payload exporteren. PNG gebruikt uitsluitend geautoriseerde zelfstandige SVG.
+8. Restricted JSON na redactie bepaalt opnieuw textSchema/documentversion en bewaart lagen/groepen volgens bestaande closureweigering. Geen origineel v7 met ontbrekend textSchema of onleesbare raw payload exporteren. PNG gebruikt uitsluitend geautoriseerde zelfstandige SVG.
 9. Undo/redo via private vertrouwde geschiedenis; policywisseling wist geschiedenis zoals nu. Opnieuw huidige doelrechten/locks/bronrechten controleren vóór restore; een historische AST geeft geen huidige leesgrant. Author replay is geen restricted-authorisatiebewijs.
 
 Commit is atomair: normalize → expectedrevision/handleepoch → doelrechten/locks → diffgrants → bronnen → schema/type/dimension/quotas → candidate/renderpreflight → één geschiedenisactie. Async preview wordt op revisie+epoch+hash weggegooid. Volledige typed inhoud komt niet in de restricted UI als de projectie deze verbiedt. Backend/hostpolicy is de vertrouwensgrens; UI-disabled knoppen zijn alleen feedback.
@@ -392,7 +383,7 @@ Alle functionele/security/roundtripchecks zijn harde criteria. Elke case apart p
 
 | Stap | Openen/bewerken | OK/opslag | Annuleren |
 |---|---|---|---|
-| T1 | Binding als onveranderbare preview; bestaande broninspector blijft. Dialog kan objectbrede legacy styles aanpassen; fragmentopmaak op de binding is nog niet beschikbaar | legacyStylePatch verandert uitsluitend toegestane stylevelden; exact dezelfde textBinding en statische `.text`; geen textContent/v6 door alleen format | Geen inhoud/style/schema/historywijziging |
+| T1 | Binding als onveranderbare preview; bestaande broninspector blijft. Dialog kan objectbrede legacy styles aanpassen; fragmentopmaak op de binding is nog niet beschikbaar | legacyStylePatch verandert uitsluitend toegestane stylevelden; exact dezelfde textBinding en statische `.text`; geen textContent/v7 door alleen format | Geen inhoud/style/schema/historywijziging |
 | T2 | Zelfde beleid. Formule-invoegen in legacygebonden tekst wordt niet aangeboden; bestaande gewone/rich tekst ondersteunt math | Geen impliciet afvlakken om een formule toe te voegen. Alleen legacy styles of expliciet bestaande bindinginspector | Zelfde nulwijzigingsgarantie |
 | T3 | Expliciete actie "Omzetten naar inline dynamische tekst"; eerst rechten en bronstatus controleren, dan draft prefix/dynamic/suffix | Eén commit: prefix/suffix als text-runs; binding atom behoudt sourceId/property/precision; leeg prefix/suffix niet als lege run nodig; unitMode=document. Alle runs erven legacy font/fill en alinea anchor links/midden/rechts; positie/rotatie exact gelijk | Houd oorspronkelijke legacyrepresentatie intact |
 
@@ -426,3 +417,12 @@ Uitgewerkte ontwerpbesluiten in dit voorstel (nog onder architectuurgoedkeuring)
 Nog open: SVG-text/glyph/hybride, concrete fonts/shapingdekking/licenties, editorbibliotheek en gepinde modules, formulebibliotheek, gemeten bundel-/performancebudgetten. Er zijn geen proefresultaten; bestaande Node/Edge-baseline bewijst geen van deze nieuwe keuzes.
 
 Voorgestelde volgende stap **P0-tech**, alleen na expliciete toestemming: geïsoleerde ProseMirror- en font/renderproeven onder `experiments/text-editor-preflight/`, met lokale tijdelijke/gepinde proefdependencies en fixtures. Geen productie-integratie, modelwijziging of T1-feature. Resultaat `TEXT-EDITOR-PREFLIGHT-REPORT.md` bevat meetdata, pass/fail/not executed per criterium en onderbouwde keuzes. Rapport eerst voorleggen; pas na acceptatie en expliciet T1-akkoord volledig integreren. Formulebibliotheekproef volgt apart vóór T2; rekencontractreview vóór T5a.
+
+
+## 19. T1-uitvoering en correctie (1.2.0)
+
+T1 voegt textContent schema 1 toe als applicatie-eigen structuur voor alinea's, tekstfragmenten, harde regeleinden en gevalideerde opmaak. ProseMirror is alleen de invoeradapter, geladen uit een lokaal gebundelde ESM-module. Formules, dynamische inlinewaarden, automatische tekstomloop en vaste breedte vallen buiten T1.
+
+Rijke tekst gebruikt documentformaat v7 en textSchema 1, omdat v6 al is toegewezen aan cirkelpuntenverdelingen. Bestaande v1-v6-documenten behouden hun betekenis. v7 bewaart aanwezige cirkelpuntenverdelingen, groepen, lagen en constructieschema's. De applicatie embedt lokale Source Sans 3- en Source Serif 4-fonts in SVG met rijke tekst; bestaande SVG-uitvoer blijft gelijk. Licenties staan bij de fontbestanden in experiments/text-editor-preflight/fonts.
+
+Het getypeerde text.commit-commando controleert revisie, doel, slot, permissiecategorieen en expliciete migratiebevoegdheid atomair. Legacy textBinding-objecten openen niet in de rich editor; het bestaande stijlpad behoudt hun binding. Zie TEXT-EDITOR-T1-REPORT.md voor resultaten en beperkingen.

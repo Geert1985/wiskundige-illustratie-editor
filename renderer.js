@@ -163,12 +163,13 @@
       return "";
     }
 
-    render(model,{editorCanvas=false,clipBounds=this.bounds}={}) {
+    render(model,{editorCanvas=false,clipBounds=this.bounds,embedFonts=false}={}) {
       this.projectionLabels=new Set();this.angleMeasurement=model.meta?.angleMeasurement;this.measurement=model.meta?.measurement;this.measurementSources=new Map(model.all().map(o=>[o.id,o]));
       this.syncAspectRatio();
       const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object,clipBounds||this.bounds)).join("\n");
       const background = this.background === "transparent" ? "" : '<rect x="0" y="0" width="' + esc(this.width) + '" height="' + esc(this.height) + '" fill="' + esc(this.background) + '"/>';
-      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">','<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(clipBounds||this.bounds),this.renderAxes(editorCanvas),body,this.renderPreview(clipBounds||this.bounds),'</svg>'].join("\n").replace(/<[^>]*>/g,tag=>tag.replace(/("[^"]*"|'[^']*')|(\sdata-[\w-]+)(?=\s|\/?>)(?!\s*=)/g,(match,quoted,attribute)=>quoted||attribute+'=""'));
+      const fontStyle=embedFonts&&model.all().some(o=>o.textContent)?MI.TextFonts?.svgStyle?.()||'':'';
+      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">'+fontStyle,'<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(clipBounds||this.bounds),this.renderAxes(editorCanvas),body,this.renderPreview(clipBounds||this.bounds),'</svg>'].join("\n").replace(/<[^>]*>/g,tag=>tag.replace(/("[^"]*"|'[^']*')|(\sdata-[\w-]+)(?=\s|\/?>)(?!\s*=)/g,(match,quoted,attribute)=>quoted||attribute+'=""'));
     }
 
     renderLabel(object, label, defaultDx, defaultDy, line) {
@@ -254,7 +255,8 @@
       }
       if (object.type === "text") {
         const transform = object.rotation ? ' transform="rotate(' + number(object.rotation) + ' ' + number(this.mapX(object.x)) + ' ' + number(this.mapY(object.y)) + ')"' : "";
-        svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(MI.DynamicText.value(object,this.measurementSources,{measurement:this.measurement,angleMeasurement:this.angleMeasurement})) + '</text>';
+        if(object.textContent) svg=this.renderRichText(object);
+        else svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(MI.DynamicText.value(object,this.measurementSources,{measurement:this.measurement,angleMeasurement:this.angleMeasurement})) + '</text>';
         if(object.construction && ['area','perimeter'].includes(object.construction.kind)) {
           const kind=object.construction.kind,source=this.measurementSources?.get(object.construction.sources[0].objectId),amount=source?MI.MeasurementUnits.figureValue(source,kind):(this.measurementValueFor?.(object)??Number(object.text.split('=').at(-1)));
           const label=this.measurement?(kind==='area'?'Oppervlakte = ':'Omtrek = ')+MI.MeasurementUnits.format(amount,kind==='area'?'area':'length',this.measurement):object.text;
@@ -276,6 +278,11 @@
         const c=points[points.length-3];if(Math.hypot(c.x-a.x,c.y-a.y)>1e-9)svg+=text('data-preview-angle',a.x,a.y,MI.MeasurementGeometry.label({type:'angle',vertices:[c,a,b]},this.measurement,this.angleMeasurement));
       }
       return svg;
+    }
+    renderRichText(object) {
+      const esc=MI.escapeXml,c=object.textContent,s=object.style||{},x=this.mapX(object.x),y=this.mapY(object.y),baseSize=c.defaults.fontSize||s.fontSize||16,baseColor=c.defaults.color||s.fill||'#222222',family=id=>id==='serif'?'Source Serif 4, serif':'Source Sans 3, sans-serif';
+      const transform=object.rotation?' transform="rotate('+number(object.rotation)+' '+number(x)+' '+number(y)+')"':'';let out='<text data-rich-text="1" xml:space="preserve" x="'+number(x)+'" y="'+number(y)+'" fill="'+esc(baseColor)+'" font-size="'+number(baseSize)+'" font-family="'+esc(family(c.defaults.fontId))+'" text-anchor="start"'+transform+'>';
+      c.paragraphs.forEach((p,pi)=>{if(pi)out+='<tspan x="'+number(x)+'" dy="'+number(baseSize*(c.paragraphs[pi-1].lineHeight||1.25))+'"></tspan>';const anchor=p.align==='center'?'middle':p.align==='right'?'end':'start';let first=true;for(const r of p.runs){if(r.kind==='hardBreak'){out+='<tspan x="'+number(x)+'" dy="'+number(baseSize*p.lineHeight)+'"></tspan>';first=true;continue;}const m=r.marks||{},attrs=[];if(m.bold)attrs.push('font-weight="700"');if(m.italic)attrs.push('font-style="italic"');if(m.underline||m.strike)attrs.push('text-decoration="'+[m.underline?'underline':'',m.strike?'line-through':''].filter(Boolean).join(' ')+'"');if(m.color)attrs.push('fill="'+esc(m.color)+'"');if(m.fontId)attrs.push('font-family="'+esc(family(m.fontId))+'"');if(m.fontSize)attrs.push('font-size="'+number(m.fontSize)+'"');if(m.script)attrs.push('baseline-shift="'+(m.script==='super'?'super':'sub')+'"');out+='<tspan'+(first?' text-anchor="'+anchor+'"':'')+(attrs.length?' '+attrs.join(' '):'')+'>'+esc(r.text)+'</tspan>';first=false;}});return out+'</text>';
     }
     renderMeasurement(object) {
       const style=object.style||{},label=MI.MeasurementGeometry.label(object,this.measurement,this.angleMeasurement);let svg='',anchor;

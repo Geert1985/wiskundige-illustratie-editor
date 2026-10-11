@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.1.0 — 2026-10-11. Status: auditcorrecties B1–B7 verwerkt; wacht op expliciete goedkeuring.
+Versie 1.2.0 - 2026-10-12. Status: T1 geimplementeerd; wacht op handmatige gebruikerstest en acceptatie.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
@@ -10,26 +10,20 @@ Fase 0-correcties → toestemming voor P0-tech → proefrapport en keuzeacceptat
 
 Een groene suite is geen gebruikersacceptatie. Iedere stap eindigt met rapport, commit/push op ontwikkelbranch en handmatige testinstructies. Preview, veiligheid en export worden vanaf hun eerste relevante milestone getest; T4/T5d zijn geen uitstel voor eerdere correctheid.
 
-## P0-tech — Voorstel voor beperkte voorbereiding vóór T1
+## P0-tech - afgerond
 
-Nog niet geautoriseerd of uitgevoerd. Geen dependencyinstallatie, prototype of productieaanpassing in deze documentatiecorrectie.
+De geisoleerde render/font- en ProseMirror-proeven staan in [TEXT-EDITOR-PREFLIGHT-REPORT.md](TEXT-EDITOR-PREFLIGHT-REPORT.md). Ze zijn uitgevoerd voor T1-toestemming. T1 gebruikt de vervangbare ProseMirror-adapter en de geteste lokale fontassets, onder voorbehoud van de resterende handmatige checks in het T1-rapport.
 
-1. Na afzonderlijke toestemming: maak alleen `experiments/text-editor-preflight/` met eigen fixtures, proefconfiguratie en gepinde lokale dependencies. Geen imports vanuit de productie-entrypoints, geen wijziging van root-runtimebundles/model/commands.
-2. Voer renderproef A SVG-text met embedded fonts versus B glyphpaden uit; gebruik exact corpus/thresholds uit architectuur sectie 13. Meet bounds/baselines, kerning, Unicode/fallback, screenshots, raw/gzipomvang, offline SVG/PNG, accessibility en warm/cold performance. Geen font-/renderbibliotheek kiezen vóór meetresultaten.
-3. Voer ProseMirror-proef uit tegen sectie 15: echte selectie/caret, fake atomen, IME, paste, lokale history, fullscreen/dialog en eigen JSON-roundtrip. Echte OS-IME en schermlezercontrole vereisen apart bewijs; unavailable test blijft expliciet not executed en houdt keuzeacceptatie open.
-4. Rapporteer in TEXT-EDITOR-PREFLIGHT-REPORT.md: machine/browser/versies/licenties, scripts/fixtures, alle pass/fail/not executed, hardecriteriafailures, bundelbudget en keuze/alternatief. Geen T1-PASS of gebruikersacceptatie claimen.
-5. Push proefresultaat alleen op ontwikkelbranch wanneer die stap wordt toegestaan; vraag acceptatie van proefkeuzes én toestemming voor T1. Faalcriteria mogen niet zonder toestemming versoepeld worden.
+## T1 - Gestructureerde tekst en invoer
 
-## T1 — Gestructureerde tekst en invoer
+Status: geimplementeerd op chatgpt/editor-development; wacht op handmatige test en acceptatie. Rich text gebruikt documentversie 7 en textSchema 1, omdat documentversie 6 al cirkelpuntenverdelingen declareert.
 
-1. Voorwaarde: geaccepteerd P0-tech-rapport en expliciet T1-akkoord. Leg schema, limieten, migratie en typed text.commit vast; implementeer de complete versiecontroleregistratie uit sectie 11, inclusief rootextras/conflicten en restricted lagenexport.
-2. Bouw fixtures voor v1–v6 en elke load/exportroute; policy schema 2, textCapabilities/textSourceProperties, canonical diff, revisie/epoch, denied writes en legacy styles volgens secties 12/16. Geen algemene textContent-grant via style.*.
-3. Implementeer text-content, modelvalidatie, formaatschrijven/lezen, fijnmazige commandautorisatie en atomair geschiedenisgedrag. Behoud bestaande bindings en constructietekst.
-4. Bouw Tekst bewerken met toolbar, geselecteerde-fragmentopmaak, alinea's/hardBreak, lettertype/grootte/kleur/uitlijning, private undo, Annuleren/OK en SVG-preview.
-5. Implementeer gedeelde lay-out/SVG en totale selectiegrenzen. Inspector opent dezelfde editor. Behoud anker, rotatie, drag, fullscreen en bestaande statische export.
-6. Blokkerende exportgate: JSON/draft, author/restricted SVG, SVG→PNG-rasterfixtures, fonts offline, history/replay en v6 met organisatie. Volledige regressie, visuele vergelijking en T1-REPORT.md met exacte resultaten en beperkingen.
+- Opgeleverd: veilig textContent-model, alinea's, hardBreaks en marks, begrensde ProseMirror-adapter, editor voor nieuwe en statische bestaande teksten, typed text.commit, revisie-, lock- en categoriespecifieke permission checks, lokale editor undo, document undo/redo, JSON/replay en offline SVG-fontembedding.
+- Legacy dynamische tekst behoudt textBinding. Bestaande bindingen worden niet automatisch gemigreerd of geopend in de rich editor. Toegestane legacy stijlwijziging blijft via het bestaande stijlpad en verandert de binding niet.
+- Tests: npm test (401/401 bij laatste volledige run; de actuele uitslag staat in het T1-rapport). Restricted JSON/SVG en v7 met v6-distributies, groepen en lagen vallen onder regressiecriteria.
+- T2-symbolen/formules starten pas na T1-acceptatie. T3-meerdere bronnen, T4-wrapping/exportvoltooiing en T5-rekenengine vallen buiten deze stap.
 
-Handmatig: maak twee alinea's; formatteer afzonderlijke woorden; voeg sub/superscript toe; bekijk preview/canvas; annuleer een wijziging; bevestig en undo/redo; heropen JSON; controleer SVG en fullscreen. Open ook een oude dynamische tekst zonder verlies van binding.
+Handmatige acceptatiechecklist: meerdere alinea's; Shift+Enter; fragmentopmaak; editor undo/redo; annuleren versus bevestigen; statische bestaande tekst via inspector; undo/redo van commit; JSON opslaan/herladen; offline SVG en rastering; fullscreen; oude dynamische tekstbinding; echte IME en schermlezer. IME en schermlezer blijven expliciet niet uitgevoerd tot er bewijs uit een echte input-/AT-omgeving is. Zie TEXT-EDITOR-T1-REPORT.md.
 
 ## T2 — Symbolen en formules
 
@@ -90,7 +84,7 @@ Historische fase-0-baseline: 364 Node-tests geslaagd, 0 mislukt/overgeslagen; 1 
 
 | Bevinding | Uitvoering en gate |
 |---|---|
-| B1 v6 | T1: alle locaties uit versiecontroleregistratie; elke versie/routefixture; geen corrupte export of legacy extensionverlies |
+| B1 v7 | T1: alle locaties uit versiecontroleregistratie; elke versie/routefixture; geen corrupte export of legacy extensionverlies |
 | B2 rechten | T1 typed command/policy/diff; T3 references en T5c expressions pas bij hun feature. Iedere introducerende stap test denial/projectie/revisie/epoch/history |
 | B3 fonts | P0-tech vóór integratie; criteria/keuze goedgekeurd, geen vooraf vaststaande glyphpaden |
 | B4 rekencontract | Definitief akkoord vóór T5a; voorbeeldmatrix als wiskundige tests; T5c toetst display met dezelfde AST |
@@ -99,3 +93,12 @@ Historische fase-0-baseline: 364 Node-tests geslaagd, 0 mislukt/overgeslagen; 1 
 | B7 export | Iedere milestone volgt architectuur sectie 17; productie-PNG-UI in T4 stelt eerdere rastergate niet uit |
 
 Definitieve randvoorwaarden versus open implementatiekeuzes: architectuur sectie 18. Auditprobleem/bron/oplossing/risico/criterium: [TEXT-EDITOR-ARCHITECTURE-AUDIT-RESOLUTION.md](TEXT-EDITOR-ARCHITECTURE-AUDIT-RESOLUTION.md).
+
+
+## T1-uitvoering ? status 1.2.0
+
+T1 is uitgevoerd na expliciet akkoord. De rich-textstructuur is opgenomen in documentformaat **v7**: v6 was al vereist door de cirkelpuntenverdeling en mag niet opnieuw worden toegewezen. De schema-, editor-, command-, permissie-, SVG- en exportwijzigingen zijn uitgewerkt in [TEXT-EDITOR-T1-REPORT.md](TEXT-EDITOR-T1-REPORT.md). Dit rapport vervangt de eerdere toekomsttijdtekst van T1 hierboven waar die niet meer klopt.
+
+Implementatie omvat ProseMirror via lokaal gebundelde adapter, gestructureerd model schema 1, `text.commit`, categoriespecifieke restricted checks, legacy-bindingbehoud, inspector bewerken, undo/redo, JSON v7 en offline font-embedded rich SVG. Geen formule-, dynamische inlineveld- of T2/T3-functie is gestart.
+
+Acceptatiegate die resteert: handmatige IME/schermlezerchecks en gebruikersscenario?s uit het T1-rapport. T1 wordt niet als volledig geaccepteerd aangemerkt voor die checks. Test de browsereditor op paragrafen/Shift+Enter, fragmentopmaak, annuleren/bevestigen, bestaande tekst bewerken, undo/redo, herladen, fullscreen en zelfstandige offline SVG/PNG.

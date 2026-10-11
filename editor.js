@@ -11,12 +11,12 @@
       this.runtime=services.runtime || null; if(this.runtime && (!MI.RuntimeSession.isSession(this.runtime) || engine!==this.runtime.engine))throw new MI.PermissionError("INVALID_POLICY"); this.commands=this.runtime || MI.AuthorCommands(engine);
       this.inspectorTarget="objects";this.navigationMode="select";this.sectionState=new Map();this.tool = "select"; this.selectedIds = []; this.interaction = null; this.feedback = null;
       this.hoverId=null; this.hoverHit=null; this.hoverFrame=null; this.hoverPointer=null; this.presentationKey=null;
-      this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
+      this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;this.richTextEditor=null;this.textEditId=null;this.textEditorRequest=0;
       this.history = new (this.runtime ? MI.RuntimeHistory : services.history || MI.EditorHistory)(this); this.editBefore = null;
       this.linearTool='line';this.figureTool='triangle';this.angleTool='construct:anglePoints';this.splitMenuOpen=null;
       for(const [group,tools] of Object.entries(SPLIT_TOOLS))try{const saved=storage?.getItem('fzi-math-illustration-'+group+'-tool');if(group==='angle'&&saved==='construct:angleXAxis')this.angleTool='construct:angleDirections';else if(tools.includes(saved))this[group+'Tool']=saved;}catch(_){}
       this.nodes = {};
-      for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
+      for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "richTextSurface", "richFont", "richFontSize", "richColor", "richAlign", "richUndo", "richRedo", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
     }
     renderCanvasTools() {
       const menu=this.nodes.canvasToolsMenu;if(!menu||typeof menu.append!=='function')return;
@@ -317,11 +317,13 @@
     snap(point, excludeId) { return this.services.snap.resolve(this.engine, point, { transform: this.transform(), excludeId }); }
     init() {
       if (this.initialized) return this;
-      this.initialized = true; this.hydrate();
+      this.initialized = true; MI.TextFonts?.install?.(this.document); this.hydrate();
       const n = this.nodes;
       this.on(n.textForm, "submit", e => { e.preventDefault(); this.submitText(); });
       this.on(n.textCancel, "click", () => this.closeText());
       this.on(n.textDialog, "cancel", e => { e.preventDefault(); this.closeText(); });
+      this.on(n.textDialog,"click",e=>{const b=e.target.closest('[data-rich-mark]');if(b&&this.richTextEditor){e.preventDefault();this.richTextEditor.toggle(b.dataset.richMark,b.dataset.richScript);}});
+      this.on(n.richFont,'change',()=>this.richTextEditor?.setFont(n.richFont.value));this.on(n.richFontSize,'change',()=>{if(n.richFontSize.valueAsNumber>=6&&n.richFontSize.valueAsNumber<=120)this.richTextEditor?.setFontSize(n.richFontSize.valueAsNumber);});this.on(n.richColor,'input',()=>this.richTextEditor?.setColor(n.richColor.value));this.on(n.richAlign,'change',()=>this.richTextEditor?.setAlign(n.richAlign.value));this.on(n.richUndo,'click',()=>this.richTextEditor?.undo());this.on(n.richRedo,'click',()=>this.richTextEditor?.redo());
       this.on(n.colorForm, "submit", e => { e.preventDefault(); if (this.validColor()) { this.setColor(this.colorId, this.colorInput.value); this.closeColor(); } });
       this.on(n.colorCancel, "click", () => this.closeColor(true));
       this.on(n.colorDialog, "cancel", e => { e.preventDefault(); this.closeColor(true); });
@@ -391,6 +393,7 @@
       });
       this.on(n.selectionPanel, "click", e => {
         const axisButton=e.target.closest('[data-axis-setting]');if(axisButton){this.setPresentationFlag(axisButton.dataset.axisSetting,!this.engine.renderer[axisButton.dataset.axisSetting]);return;}
+        if(e.target.closest('[data-rich-text-edit]')){this.openRichText(e.target.closest('[data-rich-text-edit]').dataset.richTextEdit);return;}
         if(e.target.closest('[data-label-selection]')){this.setCommonProperty('showLabel',!this.selectedObjects().every(o=>o.showLabel));return;}
         const dashButton=e.target.closest('[data-style-dash]');if(dashButton){this.changeDocument(()=>this.updateObject(this.selectedId,{style:{dash:dashButton.value}}));return;}
         const source=e.target.closest('[data-construction-source]');if(source){this.selectObject(source.dataset.constructionSource);return;}
@@ -441,11 +444,10 @@
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
       this.engine.renderer.preview = null; this.feedback = null;
     }
-    closeText() { this.pendingText = null; if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close(); this.renderInstructions(); }
+    async openRichText(id=null){const request=++this.textEditorRequest,object=id?this.engine.get(id):null;if(id&&(!object||object.type!=='text'||object.textBinding||object.construction))return;this.flushEdits();this.textEditId=id;const initial=object?.textContent||{schema:1,defaults:{fontId:object?.style?.fontFamily?.includes('Serif')?'serif':'sans',fontSize:object?.style?.fontSize||16,color:object?.style?.fill&&/^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(object.style.fill)?object.style.fill:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:object?.text?[{id:'r1',kind:'text',text:object.text,marks:{}}]:[]}]};try{const adapter=await MI.RichTextEditor.load();if(request!==this.textEditorRequest)return;this.nodes.richFont.value=initial.defaults.fontId;this.nodes.richFontSize.value=initial.defaults.fontSize;this.nodes.richColor.value=initial.defaults.color;this.nodes.richAlign.value=initial.paragraphs[0]?.align||'left';this.richTextEditor?.destroy();this.richTextEditor=adapter.mount(this.nodes.richTextSurface,initial);this.nodes.textDialog.showModal();this.nodes.richTextSurface.focus();}catch(error){if(request===this.textEditorRequest){this.pendingText=null;this.textEditId=null;this.status('Teksteditor kon niet worden geladen.');}}}
+    closeText() { this.textEditorRequest++;this.pendingText = null;this.richTextEditor?.destroy();this.richTextEditor=null;this.textEditId=null;if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close(); this.renderInstructions(); }
     submitText() {
-      const text = this.nodes.textValue.value.trim(), pending = this.pendingText;
-      if (!pending || !text) return;
-      this.closeText(); this.changeDocument(() => { this.selectedId = this.createObject({ type: "text", x: pending.point.x, y: pending.point.y, text },"text").id; });
+      const pending=this.pendingText,id=this.textEditId;let content;try{content=this.richTextEditor?.get();}catch(error){this.status(error.message);return;}if(!content&&this.nodes.textValue.value.trim()){content={schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:this.nodes.textValue.value.trim(),marks:{}}]}]};}if(!content)return;const text=content.paragraphs.map(p=>p.runs.map(r=>r.kind==='text'?r.text:' ').join('')).join('\n');if(!text.trim())return;this.closeText();this.changeDocument(()=>{const target=id?{kind:'existing',id}:{kind:'new',position:{x:pending.point.x,y:pending.point.y}};const result=this.execute('text.commit',{target,content});this.selectedId=result.result.id;});
     }
     validColor() { return this.colorInput && /^#[0-9a-f]{6}$/i.test(this.colorInput.value); }
     closeColor(cancel = false) {
@@ -642,8 +644,7 @@
       if (this.tool === "point" || this.tool === "text") {
         const result = this.snap(point); const object = { type: this.tool, x: result.point.x, y: result.point.y };
         if (this.tool === "text") {
-          this.flushEdits(); this.pendingText = result; this.renderInstructions();this.nodes.textValue.value = "";
-          this.nodes.textDialog.showModal(); this.nodes.textValue.focus(); return;
+          this.flushEdits(); this.pendingText = result; this.renderInstructions();this.nodes.textValue.value = "";this.openRichText();return;
         }
         this.changeDocument(() => { this.selectedId = this.createObject(object).id; }); this.feedback = result; this.invalidate(); return;
       }
@@ -996,7 +997,8 @@
       const info=this.selectedIds.length===1?this.constructionPanel(object):'';
       const actionIcon=(attribute,label,path,disabled=false)=>'<button type="button" class="secondary" '+attribute+' title="'+label+'" aria-label="'+label+'"'+(disabled?' disabled':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+path+'</svg></button>';
       const labelVisible=this.selectedObjects().every(o=>o.showLabel),labelButton='<button type="button" class="secondary" data-label-selection aria-label="Label tonen/verbergen" title="Label tonen/verbergen" aria-pressed="'+labelVisible+'"'+(this.selectedObjects().some(o=>o.locked)||!this.allowed('object.setProperties',{ids:this.selectedIds,fields:[{path:'showLabel',value:!labelVisible}]})?' disabled':'')+'><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M12 5v15M8 20h8"/></svg></button>';
-      const toolbar='<div class="object-actions">'+labelButton+(!this.runtime?actionIcon('data-group-selection','Groeperen','<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',this.selectedIds.length<2)+actionIcon('data-ungroup-selection','Groep opheffen','<path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5M7 7h5v5H7zM12 12h5v5h-5z"/>',!this.selectedGroups().length):'')+actionIcon('data-visibility-selection',this.selectedObjects().every(o=>o.visible!==false)?'Selectie verbergen':'Selectie tonen',eyeIcon(this.selectedObjects().every(o=>o.visible!==false)),!this.allowed('object.setVisibility',{ids:this.selectedIds,value:true}))+actionIcon('data-duplicate-selection','Dupliceren','<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/>')+actionIcon('data-lock-selection',this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen','<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>')+actionIcon('data-delete-selected','Verwijder object','<path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/>',!this.editableSelection())+'</div>';
+      const richEdit=object.type==='text'&&!object.textBinding&&!object.construction?'<button type="button" class="secondary" data-rich-text-edit="'+MI.escapeXml(object.id)+'"'+(object.locked?' disabled':'')+'>Tekst bewerken</button>':'';
+      const toolbar='<div class="object-actions">'+richEdit+labelButton+(!this.runtime?actionIcon('data-group-selection','Groeperen','<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',this.selectedIds.length<2)+actionIcon('data-ungroup-selection','Groep opheffen','<path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5M7 7h5v5H7zM12 12h5v5h-5z"/>',!this.selectedGroups().length):'')+actionIcon('data-visibility-selection',this.selectedObjects().every(o=>o.visible!==false)?'Selectie verbergen':'Selectie tonen',eyeIcon(this.selectedObjects().every(o=>o.visible!==false)),!this.allowed('object.setVisibility',{ids:this.selectedIds,value:true}))+actionIcon('data-duplicate-selection','Dupliceren','<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/>')+actionIcon('data-lock-selection',this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen','<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>')+actionIcon('data-delete-selected','Verwijder object','<path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/>',!this.editableSelection())+'</div>';
       const pathParameter=!this.runtime&&MI.ConstructionService.pathKind(object.construction?.kind)?'<label>Positie op pad<input data-path-parameter type="range" min="0" max="'+(object.construction.kind==='pointOnCircle'?'.999':'1')+'" step=".001" value="'+object.construction.parameter+'"'+(object.locked?' disabled':'')+' aria-label="Positie op pad"><output>'+Number((object.construction.parameter*100).toFixed(1))+'%</output></label>':'';
       const distribution=this.distributionInspector(object);
       const actions=info+this.constructionInputs(object)+pathParameter+distribution+detach+assignment;

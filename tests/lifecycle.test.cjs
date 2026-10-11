@@ -48,12 +48,13 @@ function appRuntime() {
   function target() { return { value: '', style: {}, dataset: {}, events: new Map(), classList: { add() {}, remove() {}, toggle() {} },
     addEventListener(type, fn) { (this.events.get(type) || (this.events.set(type, new Set()), this.events.get(type))).add(fn); },
     removeEventListener(type, fn) { this.events.get(type)?.delete(fn); },
-    querySelector: () => null, querySelectorAll: () => [], getBoundingClientRect: () => ({ left: 0, top: 0 }), contains: () => true,
+    querySelector: () => null, querySelectorAll: () => [], focus() {}, getBoundingClientRect: () => ({ left: 0, top: 0 }), contains: () => true,
     setPointerCapture(id) { this.capture = id; }, hasPointerCapture(id) { return this.capture === id; }, releasePointerCapture() { this.capture = null; } }; }
   const nodes = new Map(), win = target();
   const doc = { getElementById(id) { if (!nodes.has(id)) nodes.set(id, target()); return nodes.get(id); }, querySelectorAll: () => [], addEventListener() {}, removeEventListener() {}, activeElement: { tagName: 'BODY' } };
   doc.getElementById('canvas').querySelector = selector => selector === 'svg' ? { getScreenCTM: () => ({ a: .5, d: .5, b: 0, c: 0, e: 0, f: 0 }), querySelector: () => null } : null;
   const engine = new MI.Engine({ objects: [{ id: 'p', type: 'point', x: 0, y: 0, showLabel: true }, { id: 'l', type: 'line', x1: 0, y1: 1, x2: 1, y2: 1, showLabel: true }] });
+  MI.RichTextEditor={load:async()=>({mount(){return{get(){const value=doc.getElementById('textValue').value.trim();return value?{schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:value,marks:{}}]}]}:null;},destroy(){}};}})};
   const app = new MI.EditorApp({ engine, document: doc, window: win, storage: { getItem: () => null }, services: { transform: MI.CoordinateTransform, snap: MI.SnapService, resolver: MI.InteractionResolver } });
   app.init();
   const emit = (node, type, values = {}) => [...(node.events.get(type) || [])].forEach(fn => fn({ pointerId: 1, button: 0, preventDefault() {}, ...values }));
@@ -223,26 +224,26 @@ test('history records a whole drag once, restores selection and ignores cancelle
   assert.equal(engine.get('p').x, 2); assert.equal(app.history.entries.length, 1);
   down({ x: 2, y: 0 }); emit(win, 'pointerup'); assert.equal(app.history.entries.length, 1);
 });
-test('text form commits the captured snap position once and Escape discards pending text', () => {
+test('text form commits the captured snap position once and Escape discards pending text', async () => {
   const { app, engine, down, emit, win } = appRuntime();
   app.nodes.textDialog.showModal = function() { this.open = true; };
   app.nodes.textDialog.close = function() { this.open = false; };
   app.nodes.textValue.focus = () => {};
-  app.setTool('text'); down({ x: 2, y: 2 });
+  app.setTool('text'); down({ x: 2, y: 2 }); await new Promise(resolve=>setTimeout(resolve,0));
   const position = plain(app.pendingText.point); assert.equal(app.interaction, null);
   app.nodes.textValue.value = '  Testtekst  '; app.submitText();
   const object = engine.get(app.selectedId); assert.equal(object.text, 'Testtekst');
   assert.equal(object.x, position.x); assert.equal(object.y, position.y); assert.equal(app.history.entries.length, 1);
   app.travelHistory(); assert.equal(engine.get(object.id), null); app.travelHistory(true); assert.ok(engine.get(object.id));
-  down({ x: 3, y: 2 }); emit(win, 'keydown', { key: 'Escape' });
+  down({ x: 3, y: 2 }); await new Promise(resolve=>setTimeout(resolve,0)); emit(win, 'keydown', { key: 'Escape' });
   assert.equal(app.pendingText, null); assert.equal(app.nodes.textDialog.open, false); assert.equal(app.history.entries.length, 1);
 });
-test('empty text is not committed and New clears a pending text form', () => {
+test('empty text is not committed and New clears a pending text form', async () => {
   const { app, engine, down } = appRuntime();
   app.nodes.textDialog.showModal = function() { this.open = true; };
   app.nodes.textDialog.close = function() { this.open = false; };
   app.nodes.textValue.focus = () => {};
-  app.setTool('text'); down({ x: 2, y: 2 }); app.nodes.textValue.value = '   '; app.submitText();
+  app.setTool('text'); down({ x: 2, y: 2 }); await new Promise(resolve=>setTimeout(resolve,0)); app.nodes.textValue.value = '   '; app.submitText();
   assert.equal(engine.model.objects.length, 2); assert.equal(app.history.canUndo, false);
   app.newDocument(); assert.equal(app.pendingText, null); assert.equal(app.nodes.textDialog.open, false); assert.equal(engine.model.objects.length, 0);
 });
