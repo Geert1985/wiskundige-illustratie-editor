@@ -1,0 +1,4 @@
+# Keep upstream font/license bytes exact for SHA256 reproduction on Windows.
+fonts/** -text
+# An upstream OFL line contains trailing whitespace; preserve the licensed asset.
+fonts/*LICENSE.md whitespace=-blank-at-eol

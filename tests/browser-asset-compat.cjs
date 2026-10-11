@@ -15,7 +15,7 @@ module.exports = async page => {
       await page.mouse.move(start.x, start.y); await page.mouse.down();
       assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.interaction.mode), 'draw', type);
       await page.mouse.move(end.x, end.y); await page.mouse.up();
-      assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.at(-1).type), type);
+      assert.equal(await page.evaluate(type => FZI.MathIllustration.editor.engine.model.objects.find(object => object.type === type)?.type, type), type);
       assert.deepEqual(await page.evaluate(() => FZI.MathIllustration.editor.engine.renderer.bounds), bounds);
     }
   } finally { await page.unroute(pattern); }

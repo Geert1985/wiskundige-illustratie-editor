@@ -1,0 +1,2380 @@
+{
+  "started": "2026-10-11T14:03:28.847Z",
+  "environment": {
+    "node": "v22.18.0",
+    "platform": "win32",
+    "release": "10.0.26200",
+    "cpu": "AMD Ryzen 7 5800H with Radeon Graphics         ",
+    "logicalCores": 16,
+    "memoryGiB": 15.346668243408203,
+    "edge": "155.0.4283.45"
+  },
+  "cases": [
+    {
+      "name": "own JSON adapter roundtrip: paragraphs, marks, breaks and all three atom kinds",
+      "status": "passed"
+    },
+    {
+      "name": "forward/backward fragment selection: toolbar changes only selected characters",
+      "status": "passed"
+    },
+    {
+      "name": "cross-paragraph selection applies one mark without deleting content",
+      "status": "passed"
+    },
+    {
+      "name": "native keyboard caret, Home/End and Shift selection",
+      "status": "passed"
+    },
+    {
+      "name": "native mouse text range selection survives toolbar focus",
+      "status": "passed"
+    },
+    {
+      "name": "inline atom node selection and native Delete remove whole field",
+      "status": "passed"
+    },
+    {
+      "name": "Backspace removes atom and arrow keys traverse it without payload changes",
+      "status": "passed"
+    },
+    {
+      "name": "atom move/edit retains typed identity and reopens via double click",
+      "status": "passed"
+    },
+    {
+      "name": "native drag/drop moves inline atom as a whole with payload intact",
+      "status": "passed"
+    },
+    {
+      "name": "Unicode native insertion and selection does not corrupt surrogate/combining text",
+      "status": "passed"
+    },
+    {
+      "name": "rich paste sanitizes scripts, external URLs, CSS and unknown attributes",
+      "status": "passed"
+    },
+    {
+      "name": "plain multiline paste creates paragraphs and oversized paste is rejected atomically",
+      "status": "passed"
+    },
+    {
+      "name": "local keyboard undo/redo, Cancel leaves host bytes/actions unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "one simulated OK produces one host action, reopen/save retains own JSON",
+      "status": "passed"
+    },
+    {
+      "name": "fullscreen CSS canvasmode: palette then dialog Escape, mode remains active",
+      "status": "passed"
+    },
+    {
+      "name": "responsive 390/760/1159px: visible controls and dialog bounds",
+      "status": "passed"
+    },
+    {
+      "name": "DOM accessibility tree has named editor controls and atom labels (not screenreader proof)",
+      "status": "passed"
+    },
+    {
+      "name": "unsupported supplementary glyph explicitly rejected by both candidates",
+      "status": "passed"
+    },
+    {
+      "name": "complete corpus across all five font faces rasterized at 16 units",
+      "status": "passed"
+    },
+    {
+      "name": "SVG text selection bounds and translated anchor preserve content and baseline",
+      "status": "passed"
+    },
+    {
+      "name": "glyphpath coordinates are finite and every glyph survives export",
+      "status": "failed",
+      "error": "OpenType.js path output contains non-finite coordinates; visible glyphs disappear."
+    },
+    {
+      "name": "offline SVG/PNG generated and canvas untainted; zero external asset requests (not glyph completeness)",
+      "status": "passed"
+    },
+    {
+      "name": "font-independent semantic text available in standalone SVG",
+      "status": "passed"
+    },
+    {
+      "name": "no page errors in experimental editor/render run",
+      "status": "passed"
+    }
+  ],
+  "manual": [
+    {
+      "id": "real-os-ime",
+      "status": "not executed",
+      "reason": "Headless automation cannot provide real OS-IME composition evidence."
+    },
+    {
+      "id": "screenreader",
+      "status": "not executed",
+      "reason": "No manual Edge screenreader session in this automated experiment."
+    }
+  ],
+  "coldFontMs": 349.89999997615814,
+  "accessibilitySnapshot": "- dialog:\n  - heading \"Tekstproef\" [level=2]\n  - button \"Vet\"\n  - button \"Cursief\"\n  - button \"Velden\"\n  - textbox \"Experimentele teksteditor\":\n    - paragraph:\n      - text: A\n      - button \"Bewerk math\": \"[math]\"\n      - text: B\n      - button \"Bewerk dynamicValue\": \"[dynamicValue]\"\n      - text: C\n      - button \"Bewerk calculatedValue\": \"[calculatedValue]\"\n      - text: D\n  - status: \"{\\\"schema\\\":1,\\\"defaults\\\":{\\\"fontId\\\":\\\"sans\\\",\\\"fontSize\\\":16,\\\"color\\\":\\\"#222222\\\"},\\\"width\\\":null,\\\"paragraphs\\\":[{\\\"id\\\":\\\"p1\\\",\\\"align\\\":\\\"left\\\",\\\"lineHeight\\\":1.25,\\\"runs\\\":[{\\\"id\\\":\\\"r1-1\\\",\\\"kind\\\":\\\"text\\\",\\\"text\\\":\\\"Alpha beta\\\",\\\"marks\\\":{}},{\\\"id\\\":\\\"r1-2\\\",\\\"kind\\\":\\\"hardBreak\\\"},{\\\"id\\\":\\\"r1-3\\\",\\\"kind\\\":\\\"text\\\",\\\"text\\\":\\\"é é αβθΩπ ≤≥±×÷ AV To Wa fi\\\",\\\"marks\\\":{}}]},{\\\"id\\\":\\\"p2\\\",\\\"align\\\":\\\"left\\\",\\\"lineHeight\\\":1.25,\\\"runs\\\":[{\\\"id\\\":\\\"r2-1\\\",\\\"kind\\\":\\\"text\\\",\\\"text\\\":\\\"Second paragraph\\\",\\\"marks\\\":{\\\"italic\\\":true}}]}]}\"\n  - button \"Annuleren\"\n  - button \"OK\"",
+  "render": {
+    "coverage": {
+      "regular": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ],
+      "bold": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ],
+      "italic": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ],
+      "boldItalic": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ],
+      "serif": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ]
+    },
+    "metrics": {
+      "regular": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 12.539993286132812,
+              "path": 12.708,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 12.14398193359375,
+              "path": 12.936,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 6.45599365234375,
+              "path": 6.4559999999999995,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.951995849609375,
+              "path": 5.952,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.951995849609375,
+              "path": 5.952,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 34.93196105957031,
+              "path": 34.932,
+              "ascent": 9,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 16.719985961914062,
+              "path": 16.944000000000003,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 16.191986083984375,
+              "path": 17.248,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 8.607986450195312,
+              "path": 8.608,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.9359893798828125,
+              "path": 7.936,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.9359893798828125,
+              "path": 7.936,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 46.575958251953125,
+              "path": 46.576,
+              "ascent": 11,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 33.43998718261719,
+              "path": 33.888000000000005,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 32.38398742675781,
+              "path": 34.496,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 17.215988159179688,
+              "path": 17.216,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.871994018554688,
+              "path": 15.872,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.871994018554688,
+              "path": 15.872,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 93.1519775390625,
+              "path": 93.152,
+              "ascent": 23,
+              "descent": 6
+            }
+          ]
+        }
+      ],
+      "bold": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 13.331985473632812,
+              "path": 13.548,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 12.41998291015625,
+              "path": 13.332,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 7.40399169921875,
+              "path": 7.404000000000001,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 6.2159881591796875,
+              "path": 6.216,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 6.2159881591796875,
+              "path": 6.216,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 37.079986572265625,
+              "path": 37.08,
+              "ascent": 8,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 17.7760009765625,
+              "path": 18.064,
+              "ascent": 10,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 16.559982299804688,
+              "path": 17.776000000000003,
+              "ascent": 10,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 9.871978759765625,
+              "path": 9.872,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 8.287994384765625,
+              "path": 8.288,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 8.287994384765625,
+              "path": 8.288,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 49.43995666503906,
+              "path": 49.44,
+              "ascent": 11,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 35.55198669433594,
+              "path": 36.128,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 33.11997985839844,
+              "path": 35.55200000000001,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 19.743972778320312,
+              "path": 19.744,
+              "ascent": 23,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 16.57598876953125,
+              "path": 16.576,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 16.57598876953125,
+              "path": 16.576,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 98.87997436523438,
+              "path": 98.88,
+              "ascent": 22,
+              "descent": 6
+            }
+          ]
+        }
+      ],
+      "italic": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 11.483993530273438,
+              "path": 12.072,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 11.4119873046875,
+              "path": 12.288,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 6.2279815673828125,
+              "path": 6.228,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.7719879150390625,
+              "path": 5.772,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.7719879150390625,
+              "path": 5.76,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 33.083953857421875,
+              "path": 33.396,
+              "ascent": 9,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 15.311981201171875,
+              "path": 16.096,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 15.215988159179688,
+              "path": 16.384,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 8.303985595703125,
+              "path": 8.304,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.6959991455078125,
+              "path": 7.696,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.6959991455078125,
+              "path": 7.68,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 44.11195373535156,
+              "path": 44.528000000000006,
+              "ascent": 12,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 30.623992919921875,
+              "path": 32.192,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 30.431991577148438,
+              "path": 32.768,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 16.607986450195312,
+              "path": 16.608,
+              "ascent": 23,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.391998291015625,
+              "path": 15.392,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.391998291015625,
+              "path": 15.36,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 88.22395324707031,
+              "path": 89.05600000000001,
+              "ascent": 23,
+              "descent": 6
+            }
+          ]
+        }
+      ],
+      "boldItalic": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 12.191986083984375,
+              "path": 13.224,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 11.98797607421875,
+              "path": 12.756,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 7.1039886474609375,
+              "path": 7.104,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.951995849609375,
+              "path": 5.952,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.951995849609375,
+              "path": 5.952,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 35.24397277832031,
+              "path": 35.508,
+              "ascent": 8,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 16.2559814453125,
+              "path": 17.632,
+              "ascent": 10,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 15.983978271484375,
+              "path": 17.008000000000003,
+              "ascent": 10,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 9.47198486328125,
+              "path": 9.472000000000001,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.9359893798828125,
+              "path": 7.936,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.9359893798828125,
+              "path": 7.936,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 46.991973876953125,
+              "path": 47.34400000000001,
+              "ascent": 11,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 32.511993408203125,
+              "path": 35.264,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 31.967971801757812,
+              "path": 34.016000000000005,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 18.943984985351562,
+              "path": 18.944000000000003,
+              "ascent": 23,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.871994018554688,
+              "path": 15.872,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.871994018554688,
+              "path": 15.872,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 93.98399353027344,
+              "path": 94.68800000000002,
+              "ascent": 22,
+              "descent": 6
+            }
+          ]
+        }
+      ],
+      "serif": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 14.62799072265625,
+              "path": 16.056,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 12.995986938476562,
+              "path": 13.836,
+              "ascent": 8,
+              "descent": 1
+            },
+            {
+              "text": "fi",
+              "native": 7.28399658203125,
+              "path": 7.824,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 6.1199951171875,
+              "path": 6.12,
+              "ascent": 9,
+              "descent": 1
+            },
+            {
+              "text": "é",
+              "native": 6.1199951171875,
+              "path": 6.12,
+              "ascent": 9,
+              "descent": 1
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 35.231964111328125,
+              "path": 35.292,
+              "ascent": 9,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 19.503982543945312,
+              "path": 21.408,
+              "ascent": 11,
+              "descent": 1
+            },
+            {
+              "text": "To",
+              "native": 17.327987670898438,
+              "path": 18.448,
+              "ascent": 11,
+              "descent": 1
+            },
+            {
+              "text": "fi",
+              "native": 9.711990356445312,
+              "path": 10.431999999999999,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 8.159988403320312,
+              "path": 8.16,
+              "ascent": 13,
+              "descent": 1
+            },
+            {
+              "text": "é",
+              "native": 8.159988403320312,
+              "path": 8.16,
+              "ascent": 13,
+              "descent": 1
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 46.97596740722656,
+              "path": 47.056000000000004,
+              "ascent": 12,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 39.00798034667969,
+              "path": 42.816,
+              "ascent": 22,
+              "descent": 1
+            },
+            {
+              "text": "To",
+              "native": 34.655975341796875,
+              "path": 36.896,
+              "ascent": 22,
+              "descent": 1
+            },
+            {
+              "text": "fi",
+              "native": 19.423995971679688,
+              "path": 20.863999999999997,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 16.319992065429688,
+              "path": 16.32,
+              "ascent": 25,
+              "descent": 1
+            },
+            {
+              "text": "é",
+              "native": 16.319992065429688,
+              "path": 16.32,
+              "ascent": 25,
+              "descent": 1
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 93.95196533203125,
+              "path": 94.11200000000001,
+              "ascent": 24,
+              "descent": 6
+            }
+          ]
+        }
+      ]
+    },
+    "size": [
+      {
+        "kind": "text",
+        "count": 1,
+        "unique": false,
+        "rawBytes": 576361,
+        "gzipBytes": 255124
+      },
+      {
+        "kind": "path",
+        "count": 1,
+        "unique": false,
+        "rawBytes": 30164,
+        "gzipBytes": 10785
+      },
+      {
+        "kind": "text",
+        "count": 1,
+        "unique": true,
+        "rawBytes": 576367,
+        "gzipBytes": 255128
+      },
+      {
+        "kind": "path",
+        "count": 1,
+        "unique": true,
+        "rawBytes": 30661,
+        "gzipBytes": 10937
+      },
+      {
+        "kind": "text",
+        "count": 10,
+        "unique": false,
+        "rawBytes": 2351873,
+        "gzipBytes": 1043224
+      },
+      {
+        "kind": "path",
+        "count": 10,
+        "unique": false,
+        "rawBytes": 282264,
+        "gzipBytes": 98140
+      },
+      {
+        "kind": "text",
+        "count": 10,
+        "unique": true,
+        "rawBytes": 2351906,
+        "gzipBytes": 1043286
+      },
+      {
+        "kind": "path",
+        "count": 10,
+        "unique": true,
+        "rawBytes": 288067,
+        "gzipBytes": 100203
+      },
+      {
+        "kind": "text",
+        "count": 100,
+        "unique": false,
+        "rawBytes": 2443689,
+        "gzipBytes": 1047685
+      },
+      {
+        "kind": "path",
+        "count": 100,
+        "unique": false,
+        "rawBytes": 2872130,
+        "gzipBytes": 987699
+      },
+      {
+        "kind": "text",
+        "count": 100,
+        "unique": true,
+        "rawBytes": 2444235,
+        "gzipBytes": 1048903
+      },
+      {
+        "kind": "path",
+        "count": 100,
+        "unique": true,
+        "rawBytes": 2986043,
+        "gzipBytes": 1028960
+      }
+    ],
+    "performance": [
+      {
+        "kind": "text",
+        "runs": [
+          66.29999995231628,
+          37.5,
+          41.10000002384186,
+          41.39999997615814,
+          37.10000002384186,
+          38.60000002384186,
+          38.200000047683716,
+          37.799999952316284,
+          39.5,
+          37.60000002384186,
+          36.5,
+          50.60000002384186,
+          37.5,
+          42.59999990463257,
+          52.10000002384186,
+          44,
+          38.60000002384186,
+          36.799999952316284,
+          55.89999997615814,
+          49.699999928474426
+        ],
+        "medianMs": 39.05000001192093,
+        "p95Ms": 55.89999997615814,
+        "pass": true
+      },
+      {
+        "kind": "path",
+        "runs": [
+          66.40000009536743,
+          66.69999992847443,
+          71,
+          70.89999997615814,
+          69.20000004768372,
+          65.79999995231628,
+          65.20000004768372,
+          68.10000002384186,
+          64.60000002384186,
+          60.5,
+          60,
+          62.59999990463257,
+          65.60000002384186,
+          65.5,
+          70.29999995231628,
+          58.300000071525574,
+          61.199999928474426,
+          63.60000002384186,
+          61.299999952316284,
+          60.60000002384186
+        ],
+        "medianMs": 65.35000002384186,
+        "p95Ms": 70.89999997615814,
+        "pass": true
+      }
+    ],
+    "matrix": [
+      {
+        "size": 12,
+        "rotation": 0,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.72727394104004,
+            "y": 25.50908851623535,
+            "width": 353.6652526855469,
+            "height": 488.09088134765625
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.546051025390625,
+          "height": 3.63092041015625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 134552,
+          "differingPixels": 2038,
+          "ratio": 0.015146560437600333,
+          "inkRelative": 0.6292065452300093,
+          "interiorDiff": 117,
+          "interiorRatio": 0.000869552292050657
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 0,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 19,
+            "y": 26.599998474121094,
+            "width": 352.39251708984375,
+            "height": 486.9999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.7266845703125,
+          "height": 2.540008544921875
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 693000,
+          "differingPixels": 7909,
+          "ratio": 0.011412698412698413,
+          "inkRelative": 0.7601883890811226,
+          "interiorDiff": 183,
+          "interiorRatio": 0.0002640692640692641
+        },
+        "previewExport": {
+          "text": {
+            "sameDimensions": true,
+            "pixels": 693000,
+            "differingPixels": 6817,
+            "ratio": 0.009836940836940837,
+            "inkRelative": 0.7117352265608686,
+            "interiorDiff": 217,
+            "interiorRatio": 0.0003131313131313131
+          },
+          "path": {
+            "sameDimensions": true,
+            "pixels": 693000,
+            "differingPixels": 0,
+            "ratio": 0,
+            "inkRelative": 0,
+            "interiorDiff": 0,
+            "interiorRatio": 0
+          }
+        }
+      },
+      {
+        "size": 12,
+        "rotation": 0,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.011043548583984,
+            "width": 351.39251708984375,
+            "height": 487.58892822265625
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.7266845703125,
+          "height": 3.12896728515625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 1841411,
+          "differingPixels": 18050,
+          "ratio": 0.009802265762504949,
+          "inkRelative": 0.681337762343349,
+          "interiorDiff": 277,
+          "interiorRatio": 0.0001504281227819319
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 0,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.099998474121094,
+            "width": 351.39251708984375,
+            "height": 487.4999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.7266845703125,
+          "height": 3.040008544921875
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 11088000,
+          "differingPixels": 75968,
+          "ratio": 0.006851370851370851,
+          "inkRelative": 0.5858157450319635,
+          "interiorDiff": 605,
+          "interiorRatio": 0.000054563492063492063
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 37,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.729660034179688,
+            "y": 25.518634796142578,
+            "width": 353.662841796875,
+            "height": 488.0813293457031
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.54364013671875,
+          "height": 3.621368408203125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 580644,
+          "differingPixels": 1918,
+          "ratio": 0.0033032288286798796,
+          "inkRelative": 0.5586950189338771,
+          "interiorDiff": 73,
+          "interiorRatio": 0.00012572247366716955
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 37,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 19,
+            "y": 26.599998474121094,
+            "width": 352.39251708984375,
+            "height": 486.9999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.7266845703125,
+          "height": 2.540008544921875
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 2992900,
+          "differingPixels": 7735,
+          "ratio": 0.0025844498646797423,
+          "inkRelative": 0.6377803430079155,
+          "interiorDiff": 132,
+          "interiorRatio": 0.000044104380366868255
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 37,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.0113468170166,
+            "width": 351.39251708984375,
+            "height": 487.588623046875
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.7266845703125,
+          "height": 3.128662109375
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 7952400,
+          "differingPixels": 16972,
+          "ratio": 0.002134198480961722,
+          "inkRelative": 0.6395116620822187,
+          "interiorDiff": 148,
+          "interiorRatio": 0.000018610733866505708
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 37,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.099998474121094,
+            "width": 351.39251708984375,
+            "height": 487.4999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.7266845703125,
+          "height": 3.040008544921875
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 47886400,
+          "differingPixels": 73093,
+          "ratio": 0.00152638327374787,
+          "inkRelative": 0.5650093533076697,
+          "interiorDiff": 322,
+          "interiorRatio": 0.000006724247385478967
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 90,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.729660034179688,
+            "y": 25.518634796142578,
+            "width": 353.662841796875,
+            "height": 488.0813293457031
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.54364013671875,
+          "height": 3.621368408203125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 580644,
+          "differingPixels": 2273,
+          "ratio": 0.003914618940348992,
+          "inkRelative": 0.6652033947907521,
+          "interiorDiff": 74,
+          "interiorRatio": 0.0001274446993338431
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 90,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 19,
+            "y": 26.599998474121094,
+            "width": 352.39251708984375,
+            "height": 486.9999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.7266845703125,
+          "height": 2.540008544921875
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 2992900,
+          "differingPixels": 8302,
+          "ratio": 0.0027738982258010626,
+          "inkRelative": 0.7704872389791183,
+          "interiorDiff": 175,
+          "interiorRatio": 0.000058471716395469276
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 90,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.0113468170166,
+            "width": 351.39251708984375,
+            "height": 487.588623046875
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.7266845703125,
+          "height": 3.128662109375
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 7952400,
+          "differingPixels": 18903,
+          "ratio": 0.0023770182586389014,
+          "inkRelative": 0.7061262607396339,
+          "interiorDiff": 345,
+          "interiorRatio": 0.000043383129621246416
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 90,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.099998474121094,
+            "width": 351.39251708984375,
+            "height": 487.4999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.11920166015625,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.7266845703125,
+          "height": 3.040008544921875
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 47886400,
+          "differingPixels": 78035,
+          "ratio": 0.0016295858531858733,
+          "inkRelative": 0.5936116478266823,
+          "interiorDiff": 1080,
+          "interiorRatio": 0.000022553376323966722
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 0,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.72727394104004,
+            "y": 21.43636131286621,
+            "width": 470.809814453125,
+            "height": 503.3636169433594
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 0.0157470703125,
+          "height": 4.0836181640625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 134552,
+          "differingPixels": 3605,
+          "ratio": 0.026792615494381354,
+          "inkRelative": 0.723314606741573,
+          "interiorDiff": 55,
+          "interiorRatio": 0.00040876389797253105
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 0,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.799999237060547,
+            "width": 468.5370788574219,
+            "height": 503
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288482666015625,
+          "height": 3.720001220703125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 693000,
+          "differingPixels": 12431,
+          "ratio": 0.017937950937950937,
+          "inkRelative": 0.7172696324505222,
+          "interiorDiff": 85,
+          "interiorRatio": 0.00012265512265512266
+        },
+        "previewExport": {
+          "text": {
+            "sameDimensions": true,
+            "pixels": 693000,
+            "differingPixels": 9818,
+            "ratio": 0.014167388167388167,
+            "inkRelative": 0.5953911461491813,
+            "interiorDiff": 189,
+            "interiorRatio": 0.00027272727272727274
+          },
+          "path": {
+            "sameDimensions": true,
+            "pixels": 693000,
+            "differingPixels": 0,
+            "ratio": 0,
+            "inkRelative": 0,
+            "interiorDiff": 0,
+            "interiorRatio": 0
+          }
+        }
+      },
+      {
+        "size": 16,
+        "rotation": 0,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.75705337524414,
+            "width": 468.5370788574219,
+            "height": 503.0429382324219
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288482666015625,
+          "height": 3.762939453125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 1841411,
+          "differingPixels": 27608,
+          "ratio": 0.014992850591204246,
+          "inkRelative": 0.7038547827860494,
+          "interiorDiff": 222,
+          "interiorRatio": 0.00012055972295158442
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 0,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.549999237060547,
+            "width": 468.5370788574219,
+            "height": 503.25
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288482666015625,
+          "height": 3.970001220703125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 11088000,
+          "differingPixels": 127258,
+          "ratio": 0.011477092352092351,
+          "inkRelative": 0.6355368887867876,
+          "interiorDiff": 683,
+          "interiorRatio": 0.0000615981240981241
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 37,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.729660034179688,
+            "y": 21.448293685913086,
+            "width": 470.80743408203125,
+            "height": 503.3516845703125
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 0.01812744140625,
+          "height": 4.071685791015625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 580644,
+          "differingPixels": 3263,
+          "ratio": 0.0056196223503558115,
+          "inkRelative": 0.6416912487708948,
+          "interiorDiff": 64,
+          "interiorRatio": 0.00011022244266710756
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 37,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.799999237060547,
+            "width": 468.5370788574219,
+            "height": 503
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288482666015625,
+          "height": 3.720001220703125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 2992900,
+          "differingPixels": 12213,
+          "ratio": 0.004080657556216379,
+          "inkRelative": 0.6750497457439752,
+          "interiorDiff": 102,
+          "interiorRatio": 0.00003408065755621638
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 37,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.757448196411133,
+            "width": 468.5370788574219,
+            "height": 503.04254150390625
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288482666015625,
+          "height": 3.762542724609375
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 7952400,
+          "differingPixels": 26868,
+          "ratio": 0.0033786026859815906,
+          "inkRelative": 0.6720864497085824,
+          "interiorDiff": 120,
+          "interiorRatio": 0.00001508978421608571
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 37,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.549999237060547,
+            "width": 468.5370788574219,
+            "height": 503.25
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288482666015625,
+          "height": 3.970001220703125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 47886400,
+          "differingPixels": 124257,
+          "ratio": 0.002594828594339938,
+          "inkRelative": 0.6215615949097348,
+          "interiorDiff": 262,
+          "interiorRatio": 0.000005471282034147482
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 90,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.729660034179688,
+            "y": 21.448293685913086,
+            "width": 470.80743408203125,
+            "height": 503.3516845703125
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 0.01812744140625,
+          "height": 4.071685791015625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 580644,
+          "differingPixels": 3849,
+          "ratio": 0.006628846591026516,
+          "inkRelative": 0.7520515826494725,
+          "interiorDiff": 82,
+          "interiorRatio": 0.00014122250466723155
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 90,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.799999237060547,
+            "width": 468.5370788574219,
+            "height": 503
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288482666015625,
+          "height": 3.720001220703125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 2992900,
+          "differingPixels": 13020,
+          "ratio": 0.004350295699822915,
+          "inkRelative": 0.7281879194630873,
+          "interiorDiff": 117,
+          "interiorRatio": 0.000039092518961542316
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 90,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.757448196411133,
+            "width": 468.5370788574219,
+            "height": 503.04254150390625
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288482666015625,
+          "height": 3.762542724609375
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 7952400,
+          "differingPixels": 29036,
+          "ratio": 0.003651224787485539,
+          "inkRelative": 0.729254571026723,
+          "interiorDiff": 409,
+          "interiorRatio": 0.00005143101453649213
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 90,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.549999237060547,
+            "width": 468.5370788574219,
+            "height": 503.25
+          },
+          "path": {
+            "x": 20,
+            "y": 25.51999855041504,
+            "width": 470.8255615234375,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288482666015625,
+          "height": 3.970001220703125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 47886400,
+          "differingPixels": 130952,
+          "ratio": 0.002734638644792676,
+          "inkRelative": 0.6444678484600923,
+          "interiorDiff": 1180,
+          "interiorRatio": 0.000024641651909519195
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 0,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.872727155685425,
+            "width": 937.0746459960938,
+            "height": 566.7272338867188
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 8.167236328125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 134552,
+          "differingPixels": 10265,
+          "ratio": 0.07629020750341875,
+          "inkRelative": 0.773316257345186,
+          "interiorDiff": 133,
+          "interiorRatio": 0.0009884654260063025
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 0,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.6000003814697266,
+            "width": 937.0746459960938,
+            "height": 566
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 7.44000244140625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 693000,
+          "differingPixels": 38391,
+          "ratio": 0.0553982683982684,
+          "inkRelative": 0.7652945280574105,
+          "interiorDiff": 244,
+          "interiorRatio": 0.0003520923520923521
+        },
+        "previewExport": {
+          "text": {
+            "sameDimensions": true,
+            "pixels": 693000,
+            "differingPixels": 21208,
+            "ratio": 0.030603174603174604,
+            "inkRelative": 0.46370474024838204,
+            "interiorDiff": 882,
+            "interiorRatio": 0.0012727272727272728
+          },
+          "path": {
+            "sameDimensions": true,
+            "pixels": 693000,
+            "differingPixels": 0,
+            "ratio": 0,
+            "inkRelative": 0,
+            "interiorDiff": 0,
+            "interiorRatio": 0
+          }
+        }
+      },
+      {
+        "size": 32,
+        "rotation": 0,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.900614023208618,
+            "width": 937.0746459960938,
+            "height": 566.6993408203125
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 8.13934326171875
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 1841411,
+          "differingPixels": 89875,
+          "ratio": 0.04880768063186328,
+          "inkRelative": 0.7066700214654704,
+          "interiorDiff": 539,
+          "interiorRatio": 0.0002927103183374054
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 0,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.1000003814697266,
+            "width": 937.0746459960938,
+            "height": 566.5
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 7.94000244140625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 11088000,
+          "differingPixels": 445061,
+          "ratio": 0.04013897907647908,
+          "inkRelative": 0.651004237529858,
+          "interiorDiff": 3077,
+          "interiorRatio": 0.000277507215007215
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 37,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.896589517593384,
+            "width": 937.0746459960938,
+            "height": 566.703369140625
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 8.14337158203125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 580644,
+          "differingPixels": 9972,
+          "ratio": 0.017174034348068697,
+          "inkRelative": 0.7230802697411355,
+          "interiorDiff": 116,
+          "interiorRatio": 0.00019977817733413244
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 37,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.6000003814697266,
+            "width": 937.0746459960938,
+            "height": 566
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 7.44000244140625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 2992900,
+          "differingPixels": 37738,
+          "ratio": 0.012609175047612683,
+          "inkRelative": 0.6999276665986609,
+          "interiorDiff": 170,
+          "interiorRatio": 0.000056801095927027295
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 37,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.901419162750244,
+            "width": 937.0746459960938,
+            "height": 566.6985473632812
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 8.1385498046875
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 7952400,
+          "differingPixels": 86308,
+          "ratio": 0.010853075801016045,
+          "inkRelative": 0.677770710140489,
+          "interiorDiff": 257,
+          "interiorRatio": 0.00003231728786278356
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 37,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.1000003814697266,
+            "width": 937.0746459960938,
+            "height": 566.5
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 7.94000244140625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 47886400,
+          "differingPixels": 441894,
+          "ratio": 0.00922796451602125,
+          "inkRelative": 0.6433444465473817,
+          "interiorDiff": 1852,
+          "interiorRatio": 0.00003867486384443182
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 90,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.896589517593384,
+            "width": 937.0746459960938,
+            "height": 566.703369140625
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 8.14337158203125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 580644,
+          "differingPixels": 10835,
+          "ratio": 0.018660315098407973,
+          "inkRelative": 0.7829888712241654,
+          "interiorDiff": 105,
+          "interiorRatio": 0.00018083369500072332
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 90,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.6000003814697266,
+            "width": 937.0746459960938,
+            "height": 566
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 7.44000244140625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 2992900,
+          "differingPixels": 40055,
+          "ratio": 0.013383340572688697,
+          "inkRelative": 0.7819271463709835,
+          "interiorDiff": 447,
+          "interiorRatio": 0.00014935346987871294
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 90,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.901419162750244,
+            "width": 937.0746459960938,
+            "height": 566.6985473632812
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 8.1385498046875
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 7952400,
+          "differingPixels": 91729,
+          "ratio": 0.011534756802977717,
+          "inkRelative": 0.7107524465554513,
+          "interiorDiff": 1195,
+          "interiorRatio": 0.00015026910115185352
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 90,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.1000003814697266,
+            "width": 937.0746459960938,
+            "height": 566.5
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.651123046875,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57647705078125,
+          "height": 7.94000244140625
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 47886400,
+          "differingPixels": 453664,
+          "ratio": 0.009473754552440776,
+          "inkRelative": 0.6587107874810335,
+          "interiorDiff": 5358,
+          "interiorRatio": 0.00011188980587390157
+        },
+        "previewExport": {}
+      }
+    ]
+  },
+  "externalRequests": [],
+  "pageErrors": [],
+  "finished": "2026-10-11T14:04:41.495Z",
+  "totals": {
+    "passed": 23,
+    "failed": 1,
+    "notExecuted": 2
+  }
+}

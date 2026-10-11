@@ -9,6 +9,8 @@ function runtime(files = ['model.js', 'renderer.js', 'index.js'], additions = {}
   context.window = context;
   vm.createContext(context);
   for (const file of files) {
+    if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'regular-geometry.js'), 'utf8'), context, { filename: 'regular-geometry.js' });
+    if (file === 'editor.js') vm.runInContext(fs.readFileSync(path.join(root, 'editor-tool-instructions.js'), 'utf8'), context, { filename: 'editor-tool-instructions.js' });
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'persistent-groups.js'), 'utf8'), context);
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'document-layers.js'), 'utf8'), context);

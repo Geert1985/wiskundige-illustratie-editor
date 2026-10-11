@@ -1,0 +1,2446 @@
+{
+  "started": "2026-10-11T13:54:38.239Z",
+  "environment": {
+    "node": "v22.18.0",
+    "platform": "win32",
+    "release": "10.0.26200",
+    "cpu": "AMD Ryzen 7 5800H with Radeon Graphics         ",
+    "logicalCores": 16,
+    "memoryGiB": 15.346668243408203,
+    "edge": "155.0.4283.45"
+  },
+  "cases": [
+    {
+      "name": "own JSON adapter roundtrip: paragraphs, marks, breaks and all three atom kinds",
+      "status": "passed"
+    },
+    {
+      "name": "forward/backward fragment selection: toolbar changes only selected characters",
+      "status": "passed"
+    },
+    {
+      "name": "cross-paragraph selection applies one mark without deleting content",
+      "status": "failed",
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok(await page.evaluate(()=>probe.editor.get().paragraphs[1].runs[0].marks.italic))\n"
+    },
+    {
+      "name": "native keyboard caret, Home/End and Shift selection",
+      "status": "failed",
+      "error": "Expected values to be strictly equal:\n\n'' !== 'Al'\n"
+    },
+    {
+      "name": "native mouse text range selection survives toolbar focus",
+      "status": "passed"
+    },
+    {
+      "name": "inline atom node selection and native Delete remove whole field",
+      "status": "passed"
+    },
+    {
+      "name": "Backspace removes atom and arrow keys traverse it without payload changes",
+      "status": "passed"
+    },
+    {
+      "name": "atom move/edit retains typed identity and reopens via double click",
+      "status": "passed"
+    },
+    {
+      "name": "Unicode native insertion and selection does not corrupt surrogate/combining text",
+      "status": "passed"
+    },
+    {
+      "name": "rich paste sanitizes scripts, external URLs, CSS and unknown attributes",
+      "status": "passed"
+    },
+    {
+      "name": "plain multiline paste creates paragraphs and respects text quota",
+      "status": "passed"
+    },
+    {
+      "name": "local keyboard undo/redo, Cancel leaves host bytes/actions unchanged",
+      "status": "passed"
+    },
+    {
+      "name": "one simulated OK produces one host action, reopen/save retains own JSON",
+      "status": "passed"
+    },
+    {
+      "name": "fullscreen CSS canvasmode: palette then dialog Escape, mode remains active",
+      "status": "failed",
+      "error": "Expected values to be strictly equal:\n\ntrue !== false\n"
+    },
+    {
+      "name": "responsive 390/760/1159px: visible controls and dialog bounds",
+      "status": "passed"
+    },
+    {
+      "name": "DOM accessibility tree has named editor controls and atom labels (not screenreader proof)",
+      "status": "passed"
+    },
+    {
+      "name": "unsupported supplementary glyph explicitly rejected by both candidates",
+      "status": "passed"
+    },
+    {
+      "name": "offline SVG/PNG generated and canvas untainted; zero external asset requests",
+      "status": "passed"
+    },
+    {
+      "name": "font-independent semantic text available in standalone SVG",
+      "status": "passed"
+    },
+    {
+      "name": "no page errors in experimental editor/render run",
+      "status": "passed"
+    }
+  ],
+  "manual": [
+    {
+      "id": "real-os-ime",
+      "status": "not executed",
+      "reason": "Headless automation cannot provide real OS-IME composition evidence."
+    },
+    {
+      "id": "screenreader",
+      "status": "not executed",
+      "reason": "No manual Edge screenreader session in this automated experiment."
+    }
+  ],
+  "coldFontMs": 353.2999999523163,
+  "accessibilitySnapshot": "- dialog:\n  - heading \"Tekstproef\" [level=2]\n  - button \"Vet\"\n  - button \"Cursief\"\n  - button \"Velden\"\n  - paragraph:\n    - text: A\n    - button \"Bewerk math\": \"[math]\"\n    - text: B\n    - button \"Bewerk dynamicValue\": \"[dynamicValue]\"\n    - text: C\n    - button \"Bewerk calculatedValue\": \"[calculatedValue]\"\n    - text: D\n  - status: \"{\\\"schema\\\":1,\\\"defaults\\\":{\\\"fontId\\\":\\\"sans\\\",\\\"fontSize\\\":16,\\\"color\\\":\\\"#222222\\\"},\\\"width\\\":null,\\\"paragraphs\\\":[{\\\"id\\\":\\\"p1\\\",\\\"align\\\":\\\"left\\\",\\\"lineHeight\\\":1.25,\\\"runs\\\":[{\\\"id\\\":\\\"r1-1\\\",\\\"kind\\\":\\\"text\\\",\\\"text\\\":\\\"Alpha beta\\\",\\\"marks\\\":{}},{\\\"id\\\":\\\"r1-2\\\",\\\"kind\\\":\\\"hardBreak\\\"},{\\\"id\\\":\\\"r1-3\\\",\\\"kind\\\":\\\"text\\\",\\\"text\\\":\\\"é é αβθΩπ ≤≥±×÷ AV To Wa fi\\\",\\\"marks\\\":{}}]},{\\\"id\\\":\\\"p2\\\",\\\"align\\\":\\\"left\\\",\\\"lineHeight\\\":1.25,\\\"runs\\\":[{\\\"id\\\":\\\"r2-1\\\",\\\"kind\\\":\\\"text\\\",\\\"text\\\":\\\"Second paragraph\\\",\\\"marks\\\":{\\\"italic\\\":true}}]}]}\"\n  - button \"Annuleren\"\n  - button \"OK\"",
+  "render": {
+    "coverage": {
+      "regular": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ],
+      "bold": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ],
+      "italic": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ],
+      "boldItalic": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ],
+      "serif": [
+        {
+          "text": "Nederlands: café, naïef, één; é en é",
+          "missing": []
+        },
+        {
+          "text": "Grieks: αβθΩπ — ≤≥±×÷",
+          "missing": []
+        },
+        {
+          "text": "Kerning: AV To Wa fi ffi",
+          "missing": []
+        },
+        {
+          "text": "Lang: oppervlakte van cirkel met meerdere bronwaarden",
+          "missing": []
+        },
+        {
+          "text": "Supplementair: 😀",
+          "missing": [
+            {
+              "character": "😀",
+              "codepoint": "U+1F600"
+            }
+          ]
+        }
+      ]
+    },
+    "metrics": {
+      "regular": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 12.539993286132812,
+              "path": 12.708,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 12.14398193359375,
+              "path": 12.936,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 6.45599365234375,
+              "path": 6.4559999999999995,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.951995849609375,
+              "path": 5.952,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.951995849609375,
+              "path": 5.952,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 34.93196105957031,
+              "path": 34.932,
+              "ascent": 9,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 16.719985961914062,
+              "path": 16.944000000000003,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 16.191986083984375,
+              "path": 17.248,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 8.607986450195312,
+              "path": 8.608,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.9359893798828125,
+              "path": 7.936,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.9359893798828125,
+              "path": 7.936,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 46.575958251953125,
+              "path": 46.576,
+              "ascent": 11,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 33.43998718261719,
+              "path": 33.888000000000005,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 32.38398742675781,
+              "path": 34.496,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 17.215988159179688,
+              "path": 17.216,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.871994018554688,
+              "path": 15.872,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.871994018554688,
+              "path": 15.872,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 93.1519775390625,
+              "path": 93.152,
+              "ascent": 23,
+              "descent": 6
+            }
+          ]
+        }
+      ],
+      "bold": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 13.331985473632812,
+              "path": 13.548,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 12.41998291015625,
+              "path": 13.332,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 7.40399169921875,
+              "path": 7.404000000000001,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 6.2159881591796875,
+              "path": 6.216,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 6.2159881591796875,
+              "path": 6.216,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 37.079986572265625,
+              "path": 37.08,
+              "ascent": 8,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 17.7760009765625,
+              "path": 18.064,
+              "ascent": 10,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 16.559982299804688,
+              "path": 17.776000000000003,
+              "ascent": 10,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 9.871978759765625,
+              "path": 9.872,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 8.287994384765625,
+              "path": 8.288,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 8.287994384765625,
+              "path": 8.288,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 49.43995666503906,
+              "path": 49.44,
+              "ascent": 11,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 35.55198669433594,
+              "path": 36.128,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 33.11997985839844,
+              "path": 35.55200000000001,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 19.743972778320312,
+              "path": 19.744,
+              "ascent": 23,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 16.57598876953125,
+              "path": 16.576,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 16.57598876953125,
+              "path": 16.576,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 98.87997436523438,
+              "path": 98.88,
+              "ascent": 22,
+              "descent": 6
+            }
+          ]
+        }
+      ],
+      "italic": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 11.483993530273438,
+              "path": 12.072,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 11.4119873046875,
+              "path": 12.288,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 6.2279815673828125,
+              "path": 6.228,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.7719879150390625,
+              "path": 5.772,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.7719879150390625,
+              "path": 5.76,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 33.083953857421875,
+              "path": 33.396,
+              "ascent": 9,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 15.311981201171875,
+              "path": 16.096,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 15.215988159179688,
+              "path": 16.384,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 8.303985595703125,
+              "path": 8.304,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.6959991455078125,
+              "path": 7.696,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.6959991455078125,
+              "path": 7.68,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 44.11195373535156,
+              "path": 44.528000000000006,
+              "ascent": 12,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 30.623992919921875,
+              "path": 32.192,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 30.431991577148438,
+              "path": 32.768,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 16.607986450195312,
+              "path": 16.608,
+              "ascent": 23,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.391998291015625,
+              "path": 15.392,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.391998291015625,
+              "path": 15.36,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 88.22395324707031,
+              "path": 89.05600000000001,
+              "ascent": 23,
+              "descent": 6
+            }
+          ]
+        }
+      ],
+      "boldItalic": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 12.191986083984375,
+              "path": 13.224,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 11.98797607421875,
+              "path": 12.756,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 7.1039886474609375,
+              "path": 7.104,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.951995849609375,
+              "path": 5.952,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 5.951995849609375,
+              "path": 5.952,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 35.24397277832031,
+              "path": 35.508,
+              "ascent": 8,
+              "descent": 2
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 16.2559814453125,
+              "path": 17.632,
+              "ascent": 10,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 15.983978271484375,
+              "path": 17.008000000000003,
+              "ascent": 10,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 9.47198486328125,
+              "path": 9.472000000000001,
+              "ascent": 11,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.9359893798828125,
+              "path": 7.936,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 7.9359893798828125,
+              "path": 7.936,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 46.991973876953125,
+              "path": 47.34400000000001,
+              "ascent": 11,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 32.511993408203125,
+              "path": 35.264,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 31.967971801757812,
+              "path": 34.016000000000005,
+              "ascent": 21,
+              "descent": 0
+            },
+            {
+              "text": "fi",
+              "native": 18.943984985351562,
+              "path": 18.944000000000003,
+              "ascent": 23,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.871994018554688,
+              "path": 15.872,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 15.871994018554688,
+              "path": 15.872,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 93.98399353027344,
+              "path": 94.68800000000002,
+              "ascent": 22,
+              "descent": 6
+            }
+          ]
+        }
+      ],
+      "serif": [
+        {
+          "size": 12,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 14.62799072265625,
+              "path": 16.056,
+              "ascent": 8,
+              "descent": 0
+            },
+            {
+              "text": "To",
+              "native": 12.995986938476562,
+              "path": 13.836,
+              "ascent": 8,
+              "descent": 1
+            },
+            {
+              "text": "fi",
+              "native": 7.28399658203125,
+              "path": 7.824,
+              "ascent": 9,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 6.1199951171875,
+              "path": 6.12,
+              "ascent": 9,
+              "descent": 1
+            },
+            {
+              "text": "é",
+              "native": 6.1199951171875,
+              "path": 6.12,
+              "ascent": 9,
+              "descent": 1
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 35.231964111328125,
+              "path": 35.292,
+              "ascent": 9,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 16,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 19.503982543945312,
+              "path": 21.408,
+              "ascent": 11,
+              "descent": 1
+            },
+            {
+              "text": "To",
+              "native": 17.327987670898438,
+              "path": 18.448,
+              "ascent": 11,
+              "descent": 1
+            },
+            {
+              "text": "fi",
+              "native": 9.711990356445312,
+              "path": 10.431999999999999,
+              "ascent": 12,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 8.159988403320312,
+              "path": 8.16,
+              "ascent": 13,
+              "descent": 1
+            },
+            {
+              "text": "é",
+              "native": 8.159988403320312,
+              "path": 8.16,
+              "ascent": 13,
+              "descent": 1
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 46.97596740722656,
+              "path": 47.056000000000004,
+              "ascent": 12,
+              "descent": 3
+            }
+          ]
+        },
+        {
+          "size": 32,
+          "strings": [
+            {
+              "text": "AV",
+              "native": 39.00798034667969,
+              "path": 42.816,
+              "ascent": 22,
+              "descent": 1
+            },
+            {
+              "text": "To",
+              "native": 34.655975341796875,
+              "path": 36.896,
+              "ascent": 22,
+              "descent": 1
+            },
+            {
+              "text": "fi",
+              "native": 19.423995971679688,
+              "path": 20.863999999999997,
+              "ascent": 24,
+              "descent": 0
+            },
+            {
+              "text": "é",
+              "native": 16.319992065429688,
+              "path": 16.32,
+              "ascent": 25,
+              "descent": 1
+            },
+            {
+              "text": "é",
+              "native": 16.319992065429688,
+              "path": 16.32,
+              "ascent": 25,
+              "descent": 1
+            },
+            {
+              "text": "αβθΩπ",
+              "native": 93.95196533203125,
+              "path": 94.11200000000001,
+              "ascent": 24,
+              "descent": 6
+            }
+          ]
+        }
+      ]
+    },
+    "size": [
+      {
+        "kind": "text",
+        "count": 1,
+        "unique": false,
+        "rawBytes": 576359,
+        "gzipBytes": 255124
+      },
+      {
+        "kind": "path",
+        "count": 1,
+        "unique": false,
+        "rawBytes": 32669,
+        "gzipBytes": 11173
+      },
+      {
+        "kind": "text",
+        "count": 1,
+        "unique": true,
+        "rawBytes": 576365,
+        "gzipBytes": 255127
+      },
+      {
+        "kind": "path",
+        "count": 1,
+        "unique": true,
+        "rawBytes": 33193,
+        "gzipBytes": 11331
+      },
+      {
+        "kind": "text",
+        "count": 10,
+        "unique": false,
+        "rawBytes": 2351871,
+        "gzipBytes": 1043226
+      },
+      {
+        "kind": "path",
+        "count": 10,
+        "unique": false,
+        "rawBytes": 327474,
+        "gzipBytes": 105063
+      },
+      {
+        "kind": "text",
+        "count": 10,
+        "unique": true,
+        "rawBytes": 2351904,
+        "gzipBytes": 1043287
+      },
+      {
+        "kind": "path",
+        "count": 10,
+        "unique": true,
+        "rawBytes": 334100,
+        "gzipBytes": 107240
+      },
+      {
+        "kind": "text",
+        "count": 100,
+        "unique": false,
+        "rawBytes": 2443687,
+        "gzipBytes": 1047686
+      },
+      {
+        "kind": "path",
+        "count": 100,
+        "unique": false,
+        "rawBytes": 3548059,
+        "gzipBytes": 1085756
+      },
+      {
+        "kind": "text",
+        "count": 100,
+        "unique": true,
+        "rawBytes": 2444233,
+        "gzipBytes": 1048905
+      },
+      {
+        "kind": "path",
+        "count": 100,
+        "unique": true,
+        "rawBytes": 3686019,
+        "gzipBytes": 1127927
+      }
+    ],
+    "performance": [
+      {
+        "kind": "text",
+        "runs": [
+          141.60000002384186,
+          114.89999997615814,
+          115,
+          125.20000004768372,
+          145.39999997615814,
+          113.20000004768372,
+          112.09999990463257,
+          113.5,
+          113.5,
+          160.90000009536743,
+          138.09999990463257,
+          159.5,
+          107.39999997615814,
+          135.90000009536743,
+          146.70000004768372,
+          121.29999995231628,
+          109.19999992847443,
+          118.30000007152557,
+          127.29999995231628,
+          147
+        ],
+        "medianMs": 123.25,
+        "p95Ms": 159.5,
+        "pass": false
+      },
+      {
+        "kind": "path",
+        "runs": [
+          589.8999999761581,
+          596.2999999523163,
+          626.8000000715256,
+          632.8999999761581,
+          620.7999999523163,
+          594.6000000238419,
+          610.6000000238419,
+          586.1999999284744,
+          626.5,
+          595.7000000476837,
+          623.7999999523163,
+          609.4000000953674,
+          597.5999999046326,
+          613,
+          600.1000000238419,
+          581.7999999523163,
+          583.6000000238419,
+          601.6000000238419,
+          611.6000000238419,
+          596.5
+        ],
+        "medianMs": 600.8500000238419,
+        "p95Ms": 626.8000000715256,
+        "pass": false
+      }
+    ],
+    "matrix": [
+      {
+        "size": 12,
+        "rotation": 0,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.72881507873535,
+            "y": 25.5152530670166,
+            "width": 353.6636962890625,
+            "height": 488.084716796875
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.544708251953125,
+          "height": 3.624755859375
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            177,
+            178
+          ],
+          "heights": [
+            278,
+            278
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 0,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 19,
+            "y": 26.599998474121094,
+            "width": 352.39251708984375,
+            "height": 486.9999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.726470947265625,
+          "height": 2.540008544921875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            402,
+            404
+          ],
+          "heights": [
+            630,
+            630
+          ]
+        },
+        "previewExport": {
+          "text": {
+            "sameDimensions": false,
+            "widths": [
+              402,
+              402
+            ],
+            "heights": [
+              631,
+              630
+            ]
+          },
+          "path": {
+            "sameDimensions": false,
+            "widths": [
+              404,
+              404
+            ],
+            "heights": [
+              631,
+              630
+            ]
+          }
+        }
+      },
+      {
+        "size": 12,
+        "rotation": 0,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.011878967285156,
+            "width": 351.39251708984375,
+            "height": 487.5881042480469
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.726470947265625,
+          "height": 3.128143310546875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            656,
+            659
+          ],
+          "heights": [
+            1027,
+            1027
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 0,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.099998474121094,
+            "width": 351.39251708984375,
+            "height": 487.4999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.726470947265625,
+          "height": 3.040008544921875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1608,
+            1616
+          ],
+          "heights": [
+            2520,
+            2520
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 37,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.731868743896484,
+            "y": 25.52747344970703,
+            "width": 353.66064453125,
+            "height": 488.072509765625
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.541656494140625,
+          "height": 3.612548828125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 207025,
+          "differingPixels": 2063,
+          "ratio": 0.009964980074870185,
+          "inkRelative": 0.5960704998555331,
+          "interiorDiff": 56,
+          "interiorRatio": 0.0002704987320371936
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 37,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 19,
+            "y": 26.599998474121094,
+            "width": 352.39251708984375,
+            "height": 486.9999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.726470947265625,
+          "height": 2.540008544921875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1032,
+            1034
+          ],
+          "heights": [
+            1032,
+            1034
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 37,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.01532745361328,
+            "width": 351.39251708984375,
+            "height": 487.58465576171875
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.726470947265625,
+          "height": 3.12469482421875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1683,
+            1686
+          ],
+          "heights": [
+            1683,
+            1686
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 37,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.099998474121094,
+            "width": 351.39251708984375,
+            "height": 487.4999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.726470947265625,
+          "height": 3.040008544921875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            4128,
+            4136
+          ],
+          "heights": [
+            4128,
+            4136
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 90,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.731868743896484,
+            "y": 25.52747344970703,
+            "width": 353.66064453125,
+            "height": 488.072509765625
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.541656494140625,
+          "height": 3.612548828125
+        },
+        "comparison": {
+          "sameDimensions": true,
+          "pixels": 207025,
+          "differingPixels": 2624,
+          "ratio": 0.012674797729742785,
+          "inkRelative": 0.7070870385340878,
+          "interiorDiff": 30,
+          "interiorRatio": 0.00014491003501992513
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 90,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 19,
+            "y": 26.599998474121094,
+            "width": 352.39251708984375,
+            "height": 486.9999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 0.726470947265625,
+          "height": 2.540008544921875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1032,
+            1034
+          ],
+          "heights": [
+            1032,
+            1034
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 90,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.01532745361328,
+            "width": 351.39251708984375,
+            "height": 487.58465576171875
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.726470947265625,
+          "height": 3.12469482421875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1683,
+            1686
+          ],
+          "heights": [
+            1683,
+            1686
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 12,
+        "rotation": 90,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 26.099998474121094,
+            "width": 351.39251708984375,
+            "height": 487.4999694824219
+          },
+          "path": {
+            "x": 20,
+            "y": 29.139999389648438,
+            "width": 353.1189880371094,
+            "height": 484.4599609375
+          }
+        },
+        "boundsDelta": {
+          "width": 1.726470947265625,
+          "height": 3.040008544921875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            4128,
+            4136
+          ],
+          "heights": [
+            4128,
+            4136
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 0,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.733623504638672,
+            "y": 21.468120574951172,
+            "width": 470.803466796875,
+            "height": 503.3318786621094
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 0.02252197265625,
+          "height": 4.0518798828125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            229,
+            230
+          ],
+          "heights": [
+            278,
+            278
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 0,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.799999237060547,
+            "width": 468.5370788574219,
+            "height": 503
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288909912109375,
+          "height": 3.720001220703125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            519,
+            521
+          ],
+          "heights": [
+            630,
+            630
+          ]
+        },
+        "previewExport": {
+          "text": {
+            "sameDimensions": false,
+            "widths": [
+              519,
+              519
+            ],
+            "heights": [
+              631,
+              630
+            ]
+          },
+          "path": {
+            "sameDimensions": false,
+            "widths": [
+              521,
+              521
+            ],
+            "heights": [
+              631,
+              630
+            ]
+          }
+        }
+      },
+      {
+        "size": 16,
+        "rotation": 0,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.757448196411133,
+            "width": 468.5370788574219,
+            "height": 503.04254150390625
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288909912109375,
+          "height": 3.762542724609375
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            846,
+            850
+          ],
+          "heights": [
+            1027,
+            1027
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 0,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.549999237060547,
+            "width": 468.5370788574219,
+            "height": 503.25
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288909912109375,
+          "height": 3.970001220703125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            2076,
+            2084
+          ],
+          "heights": [
+            2520,
+            2520
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 37,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.729248046875,
+            "y": 21.446243286132812,
+            "width": 470.8078308105469,
+            "height": 503.353759765625
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 0.018157958984375,
+          "height": 4.073760986328125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            506,
+            507
+          ],
+          "heights": [
+            506,
+            507
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 37,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.799999237060547,
+            "width": 468.5370788574219,
+            "height": 503
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288909912109375,
+          "height": 3.720001220703125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1149,
+            1151
+          ],
+          "heights": [
+            1149,
+            1151
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 37,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.75782012939453,
+            "width": 468.5370788574219,
+            "height": 503.04217529296875
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288909912109375,
+          "height": 3.762176513671875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1873,
+            1877
+          ],
+          "heights": [
+            1873,
+            1877
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 37,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.549999237060547,
+            "width": 468.5370788574219,
+            "height": 503.25
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288909912109375,
+          "height": 3.970001220703125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            4596,
+            4604
+          ],
+          "heights": [
+            4596,
+            4604
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 90,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 17.729248046875,
+            "y": 21.446243286132812,
+            "width": 470.8078308105469,
+            "height": 503.353759765625
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 0.018157958984375,
+          "height": 4.073760986328125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            506,
+            507
+          ],
+          "heights": [
+            506,
+            507
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 90,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.799999237060547,
+            "width": 468.5370788574219,
+            "height": 503
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288909912109375,
+          "height": 3.720001220703125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1149,
+            1151
+          ],
+          "heights": [
+            1149,
+            1151
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 90,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.75782012939453,
+            "width": 468.5370788574219,
+            "height": 503.04217529296875
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288909912109375,
+          "height": 3.762176513671875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1873,
+            1877
+          ],
+          "heights": [
+            1873,
+            1877
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 16,
+        "rotation": 90,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 21.549999237060547,
+            "width": 468.5370788574219,
+            "height": 503.25
+          },
+          "path": {
+            "x": 20,
+            "y": 25.520000457763672,
+            "width": 470.82598876953125,
+            "height": 499.2799987792969
+          }
+        },
+        "boundsDelta": {
+          "width": 2.288909912109375,
+          "height": 3.970001220703125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            4596,
+            4604
+          ],
+          "heights": [
+            4596,
+            4604
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 0,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.887355327606201,
+            "width": 937.0746459960938,
+            "height": 566.712646484375
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 8.15264892578125
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            435,
+            437
+          ],
+          "heights": [
+            278,
+            278
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 0,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.6000003814697266,
+            "width": 937.0746459960938,
+            "height": 566
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 7.44000244140625
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            988,
+            992
+          ],
+          "heights": [
+            630,
+            630
+          ]
+        },
+        "previewExport": {
+          "text": {
+            "sameDimensions": false,
+            "widths": [
+              988,
+              988
+            ],
+            "heights": [
+              631,
+              630
+            ]
+          },
+          "path": {
+            "sameDimensions": false,
+            "widths": [
+              992,
+              992
+            ],
+            "heights": [
+              631,
+              630
+            ]
+          }
+        }
+      },
+      {
+        "size": 32,
+        "rotation": 0,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.9028258323669434,
+            "width": 937.0746459960938,
+            "height": 566.6971435546875
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 8.13714599609375
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1611,
+            1617
+          ],
+          "heights": [
+            1027,
+            1027
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 0,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.1000003814697266,
+            "width": 937.0746459960938,
+            "height": 566.5
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 7.94000244140625
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            3952,
+            3968
+          ],
+          "heights": [
+            2520,
+            2520
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 37,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.8752801418304443,
+            "width": 937.0746459960938,
+            "height": 566.7246704101562
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 8.1646728515625
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            712,
+            714
+          ],
+          "heights": [
+            712,
+            714
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 37,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.6000003814697266,
+            "width": 937.0746459960938,
+            "height": 566
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 7.44000244140625
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1618,
+            1622
+          ],
+          "heights": [
+            1618,
+            1622
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 37,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.906294107437134,
+            "width": 937.0746459960938,
+            "height": 566.6936645507812
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 8.1336669921875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            2638,
+            2644
+          ],
+          "heights": [
+            2638,
+            2644
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 37,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.1000003814697266,
+            "width": 937.0746459960938,
+            "height": 566.5
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 7.94000244140625
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            6472,
+            6488
+          ],
+          "heights": [
+            6472,
+            6488
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 90,
+        "zoom": 0.44,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.8752801418304443,
+            "width": 937.0746459960938,
+            "height": 566.7246704101562
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 8.1646728515625
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            712,
+            714
+          ],
+          "heights": [
+            712,
+            714
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 90,
+        "zoom": 1,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.6000003814697266,
+            "width": 937.0746459960938,
+            "height": 566
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 7.44000244140625
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            1618,
+            1622
+          ],
+          "heights": [
+            1618,
+            1622
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 90,
+        "zoom": 1.63,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 2.906294107437134,
+            "width": 937.0746459960938,
+            "height": 566.6936645507812
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 8.1336669921875
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            2638,
+            2644
+          ],
+          "heights": [
+            2638,
+            2644
+          ]
+        },
+        "previewExport": {}
+      },
+      {
+        "size": 32,
+        "rotation": 90,
+        "zoom": 4,
+        "bounds": {
+          "text": {
+            "x": 20,
+            "y": 3.1000003814697266,
+            "width": 937.0746459960938,
+            "height": 566.5
+          },
+          "path": {
+            "x": 20,
+            "y": 11.039999961853027,
+            "width": 941.6510009765625,
+            "height": 558.5599975585938
+          }
+        },
+        "boundsDelta": {
+          "width": 4.57635498046875,
+          "height": 7.94000244140625
+        },
+        "comparison": {
+          "sameDimensions": false,
+          "widths": [
+            6472,
+            6488
+          ],
+          "heights": [
+            6472,
+            6488
+          ]
+        },
+        "previewExport": {}
+      }
+    ]
+  },
+  "externalRequests": [],
+  "pageErrors": [],
+  "finished": "2026-10-11T13:55:41.573Z",
+  "totals": {
+    "passed": 17,
+    "failed": 3,
+    "notExecuted": 2
+  }
+}

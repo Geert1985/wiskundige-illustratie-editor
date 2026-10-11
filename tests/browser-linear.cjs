@@ -3,6 +3,40 @@ const fs = require('node:fs');
 module.exports = async page => {
   const savedTypes = [];
   const move = async (x, y) => { const p = await page.evaluate(p => FZI.MathIllustration.editor.transform().mathToScreen(p), { x, y }); await page.mouse.move(p.x, p.y); };
+  await page.evaluate(() => { const app = FZI.MathIllustration.editor; app.loadDocument({ objects: [], meta: { title: '', description: '' }, presentation: { bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, showGrid: false } }); });
+  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="line"]'); await move(-2, 1); await page.mouse.down(); await move(2, 1); await page.mouse.up();
+  let objects = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects);
+  let segment = objects.find(object => object.type === 'line');
+  assert.equal(objects.length, 1); assert.equal(segment.construction, undefined); assert.equal(objects.filter(object => object.type === 'point').length, 0);
+  await page.locator('#undoBtn').click(); assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.length), 0);
+  await page.locator('#redoBtn').click(); objects = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects); segment = objects[0];
+  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="select"]'); await move(0, 1); await page.mouse.down(); await move(1, 2); await page.mouse.up();
+  objects = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects); segment = objects.find(object => object.type === 'line');
+  assert.ok(Math.abs(segment.x1 + 1) < 1e-6); assert.ok(Math.abs(segment.x2 - 3) < 1e-6); assert.ok(Math.abs(segment.y1 - 2) < 1e-6); assert.ok(Math.abs(segment.y2 - 2) < 1e-6);
+  const startHandle = await page.locator('.fzi-line-endpoint[data-endpoint="start"]').boundingBox();
+  await page.mouse.move(startHandle.x + startHandle.width / 2, startHandle.y + startHandle.height / 2); await page.mouse.down(); await move(-2, 1); await page.mouse.up();
+  segment = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.find(object => object.type === 'line'));
+  assert.ok(Math.abs(segment.x1 + 2) < 1e-6); assert.ok(Math.abs(segment.y1 - 1) < 1e-6); assert.ok(Math.abs(segment.x2 - 3) < 1e-6); assert.ok(Math.abs(segment.y2 - 2) < 1e-6);
+  await move(-4, -2); await page.mouse.click((await page.evaluate(p => FZI.MathIllustration.editor.transform().mathToScreen(p), { x: -4, y: -2 })).x, (await page.evaluate(p => FZI.MathIllustration.editor.transform().mathToScreen(p), { x: -4, y: -2 })).y);
+  assert.equal(await page.locator('.fzi-line-endpoint').count(), 0);
+  const savedSegment = await page.evaluate(() => FZI.MathIllustration.editor.engine.toJSON());
+  await page.locator('#saveBtn').click(); await page.reload(); assert.deepEqual(await page.evaluate(() => FZI.MathIllustration.editor.engine.toJSON()), savedSegment);
+  await page.evaluate(() => { const app = FZI.MathIllustration.editor; app.loadDocument({ objects: [{ id: 'A', type: 'point', x: -2, y: 0 }, { id: 'B', type: 'point', x: 2, y: 0 }], meta: { title: '', description: '' }, presentation: { bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, showGrid: false } }); });
+  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:lineBetweenPoints"]');
+  assert.equal(await page.locator('#status').textContent(), 'Selecteer het eerste punt.');
+  const clickAt = async (x, y) => { const p = await page.evaluate(p => FZI.MathIllustration.editor.transform().mathToScreen(p), { x, y }); await page.mouse.click(p.x, p.y); };
+  await clickAt(-2, 0); assert.equal(await page.locator('#status').textContent(), 'Selecteer het tweede punt.');
+  await clickAt(0, 2); assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.length), 2);
+  await clickAt(2, 0); objects = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects); segment = objects.find(object => object.type === 'line');
+  assert.equal(objects.length, 3); assert.equal(segment.construction.kind, 'lineBetweenPoints'); assert.deepEqual(segment.construction.sources.map(source => source.objectId), ['A', 'B']);
+  const linkedBefore = await page.evaluate(() => FZI.MathIllustration.editor.engine.toJSON());
+  await page.mouse.move((await page.evaluate(p => FZI.MathIllustration.editor.transform().mathToScreen(p), { x: 0, y: 0 })).x, (await page.evaluate(p => FZI.MathIllustration.editor.transform().mathToScreen(p), { x: 0, y: 0 })).y); await page.mouse.down(); await move(0, 1); await page.mouse.up();
+  assert.deepEqual(await page.evaluate(() => FZI.MathIllustration.editor.engine.toJSON()), linkedBefore);
+  await move(-2, 0); await page.mouse.down(); await move(-2, 1); await page.mouse.up();
+  objects = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects); segment = objects.find(object => object.type === 'line');
+  assert.ok(Math.abs(objects.find(object => object.id === 'A').y-1)<1e-6); assert.ok(Math.abs(segment.y1-1)<1e-6);
+  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:lineBetweenPoints"]'); await clickAt(-2, 1); await clickAt(-2, 1);
+  assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.length), 3); assert.match(await page.locator('#status').textContent(), /verschillende punten/);
   for (const type of ['straight', 'ray', 'vector']) {
     await page.evaluate(() => { const app = FZI.MathIllustration.editor; app.loadDocument({ objects: [], presentation: { bounds: { xMin: -5, xMax: 5, yMin: -3, yMax: 3 }, showGrid: false } }); });
     await require('./browser-tool-menu.cjs').choose(page,`[data-tool="${type}"]`); await move(0, 0); await page.mouse.down(); await move(1.1, 0); await page.keyboard.press('1');
@@ -48,5 +82,5 @@ module.exports = async page => {
     assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.renderer.preview), null);
   }
   await page.evaluate(() => localStorage.removeItem(FZI.MathIllustration.DraftStore.key));
-  return { types: savedTypes, exactMeasurement: 'passed', rigidTranslation: 'passed', endpointGrid: 'passed', labelDrag: 'passed', Escape: 'passed', SVGExport: 'passed', saveReloadImport: 'passed', intersectionSnapping: 'passed', shortShapeCleanup: 'passed' };
+  return { lineSegmentPoints: 'passed', types: savedTypes, exactMeasurement: 'passed', rigidTranslation: 'passed', endpointGrid: 'passed', labelDrag: 'passed', Escape: 'passed', SVGExport: 'passed', saveReloadImport: 'passed', intersectionSnapping: 'passed', shortShapeCleanup: 'passed' };
 };

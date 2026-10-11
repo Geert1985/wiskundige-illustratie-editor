@@ -75,7 +75,7 @@ module.exports = async function verifySnapping(page) {
   await page.mouse.up(); assert.equal((await objects())[0].r, 1);
   await load(); await begin('line'); await move(0, 2); await page.keyboard.type('12'); await page.keyboard.press('Backspace');
   const typed = await preview(); close(Math.hypot(typed.end.x - typed.start.x, typed.end.y - typed.start.y), 1); assert.ok(typed.end.y - typed.start.y > .99);
-  await page.keyboard.press('Enter'); await page.mouse.up(); close((await objects())[0].y2, typed.end.y);
+  await page.keyboard.press('Enter'); await page.mouse.up(); close((await objects()).find(o=>o.type==='line').y2, typed.end.y);
   // Both zero-length and explicitly tiny shapes clean their preview and measurement state.
   for (const shape of ['line', 'circle']) {
     await load(); await begin(shape); await move(.01, 0); await page.mouse.up();
@@ -83,7 +83,7 @@ module.exports = async function verifySnapping(page) {
     assert.equal(await page.locator('[data-drawing-preview]').count(), 0);
     await begin(shape); await page.keyboard.type('0.01'); await page.mouse.up();
     assert.equal((await objects()).length, 0); assert.equal(await preview(), null);
-    await begin(shape); await move(2, 0); const fresh = await preview(); await page.mouse.up(); const saved = (await objects())[0];
+    await begin(shape); await move(2, 0); const fresh = await preview(); await page.mouse.up(); const saved = shape==='line'?(await objects()).find(o=>o.type==='line'):(await objects())[0];
     const length = shape === 'line' ? Math.hypot(saved.x2 - saved.x1, saved.y2 - saved.y1) : saved.r;
     close(length, Math.hypot(fresh.end.x - fresh.start.x, fresh.end.y - fresh.start.y)); assert.ok(length > 1.9);
   }

@@ -42,10 +42,10 @@ Leg de in het overleg afgesproken uitbreidingen vast zonder te suggereren dat ze
 - Gebruik een centrale declaratieve instructiedefinitie per tool, met toegankelijkheid voor toetsenbord en schermlezers.
 
 ## 5. Eenheden, schaal en meetnotatie — definitieve keuze
-- **Standaard bij nieuwe documenten: centimeter (cm)**; dit vervangt het eerdere voorstel voor abstracte eenheden als standaard.
+- **Standaard bij nieuwe documenten: centimeter (cm)**; dit vervangt het eerdere voorstel voor abstracte eenheden als standaard. Abstracte eenheid wordt in de interface aangeduid met `u` (oude bestanden met `e` blijven leesbaar); daarnaast is een expliciete dimensieloze weergave beschikbaar zonder eenheidssuffix.
 - Standaardschaal: **1 coördinateneenheid = 1 cm**; standaardprecisie: **2 decimalen**.
 - Lengte en omtrek: cm; oppervlakte: cm²; hoeken: graden (°).
-- Alternatieve lengte-eenheden: abstracte eenheid (e), mm, m, km; de oppervlakte-eenheid wordt overeenkomstig e², mm², m² of km².
+- Alternatieve lengte-eenheden: abstracte eenheid (u), dimensieloos, mm, m, km; de oppervlakte-eenheid wordt overeenkomstig u², mm², m² of km² weergegeven, of dimensieloos zonder suffix.
 - Instellingen horen in het rechter eigenschappenpaneel bij **Assenstelsel → Eenheden en schaal**, niet in een afzonderlijke algemene instellingenpagina.
 - Aanpasbaar: lengte-eenheid, schaalfactor en aantal decimalen. Schaalfactor moet eindig en strikt positief zijn.
 - Fysieke eenheden worden toegepast op weergegeven meetwaarden: lengte = coördinatenlengte × schaal; oppervlakte = coördinatenoppervlakte × schaal². Hoeken worden niet door de lengteschaal beïnvloed.
@@ -168,3 +168,13 @@ Na expliciete opdracht uitgevoerd: drie gekoppelde hoekgereedschappen, documents
 ## Uitvoeringsbesluit dynamische tekst (2026-10-10)
 
 Na expliciete opdracht voor de volgende stap uitgevoerd: een getypeerde bronwaarde per vrij tekstobject, bron/eigenschap/precisie/voor-/achtervoegsel in de inspector, stabiele IDs en gedeelde meetnotatie. Verwijderde of ongeldige bron: tekst blijft bestaan met niet beschikbaar; undo herstelt. Geen evaluatie of cascade naar tekst. DYNAMIC-TEXT-CONTRACT.md en DYNAMIC-TEXT-REPORT.md bevatten het contract en bewijs: 352 Node-tests en 43 Edge-modules geslaagd. Handmatige acceptatie, ook van hoekmetingen, blijft open. Sjablonen met meerdere velden zijn de eerder genoemde latere uitbreiding.
+
+## Specificatieaanvulling: geavanceerde teksteditor (2026-10-11, voorstel 1.0.0)
+
+De masteropdracht T1–T5 breidt de bestaande enkele dynamische binding uit naar gemengde rich text, inline wiskundige notatie, meerdere dynamische waarden en dimensioneel correcte berekeningen. Bestaande bindingen en constructies blijven behouden; geen willekeurige HTML of uitvoerbare gebruikerscode.
+
+Normatieve ontwerpscope en migratievoorstel: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Uitvoering/acceptatie: [TEXT-EDITOR-IMPLEMENTATION-PLAN.md](TEXT-EDITOR-IMPLEMENTATION-PLAN.md). Deze aanvulling is een voorstel, geen implementatieclaim en geen automatische wijziging van legacycontracten.
+
+Vereist: private tekstbewerking met nul wijzigingen bij Annuleren en één documentactie bij OK; gedeelde preview/canvas/SVG-lay-out; netwerkonafhankelijke export; getypeerde stabiele bronreferenties; locks/rechten/replay behouden; gecontroleerde migraties. T5 gebruikt expliciete grammatica/AST, begrensde evaluatie, eenheden/dimensies en één schaal-/hoekconversie. De rekenmachine kent resultaat, formule met resultaat en ingevulde formule met resultaat.
+
+Fase 0 is de huidige scope. Goedkeuring is vereist vóór T1 en na iedere volgende milestone, met afzonderlijke T5a–d-checkpoints. Rapporten worden pas bij daadwerkelijke uitvoering aangemaakt. De bestaande enkele binding is geen voltooide T3; de huidige SVG-rastertests zijn geen productie-PNG-export.

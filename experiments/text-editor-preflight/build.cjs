@@ -1,0 +1,6 @@
+const esbuild=require('esbuild'),fs=require('node:fs'),path=require('node:path'),zlib=require('node:zlib'),crypto=require('node:crypto');
+process.chdir(__dirname);
+(async()=>{fs.mkdirSync('dist',{recursive:true});const metrics={};
+for(const [label,entry] of [['probe','probe.js'],['editor','adapter.js'],['renderer','render.js']]){const result=await esbuild.build({entryPoints:[entry],bundle:true,write:false,minify:true,format:'iife',target:'es2022',metafile:true});const data=result.outputFiles[0].contents;fs.writeFileSync(`dist/${label}.js`,data);metrics[label]={rawBytes:data.length,gzipBytes:zlib.gzipSync(data).length,sha256:crypto.createHash('sha256').update(data).digest('hex'),inputs:Object.keys(result.metafile.inputs)};}
+const lock=JSON.parse(fs.readFileSync('package-lock.json'));metrics.dependencies=Object.fromEntries(Object.entries(lock.packages).filter(([p])=>p.startsWith('node_modules/')&&!p.includes('@esbuild/')).map(([p,v])=>[p.replace('node_modules/',''),{version:v.version,license:v.license}]));
+fs.mkdirSync('results',{recursive:true});fs.writeFileSync('results/build.json',JSON.stringify(metrics,null,2)+'\n');console.log(JSON.stringify(Object.fromEntries(Object.entries(metrics).filter(([k])=>k!=='dependencies').map(([k,v])=>[k,{rawBytes:v.rawBytes,gzipBytes:v.gzipBytes}]))));})().catch(e=>{console.error(e);process.exitCode=1;});

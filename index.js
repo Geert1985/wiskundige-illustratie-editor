@@ -95,6 +95,8 @@
     }
     duplicateMany(ids,delta={x:.5,y:.5}) {
       const model=new MI.IllustrationModel(this.model.toJSON());
+      const distributions=model.circleDistributions.filter(d=>d.pointIds.some(id=>ids.includes(id)));
+      if(distributions.length){const allowed=new Set(distributions.flatMap(d=>d.pointIds));for(const d of distributions)if(!d.pointIds.every(id=>ids.includes(id)))throw Error('Een puntenverdeling moet volledig worden gedupliceerd.');for(const id of ids)if(!allowed.has(id)&&!distributions.some(d=>d.circleId===id))throw Error('Dupliceer de volledige puntenverdeling afzonderlijk.');const copies=[];for(const d of distributions){let circleId=d.circleId;if(ids.includes(d.circleId)){const source=model.get(d.circleId),{id:oldId,construction,constructionValid,...data}=source;circleId=model.add({...data,...MI.MeasurementGeometry.translate(source,delta),name:source.name+' (kopie)',locked:false}).id;}const first=model.get(d.pointIds[0]),circle=model.get(circleId),angle=((d.startAngle%(2*Math.PI))+2*Math.PI)%(2*Math.PI),parameter=angle/(2*Math.PI),{id:oldId,construction,constructionValid,...pointData}=first,point=model.add({...pointData,id:undefined,name:first.name+' (kopie)',locked:false,construction:{kind:'pointOnCircle',sources:[{objectId:circleId}],parameter}});const copy=model.setCircleDistribution(point.id,{count:d.count,startAngle:d.startAngle});copies.push(...copy.pointIds.map(id=>model.get(id)));}this.model=model;return copies;}
       const copies=ids.map(id=>{const original=model.get(id);if(!original)throw Error('Object niet gevonden: '+id);const {id:ignored,construction:ignoredConstruction,constructionValid:ignoredValidity,...data}=original;return model.add({...data,...MI.MeasurementGeometry.translate(original,delta),name:original.name+' (kopie)',locked:false});});
       const mapping=new Map(ids.map((id,i)=>[id,copies[i].id]));
       if(model.layers.length)for(const id of ids)model.assignLayer([mapping.get(id)],MI.DocumentLayers.index(this.model.layers).owner.get(id).id);
@@ -117,8 +119,10 @@
       const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&!MI.ConstructionService.tangentOnCircle(map.get(sources[0].objectId),{x:first.x1,y:first.y1})?2:1;
       const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,...(MI.AngleMeasurements.isLinked(kind)?{angleSettings:{...MI.AngleMeasurements.defaults}}:{}),style:{...first.style,stroke:MI.CONSTRUCTION_COLOR,...(first.type==='point'?{fill:MI.CONSTRUCTION_COLOR}:{})},construction:{...recipe, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
     }
-    getConstructionInfo(id){return MI.ConstructionService.describe(this.model.objects,id);}
+    getConstructionInfo(id){return MI.ConstructionService.describe(this.model.objects,id,this.model.circleDistributions);}
     detachConstructions(ids){return this.model.detachConstructions(ids);}
+    setCircleDistribution(pointId,settings){return this.model.setCircleDistribution(pointId,settings);}
+    deleteCircleDistribution(id,options){return this.model.deleteCircleDistribution(id,options);}
     createLayer(name){return this.model.createLayer(name);}
     assignLayer(ids,layerId){return this.model.assignLayer(ids,layerId);}
     renameLayer(id,name){return this.model.renameLayer(id,name);}
@@ -143,13 +147,14 @@
       const screen = options && options.transform.mathToScreen({ x, y });
       let best = null;
       let bestDistance = Infinity;
+      let bestPriority = -1;
 
       MI.DocumentLayers.ordered(this.model.objects,this.model.layers||[]).forEach((object) => {
         if (!MI.DocumentLayers.visible(this.model.layers||[],object.id) || object.visible === false || (object.construction && object.constructionValid===false)) return;
         const distance = options ? screenHit(object, screen, options.transform) : hitDistance(object, x, y);
-        if (distance <= maxDistance + (options ? 1e-9 : 0) && (options || this.model.layers?.length ? distance <= bestDistance + 1e-9 : distance < bestDistance)) {
-          best = object;
-          bestDistance = distance;
+        const priority=object.type==='point'?1:0,epsilon=options?1e-9:0,tied=Math.abs(distance-bestDistance)<=epsilon;
+        if (distance <= maxDistance + epsilon && (distance < bestDistance - epsilon || tied&&priority>bestPriority || tied&&priority===bestPriority&&(options||this.model.layers?.length))) {
+          best = object;bestDistance = distance;bestPriority=priority;
         }
       });
 

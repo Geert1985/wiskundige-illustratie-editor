@@ -1,0 +1,2194 @@
+TAP version 13
+# Subtest: axis identity, x/y orientation, duplicate axis and schema 3 roundtrip
+ok 1 - axis identity, x/y orientation, duplicate axis and schema 3 roundtrip
+  ---
+  duration_ms: 73.7887
+  type: 'test'
+  ...
+# Subtest: unit circle path angle remains at origin continuously including parallel cases and reverse source order
+ok 2 - unit circle path angle remains at origin continuously including parallel cases and reverse source order
+  ---
+  duration_ms: 47.4526
+  type: 'test'
+  ...
+# Subtest: supporting intersection and parallel policy do not depend on order, pan, zoom or axis visibility
+ok 3 - supporting intersection and parallel policy do not depend on order, pan, zoom or axis visibility
+  ---
+  duration_ms: 37.485
+  type: 'test'
+  ...
+# Subtest: strict axis reference validation, other-tool rejection and atomic malformed imports
+ok 4 - strict axis reference validation, other-tool rejection and atomic malformed imports
+  ---
+  duration_ms: 35.9393
+  type: 'test'
+  ...
+# Subtest: source rebinding, semantic replay, grouped copying and cascade skip immutable axis constants
+ok 5 - source rebinding, semantic replay, grouped copying and cascade skip immutable axis constants
+  ---
+  duration_ms: 89.0781
+  type: 'test'
+  ...
+# Subtest: legacy angleXAxis keeps schema 2 and exact old vertex/settings behavior
+ok 6 - legacy angleXAxis keeps schema 2 and exact old vertex/settings behavior
+  ---
+  duration_ms: 76.654
+  type: 'test'
+  ...
+# Subtest: restricted axis grants default deny, tool and object grants independently enforced, history and exports preserve constants
+ok 7 - restricted axis grants default deny, tool and object grants independently enforced, history and exports preserve constants
+  ---
+  duration_ms: 189.8944
+  type: 'test'
+  ...
+# Subtest: schema 3 survives groups/layers and document IDs cannot collide with axis identity
+ok 8 - schema 3 survives groups/layers and document IDs cannot collide with axis identity
+  ---
+  duration_ms: 62.4801
+  type: 'test'
+  ...
+# Subtest: finite angle arms face outward from shared or interior intersection independently of endpoint order
+ok 9 - finite angle arms face outward from shared or interior intersection independently of endpoint order
+  ---
+  duration_ms: 79.1703
+  type: 'test'
+  ...
+# Subtest: clicked short arms persist and follow geometry without choosing opposite long arms
+ok 10 - clicked short arms persist and follow geometry without choosing opposite long arms
+  ---
+  duration_ms: 89.0851
+  type: 'test'
+  ...
+# Subtest: restricted sessions retain explicit arm references with ordinary source grants
+ok 11 - restricted sessions retain explicit arm references with ordinary source grants
+  ---
+  duration_ms: 106.1443
+  type: 'test'
+  ...
+# Subtest: clicked axis-line arms ignore drawing order while preserving positive axis and directed orientation
+ok 12 - clicked axis-line arms ignore drawing order while preserving positive axis and directed orientation
+  ---
+  duration_ms: 74.4462
+  type: 'test'
+  ...
+# Subtest: supported geometry, metadata, styles and explicit label offsets survive JSON roundtrip
+ok 13 - supported geometry, metadata, styles and explicit label offsets survive JSON roundtrip
+  ---
+  duration_ms: 56.3431
+  type: 'test'
+  ...
+# Subtest: representative exported SVG matches the XML-valid compatibility fixture
+ok 14 - representative exported SVG matches the XML-valid compatibility fixture
+  ---
+  duration_ms: 31.4218
+  type: 'test'
+  ...
+# Subtest: equal scales, upward mathematical y and exact circle radius
+ok 15 - equal scales, upward mathematical y and exact circle radius
+  ---
+  duration_ms: 27.3074
+  type: 'test'
+  ...
+# Subtest: hidden objects are excluded from hit testing and engine.move translates a segment rigidly
+ok 16 - hidden objects are excluded from hit testing and engine.move translates a segment rigidly
+  ---
+  duration_ms: 33.811
+  type: 'test'
+  ...
+# Subtest: adaptive grid follows the existing 1-2-5 ladder and minimum 0.1
+ok 17 - adaptive grid follows the existing 1-2-5 ladder and minimum 0.1
+  ---
+  duration_ms: 27.1776
+  type: 'test'
+  ...
+# Subtest: origin remains visible with only one axis enabled by the core renderer
+ok 18 - origin remains visible with only one axis enabled by the core renderer
+  ---
+  duration_ms: 42.1431
+  type: 'test'
+  ...
+# Subtest: segment/segment, segment/circle and circle/circle intersections stay available
+ok 19 - segment/segment, segment/circle and circle/circle intersections stay available
+  ---
+  duration_ms: 38.8232
+  type: 'test'
+  ...
+# Subtest: circle pair ordered intersections follow parents, merge and recover with retained IDs/styles
+ok 20 - circle pair ordered intersections follow parents, merge and recover with retained IDs/styles
+  ---
+  duration_ms: 66.554
+  type: 'test'
+  ...
+# Subtest: external/internal tangency, containment, concentric/coincident and zero radius have defined outcomes
+ok 21 - external/internal tangency, containment, concentric/coincident and zero radius have defined outcomes
+  ---
+  duration_ms: 30.835
+  type: 'test'
+  ...
+# Subtest: circle pair oblique geometry, source order, replay and strict imports
+ok 22 - circle pair oblique geometry, source order, replay and strict imports
+  ---
+  duration_ms: 60.0132
+  type: 'test'
+  ...
+# Subtest: circle pair needs both source grants in course and assessment
+ok 23 - circle pair needs both source grants in course and assessment
+  ---
+  duration_ms: 93.0181
+  type: 'test'
+  ...
+# Subtest: normalized circle solutions remain on both circles for unequal radii and translated centers
+ok 24 - normalized circle solutions remain on both circles for unequal radii and translated centers
+  ---
+  duration_ms: 60.2232
+  type: 'test'
+  ...
+# Subtest: M4a construction definitions and geometric source capabilities are explicit and immutable
+ok 25 - M4a construction definitions and geometric source capabilities are explicit and immutable
+  ---
+  duration_ms: 55.2336
+  type: 'test'
+  ...
+# Subtest: M4a wrong source roles and meaningless part/index references reject atomically
+ok 26 - M4a wrong source roles and meaningless part/index references reject atomically
+  ---
+  duration_ms: 35.9175
+  type: 'test'
+  ...
+# Subtest: M4a indexed topology changes cannot silently retarget constructions
+ok 27 - M4a indexed topology changes cannot silently retarget constructions
+  ---
+  duration_ms: 35.7104
+  type: 'test'
+  ...
+# Subtest: M4a whole-figure references permit valid topology changes without indexed identities
+ok 28 - M4a whole-figure references permit valid topology changes without indexed identities
+  ---
+  duration_ms: 41.3391
+  type: 'test'
+  ...
+# Subtest: M4a invalid reasons are transient queries and recover along dependency chains
+ok 29 - M4a invalid reasons are transient queries and recover along dependency chains
+  ---
+  duration_ms: 46.3782
+  type: 'test'
+  ...
+# Subtest: M4a coincident points and zero radius have specific recoverable reasons
+ok 30 - M4a coincident points and zero radius have specific recoverable reasons
+  ---
+  duration_ms: 51.8992
+  type: 'test'
+  ...
+# Subtest: M4a author detach preserves identity geometry layers groups and downstream links
+ok 31 - M4a author detach preserves identity geometry layers groups and downstream links
+  ---
+  duration_ms: 67.5841
+  type: 'test'
+  ...
+# Subtest: M4a detach refuses invalid locked missing and mixed batch targets atomically
+ok 32 - M4a detach refuses invalid locked missing and mixed batch targets atomically
+  ---
+  duration_ms: 56.3608
+  type: 'test'
+  ...
+# Subtest: M4a legacy reference extensions survive contract queries and roundtrip
+ok 33 - M4a legacy reference extensions survive contract queries and roundtrip
+  ---
+  duration_ms: 45.6013
+  type: 'test'
+  ...
+# Subtest: M4a restricted detach is denied and inspection redacts unread references/dependents
+ok 34 - M4a restricted detach is denied and inspection redacts unread references/dependents
+  ---
+  duration_ms: 65.7395
+  type: 'test'
+  ...
+# Subtest: M4a calculated fields refuse direct engine edits while presentation remains editable
+ok 35 - M4a calculated fields refuse direct engine edits while presentation remains editable
+  ---
+  duration_ms: 65.2529
+  type: 'test'
+  ...
+# Subtest: M4a transient tangent branches retain identity through invalidity and recovery
+ok 36 - M4a transient tangent branches retain identity through invalidity and recovery
+  ---
+  duration_ms: 71.0505
+  type: 'test'
+  ...
+# Subtest: M4a reference capabilities do not interpret unrelated legacy extension fields as topology
+ok 37 - M4a reference capabilities do not interpret unrelated legacy extension fields as topology
+  ---
+  duration_ms: 65.2431
+  type: 'test'
+  ...
+# Subtest: M4a deep graph resolution and inspection stay iterative and malformed imports are atomic
+ok 38 - M4a deep graph resolution and inspection stay iterative and malformed imports are atomic
+  ---
+  duration_ms: 1169.8106
+  type: 'test'
+  ...
+# Subtest: M4a calculated-field authorization uses registered outputs including measurement text
+ok 39 - M4a calculated-field authorization uses registered outputs including measurement text
+  ---
+  duration_ms: 51.381
+  type: 'test'
+  ...
+# Subtest: M4a raw link removal cannot bypass explicit detachment validity and lock gates
+ok 40 - M4a raw link removal cannot bypass explicit detachment validity and lock gates
+  ---
+  duration_ms: 23.2815
+  type: 'test'
+  ...
+# Subtest: author visibility commands hide and restore constructed points lines and measurement text
+ok 41 - author visibility commands hide and restore constructed points lines and measurement text
+  ---
+  duration_ms: 144.065
+  type: 'test'
+  ...
+# Subtest: author lock commands identify constructed objects as direct presentation targets
+ok 42 - author lock commands identify constructed objects as direct presentation targets
+  ---
+  duration_ms: 43.3729
+  type: 'test'
+  ...
+# Subtest: restricted direct facade cannot change construction visibility or locks
+ok 43 - restricted direct facade cannot change construction visibility or locks
+  ---
+  duration_ms: 72.4019
+  type: 'test'
+  ...
+# Subtest: linked constructions recompute transitively and survive roundtrip
+ok 44 - linked constructions recompute transitively and survive roundtrip
+  ---
+  duration_ms: 81.6377
+  type: 'test'
+  ...
+# Subtest: perpendicular parallel bisector and perpendicular bisector preserve invariants
+ok 45 - perpendicular parallel bisector and perpendicular bisector preserve invariants
+  ---
+  duration_ms: 59.3316
+  type: 'test'
+  ...
+# Subtest: tangents are one on circle, two outside, invalid inside and recover
+ok 46 - tangents are one on circle, two outside, invalid inside and recover
+  ---
+  duration_ms: 43.4255
+  type: 'test'
+  ...
+# Subtest: references and cycles reject atomically; source deletion cascades
+ok 47 - references and cycles reject atomically; source deletion cascades
+  ---
+  duration_ms: 56.6309
+  type: 'test'
+  ...
+# Subtest: invalid geometry hides derived objects and removes them from snapping until recovery
+ok 48 - invalid geometry hides derived objects and removes them from snapping until recovery
+  ---
+  duration_ms: 48.7862
+  type: 'test'
+  ...
+# Subtest: linked imports reject missing references and invalid kinds atomically
+ok 49 - linked imports reject missing references and invalid kinds atomically
+  ---
+  duration_ms: 48.9861
+  type: 'test'
+  ...
+# Subtest: source exclusion also excludes every dependent snap candidate
+ok 50 - source exclusion also excludes every dependent snap candidate
+  ---
+  duration_ms: 46.6361
+  type: 'test'
+  ...
+# Subtest: polygon edges and vertices are stable references after edits
+ok 51 - polygon edges and vertices are stable references after edits
+  ---
+  duration_ms: 49.76
+  type: 'test'
+  ...
+# Subtest: linked perimeter and area measurements update circle and polygon values and preserve label offsets
+ok 52 - linked perimeter and area measurements update circle and polygon values and preserve label offsets
+  ---
+  duration_ms: 74.3532
+  type: 'test'
+  ...
+# Subtest: concave polygon measures do not depend on winding and label font size is rendered
+ok 53 - concave polygon measures do not depend on winding and label font size is rendered
+  ---
+  duration_ms: 71.7291
+  type: 'test'
+  ...
+# Subtest: derived circle computes radius and follows sources with style and identity retained
+ok 54 - derived circle computes radius and follows sources with style and identity retained
+  ---
+  duration_ms: 114.1848
+  type: 'test'
+  ...
+# Subtest: derived circle degeneration and downstream path/intersection states recover
+ok 55 - derived circle degeneration and downstream path/intersection states recover
+  ---
+  duration_ms: 70.839
+  type: 'test'
+  ...
+# Subtest: circle source rebinding, cycles, detach, cascade and invalid creation remain atomic
+ok 56 - circle source rebinding, cycles, detach, cascade and invalid creation remain atomic
+  ---
+  duration_ms: 118.9259
+  type: 'test'
+  ...
+# Subtest: derived circle endpoint sources and both-source permissions are supported
+ok 57 - derived circle endpoint sources and both-source permissions are supported
+  ---
+  duration_ms: 86.3633
+  type: 'test'
+  ...
+# Subtest: derived circle source changes preserve locks and calculated center/radius limits
+ok 58 - derived circle source changes preserve locks and calculated center/radius limits
+  ---
+  duration_ms: 68.878
+  type: 'test'
+  ...
+# Subtest: failed document loads preserve all existing state and reject duplicate canonical IDs
+ok 59 - failed document loads preserve all existing state and reject duplicate canonical IDs
+  ---
+  duration_ms: 96.1178
+  type: 'test'
+  ...
+# Subtest: v1 legacy label migrates to name, explicit names win, and v2 names never remigrate
+ok 60 - v1 legacy label migrates to name, explicit names win, and v2 names never remigrate
+  ---
+  duration_ms: 53.3773
+  type: 'test'
+  ...
+# Subtest: opaque root, object, style and presentation fields survive document roundtrips
+ok 61 - opaque root, object, style and presentation fields survive document roundtrips
+  ---
+  duration_ms: 42.7987
+  type: 'test'
+  ...
+# Subtest: null label offsets stay null, zero remains explicit, legacy pixel offsets render and roundtrip
+ok 62 - null label offsets stay null, zero remains explicit, legacy pixel offsets render and roundtrip
+  ---
+  duration_ms: 54.5458
+  type: 'test'
+  ...
+# Subtest: default label offsets and explicit mathematical offsets preserve position across export/import and zoom
+ok 63 - default label offsets and explicit mathematical offsets preserve position across export/import and zoom
+  ---
+  duration_ms: 51.146
+  type: 'test'
+  ...
+# Subtest: presentation is exported explicitly and restored atomically, transient state is excluded
+ok 64 - presentation is exported explicitly and restored atomically, transient state is excluded
+  ---
+  duration_ms: 58.4091
+  type: 'test'
+  ...
+# Subtest: standalone engine retains explicit grid step and rejects unrenderable presentation before commit
+ok 65 - standalone engine retains explicit grid step and rejects unrenderable presentation before commit
+  ---
+  duration_ms: 65.5542
+  type: 'test'
+  ...
+# Subtest: numeric legacy coordinates and IDs remain compatible, and next-ID generation remains safe
+ok 66 - numeric legacy coordinates and IDs remain compatible, and next-ID generation remains safe
+  ---
+  duration_ms: 61.3261
+  type: 'test'
+  ...
+# Subtest: standalone model import is atomic, presentation extensions are inert and input data is detached
+ok 67 - standalone model import is atomic, presentation extensions are inert and input data is detached
+  ---
+  duration_ms: 62.3508
+  type: 'test'
+  ...
+# Subtest: startup does not change Storage.prototype
+ok 68 - startup does not change Storage.prototype
+  ---
+  duration_ms: 60.2831
+  type: 'test'
+  ...
+# Subtest: save then startup restore keeps the document and persistent presentation
+ok 69 - save then startup restore keeps the document and persistent presentation
+  ---
+  duration_ms: 85.9681
+  type: 'test'
+  ...
+# Subtest: corrupt or rejected draft is preserved and does not replace the current document
+ok 70 - corrupt or rejected draft is preserved and does not replace the current document
+  ---
+  duration_ms: 47.6466
+  type: 'test'
+  ...
+# Subtest: empty storage, explicit clear and denied storage have predictable behavior
+ok 71 - empty storage, explicit clear and denied storage have predictable behavior
+  ---
+  duration_ms: 39.9728
+  type: 'test'
+  ...
+# Subtest: linked point angles follow sources, preserve identity/style and use directed/radian settings
+ok 72 - linked point angles follow sources, preserve identity/style and use directed/radian settings
+  ---
+  duration_ms: 106.8924
+  type: 'test'
+  ...
+# Subtest: direction and x-axis recipes normalize orientation and handle parallel/antiparallel and null directions
+ok 73 - direction and x-axis recipes normalize orientation and handle parallel/antiparallel and null directions
+  ---
+  duration_ms: 70.8607
+  type: 'test'
+  ...
+# Subtest: document defaults and per-measurement overrides preserve geometry, legacy/free text and replay
+ok 74 - document defaults and per-measurement overrides preserve geometry, legacy/free text and replay
+  ---
+  duration_ms: 74.4964
+  type: 'test'
+  ...
+# Subtest: invalid configuration, locks, computed geometry and cyclic references fail atomically
+ok 75 - invalid configuration, locks, computed geometry and cyclic references fail atomically
+  ---
+  duration_ms: 72.1466
+  type: 'test'
+  ...
+# Subtest: source degeneracy/recovery, stable settings, detach and deletion use existing graph
+ok 76 - source degeneracy/recovery, stable settings, detach and deletion use existing graph
+  ---
+  duration_ms: 71.4226
+  type: 'test'
+  ...
+# Subtest: restricted source/tool gates, settings grants and document defaults respect mode ceilings
+ok 77 - restricted source/tool gates, settings grants and document defaults respect mode ceilings
+  ---
+  duration_ms: 173.7531
+  type: 'test'
+  ...
+# Subtest: directed sector SVG agrees with angle, no extra full arms and no scaling of angle values
+ok 78 - directed sector SVG agrees with angle, no extra full arms and no scaling of angle values
+  ---
+  duration_ms: 42.6995
+  type: 'test'
+  ...
+# Subtest: source rebinding, cycle protections and coordinate overflow keep graph integrity
+ok 79 - source rebinding, cycle protections and coordinate overflow keep graph integrity
+  ---
+  duration_ms: 55.0494
+  type: 'test'
+  ...
+# Subtest: dynamic text follows stable source IDs, geometry, units, names and roundtrip
+ok 80 - dynamic text follows stable source IDs, geometry, units, names and roundtrip
+  ---
+  duration_ms: 89.7283
+  type: 'test'
+  ...
+# Subtest: all mathematically applicable values share notation without changing geometry
+ok 81 - all mathematically applicable values share notation without changing geometry
+  ---
+  duration_ms: 76.1713
+  type: 'test'
+  ...
+# Subtest: deletion keeps text with unavailable value; restore and temporary invalidity recover
+ok 82 - deletion keeps text with unavailable value; restore and temporary invalidity recover
+  ---
+  duration_ms: 56.8207
+  type: 'test'
+  ...
+# Subtest: bindings strictly validate shape and refuse self-reference without executing expressions
+ok 83 - bindings strictly validate shape and refuse self-reference without executing expressions
+  ---
+  duration_ms: 67.7939
+  type: 'test'
+  ...
+# Subtest: binding edits replay deterministically and locks deny edits atomically
+ok 84 - binding edits replay deterministically and locks deny edits atomically
+  ---
+  duration_ms: 90.8483
+  type: 'test'
+  ...
+# Subtest: restricted rendering excludes unreadable source data and binding edits require explicit grant
+ok 85 - restricted rendering excludes unreadable source data and binding edits require explicit grant
+  ---
+  duration_ms: 126.0481
+  type: 'test'
+  ...
+# Subtest: undo/redo restores documents, presentation and selection on the same engine
+ok 86 - undo/redo restores documents, presentation and selection on the same engine
+  ---
+  duration_ms: 99.2589
+  type: 'test'
+  ...
+# Subtest: noops retain redo; a new document edit discards redo
+ok 87 - noops retain redo; a new document edit discards redo
+  ---
+  duration_ms: 49.0032
+  type: 'test'
+  ...
+# Subtest: bounded history and reset do not leak document data into serialization
+ok 88 - bounded history and reset do not leak document data into serialization
+  ---
+  duration_ms: 54.7026
+  type: 'test'
+  ...
+# Subtest: failed restore preserves history cursor and current document
+ok 89 - failed restore preserves history cursor and current document
+  ---
+  duration_ms: 55.8273
+  type: 'test'
+  ...
+# Subtest: memory budget evicts oldest commands while retaining the most recent reversible command
+ok 90 - memory budget evicts oldest commands while retaining the most recent reversible command
+  ---
+  duration_ms: 133.3901
+  type: 'test'
+  ...
+# Subtest: restoring and branching generated IDs cannot collide with remaining objects
+ok 91 - restoring and branching generated IDs cannot collide with remaining objects
+  ---
+  duration_ms: 61.8233
+  type: 'test'
+  ...
+# Subtest: keyboard length and radius without another mouse sample retain valid preview and exact commit
+ok 92 - keyboard length and radius without another mouse sample retain valid preview and exact commit
+  ---
+  duration_ms: 285.8645
+  type: 'test'
+  ...
+# Subtest: keyboard edits use the last valid pointer and Enter commits the displayed result
+ok 93 - keyboard edits use the last valid pointer and Enter commits the displayed result
+  ---
+  duration_ms: 162.3372
+  type: 'test'
+  ...
+# Subtest: rejected short shapes clear previews, typed measurement and do not poison the next drawing
+ok 94 - rejected short shapes clear previews, typed measurement and do not poison the next drawing
+  ---
+  duration_ms: 318.8056
+  type: 'test'
+  ...
+# Subtest: invalid pointer samples do not replace the last valid mathematical direction
+ok 95 - invalid pointer samples do not replace the last valid mathematical direction
+  ---
+  duration_ms: 106.2716
+  type: 'test'
+  ...
+# Subtest: M3c first named layer preserves geometry and legacy paint order and creates base membership
+ok 96 - M3c first named layer preserves geometry and legacy paint order and creates base membership
+  ---
+  duration_ms: 85.1407
+  type: 'test'
+  ...
+# Subtest: M3c paint hit and SVG order use the same layer ordering
+ok 97 - M3c paint hit and SVG order use the same layer ordering
+  ---
+  duration_ms: 60.5284
+  type: 'test'
+  ...
+# Subtest: M3c hidden layers gate selection snapping and standalone SVG without changing object visibility
+ok 98 - M3c hidden layers gate selection snapping and standalone SVG without changing object visibility
+  ---
+  duration_ms: 65.5855
+  type: 'test'
+  ...
+# Subtest: M3c grouped members cannot split across layers or create cross-layer groups
+ok 99 - M3c grouped members cannot split across layers or create cross-layer groups
+  ---
+  duration_ms: 64.8441
+  type: 'test'
+  ...
+# Subtest: M3c rename reorder delete merge and clear are geometry-preserving operations
+ok 100 - M3c rename reorder delete merge and clear are geometry-preserving operations
+  ---
+  duration_ms: 71.1947
+  type: 'test'
+  ...
+# Subtest: M3c roundtrip with nested groups constructed geometry locks and layer visibility
+ok 101 - M3c roundtrip with nested groups constructed geometry locks and layer visibility
+  ---
+  duration_ms: 65.867
+  type: 'test'
+  ...
+# Subtest: M3c malformed layer schema and membership are rejected atomically
+ok 102 - M3c malformed layer schema and membership are rejected atomically
+  ---
+  duration_ms: 54.2049
+  type: 'test'
+  ...
+# Subtest: M3c old opaque layer extensions are preserved rather than silently interpreted
+ok 103 - M3c old opaque layer extensions are preserved rather than silently interpreted
+  ---
+  duration_ms: 51.9458
+  type: 'test'
+  ...
+# Subtest: M3c new and duplicated objects use valid membership and group copies remain together
+ok 104 - M3c new and duplicated objects use valid membership and group copies remain together
+  ---
+  duration_ms: 52.8763
+  type: 'test'
+  ...
+# Subtest: M3c restricted layer structural commands deny and hidden layer gates direct facade
+ok 105 - M3c restricted layer structural commands deny and hidden layer gates direct facade
+  ---
+  duration_ms: 105.0877
+  type: 'test'
+  ...
+# Subtest: M3c assigning to the same layer is a no-op and deleting bottom layer preserves paint order
+ok 106 - M3c assigning to the same layer is a no-op and deleting bottom layer preserves paint order
+  ---
+  duration_ms: 31.6028
+  type: 'test'
+  ...
+# Subtest: M3c all-hidden creation and invalid layer names preserve document and ID allocator
+ok 107 - M3c all-hidden creation and invalid layer names preserve document and ID allocator
+  ---
+  duration_ms: 39.4781
+  type: 'test'
+  ...
+# Subtest: M3c restricted readonly layers never expose unread member IDs and JSON export fails closed
+ok 108 - M3c restricted readonly layers never expose unread member IDs and JSON export fails closed
+  ---
+  duration_ms: 49.4439
+  type: 'test'
+  ...
+# Subtest: M3c explicit parameter bindings on hidden sources retain their existing permission contract
+ok 109 - M3c explicit parameter bindings on hidden sources retain their existing permission contract
+  ---
+  duration_ms: 72.5512
+  type: 'test'
+  ...
+# Subtest: standalone renderer respects visibility and origin with either axis independently
+ok 110 - standalone renderer respects visibility and origin with either axis independently
+  ---
+  duration_ms: 84.8833
+  type: 'test'
+  ...
+# Subtest: loading feature modules never installs render-based engine trackers or drag listeners
+ok 111 - loading feature modules never installs render-based engine trackers or drag listeners
+  ---
+  duration_ms: 83.9551
+  type: 'test'
+  ...
+# Subtest: standalone engine construction/render cannot replace an explicit editor compatibility reference
+ok 112 - standalone engine construction/render cannot replace an explicit editor compatibility reference
+  ---
+  duration_ms: 62.7948
+  type: 'test'
+  ...
+# Subtest: source has one canvas render owner and no alternative feature interaction/engine trackers
+ok 113 - source has one canvas render owner and no alternative feature interaction/engine trackers
+  ---
+  duration_ms: 34.3386
+  type: 'test'
+  ...
+# Subtest: M1.1 hover and click share the same hit at eight CSS pixels and clear outside
+ok 114 - M1.1 hover and click share the same hit at eight CSS pixels and clear outside
+  ---
+  duration_ms: 137.4115
+  type: 'test'
+  ...
+# Subtest: M1.1 idle hover updates presentation without rendering geometry or inspector
+ok 115 - M1.1 idle hover updates presentation without rendering geometry or inspector
+  ---
+  duration_ms: 65.0249
+  type: 'test'
+  ...
+# Subtest: M1.1 locks show selection pointer but never a move cursor
+ok 116 - M1.1 locks show selection pointer but never a move cursor
+  ---
+  duration_ms: 68.1267
+  type: 'test'
+  ...
+# Subtest: M1.1 group cursor and drag retain all IDs and cancel restores geometry
+ok 117 - M1.1 group cursor and drag retain all IDs and cancel restores geometry
+  ---
+  duration_ms: 128.9894
+  type: 'test'
+  ...
+# Subtest: M1.1 dependent group movement requires all free source roots and respects locks
+ok 118 - M1.1 dependent group movement requires all free source roots and respects locks
+  ---
+  duration_ms: 204.7407
+  type: 'test'
+  ...
+# Subtest: M1.1 hover is tool gated and teardown never retains hover state
+ok 119 - M1.1 hover is tool gated and teardown never retains hover state
+  ---
+  duration_ms: 70.5882
+  type: 'test'
+  ...
+# Subtest: M1.1 movement eligibility is cached until selection or immutable model changes
+ok 120 - M1.1 movement eligibility is cached until selection or immutable model changes
+  ---
+  duration_ms: 52.8754
+  type: 'test'
+  ...
+# Subtest: M1.1 hidden and invalid painted targets cannot override the shared hit resolver
+ok 121 - M1.1 hidden and invalid painted targets cannot override the shared hit resolver
+  ---
+  duration_ms: 57.4857
+  type: 'test'
+  ...
+# Subtest: M1.1 handles labels pan and marquee have gated cursors and clear hover
+ok 122 - M1.1 handles labels pan and marquee have gated cursors and clear hover
+  ---
+  duration_ms: 59.7193
+  type: 'test'
+  ...
+# Subtest: M1 right rectangle previews synchronize selection list inspector without document/history writes
+ok 123 - M1 right rectangle previews synchronize selection list inspector without document/history writes
+  ---
+  duration_ms: 99.0976
+  type: 'test'
+  ...
+# Subtest: M1 final pointer-up sample is resolved without a move and outside target is accepted
+ok 124 - M1 final pointer-up sample is resolved without a move and outside target is accepted
+  ---
+  duration_ms: 77.4816
+  type: 'test'
+  ...
+# Subtest: M1 add and combined toggle modifiers resolve from original IDs on repeated moves
+ok 125 - M1 add and combined toggle modifiers resolve from original IDs on repeated moves
+  ---
+  duration_ms: 138.4968
+  type: 'test'
+  ...
+# Subtest: M1 all cancellation paths restore original selection and release capture
+ok 126 - M1 all cancellation paths restore original selection and release capture
+  ---
+  duration_ms: 335.0843
+  type: 'test'
+  ...
+# Subtest: M1 right click retains context menu and drawing tools never start marquee
+ok 127 - M1 right click retains context menu and drawing tools never start marquee
+  ---
+  duration_ms: 36.6592
+  type: 'test'
+  ...
+# Subtest: M1 keyboard rectangle uses same resolver and does not intercept text entry
+ok 128 - M1 keyboard rectangle uses same resolver and does not intercept text entry
+  ---
+  duration_ms: 65.5563
+  type: 'test'
+  ...
+# Subtest: M1 once a drag starts returning to its origin still suppresses its contextmenu
+ok 129 - M1 once a drag starts returning to its origin still suppresses its contextmenu
+  ---
+  duration_ms: 41.8453
+  type: 'test'
+  ...
+# Subtest: style inspector edits font size and stroke without replacing other style fields
+ok 130 - style inspector edits font size and stroke without replacing other style fields
+  ---
+  duration_ms: 106.5316
+  type: 'test'
+  ...
+# Subtest: style patches retain existing fill when editing multiple presentation fields
+ok 131 - style patches retain existing fill when editing multiple presentation fields
+  ---
+  duration_ms: 40.4657
+  type: 'test'
+  ...
+# Subtest: multi-selection moves rigidly as one history step and undo restores every selected ID
+ok 132 - multi-selection moves rigidly as one history step and undo restores every selected ID
+  ---
+  duration_ms: 99.2404
+  type: 'test'
+  ...
+# Subtest: duplicate and lock are atomic commands; locked selections refuse dragging and deletion
+ok 133 - duplicate and lock are atomic commands; locked selections refuse dragging and deletion
+  ---
+  duration_ms: 178.8725
+  type: 'test'
+  ...
+# Subtest: angle tools create measured and exact right angles as one complete interaction
+ok 134 - angle tools create measured and exact right angles as one complete interaction
+  ---
+  duration_ms: 112.73
+  type: 'test'
+  ...
+# Subtest: history records a whole drag once, restores selection and ignores cancelled/noop gestures
+ok 135 - history records a whole drag once, restores selection and ignores cancelled/noop gestures
+  ---
+  duration_ms: 93.8849
+  type: 'test'
+  ...
+# Subtest: text form commits the captured snap position once and Escape discards pending text
+ok 136 - text form commits the captured snap position once and Escape discards pending text
+  ---
+  duration_ms: 54.7901
+  type: 'test'
+  ...
+# Subtest: empty text is not committed and New clears a pending text form
+ok 137 - empty text is not committed and New clears a pending text form
+  ---
+  duration_ms: 31.0392
+  type: 'test'
+  ...
+# Subtest: triangle and multi-click polygon use one owner and one undo step; Enter and Escape clean up
+ok 138 - triangle and multi-click polygon use one owner and one undo step; Enter and Escape clean up
+  ---
+  duration_ms: 159.725
+  type: 'test'
+  ...
+# Subtest: unfinished polygons roll back on blur, pointercancel, New and dispose without a history step
+ok 139 - unfinished polygons roll back on blur, pointercancel, New and dispose without a history step
+  ---
+  duration_ms: 151.3305
+  type: 'test'
+  ...
+# Subtest: draw/delete history, shortcuts, new/import reset and failed import retain a usable history
+ok 140 - draw/delete history, shortcuts, new/import reset and failed import retain a usable history
+  ---
+  duration_ms: 158.2733
+  type: 'test'
+  ...
+# Subtest: one pointer owner commits outside canvas; other pointers cannot replace a drag
+ok 141 - one pointer owner commits outside canvas; other pointers cannot replace a drag
+  ---
+  duration_ms: 43.2428
+  type: 'test'
+  ...
+# Subtest: pointercancel rolls back object/label/endpoint/draw/pan and clears ownership
+ok 142 - pointercancel rolls back object/label/endpoint/draw/pan and clears ownership
+  ---
+  duration_ms: 165.2617
+  type: 'test'
+  ...
+# Subtest: blur rolls back object/label/endpoint/draw/pan and clears ownership
+ok 143 - blur rolls back object/label/endpoint/draw/pan and clears ownership
+  ---
+  duration_ms: 201.864
+  type: 'test'
+  ...
+# Subtest: Escape rolls back object/label/endpoint/draw/pan and clears ownership
+ok 144 - Escape rolls back object/label/endpoint/draw/pan and clears ownership
+  ---
+  duration_ms: 211.3992
+  type: 'test'
+  ...
+# Subtest: lostpointercapture rolls back object/label/endpoint/draw/pan and clears ownership
+ok 145 - lostpointercapture rolls back object/label/endpoint/draw/pan and clears ownership
+  ---
+  duration_ms: 160.9307
+  type: 'test'
+  ...
+# Subtest: responsive labeldrag uses screen transform and obeys tool gating
+ok 146 - responsive labeldrag uses screen transform and obeys tool gating
+  ---
+  duration_ms: 79.1087
+  type: 'test'
+  ...
+# Subtest: New cancels an active drag; dispose/init does not duplicate listeners
+ok 147 - New cancels an active drag; dispose/init does not duplicate listeners
+  ---
+  duration_ms: 85.6209
+  type: 'test'
+  ...
+# Subtest: painted object target selects and moves a circle center despite mathematical hit-test missing it
+ok 148 - painted object target selects and moves a circle center despite mathematical hit-test missing it
+  ---
+  duration_ms: 42.7713
+  type: 'test'
+  ...
+# Subtest: selecting an object in the sidebar after drawing activates selection and subsequent drag adds no shape
+ok 149 - selecting an object in the sidebar after drawing activates selection and subsequent drag adds no shape
+  ---
+  duration_ms: 54.3092
+  type: 'test'
+  ...
+# Subtest: unrecognized drawing tools never fall through into canvas pan
+ok 150 - unrecognized drawing tools never fall through into canvas pan
+  ---
+  duration_ms: 23.4217
+  type: 'test'
+  ...
+# Subtest: group pointercancel rolls back every member and selection
+ok 151 - group pointercancel rolls back every member and selection
+  ---
+  duration_ms: 77.4354
+  type: 'test'
+  ...
+# Subtest: group blur rolls back every member and selection
+ok 152 - group blur rolls back every member and selection
+  ---
+  duration_ms: 102.4954
+  type: 'test'
+  ...
+# Subtest: group Escape rolls back every member and selection
+ok 153 - group Escape rolls back every member and selection
+  ---
+  duration_ms: 83.213
+  type: 'test'
+  ...
+# Subtest: group lostpointercapture rolls back every member and selection
+ok 154 - group lostpointercapture rolls back every member and selection
+  ---
+  duration_ms: 78.4656
+  type: 'test'
+  ...
+# Subtest: selection containing only derived constructions refuses group drag without throwing
+ok 155 - selection containing only derived constructions refuses group drag without throwing
+  ---
+  duration_ms: 98.1933
+  type: 'test'
+  ...
+# Subtest: construction source selection Escape cleans up without adding an object
+ok 156 - construction source selection Escape cleans up without adding an object
+  ---
+  duration_ms: 47.145
+  type: 'test'
+  ...
+# Subtest: construction source selection blur cleans up without adding an object
+ok 157 - construction source selection blur cleans up without adding an object
+  ---
+  duration_ms: 34.8884
+  type: 'test'
+  ...
+# Subtest: construction source selection pointercancel cleans up without adding an object
+ok 158 - construction source selection pointercancel cleans up without adding an object
+  ---
+  duration_ms: 31.859
+  type: 'test'
+  ...
+# Subtest: bisector accepts a direct click on an existing angle and keeps its vertex references
+ok 159 - bisector accepts a direct click on an existing angle and keeps its vertex references
+  ---
+  duration_ms: 68.0453
+  type: 'test'
+  ...
+# Subtest: bisector of a triangle is constructed by clicking its vertex
+ok 160 - bisector of a triangle is constructed by clicking its vertex
+  ---
+  duration_ms: 68.703
+  type: 'test'
+  ...
+# Subtest: M3a author import is one reversible replacement restoring document presentation and selection
+ok 161 - M3a author import is one reversible replacement restoring document presentation and selection
+  ---
+  duration_ms: 44.1469
+  type: 'test'
+  ...
+# Subtest: M3a rejected import preserves active drag history redo document and pointer capture
+ok 162 - M3a rejected import preserves active drag history redo document and pointer capture
+  ---
+  duration_ms: 48.5473
+  type: 'test'
+  ...
+# Subtest: M3a accepted import cancels preview then captures committed base, and no-op retains redo
+ok 163 - M3a accepted import cancels preview then captures committed base, and no-op retains redo
+  ---
+  duration_ms: 64.8018
+  type: 'test'
+  ...
+# Subtest: M3a import retains earlier history, replacing redo only on a changed document
+ok 164 - M3a import retains earlier history, replacing redo only on a changed document
+  ---
+  duration_ms: 32.3321
+  type: 'test'
+  ...
+# Subtest: M3a restricted direct import remains forbidden without changing context or history
+ok 165 - M3a restricted direct import remains forbidden without changing context or history
+  ---
+  duration_ms: 40.9914
+  type: 'test'
+  ...
+# Subtest: M3a stale file reads cannot overwrite explicit load New dispose or a newer import
+ok 166 - M3a stale file reads cannot overwrite explicit load New dispose or a newer import
+  ---
+  duration_ms: 133.7087
+  type: 'test'
+  ...
+# Subtest: M3b clicking and modifier selection treat persistent groups as one unit
+ok 167 - M3b clicking and modifier selection treat persistent groups as one unit
+  ---
+  duration_ms: 65.4245
+  type: 'test'
+  ...
+# Subtest: M3b grouping shortcuts inspector history and one-level ungroup share command path
+ok 168 - M3b grouping shortcuts inspector history and one-level ungroup share command path
+  ---
+  duration_ms: 116.7393
+  type: 'test'
+  ...
+# Subtest: M3b group crossing selects all members containment requires all and cancel restores selection
+ok 169 - M3b group crossing selects all members containment requires all and cancel restores selection
+  ---
+  duration_ms: 49.7917
+  type: 'test'
+  ...
+# Subtest: M3b persistent group label drag moves group rigidly and Escape restores geometry
+ok 170 - M3b persistent group label drag moves group rigidly and Escape restores geometry
+  ---
+  duration_ms: 48.361
+  type: 'test'
+  ...
+# Subtest: M3b locks hidden members and incomplete construction roots prevent partial group translation
+ok 171 - M3b locks hidden members and incomplete construction roots prevent partial group translation
+  ---
+  duration_ms: 27.6
+  type: 'test'
+  ...
+# Subtest: M3b author initialization restores persistent document controls after restricted mounting
+ok 172 - M3b author initialization restores persistent document controls after restricted mounting
+  ---
+  duration_ms: 25.0186
+  type: 'test'
+  ...
+# Subtest: M3b select-all skips incomplete hidden groups while author list can inspect them
+ok 173 - M3b select-all skips incomplete hidden groups while author list can inspect them
+  ---
+  duration_ms: 41.719
+  type: 'test'
+  ...
+# Subtest: M3b hidden group members clear hover on render and eligibility is cached per immutable snapshot
+ok 174 - M3b hidden group members clear hover on render and eligibility is cached per immutable snapshot
+  ---
+  duration_ms: 26.7398
+  type: 'test'
+  ...
+# Subtest: M3c editor hidden layer invalidates hover and movement and undo restores presentation
+ok 175 - M3c editor hidden layer invalidates hover and movement and undo restores presentation
+  ---
+  duration_ms: 111.1243
+  type: 'test'
+  ...
+# Subtest: M3c author layer controls and inspector assignment share existing document history
+ok 176 - M3c author layer controls and inspector assignment share existing document history
+  ---
+  duration_ms: 78.923
+  type: 'test'
+  ...
+# Subtest: M3c layer edits cancel active group interaction before history changes
+ok 177 - M3c layer edits cancel active group interaction before history changes
+  ---
+  duration_ms: 70.3787
+  type: 'test'
+  ...
+# Subtest: M4a inspector detach preserves groups and layers and is fully undoable
+ok 178 - M4a inspector detach preserves groups and layers and is fully undoable
+  ---
+  duration_ms: 158.4717
+  type: 'test'
+  ...
+# Subtest: M4a inspector explains invalid construction and refuses detachment
+ok 179 - M4a inspector explains invalid construction and refuses detachment
+  ---
+  duration_ms: 69.6992
+  type: 'test'
+  ...
+# Subtest: M4a inspector source navigation uses existing selection and has no document mutation
+ok 180 - M4a inspector source navigation uses existing selection and has no document mutation
+  ---
+  duration_ms: 69.153
+  type: 'test'
+  ...
+# Subtest: M4a label cancellation preserves newer computed geometry from an indirect source update
+ok 181 - M4a label cancellation preserves newer computed geometry from an indirect source update
+  ---
+  duration_ms: 52.4628
+  type: 'test'
+  ...
+# Subtest: M2c axes configuration selection is temporary and independent of visibility
+ok 182 - M2c axes configuration selection is temporary and independent of visibility
+  ---
+  duration_ms: 43.3828
+  type: 'test'
+  ...
+# Subtest: M2c explicit pan uses existing interaction and preserves selected geometry
+ok 183 - M2c explicit pan uses existing interaction and preserves selected geometry
+  ---
+  duration_ms: 65.3028
+  type: 'test'
+  ...
+# Subtest: M2c centered zoom buttons share bounded zoom and undo behavior
+ok 184 - M2c centered zoom buttons share bounded zoom and undo behavior
+  ---
+  duration_ms: 31.2041
+  type: 'test'
+  ...
+# Subtest: M2c common style changes are atomic and reject locked members
+ok 185 - M2c common style changes are atomic and reject locked members
+  ---
+  duration_ms: 63.1306
+  type: 'test'
+  ...
+# Subtest: M2c restricted view settings mutate only authorized session view
+ok 186 - M2c restricted view settings mutate only authorized session view
+  ---
+  duration_ms: 131.976
+  type: 'test'
+  ...
+# Subtest: M2c restricted denied axis setting leaves document and view unchanged
+ok 187 - M2c restricted denied axis setting leaves document and view unchanged
+  ---
+  duration_ms: 72.1968
+  type: 'test'
+  ...
+# Subtest: line circle creates two ordered red branches and follows parents with retained identities
+ok 188 - line circle creates two ordered red branches and follows parents with retained identities
+  ---
+  duration_ms: 109.1713
+  type: 'test'
+  ...
+# Subtest: finite and ray domains preserve branch numbers, tangent creates one and no-solution is atomic
+ok 189 - finite and ray domains preserve branch numbers, tangent creates one and no-solution is atomic
+  ---
+  duration_ms: 145.9717
+  type: 'test'
+  ...
+# Subtest: line circle polygon edge, zero radius and collapsed segment invalidity recover
+ok 190 - line circle polygon edge, zero radius and collapsed segment invalidity recover
+  ---
+  duration_ms: 66.2686
+  type: 'test'
+  ...
+# Subtest: line circle replay, strict branch imports and permissions are deterministic
+ok 191 - line circle replay, strict branch imports and permissions are deterministic
+  ---
+  duration_ms: 120.0767
+  type: 'test'
+  ...
+# Subtest: line circle normalized projection handles oblique and translated geometry and endpoint reversal
+ok 192 - line circle normalized projection handles oblique and translated geometry and endpoint reversal
+  ---
+  duration_ms: 53.5452
+  type: 'test'
+  ...
+# Subtest: linked intersection follows parents, invalidates and recovers without losing style or identity
+ok 193 - linked intersection follows parents, invalidates and recovers without losing style or identity
+  ---
+  duration_ms: 114.9474
+  type: 'test'
+  ...
+# Subtest: finite domains, polygon edges, ray direction and failed creation are handled atomically
+ok 194 - finite domains, polygon edges, ray direction and failed creation are handled atomically
+  ---
+  duration_ms: 75.259
+  type: 'test'
+  ...
+# Subtest: intersection semantic replay, cycles, deletion and source grants reuse the existing boundary
+ok 195 - intersection semantic replay, cycles, deletion and source grants reuse the existing boundary
+  ---
+  duration_ms: 137.0811
+  type: 'test'
+  ...
+# Subtest: intersection handles collapsed and near-parallel directions and scales independently of zoom
+ok 196 - intersection handles collapsed and near-parallel directions and scales independently of zoom
+  ---
+  duration_ms: 63.3545
+  type: 'test'
+  ...
+# Subtest: linear tools remain classified when a cached model lacks the optional family export
+ok 197 - linear tools remain classified when a cached model lacks the optional family export
+  ---
+  duration_ms: 87.8782
+  type: 'test'
+  ...
+# Subtest: straight: roundtrip, rigid translation, endpoint edit and exact drawing
+ok 198 - straight: roundtrip, rigid translation, endpoint edit and exact drawing
+  ---
+  duration_ms: 80.1445
+  type: 'test'
+  ...
+# Subtest: ray: roundtrip, rigid translation, endpoint edit and exact drawing
+ok 199 - ray: roundtrip, rigid translation, endpoint edit and exact drawing
+  ---
+  duration_ms: 58.4322
+  type: 'test'
+  ...
+# Subtest: vector: roundtrip, rigid translation, endpoint edit and exact drawing
+ok 200 - vector: roundtrip, rigid translation, endpoint edit and exact drawing
+  ---
+  duration_ms: 47.5875
+  type: 'test'
+  ...
+# Subtest: straight/ray are clipped to the mathematical viewport and direction arrows have correct semantics
+ok 201 - straight/ray are clipped to the mathematical viewport and direction arrows have correct semantics
+  ---
+  duration_ms: 53.9514
+  type: 'test'
+  ...
+# Subtest: intersections respect infinite, forward-only and finite domains including circles
+ok 202 - intersections respect infinite, forward-only and finite domains including circles
+  ---
+  duration_ms: 49.1926
+  type: 'test'
+  ...
+# Subtest: selection supports extensions and ray direction, zero vector is valid, zero direction straight/ray reject atomically
+ok 203 - selection supports extensions and ray direction, zero vector is valid, zero direction straight/ray reject atomically
+  ---
+  duration_ms: 49.6757
+  type: 'test'
+  ...
+# Subtest: clipping handles vertical/reversed/diagonal rays; degenerate endpoint snapping retains a valid preview/commit
+ok 204 - clipping handles vertical/reversed/diagonal rays; degenerate endpoint snapping retains a valid preview/commit
+  ---
+  duration_ms: 31.5032
+  type: 'test'
+  ...
+# Subtest: M5a linked segment and path point follow ordered parent geometry and clamp
+ok 205 - M5a linked segment and path point follow ordered parent geometry and clamp
+  ---
+  duration_ms: 140.5564
+  type: 'test'
+  ...
+# Subtest: M5a circle parameter wraps and follows center/radius, invalidity recovers with identity
+ok 206 - M5a circle parameter wraps and follows center/radius, invalidity recovers with identity
+  ---
+  duration_ms: 104.9683
+  type: 'test'
+  ...
+# Subtest: M5a zero-length segment and invalid ancestors retain parameters and recover
+ok 207 - M5a zero-length segment and invalid ancestors retain parameters and recover
+  ---
+  duration_ms: 63.1405
+  type: 'test'
+  ...
+# Subtest: M5a finite segment roles, polygon edge topology, schema and parameter imports are strict
+ok 208 - M5a finite segment roles, polygon edge topology, schema and parameter imports are strict
+  ---
+  duration_ms: 74.8376
+  type: 'test'
+  ...
+# Subtest: M5a source rebinding retains parameter, locked edits fail and path commands replay deterministically
+ok 209 - M5a source rebinding retains parameter, locked edits fail and path commands replay deterministically
+  ---
+  duration_ms: 74.4879
+  type: 'test'
+  ...
+# Subtest: M5a restricted creation needs tool and source grants; parameter edits and calculated coordinates remain denied
+ok 210 - M5a restricted creation needs tool and source grants; parameter edits and calculated coordinates remain denied
+  ---
+  duration_ms: 154.5276
+  type: 'test'
+  ...
+# Subtest: M5a schema 2 supports group/layer documents, detach and parent deletion cascades
+ok 211 - M5a schema 2 supports group/layer documents, detach and parent deletion cascades
+  ---
+  duration_ms: 55.6201
+  type: 'test'
+  ...
+# Subtest: tangent creation uses the same scaled contact tolerance as geometry calculation
+ok 212 - tangent creation uses the same scaled contact tolerance as geometry calculation
+  ---
+  duration_ms: 95.6405
+  type: 'test'
+  ...
+# Subtest: one linked tangent follows path parameter and circle center/radius with identity/style recovery
+ok 213 - one linked tangent follows path parameter and circle center/radius with identity/style recovery
+  ---
+  duration_ms: 84.4651
+  type: 'test'
+  ...
+# Subtest: legacy tangent cases and schema unchanged; linked tangent replays deterministically
+ok 214 - legacy tangent cases and schema unchanged; linked tangent replays deterministically
+  ---
+  duration_ms: 99.0312
+  type: 'test'
+  ...
+# Subtest: tangent through a point on a derived circle follows both circle source points
+ok 215 - tangent through a point on a derived circle follows both circle source points
+  ---
+  duration_ms: 50.2328
+  type: 'test'
+  ...
+# Subtest: linked tangent uses existing both-source grants in course and assessment
+ok 216 - linked tangent uses existing both-source grants in course and assessment
+  ---
+  duration_ms: 88.3167
+  type: 'test'
+  ...
+# Subtest: dimension and angle values are computed while free text is preserved and escaped
+ok 217 - dimension and angle values are computed while free text is preserved and escaped
+  ---
+  duration_ms: 111.8198
+  type: 'test'
+  ...
+# Subtest: group resolver applies one vector and excludes every selected object
+ok 218 - group resolver applies one vector and excludes every selected object
+  ---
+  duration_ms: 29.8567
+  type: 'test'
+  ...
+# Subtest: batch duplication generates unique IDs and retains nested styles and measurements
+ok 219 - batch duplication generates unique IDs and retains nested styles and measurements
+  ---
+  duration_ms: 30.786
+  type: 'test'
+  ...
+# Subtest: angle coordinate strings normalize without freezing or aliasing input extensions
+ok 220 - angle coordinate strings normalize without freezing or aliasing input extensions
+  ---
+  duration_ms: 34.4474
+  type: 'test'
+  ...
+# Subtest: label-only measurements preserve geometry and labels without construction strokes
+ok 221 - label-only measurements preserve geometry and labels without construction strokes
+  ---
+  duration_ms: 48.1562
+  type: 'test'
+  ...
+# Subtest: triangle preview shows current side length and angle without persisting annotations
+ok 222 - triangle preview shows current side length and angle without persisting annotations
+  ---
+  duration_ms: 24.1482
+  type: 'test'
+  ...
+# Subtest: minor grid is opt-in, persistent and absent from legacy default export
+ok 223 - minor grid is opt-in, persistent and absent from legacy default export
+  ---
+  duration_ms: 93.7165
+  type: 'test'
+  ...
+# Subtest: minor grid stays bounded, excludes major positions and follows grid visibility
+ok 224 - minor grid stays bounded, excludes major positions and follows grid visibility
+  ---
+  duration_ms: 43.1333
+  type: 'test'
+  ...
+# Subtest: minor grid flag import validation is atomic
+ok 225 - minor grid flag import validation is atomic
+  ---
+  duration_ms: 38.3629
+  type: 'test'
+  ...
+# Subtest: get/all/export and input objects are detached; the public object view is deeply immutable
+ok 226 - get/all/export and input objects are detached; the public object view is deeply immutable
+  ---
+  duration_ms: 75.208
+  type: 'test'
+  ...
+# Subtest: partial style patches retain radius/dash/opacity and merge nested extension fields
+ok 227 - partial style patches retain radius/dash/opacity and merge nested extension fields
+  ---
+  duration_ms: 39.5366
+  type: 'test'
+  ...
+# Subtest: invalid add/update/import reject atomically instead of normalizing invalid numbers
+ok 228 - invalid add/update/import reject atomically instead of normalizing invalid numbers
+  ---
+  duration_ms: 33.2717
+  type: 'test'
+  ...
+# Subtest: screen selection uses constant CSS tolerance for point/segment under zoom, responsive and affine transforms
+ok 229 - screen selection uses constant CSS tolerance for point/segment under zoom, responsive and affine transforms
+  ---
+  duration_ms: 49.0114
+  type: 'test'
+  ...
+# Subtest: affine circle outline tolerance is measured against the transformed ellipse
+ok 230 - affine circle outline tolerance is measured against the transformed ellipse
+  ---
+  duration_ms: 24.9725
+  type: 'test'
+  ...
+# Subtest: circle center and outline select, hidden shapes never select, ties use painting order; numeric legacy API remains stable
+ok 231 - circle center and outline select, hidden shapes never select, ties use painting order; numeric legacy API remains stable
+  ---
+  duration_ms: 25.7728
+  type: 'test'
+  ...
+# Subtest: unchanged geometry reuses candidate construction, including rigid-drag exclusion
+ok 232 - unchanged geometry reuses candidate construction, including rigid-drag exclusion
+  ---
+  duration_ms: 84.5478
+  type: 'test'
+  ...
+# Subtest: cached snaps invalidate for geometry, visibility, add/remove and import; snapshot mutation has no effect
+ok 233 - cached snaps invalidate for geometry, visibility, add/remove and import; snapshot mutation has no effect
+  ---
+  duration_ms: 63.9365
+  type: 'test'
+  ...
+# Subtest: candidate and snap result callers cannot corrupt the internal cached geometry
+ok 234 - candidate and snap result callers cannot corrupt the internal cached geometry
+  ---
+  duration_ms: 23.0242
+  type: 'test'
+  ...
+# Subtest: pointer bursts render once per frame while the latest resolver result remains synchronous
+ok 235 - pointer bursts render once per frame while the latest resolver result remains synchronous
+  ---
+  duration_ms: 119.0912
+  type: 'test'
+  ...
+# Subtest: commit/keyboard flush the latest result and cancel/New/dispose cannot resurrect pending rendering
+ok 236 - commit/keyboard flush the latest result and cancel/New/dispose cannot resurrect pending rendering
+  ---
+  duration_ms: 333.4658
+  type: 'test'
+  ...
+# Subtest: M2b restricted startup never falls back to author and compiler rejects unknown grants
+ok 237 - M2b restricted startup never falls back to author and compiler rejects unknown grants
+  ---
+  duration_ms: 83.4147
+  type: 'test'
+  ...
+# Subtest: M2b defaults and mode ceilings deny direct facade mutation, load, draft and policy spoofing
+ok 238 - M2b defaults and mode ceilings deny direct facade mutation, load, draft and policy spoofing
+  ---
+  duration_ms: 99.6427
+  type: 'test'
+  ...
+# Subtest: M2b move is explicit, property patches cannot use its grant, locks selectable
+ok 239 - M2b move is explicit, property patches cannot use its grant, locks selectable
+  ---
+  duration_ms: 68.6738
+  type: 'test'
+  ...
+# Subtest: M2b batch mixed permissions is atomic in either order
+ok 240 - M2b batch mixed permissions is atomic in either order
+  ---
+  duration_ms: 97.0912
+  type: 'test'
+  ...
+# Subtest: M2b roots translate rigidly; derived requires coverage but not direct geometry grant
+ok 241 - M2b roots translate rigidly; derived requires coverage but not direct geometry grant
+  ---
+  duration_ms: 68.7102
+  type: 'test'
+  ...
+# Subtest: M2b indirect follow and freeze, protected cascade and typed source gates
+ok 242 - M2b indirect follow and freeze, protected cascade and typed source gates
+  ---
+  duration_ms: 146.3853
+  type: 'test'
+  ...
+# Subtest: M2b parameters enforce boundaries step and numeric types without generic field grants
+ok 243 - M2b parameters enforce boundaries step and numeric types without generic field grants
+  ---
+  duration_ms: 82.2959
+  type: 'test'
+  ...
+# Subtest: M2b creation owns IDs and tool recipes; derived add and spoofed metadata rejected
+ok 244 - M2b creation owns IDs and tool recipes; derived add and spoofed metadata rejected
+  ---
+  duration_ms: 70.6964
+  type: 'test'
+  ...
+# Subtest: M2b history is private, undo of own create needs no delete grant and reset keeps context
+ok 245 - M2b history is private, undo of own create needs no delete grant and reset keeps context
+  ---
+  duration_ms: 100.2709
+  type: 'test'
+  ...
+# Subtest: M2b preview never mutates committed state, commit checks revisions and handles
+ok 246 - M2b preview never mutates committed state, commit checks revisions and handles
+  ---
+  duration_ms: 36.9017
+  type: 'test'
+  ...
+# Subtest: M2b read export is separate from internal snapshots; hidden source closure cannot leak
+ok 247 - M2b read export is separate from internal snapshots; hidden source closure cannot leak
+  ---
+  duration_ms: 72.7952
+  type: 'test'
+  ...
+# Subtest: M2b assessment initial deletion and unsupported resume/import policies are rejected
+ok 248 - M2b assessment initial deletion and unsupported resume/import policies are rejected
+  ---
+  duration_ms: 32.4204
+  type: 'test'
+  ...
+# Subtest: M2b no public plan application, kernel transaction or opaque metadata leaks
+ok 249 - M2b no public plan application, kernel transaction or opaque metadata leaks
+  ---
+  duration_ms: 25.2264
+  type: 'test'
+  ...
+# Subtest: M2b field bindings and invalid numeric patches cannot be expanded at commit
+ok 250 - M2b field bindings and invalid numeric patches cannot be expanded at commit
+  ---
+  duration_ms: 30.2148
+  type: 'test'
+  ...
+# Subtest: M2b canonical event contains actual direct and indirect effects; failed actions emit none
+ok 251 - M2b canonical event contains actual direct and indirect effects; failed actions emit none
+  ---
+  duration_ms: 32.2859
+  type: 'test'
+  ...
+# Subtest: M2b schema is closed against accessors, prototype keys and execution predicates
+ok 252 - M2b schema is closed against accessors, prototype keys and execution predicates
+  ---
+  duration_ms: 16.7952
+  type: 'test'
+  ...
+# Subtest: M2b immutable grants cannot conflict or be removed with an object override
+ok 253 - M2b immutable grants cannot conflict or be removed with an object override
+  ---
+  duration_ms: 14.2454
+  type: 'test'
+  ...
+# Subtest: M2b hidden helper parameter is usable without leaking helper or granting selection
+ok 254 - M2b hidden helper parameter is usable without leaking helper or granting selection
+  ---
+  duration_ms: 21.7913
+  type: 'test'
+  ...
+# Subtest: M2b invalid hidden or unreadable objects cannot be sources or direct mutation targets
+ok 255 - M2b invalid hidden or unreadable objects cannot be sources or direct mutation targets
+  ---
+  duration_ms: 20.3414
+  type: 'test'
+  ...
+# Subtest: M2b display and selection are independently gated from snap
+ok 256 - M2b display and selection are independently gated from snap
+  ---
+  duration_ms: 18.9913
+  type: 'test'
+  ...
+# Subtest: M2b mixed properties and geometry cannot partially apply
+ok 257 - M2b mixed properties and geometry cannot partially apply
+  ---
+  duration_ms: 24.4769
+  type: 'test'
+  ...
+# Subtest: M2b property values require explicit numeric and boolean types
+ok 258 - M2b property values require explicit numeric and boolean types
+  ---
+  duration_ms: 23.9433
+  type: 'test'
+  ...
+# Subtest: M2b permitted field mutation still enforces shared parameter domains
+ok 259 - M2b permitted field mutation still enforces shared parameter domains
+  ---
+  duration_ms: 25.8518
+  type: 'test'
+  ...
+# Subtest: M2b invalid parameter configurations and overlapping bindings fail startup
+ok 260 - M2b invalid parameter configurations and overlapping bindings fail startup
+  ---
+  duration_ms: 17.348
+  type: 'test'
+  ...
+# Subtest: M2b triangle tool is an exact recipe rather than polygon alias
+ok 261 - M2b triangle tool is an exact recipe rather than polygon alias
+  ---
+  duration_ms: 27.5015
+  type: 'test'
+  ...
+# Subtest: M2b optional initial style requires the same property grant
+ok 262 - M2b optional initial style requires the same property grant
+  ---
+  duration_ms: 17.3172
+  type: 'test'
+  ...
+# Subtest: M2b delete checks entire dependent closure and author cascade remains compatible
+ok 263 - M2b delete checks entire dependent closure and author cascade remains compatible
+  ---
+  duration_ms: 27.5581
+  type: 'test'
+  ...
+# Subtest: M2b derived duplication never detaches a protected graph
+ok 264 - M2b derived duplication never detaches a protected graph
+  ---
+  duration_ms: 16.2308
+  type: 'test'
+  ...
+# Subtest: M2b budgets reject complete batches and preserve IDs history and events
+ok 265 - M2b budgets reject complete batches and preserve IDs history and events
+  ---
+  duration_ms: 21.1087
+  type: 'test'
+  ...
+# Subtest: M2b policy epoch invalidates history and cached readable facade
+ok 266 - M2b policy epoch invalidates history and cached readable facade
+  ---
+  duration_ms: 24.1812
+  type: 'test'
+  ...
+# Subtest: M2b transaction belongs to one session and expires on a committed command
+ok 267 - M2b transaction belongs to one session and expires on a committed command
+  ---
+  duration_ms: 46.5051
+  type: 'test'
+  ...
+# Subtest: M2b renderer bounds and nested snapshots cannot mutate canonical state
+ok 268 - M2b renderer bounds and nested snapshots cannot mutate canonical state
+  ---
+  duration_ms: 31.7247
+  type: 'test'
+  ...
+# Subtest: M2b view changes never mutate canonical document or create history
+ok 269 - M2b view changes never mutate canonical document or create history
+  ---
+  duration_ms: 32.8091
+  type: 'test'
+  ...
+# Subtest: M2b dispose permanently invalidates learner commands
+ok 270 - M2b dispose permanently invalidates learner commands
+  ---
+  duration_ms: 23.1969
+  type: 'test'
+  ...
+# Subtest: M2b summative uses explicit host kind with same default-deny local semantics
+ok 271 - M2b summative uses explicit host kind with same default-deny local semantics
+  ---
+  duration_ms: 28.7102
+  type: 'test'
+  ...
+# Subtest: M2b both tangent branches are atomic including result allocation budget
+ok 272 - M2b both tangent branches are atomic including result allocation budget
+  ---
+  duration_ms: 45.4163
+  type: 'test'
+  ...
+# Subtest: M2b indirect invalidity is rejected or recoverable according to explicit policy
+ok 273 - M2b indirect invalidity is rejected or recoverable according to explicit policy
+  ---
+  duration_ms: 73.8111
+  type: 'test'
+  ...
+# Subtest: M2b freeze permits a no-op and canonical effects reflect authoritative calculator
+ok 274 - M2b freeze permits a no-op and canonical effects reflect authoritative calculator
+  ---
+  duration_ms: 20.5047
+  type: 'test'
+  ...
+# Subtest: M2b right-angle geometry patches validate final shape atomically
+ok 275 - M2b right-angle geometry patches validate final shape atomically
+  ---
+  duration_ms: 25.2429
+  type: 'test'
+  ...
+# Subtest: M2b reset and history are append-only evidence with deterministic local digests
+ok 276 - M2b reset and history are append-only evidence with deterministic local digests
+  ---
+  duration_ms: 50.3298
+  type: 'test'
+  ...
+# Subtest: M2b creation projection strips nested extension data from duplication results
+ok 277 - M2b creation projection strips nested extension data from duplication results
+  ---
+  duration_ms: 21.8899
+  type: 'test'
+  ...
+# Subtest: M2b malformed closed commands cannot spoof role effects history or operator
+ok 278 - M2b malformed closed commands cannot spoof role effects history or operator
+  ---
+  duration_ms: 17.3801
+  type: 'test'
+  ...
+# Subtest: M2b host must explicitly provide a baseline and authorized plans remain private
+ok 279 - M2b host must explicitly provide a baseline and authorized plans remain private
+  ---
+  duration_ms: 11.7826
+  type: 'test'
+  ...
+# Subtest: M2b author-ui commands enforce locks while trusted legacy engine remains compatible
+ok 280 - M2b author-ui commands enforce locks while trusted legacy engine remains compatible
+  ---
+  duration_ms: 15.5161
+  type: 'test'
+  ...
+# Subtest: M3b groups have separate IDs and preserve geometry and SVG
+ok 281 - M3b groups have separate IDs and preserve geometry and SVG
+  ---
+  duration_ms: 70.4926
+  type: 'test'
+  ...
+# Subtest: M3b nested grouping and one-level ungroup preserve child membership
+ok 282 - M3b nested grouping and one-level ungroup preserve child membership
+  ---
+  duration_ms: 24.8255
+  type: 'test'
+  ...
+# Subtest: M3b overlapping dangling cyclic duplicate and colliding group graphs are atomically rejected
+ok 283 - M3b overlapping dangling cyclic duplicate and colliding group graphs are atomically rejected
+  ---
+  duration_ms: 24.4164
+  type: 'test'
+  ...
+# Subtest: M3b group mutation cannot steal a member and keeps allocator stable on refusal
+ok 284 - M3b group mutation cannot steal a member and keeps allocator stable on refusal
+  ---
+  duration_ms: 25.924
+  type: 'test'
+  ...
+# Subtest: M3b v4 nested groups roundtrip and ungroup returns to legacy geometry version
+ok 285 - M3b v4 nested groups roundtrip and ungroup returns to legacy geometry version
+  ---
+  duration_ms: 43.2713
+  type: 'test'
+  ...
+# Subtest: M3b object deletion prunes memberships and dissolves single-member groups
+ok 286 - M3b object deletion prunes memberships and dissolves single-member groups
+  ---
+  duration_ms: 39.2418
+  type: 'test'
+  ...
+# Subtest: M3b duplicating complete groups copies hierarchy without stealing original members
+ok 287 - M3b duplicating complete groups copies hierarchy without stealing original members
+  ---
+  duration_ms: 42.9451
+  type: 'test'
+  ...
+# Subtest: M3b legacy opaque group extensions are preserved and cannot be overwritten by group creation
+ok 288 - M3b legacy opaque group extensions are preserved and cannot be overwritten by group creation
+  ---
+  duration_ms: 42.5156
+  type: 'test'
+  ...
+# Subtest: M3b author semantic group commands and locked member movement gate
+ok 289 - M3b author semantic group commands and locked member movement gate
+  ---
+  duration_ms: 61.6878
+  type: 'test'
+  ...
+# Subtest: M3b restricted structural commands deny, projected groups retain read closure and export schema
+ok 290 - M3b restricted structural commands deny, projected groups retain read closure and export schema
+  ---
+  duration_ms: 81.442
+  type: 'test'
+  ...
+# Subtest: M3b group depth budget closed schema and allocator namespace reject corrupt imports
+ok 291 - M3b group depth budget closed schema and allocator namespace reject corrupt imports
+  ---
+  duration_ms: 61.8975
+  type: 'test'
+  ...
+# Subtest: M3b restricted unread membership is not exposed and JSON export fails closed
+ok 292 - M3b restricted unread membership is not exposed and JSON export fails closed
+  ---
+  duration_ms: 58.4389
+  type: 'test'
+  ...
+# Subtest: M3b linked group translation is rigid and incomplete roots or locks are atomic
+ok 293 - M3b linked group translation is rigid and incomplete roots or locks are atomic
+  ---
+  duration_ms: 42.9497
+  type: 'test'
+  ...
+# Subtest: M3b complete linked group duplication remaps internal construction sources
+ok 294 - M3b complete linked group duplication remaps internal construction sources
+  ---
+  duration_ms: 43.281
+  type: 'test'
+  ...
+# Subtest: M3b group snapping excludes selected derived members as well as translated free roots
+ok 295 - M3b group snapping excludes selected derived members as well as translated free roots
+  ---
+  duration_ms: 34.4402
+  type: 'test'
+  ...
+# Subtest: point projections are opt in, validated point-only metadata with atomic update/import
+ok 296 - point projections are opt in, validated point-only metadata with atomic update/import
+  ---
+  duration_ms: 76.3585
+  type: 'test'
+  ...
+# Subtest: projection geometry, signed formatted values, axis visibility and deduplication
+ok 297 - projection geometry, signed formatted values, axis visibility and deduplication
+  ---
+  duration_ms: 28.1842
+  type: 'test'
+  ...
+# Subtest: axis cases and origin suppress collapsed helpers; clipping, visibility and point hit/snap are independent
+ok 298 - axis cases and origin suppress collapsed helpers; clipping, visibility and point hit/snap are independent
+  ---
+  duration_ms: 57.6554
+  type: 'test'
+  ...
+# Subtest: linked points retain settings through parent updates, locks, replay, detach and roundtrip
+ok 299 - linked points retain settings through parent updates, locks, replay, detach and roundtrip
+  ---
+  duration_ms: 89.5757
+  type: 'test'
+  ...
+# Subtest: restricted projection publication/export and explicit edit grants retain default denial and locks
+ok 300 - restricted projection publication/export and explicit edit grants retain default denial and locks
+  ---
+  duration_ms: 170.8232
+  type: 'test'
+  ...
+# Subtest: standalone SVG data attributes are XML-valid without altering quoted labels or text
+ok 301 - standalone SVG data attributes are XML-valid without altering quoted labels or text
+  ---
+  duration_ms: 54.6685
+  type: 'test'
+  ...
+# Subtest: hidden layers and invalid linked source recovery suppress helpers without losing configuration
+ok 302 - hidden layers and invalid linked source recovery suppress helpers without losing configuration
+  ---
+  duration_ms: 56.7874
+  type: 'test'
+  ...
+# Subtest: polygon geometry roundtrips as immutable version 2 geometry with styles and extensions
+ok 303 - polygon geometry roundtrips as immutable version 2 geometry with styles and extensions
+  ---
+  duration_ms: 68.7694
+  type: 'test'
+  ...
+# Subtest: invalid, repeated, collapsed, crossed and excessive polygons are rejected atomically
+ok 304 - invalid, repeated, collapsed, crossed and excessive polygons are rejected atomically
+  ---
+  duration_ms: 45.6976
+  type: 'test'
+  ...
+# Subtest: polygon selection covers boundary and interior and rigid moves preserve all edge vectors
+ok 305 - polygon selection covers boundary and interior and rigid moves preserve all edge vectors
+  ---
+  duration_ms: 41.9246
+  type: 'test'
+  ...
+# Subtest: polygon vertices and edge intersections use the existing priorities, exclusion and cache invalidation
+ok 306 - polygon vertices and edge intersections use the existing priorities, exclusion and cache invalidation
+  ---
+  duration_ms: 45.22
+  type: 'test'
+  ...
+# Subtest: polygon resolver translates rigidly and refuses invalid vertex moves with preview matching commit
+ok 307 - polygon resolver translates rigidly and refuses invalid vertex moves with preview matching commit
+  ---
+  duration_ms: 51.0116
+  type: 'test'
+  ...
+# Subtest: triangle and concave fixtures preserve winding, label anchor and extension data
+ok 308 - triangle and concave fixtures preserve winding, label anchor and extension data
+  ---
+  duration_ms: 56.7573
+  type: 'test'
+  ...
+# Subtest: new construction defaults are red; ordinary geometry, imports and overrides remain unchanged
+ok 309 - new construction defaults are red; ordinary geometry, imports and overrides remain unchanged
+  ---
+  duration_ms: 87.0345
+  type: 'test'
+  ...
+# Subtest: all editor tools have declarative instructions with real step progression
+ok 310 - all editor tools have declarative instructions with real step progression
+  ---
+  duration_ms: 60.4114
+  type: 'test'
+  ...
+# Subtest: M1 point containment includes boundaries and excludes outside
+ok 311 - M1 point containment includes boundaries and excludes outside
+  ---
+  duration_ms: 105.2718
+  type: 'test'
+  ...
+# Subtest: M1 segments use geometry rather than bounding boxes
+ok 312 - M1 segments use geometry rather than bounding boxes
+  ---
+  duration_ms: 118.6196
+  type: 'test'
+  ...
+# Subtest: M1 circle tests reject empty bounding-box corners and include tangency/interior
+ok 313 - M1 circle tests reject empty bounding-box corners and include tangency/interior
+  ---
+  duration_ms: 150.0265
+  type: 'test'
+  ...
+# Subtest: M1 concave polygons use edges and interior rather than bounds
+ok 314 - M1 concave polygons use edges and interior rather than bounds
+  ---
+  duration_ms: 101.474
+  type: 'test'
+  ...
+# Subtest: M1 straight and ray respect visible viewport and forward domain
+ok 315 - M1 straight and ray respect visible viewport and forward domain
+  ---
+  duration_ms: 108.1366
+  type: 'test'
+  ...
+# Subtest: M1 hidden invalid and degenerate geometry cannot be canvas selected; locked can
+ok 316 - M1 hidden invalid and degenerate geometry cannot be canvas selected; locked can
+  ---
+  duration_ms: 113.0829
+  type: 'test'
+  ...
+# Subtest: M1 modifier precedence and deterministic immutable base selection
+ok 317 - M1 modifier precedence and deterministic immutable base selection
+  ---
+  duration_ms: 17.5201
+  type: 'test'
+  ...
+# Subtest: M1 affine screen transforms preserve circle and polygon tests
+ok 318 - M1 affine screen transforms preserve circle and polygon tests
+  ---
+  duration_ms: 16.3689
+  type: 'test'
+  ...
+# Subtest: M1 text selection uses supplied rotated glyph quadrilateral
+ok 319 - M1 text selection uses supplied rotated glyph quadrilateral
+  ---
+  duration_ms: 19.1241
+  type: 'test'
+  ...
+# Subtest: M1 angle arc and right marker can be touched away from arms
+ok 320 - M1 angle arc and right marker can be touched away from arms
+  ---
+  duration_ms: 67.2361
+  type: 'test'
+  ...
+# Subtest: M1 semicircle angle marker extends beyond the collinear arm bounds
+ok 321 - M1 semicircle angle marker extends beyond the collinear arm bounds
+  ---
+  duration_ms: 13.887
+  type: 'test'
+  ...
+# Subtest: invalid bounds and raster steps are rejected before rendering
+ok 322 - invalid bounds and raster steps are rejected before rendering
+  ---
+  duration_ms: 68.0385
+  type: 'test'
+  ...
+# Subtest: failed setBounds preserves the previous viewport and valid bounds preserve equal scale
+ok 323 - failed setBounds preserves the previous viewport and valid bounds preserve equal scale
+  ---
+  duration_ms: 53.2975
+  type: 'test'
+  ...
+# Subtest: post-construction mutations cannot bypass render validation
+ok 324 - post-construction mutations cannot bypass render validation
+  ---
+  duration_ms: 45.0511
+  type: 'test'
+  ...
+# Subtest: dense or numerically unsafe ticks fail promptly, including huge shifted coordinates
+ok 325 - dense or numerically unsafe ticks fail promptly, including huge shifted coordinates
+  ---
+  duration_ms: 278.2503
+  type: 'test'
+  ...
+# Subtest: tick budget is explicit and includes exactly 1000 positions
+ok 326 - tick budget is explicit and includes exactly 1000 positions
+  ---
+  duration_ms: 35.1069
+  type: 'test'
+  ...
+# Subtest: decimal ticks and adaptive wide zooms remain finite and bounded
+ok 327 - decimal ticks and adaptive wide zooms remain finite and bounded
+  ---
+  duration_ms: 36.1687
+  type: 'test'
+  ...
+# Subtest: wheel uses injected engine, clamps crossing step to 700, blocks further zoom and permits zoom-out
+ok 328 - wheel uses injected engine, clamps crossing step to 700, blocks further zoom and permits zoom-out
+  ---
+  duration_ms: 124.1884
+  type: 'test'
+  ...
+# Subtest: cursor anchor, aspect ratio and zero/nonfinite wheel behavior remain stable
+ok 329 - cursor anchor, aspect ratio and zero/nonfinite wheel behavior remain stable
+  ---
+  duration_ms: 40.0689
+  type: 'test'
+  ...
+# Subtest: repeated zoom-out stops safely without corrupting viewport or generating an oversized grid
+ok 330 - repeated zoom-out stops safely without corrupting viewport or generating an oversized grid
+  ---
+  duration_ms: 677.9874
+  type: 'test'
+  ...
+# Subtest: pan retains ordinary displacement and rejects an extreme movement atomically
+ok 331 - pan retains ordinary displacement and rejects an extreme movement atomically
+  ---
+  duration_ms: 35.7258
+  type: 'test'
+  ...
+# Subtest: M1.1 selection presentation is an explicit overlay service without event handlers
+ok 332 - M1.1 selection presentation is an explicit overlay service without event handlers
+  ---
+  duration_ms: 75.0767
+  type: 'test'
+  ...
+# Subtest: M1.1 presentation never modifies renderer export or persistent styles
+ok 333 - M1.1 presentation never modifies renderer export or persistent styles
+  ---
+  duration_ms: 69.3487
+  type: 'test'
+  ...
+# Subtest: M4b semantic creation edits and input rebinding replay deterministically with prefixes
+ok 334 - M4b semantic creation edits and input rebinding replay deterministically with prefixes
+  ---
+  duration_ms: 138.8739
+  type: 'test'
+  ...
+# Subtest: M4b failed commands do not mutate sequence and malformed replay is isolated
+ok 335 - M4b failed commands do not mutate sequence and malformed replay is isolated
+  ---
+  duration_ms: 67.8705
+  type: 'test'
+  ...
+# Subtest: M4b source inputs preserve identity and branch, recover invalidity, reject cycles locks and restricted modes
+ok 336 - M4b source inputs preserve identity and branch, recover invalidity, reject cycles locks and restricted modes
+  ---
+  duration_ms: 61.4007
+  type: 'test'
+  ...
+# Subtest: M4b deterministic IDs survive deletes, duplication, groups, layers and tangent multi-results
+ok 337 - M4b deterministic IDs survive deletes, duplication, groups, layers and tangent multi-results
+  ---
+  duration_ms: 144.7555
+  type: 'test'
+  ...
+# Subtest: M4b typed input edits recover invalid geometry, retain branches and protect downstream topology
+ok 338 - M4b typed input edits recover invalid geometry, retain branches and protect downstream topology
+  ---
+  duration_ms: 56.0371
+  type: 'test'
+  ...
+# Subtest: M4b sequence validation rejects executable data, extra keys, unsupported versions and budgets
+ok 339 - M4b sequence validation rejects executable data, extra keys, unsupported versions and budgets
+  ---
+  duration_ms: 85.2127
+  type: 'test'
+  ...
+# Subtest: M4b unchanged source addresses retain legacy annotations while changed inputs use canonical references
+ok 340 - M4b unchanged source addresses retain legacy annotations while changed inputs use canonical references
+  ---
+  duration_ms: 27.4321
+  type: 'test'
+  ...
+# Subtest: direct engine add/update never implicitly snap coordinates with all feature layers loaded
+ok 341 - direct engine add/update never implicitly snap coordinates with all feature layers loaded
+  ---
+  duration_ms: 84.9554
+  type: 'test'
+  ...
+# Subtest: point and grid snapping have explicit results and visibility/grid opt-out
+ok 342 - point and grid snapping have explicit results and visibility/grid opt-out
+  ---
+  duration_ms: 57.2678
+  type: 'test'
+  ...
+# Subtest: segment/segment intersection is snapped, not the extension of a segment
+ok 343 - segment/segment intersection is snapped, not the extension of a segment
+  ---
+  duration_ms: 49.2609
+  type: 'test'
+  ...
+# Subtest: segment/circle intersection, tangent and finite segment boundary
+ok 344 - segment/circle intersection, tangent and finite segment boundary
+  ---
+  duration_ms: 23.5842
+  type: 'test'
+  ...
+# Subtest: circle/circle intersections and coincident circles
+ok 345 - circle/circle intersections and coincident circles
+  ---
+  duration_ms: 42.5489
+  type: 'test'
+  ...
+# Subtest: visibility/excludeId remove both anchors and dependent intersection candidates
+ok 346 - visibility/excludeId remove both anchors and dependent intersection candidates
+  ---
+  duration_ms: 35.168
+  type: 'test'
+  ...
+# Subtest: priority is point > intersection > endpoint > center > grid, independent of object order
+ok 347 - priority is point > intersection > endpoint > center > grid, independent of object order
+  ---
+  duration_ms: 64.6303
+  type: 'test'
+  ...
+# Subtest: screen tolerance is 12 CSS pixels under responsive scale, rotation and viewport zoom
+ok 348 - screen tolerance is 12 CSS pixels under responsive scale, rotation and viewport zoom
+  ---
+  duration_ms: 27.5336
+  type: 'test'
+  ...
+# Subtest: each priority tier wins over a closer lower tier; nearest distance wins within a tier
+ok 349 - each priority tier wins over a closer lower tier; nearest distance wins within a tier
+  ---
+  duration_ms: 87.797
+  type: 'test'
+  ...
+# Subtest: screen transforms reject invalid matrices and maintain tolerance under anisotropic scaling
+ok 350 - screen transforms reject invalid matrices and maintain tolerance under anisotropic scaling
+  ---
+  duration_ms: 20.5022
+  type: 'test'
+  ...
+# Subtest: draw preview and committed coordinates reuse the same result for line/circle
+ok 351 - draw preview and committed coordinates reuse the same result for line/circle
+  ---
+  duration_ms: 21.1121
+  type: 'test'
+  ...
+# Subtest: exact length 1 near candidate 1.05 stays 1; exact radius wins over snapping
+ok 352 - exact length 1 near candidate 1.05 stays 1; exact radius wins over snapping
+  ---
+  duration_ms: 27.055
+  type: 'test'
+  ...
+# Subtest: rigid line translation applies one correction to both endpoints
+ok 353 - rigid line translation applies one correction to both endpoints
+  ---
+  duration_ms: 21.6834
+  type: 'test'
+  ...
+# Subtest: individual endpoint snaps independently to grid, excludes its own line, and preview patch is committed unchanged
+ok 354 - individual endpoint snaps independently to grid, excludes its own line, and preview patch is committed unchanged
+  ---
+  duration_ms: 26.996
+  type: 'test'
+  ...
+# Subtest: exact distance without pointer displacement chooses +x and rejects nonfinite pointer samples
+ok 355 - exact distance without pointer displacement chooses +x and rejects nonfinite pointer samples
+  ---
+  duration_ms: 17.1709
+  type: 'test'
+  ...
+# Subtest: opacity covers the whole object including text, circle center and label exactly once
+ok 356 - opacity covers the whole object including text, circle center and label exactly once
+  ---
+  duration_ms: 80.5892
+  type: 'test'
+  ...
+# Subtest: style edits preserve geometry, nested extensions and compatible JSON values
+ok 357 - style edits preserve geometry, nested extensions and compatible JSON values
+  ---
+  duration_ms: 60.987
+  type: 'test'
+  ...
+# Subtest: unit formatter scales lengths and areas but not angles, converts units and preserves free/legacy text
+ok 358 - unit formatter scales lengths and areas but not angles, converts units and preserves free/legacy text
+  ---
+  duration_ms: 69.3902
+  type: 'test'
+  ...
+# Subtest: metadata command preserves geometry, changes SVG notation and replay, import rejects invalid settings atomically
+ok 359 - metadata command preserves geometry, changes SVG notation and replay, import rejects invalid settings atomically
+  ---
+  duration_ms: 95.1654
+  type: 'test'
+  ...
+# Subtest: restricted displays and SVG keep exact area precision without exposing hidden sources; settings edits denied
+ok 360 - restricted displays and SVG keep exact area precision without exposing hidden sources; settings edits denied
+  ---
+  duration_ms: 94.3823
+  type: 'test'
+  ...
+# Subtest: units validation and conversion boundaries are atomic and zoom independent
+ok 361 - units validation and conversion boundaries are atomic and zoom independent
+  ---
+  duration_ms: 46.6488
+  type: 'test'
+  ...
+# Subtest: restricted measurement preview follows its candidate and cancellation restores exact values
+ok 362 - restricted measurement preview follows its candidate and cancellation restores exact values
+  ---
+  duration_ms: 46.8928
+  type: 'test'
+  ...
+# Subtest: visible canvas transform keeps equal scale and exposes letterbox bounds
+ok 363 - visible canvas transform keeps equal scale and exposes letterbox bounds
+  ---
+  duration_ms: 63.9483
+  type: 'test'
+  ...
+# Subtest: canvas clipping keeps ray origin outside stored bounds without changing export geometry
+ok 364 - canvas clipping keeps ray origin outside stored bounds without changing export geometry
+  ---
+  duration_ms: 39.6136
+  type: 'test'
+  ...
+1..364
+# tests 364
+# suites 0
+# pass 364
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7465.9794

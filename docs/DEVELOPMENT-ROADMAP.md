@@ -115,7 +115,7 @@ Center/perimeter-source circle delivered at a502c55 on chatgpt/math-illustration
 
 ## Linked shape menu refinement (2026-10-10)
 
-Cirkel via punten and Lijnstuk via punten now share one remembered split-button at user request. Browser/visual validation pass; see [report](LINKED-SHAPE-MENU-REPORT.md). Geometry milestone sequencing unchanged.
+Cirkel via punten and Lijnstuk door twee punten are now separate visible choices in Constructies. The linked segment is available directly instead of only inside the former split menu; see [line segment behavior report](LINE-SEGMENT-BEHAVIOR-REPORT.md). Geometry milestone sequencing unchanged.
 
 ## M5b technical completion (2026-10-10)
 
@@ -155,3 +155,21 @@ After manual angle feedback, user authorized inventory/contract-first revision: 
 ## Standalone repository (2026-10-11)
 
 Editor moved to Geert1985/wiskundige-illustratie-editor with 244 historical editor commits and latest implementation from 73333a0. New project root replaces math-illustration/. Source-main cleanup: 94a6d4a; standalone baseline: c4bf129. All future editor changes belong on chatgpt/editor-development in the new repository; earlier main-publication restrictions referred to the old repository. Roadmap scope and pending manual acceptance remain unchanged. See REPOSITORY-MIGRATION.md.
+
+2026-10-11 axis-arm extension: explicit clicked start/end arms now apply to undirected lines in angleDirections axis combinations as well. The Cartesian axis remains positive; axis sources never carry arm. Legacy combinations without an explicit arm preserve their stored-direction behavior. Rays/vectors retain orientation. Schema 4 persists the line arm and schema 3 remains unchanged for axis-only/legacy refs.
+
+## Geavanceerde teksteditor T1–T5 (2026-10-11)
+
+Status: fase 0 onderzocht; architectuur en plan voorgesteld, gebruikersgoedkeuring vereist. Dit vervangt de vage toekomstige uitbreiding naar tekstsjablonen door afzonderlijke checkpoints, zonder bestaande milestones voltooid te verklaren.
+
+- Fase 0: TEXT-EDITOR-ARCHITECTURE.md en TEXT-EDITOR-IMPLEMENTATION-PLAN.md; baseline 364 Node-tests en 1 volledige Edge-suite geslaagd.
+- T1: gestructureerde rich text, dialoog, fragmentopmaak, gedeelde SVG-preview, migratie/permissies/history.
+- T2: inline symbolen en veilige formules, inclusief offline exportproeven.
+- T3: meerdere dynamische bronvelden en gecontroleerde afhankelijkheden.
+- T4: gemengde lay-out, zelfstandige SVG/PNG en toegankelijkheid.
+- T5a: veilige parser/AST, dimensies en numeriek contract.
+- T5b: wetenschappelijke rekenmachine.
+- T5c: dynamische berekende inlinevelden en drie weergavemodi.
+- T5d: volledige export-, security- en regressieaudit.
+
+Elke stap vereist afzonderlijke technische verificatie, rapport en expliciete gebruikersacceptatie. T1 is nog niet gestart. Werk uitsluitend op chatgpt/editor-development; geen automatische merge naar main. Zie de architectuur voor open ontwerpkeuzes en het plan voor concrete taken en handmatige acceptatie.
