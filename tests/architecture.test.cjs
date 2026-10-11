@@ -9,7 +9,8 @@ const root = path.join(__dirname, '..');
 // `after` records load/evaluation prerequisites. Late-bound runtime calls are
 // documented separately and must not be mistaken for initialization edges.
 const modules = [
-  { file: 'model.js', provides: ['PointProjections', 'DynamicText', 'MODEL_VERSION', 'OBJECT_TYPES', 'LINEAR_OBJECT_TYPES', 'IllustrationModel', 'normaliseObject', 'PRESENTATION_FLAGS'], after: [] },
+  { file: 'regular-geometry.js', provides: ['RegularGeometry'], after: [] },
+  { file: 'model.js', provides: ['PointProjections', 'DynamicText', 'MODEL_VERSION', 'OBJECT_TYPES', 'LINEAR_OBJECT_TYPES', 'IllustrationModel', 'normaliseObject', 'PRESENTATION_FLAGS'], after: ['regular-geometry.js'] },
   { file: 'persistent-groups.js', provides: ['PersistentGroups'], after: ['model.js'] },
   { file: 'document-layers.js', provides: ['DocumentLayers'], after: ['model.js', 'persistent-groups.js'] },
   { file: 'polygon-geometry.js', provides: ['PolygonGeometry'], after: ['model.js'] },

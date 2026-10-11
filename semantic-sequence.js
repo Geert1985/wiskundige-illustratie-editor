@@ -2,12 +2,12 @@
 (function(global){
  'use strict';
  const MI=global.FZI.MathIllustration,MAX_STEPS=1000,MAX_CHARS=4*1024*1024;
- const operations=new Set(['document.setAngleMeasurement','document.setMeasurement','object.create','linear.draw','construction.create','construction.setInputs','construction.setParameter','construction.detach','object.setGeometry','object.setProperties','object.patchBatch','object.translate','object.duplicate','object.delete','object.setLock','object.setVisibility','group.create','group.ungroup','layer.create','layer.assign','layer.rename','layer.setVisibility','layer.reorder','layer.delete']);
+ const operations=new Set(['document.setAngleMeasurement','document.setMeasurement','object.create','linear.draw','construction.create','construction.setInputs','construction.setParameter','construction.detach','object.setGeometry','object.setProperties','object.patchBatch','object.translate','object.duplicate','object.delete','circleDistribution.set','circleDistribution.delete','object.setLock','object.setVisibility','group.create','group.ungroup','layer.create','layer.assign','layer.rename','layer.setVisibility','layer.reorder','layer.delete']);
  const fail=code=>{const e=new Error(code);e.code=code;throw e;},copy=v=>JSON.parse(JSON.stringify(v));
  const plain=v=>{if(!v||typeof v!=='object'||Array.isArray(v))return false;const p=Object.getPrototypeOf(v);return p===null||Object.getPrototypeOf(p)===null;};
  function safe(value){let nodes=0;const seen=new Set();function visit(v,depth){if(++nodes>100000||depth>64)fail('INVALID_SEQUENCE');if(v===null||typeof v==='boolean'||typeof v==='string')return;if(typeof v==='number'){if(!Number.isFinite(v))fail('INVALID_SEQUENCE');return;}if(typeof v!=='object'||(!Array.isArray(v)&&!plain(v))||seen.has(v))fail('INVALID_SEQUENCE');seen.add(v);for(const [key,d] of Object.entries(Object.getOwnPropertyDescriptors(v))){if(Array.isArray(v)&&key==='length')continue;if(['__proto__','prototype','constructor'].includes(key)||!('value' in d))fail('INVALID_SEQUENCE');visit(d.value,depth+1);}seen.delete(v);}visit(value,0);const text=JSON.stringify(value);if(text.length>MAX_CHARS)fail('SEQUENCE_LIMIT');return JSON.parse(text);}
  function keys(value,allowed){if(!plain(value)||Object.keys(value).some(k=>!allowed.includes(k)))fail('INVALID_SEQUENCE');}
- function identifiers(document){return [...document.objects,...(document.groups||[]),...(document.layers||[])].map(o=>o.id);}
+ function identifiers(document){return [...document.objects,...(document.groups||[]),...(document.layers||[]),...(document.circleDistributions||[])].map(o=>o.id);}
  class SemanticSequence {
   #engine;#baseline;#commands=[];
   constructor(document){const data=safe(document);this.#engine=new MI.Engine(data);this.#baseline=copy(this.#engine.toJSON());}

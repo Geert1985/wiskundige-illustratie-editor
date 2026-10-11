@@ -1,5 +1,5 @@
 /*
- * From Zero 2 Infinity — Mathematical Illustration Model
+ * From Zero 2 Infinity â€” Mathematical Illustration Model
  *
  * Mathematical objects are stored independently from the editor and renderer.
  */
@@ -29,7 +29,7 @@
     PRESENTATION_FLAGS.forEach(key => {
       if (key in input && typeof input[key] !== "boolean") throw new Error("Ongeldige presentatie-instelling: " + key);
     });
-    if (input.coordinateSystem != null && input.coordinateSystem !== "cartesian") throw new Error("Niet-ondersteund coördinatenstelsel.");
+    if (input.coordinateSystem != null && input.coordinateSystem !== "cartesian") throw new Error("Niet-ondersteund coÃ¶rdinatenstelsel.");
     if (input.background != null && typeof input.background !== "string") throw new Error("Ongeldige achtergrond.");
     if ("axisStep" in input) {
       if (!numeric(input.axisStep) || Number(input.axisStep) <= 0) throw new Error("Ongeldige rasterstap.");
@@ -87,7 +87,7 @@
     if(input.measurementMode!=null && !["computed","text"].includes(input.measurementMode)) throw Error("Ongeldige meetmodus.");
     if(input.measurementText!=null && typeof input.measurementText!=="string") throw Error("Ongeldige maattekst.");
     (fields || []).forEach(key => {
-      if (key in input && !numeric(input[key])) throw new Error("Ongeldige objectcoördinaat: " + key);
+      if (key in input && !numeric(input[key])) throw new Error("Ongeldige objectcoÃ¶rdinaat: " + key);
     });
     if (input.type === "circle" && input.r != null && Number(input.r) < 0) throw new Error("Straal mag niet negatief zijn.");
     ["visible", "showLabel", "locked", "showMeasurement", "measurementLabelOnly"].forEach(key => {
@@ -161,15 +161,18 @@
     get groups() { return this.#groups; }
     #layers=Object.freeze([]);
     get layers(){return this.#layers;}
+    #circleDistributions=Object.freeze([]);
+    get circleDistributions(){return this.#circleDistributions;}
     constructor(data) { this.version = MODEL_VERSION; this.type = "geometry"; this.meta = {}; this.presentation = null; this._extra = {}; this._nextId = 1; if (data != null) this.load(data); }
-    _generateId(type) { let id; do { id = (type || "object") + "-" + this._nextId; this._nextId = this._nextId >= Number.MAX_SAFE_INTEGER - 1 ? 1 : this._nextId + 1; } while (this.get(id) || this.#groups.some(g=>g.id===id) || this.#layers.some(l=>l.id===id)); return id; }
+    _generateId(type) { let id; do { id = (type || "object") + "-" + this._nextId; this._nextId = this._nextId >= Number.MAX_SAFE_INTEGER - 1 ? 1 : this._nextId + 1; } while (this.get(id) || this.#groups.some(g=>g.id===id) || this.#layers.some(l=>l.id===id)||this.#circleDistributions.some(d=>d.id===id)); return id; }
     add(input) {
       if (!record(input)) throw new Error('Ongeldig illustratie-object.');
+      if(input.construction?.kind==='distributedPointOnCircle')throw Error('Distributiepunten worden uitsluitend via de centrale puntenverdeling beheerd.');
       const nextId = this._nextId;
       try {
         const data = { ...input }; if (data.id == null || data.id === '') data.id = this._generateId(data.type);
-        const object = freeze(normaliseObject(data)); if ((this.#objects.some(o => o.id === object.id) || this.#groups.some(g=>g.id===object.id) || this.#layers.some(l=>l.id===object.id))) throw new Error('Object-id bestaat al: ' + object.id);
-        const resolved=freeze(MI.ConstructionService.resolve([...this.#objects, object]));
+        const object = freeze(normaliseObject(data)); if ((this.#objects.some(o => o.id === object.id) || this.#groups.some(g=>g.id===object.id) || this.#layers.some(l=>l.id===object.id)||this.#circleDistributions.some(d=>d.id===object.id))) throw new Error('Object-id bestaat al: ' + object.id);
+        const resolved=freeze(MI.ConstructionService.resolve([...this.#objects, object],this.#circleDistributions));
         let layers=this.#layers;if(layers.length){const target=layers.slice().reverse().find(l=>l.visible);if(!target)throw Error('Maak eerst een laag zichtbaar.');layers=freeze(MI.DocumentLayers.validate(layers.map(l=>l.id===target.id?{...l,members:[...l.members,object.id]}:l),resolved,this.#groups));}
         this.#objects=resolved;this.#layers=layers;return this.get(object.id);
       } catch (error) { this._nextId = nextId; throw error; }
@@ -178,16 +181,17 @@
       const index = this.#objects.findIndex(o => o.id === id); if (index === -1) throw new Error('Object niet gevonden: ' + id);
       if (patch != null && !record(patch)) throw new Error('Ongeldige objectupdate.'); patch = patch || {};
       const current = this.#objects[index];
+      if(patch.construction?.kind==='distributedPointOnCircle'||current.construction?.kind==='distributedPointOnCircle'&&'construction' in patch)throw Error('Distributiepunten worden uitsluitend via de centrale puntenverdeling beheerd.');
       MI.ConstructionService.validateUpdate(this.#objects,current,patch);
       if (('id' in patch && patch.id !== id) || ('type' in patch && patch.type !== current.type)) throw new Error('ID en objecttype kunnen niet worden gewijzigd.');
       if ('style' in patch && !record(patch.style)) throw new Error('Ongeldige objectstijl.');
       const next = freeze(normaliseObject({ ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style }));
-      const objects = this.#objects.slice(); objects[index] = next; this.#objects = freeze(MI.ConstructionService.resolve(objects)); return this.get(id);
+      const objects = this.#objects.slice(); objects[index] = next; this.#objects = freeze(MI.ConstructionService.resolve(objects,this.#circleDistributions)); return this.get(id);
     }
     detachConstructions(ids){
       if(!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length)throw Error('Ongeldige selectie van constructies.');
-      for(const id of ids){const info=MI.ConstructionService.describe(this.#objects,id);if(!info||info.mode!=='linked')throw Error('Selecteer een gekoppelde constructie.');if(!info.canDetach)throw Error('Een vergrendelde of ongeldige constructie kan niet worden losgemaakt.');}
-      const selected=new Set(ids),objects=this.#objects.map(o=>{if(!selected.has(o.id))return o;const {construction,constructionValid,...free}=o;return free;});this.#objects=freeze(MI.ConstructionService.resolve(objects));return ids.map(id=>this.get(id));
+      for(const id of ids){if(this.#circleDistributions.some(d=>d.pointIds.includes(id)))throw Error('Een distributiepunt kan niet afzonderlijk worden losgemaakt.');const info=MI.ConstructionService.describe(this.#objects,id);if(!info||info.mode!=='linked')throw Error('Selecteer een gekoppelde constructie.');if(!info.canDetach)throw Error('Een vergrendelde of ongeldige constructie kan niet worden losgemaakt.');}
+      const selected=new Set(ids),objects=this.#objects.map(o=>{if(!selected.has(o.id))return o;const {construction,constructionValid,...free}=o;return free;});this.#objects=freeze(MI.ConstructionService.resolve(objects,this.#circleDistributions));return ids.map(id=>this.get(id));
     }
     createGroup(members,name='Groep') {
       if ('groups' in this._extra || 'groupSchema' in this._extra) throw Error('Legacy groepsgegevens moeten eerst expliciet worden gemigreerd.');
@@ -212,15 +216,38 @@
       if(!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length||ids.some(id=>!this.#groups.some(g=>g.id===id)))throw Error('Groep niet gevonden.');
       this.#groups=freeze(MI.PersistentGroups.prune(this.#groups,new Set(this.#objects.map(o=>o.id)),new Set(ids)));return ids.slice();
     }
-    remove(id) { const before = this.#objects.length; const removed=MI.ConstructionService.descendants(this.#objects,[id]); this.#objects = Object.freeze(this.#objects.filter(o => !removed.has(o.id))); this.#groups=freeze(MI.PersistentGroups.prune(this.#groups,new Set(this.#objects.map(o=>o.id)))); if(this.#layers.length)this.#layers=freeze(this.#layers.map(l=>({...l,members:l.members.filter(id=>!removed.has(id))}))); return this.#objects.length !== before; }
+    setCircleDistribution(pointId,{count,startAngle}={}) {
+      if(!Number.isSafeInteger(count)||count<1||count>MI.RegularGeometry.MAX_COUNT||!Number.isFinite(startAngle))throw Error('Ongeldige puntenverdeling.');
+      if(startAngle<0||startAngle>=2*Math.PI)startAngle=((startAngle%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+      const point=this.#objects.find(o=>o.id===String(pointId));if(!point||point.type!=='point')throw Error('Selecteer een punt op een cirkel.');
+      const existing=this.#circleDistributions.find(d=>d.pointIds.includes(point.id));
+      if(!existing&&point.construction?.kind!=='pointOnCircle')throw Error('Alleen een bestaand punt op een cirkel kan worden uitgebreid.');
+      const nextId=this._nextId;
+      try {
+        const dist=existing||{id:this._generateId('circle-distribution'),circleId:point.construction.sources[0].objectId,count:1,startAngle:2*Math.PI*point.construction.parameter,pointIds:[point.id]};
+        if(existing&&count<existing.count){const removed=new Set(existing.pointIds.slice(count));const members=new Set(existing.pointIds);const used=this.#objects.some(o=>!members.has(o.id)&&o.construction?.sources.some(s=>removed.has(s.objectId)));if(used)throw Error('Aantal punten kan niet worden verlaagd: een te verwijderen punt wordt door een andere constructie gebruikt.');}
+        const ids=dist.pointIds.slice(0,count);while(ids.length<count)ids.push(this._generateId('point'));
+        const nextDist={...dist,count,startAngle,pointIds:ids};const distributions=this.#circleDistributions.filter(d=>d.id!==dist.id).concat(nextDist);
+        const objects=this.#objects.filter(o=>!existing||!existing.pointIds.includes(o.id)||ids.includes(o.id)).map(o=>ids.includes(o.id)?freeze(normaliseObject({...o,construction:{kind:'distributedPointOnCircle',sources:[{objectId:dist.circleId}],distributionId:dist.id,index:ids.indexOf(o.id)}})):o);
+        for(let i=existing?existing.count:1;i<count;i++){const newPoint=freeze(normaliseObject({id:ids[i],type:'point',name:point.name+' '+(i+1),visible:point.visible,showLabel:point.showLabel,style:point.style,construction:{kind:'distributedPointOnCircle',sources:[{objectId:dist.circleId}],distributionId:dist.id,index:i}}));objects.push(newPoint);}
+        const resolved=freeze(MI.ConstructionService.resolve(objects,distributions));
+        let layers=this.#layers;if(layers.length){const owner=this.#layers.find(l=>l.members.includes(point.id));layers=freeze(MI.DocumentLayers.validate(layers.map(l=>l.id===owner.id?{...l,members:[...l.members,...ids.filter(id=>!this.#objects.some(o=>o.id===id))]}:l),resolved,this.#groups));}
+        this.#objects=resolved;this.#circleDistributions=freeze(distributions);this.#layers=layers;return clone(nextDist);
+      }catch(error){this._nextId=nextId;throw error;}
+    }
+    deleteCircleDistribution(id,{cascadeDependents=false}={}) {
+      const d=this.#circleDistributions.find(item=>item.id===id);if(!d)throw Error('Puntenverdeling niet gevonden.');const removed=MI.ConstructionService.descendants(this.#objects,d.pointIds),downstream=[...removed].filter(x=>!d.pointIds.includes(x));if(downstream.length&&!cascadeDependents)throw Error('Deze verdeling heeft afhankelijke constructies; bevestig eerst het verwijderen ervan.');
+      this.#objects=freeze(this.#objects.filter(o=>!removed.has(o.id)));this.#circleDistributions=freeze(this.#circleDistributions.filter(x=>x.id!==id));this.#groups=freeze(MI.PersistentGroups.prune(this.#groups,new Set(this.#objects.map(o=>o.id))));if(this.#layers.length)this.#layers=freeze(this.#layers.map(l=>({...l,members:l.members.filter(x=>!removed.has(x))})));return [...removed];
+    }
+    remove(id) { if(this.#circleDistributions.some(d=>d.pointIds.includes(String(id))))throw Error('Een distributiepunt kan niet afzonderlijk worden verwijderd. Pas het aantal punten aan in Eigenschappen.');const before = this.#objects.length; const removed=MI.ConstructionService.descendants(this.#objects,[id]); this.#objects = Object.freeze(this.#objects.filter(o => !removed.has(o.id))); this.#circleDistributions=freeze(this.#circleDistributions.filter(d=>!d.pointIds.some(pointId=>removed.has(pointId)))); this.#groups=freeze(MI.PersistentGroups.prune(this.#groups,new Set(this.#objects.map(o=>o.id)))); if(this.#layers.length)this.#layers=freeze(this.#layers.map(l=>({...l,members:l.members.filter(id=>!removed.has(id))}))); return this.#objects.length !== before; }
     get(id) { const object = this.#objects.find(o => o.id === id); return object ? clone(object) : null; }
     all() { return clone(MI.DocumentLayers.ordered(this.objects,this.#layers)); }
-    clear() { this.#objects = Object.freeze([]); this.#groups=Object.freeze([]); this.#layers=Object.freeze([]); }
-    toJSON() { return { ...clone(this._extra), type: this.type, version: this.#layers.length?5:this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION, ...(this.#layers.length?{layerSchema:1,layers:clone(this.#layers)}:{}), ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:this.#objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))?4:this.#objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))?3:this.#objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))?2:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
+    clear() { this.#objects = Object.freeze([]); this.#groups=Object.freeze([]); this.#layers=Object.freeze([]);this.#circleDistributions=Object.freeze([]); }
+    toJSON() { const hasDistributions=this.#circleDistributions.length>0,version=hasDistributions?6:this.#layers.length?5:this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION;return { ...clone(this._extra), type: this.type, version, ...(this.#layers.length?{layerSchema:1,layers:clone(this.#layers)}:{}), ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(hasDistributions?{circleDistributionSchema:1,circleDistributions:clone(this.#circleDistributions)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:this.#objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))?4:this.#objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))?3:this.#objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))?2:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
     load(data) {
       if (!record(data) || !Array.isArray(data.objects)) throw new Error("Ongeldig illustratiemodel: objects-array vereist.");
       const version = data.version == null ? 1 : Number(data.version);
-      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || (version > MODEL_VERSION && !(version===3 && [1,2,3,4].includes(data.constructionSchema)) && !(version===4 && data.groupSchema===1 && Array.isArray(data.groups)) && !(version===5 && data.layerSchema===1 && Array.isArray(data.layers)))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
+      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || version>6 || (version===6&&(data.circleDistributionSchema!==1||!Array.isArray(data.circleDistributions)))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
       if (data.type != null && data.type !== "geometry") throw new Error("Niet-ondersteund documenttype.");
       if (data.meta != null && !record(data.meta)) throw new Error("Ongeldige documentmetadata.");
       const meta = clone(data.meta || {}), presentation = normalisePresentation(data.presentation);
@@ -228,7 +255,7 @@
       ["title", "description"].forEach(key => {
         if (meta[key] != null && typeof meta[key] !== "string") throw new Error("Ongeldige documentmetadata: " + key);
       });
-      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version===5?["layers","layerSchema"]:[])].includes(key))));
+      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version>=5?["layers","layerSchema"]:[]), ...(version===6?["circleDistributionSchema","circleDistributions"]:[])].includes(key))));
       const seen = new Set();
       let nextId = 1;
       const objects = data.objects.map(input => {
@@ -246,15 +273,18 @@
       if(objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))&&data.constructionSchema!==4)throw Error('Hoekarmen vereisen constructieschema 4.');
       if(objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))&&![3,4].includes(data.constructionSchema))throw Error('Asreferenties vereisen constructieschema 3.');
       if(objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))&&![2,3,4].includes(data.constructionSchema))throw Error('Deze gekoppelde geometrie vereist constructieschema 2.');
-      const resolved = MI.ConstructionService.resolve(objects);
+      const distributions=[],distIds=new Set();if(version===6){if(!data.circleDistributions.length)throw Error('Documentversie 6 vereist minstens Ã©Ã©n puntenverdeling.');const pointIds=new Set();for(const d of data.circleDistributions){if(!record(d)||Object.keys(d).some(k=>!['id','circleId','count','startAngle','pointIds'].includes(k))||typeof d.id!=='string'||!d.id.trim()||typeof d.circleId!=='string'||!d.circleId.trim()||!Number.isSafeInteger(d.count)||d.count<1||d.count>MI.RegularGeometry.MAX_COUNT||!Number.isFinite(d.startAngle)||d.startAngle<0||d.startAngle>=2*Math.PI||!Array.isArray(d.pointIds)||d.pointIds.length!==d.count||new Set(d.pointIds).size!==d.count||distIds.has(d.id)||seen.has(d.id))throw Error('Ongeldige cirkelpuntenverdeling.');distIds.add(d.id);seen.add(d.id);const dsuffix=Number(d.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(dsuffix)&&dsuffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,dsuffix+1);const circle=objects.find(o=>o.id===d.circleId);if(!circle||circle.type!=='circle')throw Error('Puntenverdeling verwijst naar een ongeldige cirkel.');d.pointIds.forEach((id,index)=>{const p=objects.find(o=>o.id===id),c=p?.construction;if(!p||p.type!=='point'||!c||c.kind!=='distributedPointOnCircle'||c.distributionId!==d.id||c.index!==index||Object.keys(c).some(k=>!['kind','sources','distributionId','index'].includes(k))||c.sources.length!==1||Object.keys(c.sources[0]).some(k=>k!=='objectId')||c.sources[0].objectId!==d.circleId||pointIds.has(id))throw Error('Puntenverdeling en puntconstructie komen niet overeen.');pointIds.add(id);});distributions.push(clone(d));}if(objects.some(o=>o.construction?.kind==='distributedPointOnCircle'&&!pointIds.has(o.id)))throw Error('Los distributiepunt zonder register gevonden.');}
+      else if(objects.some(o=>o.construction?.kind==='distributedPointOnCircle'))throw Error('Distributiepunten vereisen documentschema 6.');
+      const resolved = MI.ConstructionService.resolve(objects,distributions);
       if(version>=4 && objects.some(o=>o.construction) && ![1,2,3,4].includes(data.constructionSchema))throw Error("Constructieschema vereist.");
-      if(version===5 && data.groups!=null && data.groupSchema!==1)throw Error("Groepsschema vereist.");
+      if(version>=4 && data.groups!=null && data.groupSchema!==1)throw Error("Groepsschema vereist.");
       const groups=version>=4&&data.groups!=null?MI.PersistentGroups.validate(data.groups,resolved):[];
-      const layers=version===5?MI.DocumentLayers.validate(data.layers,resolved,groups):[];
+      if(version===5&&(!Array.isArray(data.layers)||data.layerSchema!==1))throw Error('Laagschema vereist.');if(version>=5&&data.layers!=null&&data.layerSchema!==1)throw Error('Laagschema vereist.');const layers=version>=5&&data.layers!=null?MI.DocumentLayers.validate(data.layers,resolved,groups):[];
+      for(const group of [...groups,...layers]){if(distIds.has(group.id))throw Error('Document-ID is niet uniek.');}
       for(const group of [...groups,...layers]){const suffix=Number(group.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(suffix)&&suffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,suffix+1);}
       // Commit only after every object, migration and document field has succeeded.
       this.type = "geometry"; this.version = MODEL_VERSION; this.meta = meta;
-      this.#objects = freeze(resolved); this.#groups=freeze(groups); this.#layers=freeze(layers); this.presentation = presentation; this._extra = extra; this._nextId = nextId;
+      this.#objects = freeze(resolved); this.#groups=freeze(groups); this.#layers=freeze(layers);this.#circleDistributions=freeze(distributions); this.presentation = presentation; this._extra = extra; this._nextId = nextId;
       return this;
     }
   }

@@ -1,6 +1,6 @@
 # Voorstel: gelijkmatige puntenverdeling op een cirkel
 
-Status: **Fase A — ontwerp ter goedkeuring; implementatie niet gestart.**
+Status: **Fase B — contract aangevuld en voorwaardelijk goedgekeurd; implementatie uitgevoerd.**
 
 ## Huidige architectuur
 
@@ -77,3 +77,17 @@ Waarschijnlijke productiewijzigingen: `regular-geometry.js`, `model.js`, `constr
 - Heeft de inspector naast slider-invoer ook een numeriek veld nodig? De specificatie laat dat afhangen van de bestaande UI; mijn voorstel is een slider met direct numeriek veld alleen als dezelfde controlstijl elders al wordt gebruikt.
 
 Er is nog geen geometrische module, modelwijziging, UI of distributietest geïmplementeerd. Voor fase B wacht ik op expliciete goedkeuring van dit contract en de open keuzes.
+
+## Voorwaardelijke fase-B-besluiten (aanvulling)
+
+Deze aanvulling vervangt conflicterende eerdere open keuzes hierboven en is het uitvoeringscontract. Fase B is toegestaan; er is geen botsing met fundamentele modelregels.
+
+- `pointOnCircle` blijft bij import onveranderd. De gebruiker ziet `Aantal punten = 1`; een verhoging converteert in-place naar index 0, behoudt ID, stijl, label en afhankelijke constructies, en schrijft `startAngle = 2π × parameter` radialen. De resolver gebruikt dezelfde factor en trigonometrie zodat index 0 dezelfde coördinaten houdt. Conversie is één undo-transactie. Count terug naar 1 behoudt het distributierecord.
+- Prefix-ID's blijven stabiel. Count verlagen verwijdert alleen de staart en wordt atomair geweigerd als een te verwijderen punt door een andere constructie wordt gebruikt. Individuele punten kunnen niet worden verwijderd of losgemaakt. Volledige verwijdering wist record en punten atomair; afhankelijke constructies worden vooraf getoond en cascade vereist bevestiging. Broncirkelverwijdering volgt het bestaande cascadebeleid en wist het record.
+- Volledige distributie dupliceren maakt nieuwe distributie- en punt-ID's. De cirkel wordt gedeeld tenzij die in dezelfde selectie zit; in dat geval gebruikt de kopie de gedupliceerde cirkel. Een enkel punt of onvolledige selectie wordt expliciet geweigerd, zonder onafhankelijke kopie.
+- `regular-geometry.js` is zuiver en onafhankelijk. De UI-limiet is 1–24; de module ondersteunt aantallen tot 100000 en weigert grotere invoer vóór allocatie. Hoeken blijven canoniek radialen; de UI toont graden.
+- Documentversie 6 bevat `circleDistributionSchema:1`; groepen en lagen blijven behouden. v1–v5 blijven leesbaar en worden nooit automatisch geconverteerd. v6 valideert de register/puntrelatie strikt in beide richtingen. Alle laagpoorten accepteren v5 en v6. Gedeeltelijke of verweesde import wordt atomair geweigerd.
+- Inspector-preview wijzigt tijdelijk de editorweergave maar niet opgeslagen toestand of geschiedenis. Annuleren herstelt exact; bevestigen levert één undo-stap. Selectie van elk distributielid toont dezelfde centrale eigenschappen.
+- Verplichte tests dekken geometrie inclusief >24, precisiebehoud, dynamische herberekening, identiteit, count verhogen/verlagen/blokkering, direct verwijderen/detach, volledige verwijdering, broncascade, volledige/partiële duplicatie, v1–v6 met groepen/lagen, roundtrip, restricted rechten/export, undo/redo, replay, JSON/SVG en browserpreview. Het rapport bevat meetresultaten, niet-uitgevoerde handmatige tests en complexiteitsaudit. Er wordt geen automatische veelhoekconstructie toegevoegd.
+
+De bovengrens 100000 is uitsluitend een praktische veiligheidslimiet van de herbruikbare module; de editor zelf blijft voorlopig begrensd op 24.

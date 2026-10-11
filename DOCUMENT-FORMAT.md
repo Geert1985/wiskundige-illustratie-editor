@@ -76,3 +76,9 @@ Documents containing built-in source references `{kind:"axis",frame:"cartesian",
 Construction schema 4: angleDirections object sources may carry arm:start/end, selecting the negative/positive stored endpoint direction from the intersection. Only undirected line, straight, dimension and polygon edge sources allow this; axis, ray and vector references reject it. Explicit-arm documents require schema 4; schemas 1-3 remain readable.
 
 2026-10-11 axis-arm extension: explicit clicked start/end arms now apply to undirected lines in angleDirections axis combinations as well. The Cartesian axis remains positive; axis sources never carry arm. Legacy combinations without an explicit arm preserve their stored-direction behavior. Rays/vectors retain orientation. Schema 4 persists the line arm and schema 3 remains unchanged for axis-only/legacy refs.
+
+## Circle point distribution documents (version 6)
+
+Documents containing a canonical `circleDistributions` registry use version 6 and `circleDistributionSchema: 1`. A distribution stores `{id,circleId,count,startAngle,pointIds}`; `startAngle` is a finite radian value in `[0,2π)`. Each member remains a normal point object whose `distributedPointOnCircle` construction stores the same `distributionId`, its exact zero-based index and the source circle reference. The model validates this relationship in both directions and rejects partial or orphaned records atomically.
+
+Versions 1–5 remain readable without automatic conversion. Layers in v5 and v6 use `layerSchema: 1`; groups in v4–v6 use `groupSchema: 1`. v6 may contain groups and/or layers without dropping either collection. Restricted JSON export includes a distribution only when its circle and every member are readable and displayable; otherwise it fails closed. See `docs/CIRCLE-POINT-DISTRIBUTION-ARCHITECTURE-PROPOSAL.md` and `docs/CIRCLE-POINT-DISTRIBUTION-REPORT.md`.
