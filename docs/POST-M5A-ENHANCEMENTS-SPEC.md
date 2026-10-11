@@ -168,3 +168,13 @@ Na expliciete opdracht uitgevoerd: drie gekoppelde hoekgereedschappen, documents
 ## Uitvoeringsbesluit dynamische tekst (2026-10-10)
 
 Na expliciete opdracht voor de volgende stap uitgevoerd: een getypeerde bronwaarde per vrij tekstobject, bron/eigenschap/precisie/voor-/achtervoegsel in de inspector, stabiele IDs en gedeelde meetnotatie. Verwijderde of ongeldige bron: tekst blijft bestaan met niet beschikbaar; undo herstelt. Geen evaluatie of cascade naar tekst. DYNAMIC-TEXT-CONTRACT.md en DYNAMIC-TEXT-REPORT.md bevatten het contract en bewijs: 352 Node-tests en 43 Edge-modules geslaagd. Handmatige acceptatie, ook van hoekmetingen, blijft open. Sjablonen met meerdere velden zijn de eerder genoemde latere uitbreiding.
+
+## Specificatieaanvulling: geavanceerde teksteditor (2026-10-11, voorstel 1.0.0)
+
+De masteropdracht T1–T5 breidt de bestaande enkele dynamische binding uit naar gemengde rich text, inline wiskundige notatie, meerdere dynamische waarden en dimensioneel correcte berekeningen. Bestaande bindingen en constructies blijven behouden; geen willekeurige HTML of uitvoerbare gebruikerscode.
+
+Normatieve ontwerpscope en migratievoorstel: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Uitvoering/acceptatie: [TEXT-EDITOR-IMPLEMENTATION-PLAN.md](TEXT-EDITOR-IMPLEMENTATION-PLAN.md). Deze aanvulling is een voorstel, geen implementatieclaim en geen automatische wijziging van legacycontracten.
+
+Vereist: private tekstbewerking met nul wijzigingen bij Annuleren en één documentactie bij OK; gedeelde preview/canvas/SVG-lay-out; netwerkonafhankelijke export; getypeerde stabiele bronreferenties; locks/rechten/replay behouden; gecontroleerde migraties. T5 gebruikt expliciete grammatica/AST, begrensde evaluatie, eenheden/dimensies en één schaal-/hoekconversie. De rekenmachine kent resultaat, formule met resultaat en ingevulde formule met resultaat.
+
+Fase 0 is de huidige scope. Goedkeuring is vereist vóór T1 en na iedere volgende milestone, met afzonderlijke T5a–d-checkpoints. Rapporten worden pas bij daadwerkelijke uitvoering aangemaakt. De bestaande enkele binding is geen voltooide T3; de huidige SVG-rastertests zijn geen productie-PNG-export.
