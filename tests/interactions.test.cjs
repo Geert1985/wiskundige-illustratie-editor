@@ -33,7 +33,7 @@ test('keyboard length and radius without another mouse sample retain valid previ
     tool(shape); down(0, 0); key('1');
     assert.equal(e.renderer.preview.end.x, 1); assert.equal(e.renderer.preview.end.y, 0);
     const end = plain(e.renderer.preview.end); up();
-    const saved = e.model.objects[0];
+    const saved = shape === 'line' ? e.model.objects.find(o => o.type === 'line') : e.model.objects[0];
     if (shape === 'line') { assert.equal(saved.x2, end.x); assert.equal(saved.y2, end.y); }
     else assert.equal(saved.r, 1);
     assert.equal(e.renderer.preview, null);
@@ -43,7 +43,7 @@ test('keyboard edits use the last valid pointer and Enter commits the displayed 
   const { e, tool, down, move, key } = editor();
   tool('line'); down(0, 0); move(0, 2); key('1'); key('2'); key('Backspace');
   assert.ok(Math.abs(e.renderer.preview.end.x) < 1e-10); assert.equal(e.renderer.preview.end.y, 1);
-  key('Enter'); assert.equal(e.model.objects.length, 1); assert.equal(e.model.objects[0].y2, 1);
+  key('Enter'); assert.equal(e.model.objects.length, 3); assert.equal(e.model.objects.find(o => o.type === 'line').y2, 1);
 });
 test('rejected short shapes clear previews, typed measurement and do not poison the next drawing', () => {
   for (const shape of ['line', 'circle']) {
@@ -53,12 +53,12 @@ test('rejected short shapes clear previews, typed measurement and do not poison 
     down(0, 0); key('0'); key('.'); key('0'); key('1'); up();
     assert.equal(e.model.objects.length, 0); assert.equal(e.renderer.preview, null);
     down(0, 0); move(2, 0); up();
-    const saved = e.model.objects[0]; assert.equal(shape === 'line' ? saved.x2 : saved.r, 2);
+    const saved = shape === 'line' ? e.model.objects.find(o => o.type === 'line') : e.model.objects[0]; assert.equal(shape === 'line' ? saved.x2 : saved.r, 2);
   }
 });
 test('invalid pointer samples do not replace the last valid mathematical direction', () => {
   const { e, tool, down, move, key, up } = editor();
   tool('line'); down(0, 0); move(0, 2); move(NaN, 0); key('1');
   assert.equal(e.renderer.preview.end.y, 1); assert.ok(Number.isFinite(e.renderer.preview.end.x));
-  up(); assert.equal(e.model.objects[0].y2, 1);
+  up(); assert.equal(e.model.objects.find(o => o.type === 'line').y2, 1);
 });

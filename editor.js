@@ -177,6 +177,20 @@
         const position=this.transform()?.mathToScreen({x:selectedPathPoint.x,y:selectedPathPoint.y});
         if(position&&Math.hypot(position.x-event.clientX,position.y-event.clientY)<=8)return {object:selectedPathPoint,kind:'object'};
       }
+      // A linked endpoint point is rendered underneath its segment. Prefer that
+      // point when the pointer is close to it so users can drag the actual
+      // document point instead of repeatedly selecting the covering segment.
+      const paintedObject=target?.closest?.('[data-object-id]'),painted=paintedObject&&n.canvas.contains(paintedObject)&&this.engine.get(paintedObject.getAttribute('data-object-id'));
+      if(painted&&MI.LinearGeometry.isLinear(painted)) {
+        let nearest=null,nearestDistance=8;
+        for(const point of this.engine.model.objects) {
+          if(point.type!=='point'||!this.canvasSelectable(point))continue;
+          const position=this.transform()?.mathToScreen({x:point.x,y:point.y});
+          const distance=position?Math.hypot(position.x-event.clientX,position.y-event.clientY):Infinity;
+          if(distance<=nearestDistance){nearest=point;nearestDistance=distance;}
+        }
+        if(nearest)return {object:nearest,kind:'object'};
+      }
       for(const [selector,attribute,kind] of [['.fzi-polygon-vertex','data-polygon-id','vertex'],['.fzi-line-endpoint','data-line-id','endpoint'],['.object-label','data-label-id','label'],['[data-object-id]','data-object-id','object']]) {
         const node=target?.closest?.(selector),object=node && n.canvas.contains(node) && this.engine.get(node.getAttribute(attribute));
         if(this.canvasSelectable(object))return {object,kind:kind==='label' && this.selectedIds.length>1 && this.selectedIds.includes(object.id)?'object':kind};
@@ -244,7 +258,7 @@
     detachSelection(){const ids=this.selectedObjects().filter(o=>o.construction).map(o=>o.id);if(ids.length)this.changeDocument(()=>{this.execute('construction.detach',{ids});this.status('Constructie losgemaakt; het object volgt zijn bronnen niet meer.');});}
     constructionInputs(object){
       if(this.runtime||!object.construction)return '';
-      const roles=MI.ConstructionService.contract(object.construction.kind).sourceRoles,esc=MI.escapeXml,labels={point:'Punt',line:'Lijn',segment:'Lijnstuk',circle:'Cirkel',figure:'Figuur'};
+      const roles=MI.ConstructionService.contract(object.construction.kind).sourceRoles,esc=MI.escapeXml,labels={point:'Punt',line:'Lijn',segment:'Lijnstuk',ray:'Halfrechte',circle:'Cirkel',figure:'Figuur'};
       return '<div class="construction-inputs"><p class="help-text">Constructiebronnen wijzigen</p>'+roles.map((role,i)=>{const current=object.construction.sources[i],canonical=ref=>JSON.stringify(MI.AxisReferences.isAxis(ref)?ref:{objectId:ref.objectId,...(ref.part!=null?{part:ref.part}:{}),...(ref.index!=null?{index:ref.index}:{})}),options=this.engine.model.objects.filter(o=>o.id!==object.id).flatMap(o=>MI.ConstructionService.referencesForRole(o,role).map(ref=>({ref,name:(o.name||o.id)+(ref.part?' ? '+({start:'beginpunt',end:'eindpunt',vertex:'hoekpunt',edge:'zijde'}[ref.part])+(ref.index!=null?' '+(ref.index+1):''):'' )})));if(MI.AxisReferences.supports(object.construction.kind))options.unshift(...MI.AxisReferences.references.map(ref=>({ref,name:'Positieve '+ref.axis+'-as'})));return '<label>'+labels[role]+' '+(i+1)+'<select data-construction-input="'+i+'" aria-label="Constructiebron '+(i+1)+'"'+(object.locked?' disabled':'')+'>'+options.map(({ref,name})=>'<option value="'+esc(canonical(ref))+'"'+(canonical(ref)===canonical(current)?' selected':'')+'>'+esc(name)+'</option>').join('')+'</select></label>';}).join('')+'</div>';
     }
     constructionPanel(object){
@@ -718,7 +732,10 @@
       if(this.runtime && ['object','group','label','endpoint','vertex','pan'].includes(state.mode)){this.invalidate();return;}
       if(state.mode==='marquee'){this.suppressMarqueeMenu=!state.keyboard && state.active;this.invalidate();return;}
       if (state.mode === "draw") {
-        if (state.resolved && state.resolved.length >= .05) this.selectedId = this.createObject(state.resolved.object,state.shape).id;
+        if (state.resolved && state.resolved.length >= .05) {
+          if(state.shape==='line'||state.shape==='ray')this.selectedId=this.execute('linear.draw',{shape:state.shape,x1:state.resolved.object.x1,y1:state.resolved.object.y1,x2:state.resolved.object.x2,y2:state.resolved.object.y2}).result[0].id;
+          else this.selectedId = this.createObject(state.resolved.object,state.shape).id;
+        }
         else this.status("Vorm te kort; geen object toegevoegd.");
       }
       if ((state.mode === "endpoint" || state.mode==='vertex') && state.resolved) { try { this.updateObject(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }

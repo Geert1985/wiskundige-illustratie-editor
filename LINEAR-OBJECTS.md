@@ -18,6 +18,8 @@ Select/drag uses the existing controller. Moving the whole object applies one ri
 
 Draw by dragging from the first to the second point. Numeric keyboard input uses the existing exact-distance constraint. For vectors this is vector magnitude; for straight/ray this is the distance between definition points, not the total extent of the infinite object. Labels anchor at the midpoint of definition points and use the existing mathematical offsets/drag lifecycle.
 
+The segment drawing action (`line`) creates two ordinary Point objects and a `lineBetweenPoints` segment linked to them. Moving either endpoint point updates the segment; deleting either endpoint removes the dependent segment. This compound creation is one `linear.draw` command and one undo/redo step. The ray drawing action creates one ray plus one derived `rayOrigin` Point at its start. Dragging still sets the ray direction, represented by its second coordinate; no second Point object is added. Moving the ray moves its derived origin point. The compound command checks the drawing-tool grant and, in restricted sessions, requires the generated point objects to be readable, visible, selectable, and movable.
+
 Styles, object visibility, selection/inspector, cancel/dispose, explicit mutations and draft/import/export share existing services. Arrowheads inherit stroke color/opacity, have a bounded SVG size and shrink for very short visible shafts. No prototype patches, alternate snapping or drag states were added.
 
 ## Serialization and compatibility
