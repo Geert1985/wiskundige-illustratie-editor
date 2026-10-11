@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { runtime, plain } = require('./helpers.cjs');
-const files = ['model.js', 'renderer.js', 'index.js', 'editor-enhancements.js', 'snap-indicator.js'];
+const files = ['model.js', 'renderer.js', 'index.js', 'editor-enhancements.js'];
 function setup(objects = [], options = {}) {
   const { MI } = runtime(files);
   const engine = new MI.Engine({ objects }, { width: 1000, bounds: { xMin: -5, xMax: 5, yMin: -5, yMax: 5 }, ...options });

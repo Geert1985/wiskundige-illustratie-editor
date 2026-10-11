@@ -18,7 +18,7 @@ test('loading feature modules never installs render-based engine trackers or dra
   const { MI, context } = runtime(); const render = MI.Engine.prototype.renderSVG, axes = MI.SvgRenderer.prototype.renderAxes;
   let listeners = 0; context.addEventListener = () => listeners++;
   context.document.addEventListener = () => listeners++;
-  for (const file of ['editor-adaptive-grid.js', 'editor-label-drag.js', 'editor-enhancements.js', 'snap-indicator.js', 'editor-color.js', 'editor-axis-settings.js']) {
+  for (const file of ['editor-adaptive-grid.js', 'editor-label-drag.js', 'editor-enhancements.js', 'editor-color.js', 'editor-axis-settings.js']) {
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
   }
   assert.equal(MI.Engine.prototype.renderSVG, render); assert.equal(MI.SvgRenderer.prototype.renderAxes, axes);
@@ -31,7 +31,7 @@ test('standalone engine construction/render cannot replace an explicit editor co
 });
 
 test('source has one canvas render owner and no alternative feature interaction/engine trackers', () => {
-  const files = ['editor.js', 'editor-bootstrap.js', 'editor-adaptive-grid.js', 'editor-axis-settings.js', 'editor-color.js', 'editor-label-drag.js', 'editor-enhancements.js', 'snap-indicator.js'];
+  const files = ['editor.js', 'editor-bootstrap.js', 'editor-adaptive-grid.js', 'editor-axis-settings.js', 'editor-color.js', 'editor-label-drag.js', 'editor-enhancements.js'];
   const source = files.map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
   assert.equal((source.match(/canvas\.innerHTML\s*=/g) || []).length, 1);
   assert.equal((source.match(/"pointerdown"/g) || []).length, 1);
