@@ -4,7 +4,7 @@
 
 ## Delivered behavior
 
-- New author documents: centimeter, one coordinate unit = 1 cm, two decimal places. Explicit axis-properties section with e/mm/cm/m/km, finite positive scale and integer precision 0..10; also available in fullscreen.
+- New author documents: centimeter, one coordinate unit = 1 cm, two decimal places. Explicit axis-properties section with abstract `u`, dimensionless, mm/cm/m/km, finite positive scale and integer precision 0..10; also available in fullscreen. Legacy saved `e` remains readable and displays as `u`; dimensionless output has no unit suffix.
 - Length, radius and perimeter multiply by scale; area by scale squared. Degree angles are independent of length scale. Shared formatter uses fixed decimals, Dutch comma and correct squared-unit suffix. Physical-unit conversion preserves physical quantities. Abstract transitions retain numeric scale.
 - Computed labels, live polygon labels, SVG and measurement inspector use document notation. Free measurement text is untouched. Exact typed drawing length/radius uses display units, converts back to coordinates and rejects nonfinite distances.
 - Validated meta.measurement schema 1 persists in JSON, drafts, SVG rendering and semantic sequences. Author-only document.setMeasurement is atomic and undoable; malformed metadata leaves the document intact. Geometry IDs, source graph, styles and coordinates are unchanged by settings and zoom.
@@ -24,6 +24,10 @@ New tests cover formatting, radius/length semantics, area square scaling, unaffe
 3. Switch cm to mm: scale becomes 20 and the same length becomes 60,00 mm. Set decimals 3 and verify 60,000 mm. An angle keeps its degree value; zoom does not change quantities.
 4. At scale 2 cm per coordinate unit, type length 6 while drawing: resulting coordinate length is 3. Check undo/redo, save/reload, JSON/SVG export and fullscreen axis settings.
 5. Load an old document without units: original notation remains. Free maattekst is not modified. Invalid scale zero does not overwrite the current setting.
+
+## 2026-10-12 follow-up
+
+The unit selector now calls the abstract unit `u` (legacy stored `e` still loads and displays as `u`) and offers `Dimensieloos`. Dimensionless length/perimeter and area values retain scale/precision but omit unit and squared-unit suffixes. In the Constructies section, the point-construction split button comes first, followed by the line-construction split button (including line segment through two points, perpendicular, perpendicular bisector and angle bisector), circle through points, parallel and tangent. The updated automated UI checks live in `tests/browser-units-scale.cjs` and `tests/browser-split-tools.cjs`.
 
 ## Remaining scope
 

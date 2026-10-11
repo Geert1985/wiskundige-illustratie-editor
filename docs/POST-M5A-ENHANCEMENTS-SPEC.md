@@ -42,10 +42,10 @@ Leg de in het overleg afgesproken uitbreidingen vast zonder te suggereren dat ze
 - Gebruik een centrale declaratieve instructiedefinitie per tool, met toegankelijkheid voor toetsenbord en schermlezers.
 
 ## 5. Eenheden, schaal en meetnotatie — definitieve keuze
-- **Standaard bij nieuwe documenten: centimeter (cm)**; dit vervangt het eerdere voorstel voor abstracte eenheden als standaard.
+- **Standaard bij nieuwe documenten: centimeter (cm)**; dit vervangt het eerdere voorstel voor abstracte eenheden als standaard. Abstracte eenheid wordt in de interface aangeduid met `u` (oude bestanden met `e` blijven leesbaar); daarnaast is een expliciete dimensieloze weergave beschikbaar zonder eenheidssuffix.
 - Standaardschaal: **1 coördinateneenheid = 1 cm**; standaardprecisie: **2 decimalen**.
 - Lengte en omtrek: cm; oppervlakte: cm²; hoeken: graden (°).
-- Alternatieve lengte-eenheden: abstracte eenheid (e), mm, m, km; de oppervlakte-eenheid wordt overeenkomstig e², mm², m² of km².
+- Alternatieve lengte-eenheden: abstracte eenheid (u), dimensieloos, mm, m, km; de oppervlakte-eenheid wordt overeenkomstig u², mm², m² of km² weergegeven, of dimensieloos zonder suffix.
 - Instellingen horen in het rechter eigenschappenpaneel bij **Assenstelsel → Eenheden en schaal**, niet in een afzonderlijke algemene instellingenpagina.
 - Aanpasbaar: lengte-eenheid, schaalfactor en aantal decimalen. Schaalfactor moet eindig en strikt positief zijn.
 - Fysieke eenheden worden toegepast op weergegeven meetwaarden: lengte = coördinatenlengte × schaal; oppervlakte = coördinatenoppervlakte × schaal². Hoeken worden niet door de lengteschaal beïnvloed.
