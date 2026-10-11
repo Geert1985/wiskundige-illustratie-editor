@@ -100,7 +100,7 @@
       if(model.layers.length)for(const id of ids)model.assignLayer([mapping.get(id)],MI.DocumentLayers.index(this.model.layers).owner.get(id).id);
       const pending=this.model.groups.filter(g=>this.groupMembers(g.id).every(id=>mapping.has(id)));
       const grouped=new Set(pending.flatMap(g=>this.groupMembers(g.id)));
-      for(const id of ids){const original=this.get(id);if(grouped.has(id)&&original.construction&&original.construction.sources.every(r=>mapping.has(r.objectId)))model.update(mapping.get(id),{construction:{...original.construction,sources:original.construction.sources.map(r=>({...r,objectId:mapping.get(r.objectId)}))}});}
+      for(const id of ids){const original=this.get(id);if(grouped.has(id)&&original.construction&&original.construction.sources.every(r=>MI.AxisReferences.isAxis(r)||mapping.has(r.objectId)))model.update(mapping.get(id),{construction:{...original.construction,sources:original.construction.sources.map(r=>MI.AxisReferences.isAxis(r)?{...r}:({...r,objectId:mapping.get(r.objectId)}))}});}
       while(pending.length){const i=pending.findIndex(g=>g.members.every(id=>mapping.has(id)));if(i<0)throw Error('Ongeldige groepshierarchie.');const [g]=pending.splice(i,1);mapping.set(g.id,model.createGroup(g.members.map(id=>mapping.get(id)),g.name+' (kopie)').id);}
       this.model=model;return copies.map(o=>model.get(o.id));
     }

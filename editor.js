@@ -2,7 +2,7 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
-  const SPLIT_TOOLS={linkedShape:['construct:circleByCenterPoint','construct:lineBetweenPoints'],pointConstruction:['construct:midpoint', 'construct:pointOnSegment', 'construct:pointOnCircle', 'construct:lineIntersection', 'construct:lineCircleIntersection', 'construct:circleCircleIntersection'],linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['construct:anglePoints','construct:angleDirections','construct:angleXAxis','angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
+  const SPLIT_TOOLS={linkedShape:['construct:circleByCenterPoint','construct:lineBetweenPoints'],pointConstruction:['construct:midpoint', 'construct:pointOnSegment', 'construct:pointOnCircle', 'construct:lineIntersection', 'construct:lineCircleIntersection', 'construct:circleCircleIntersection'],linear:['line','straight','ray','vector'],figure:['triangle','polygon'],angle:['construct:anglePoints','construct:angleDirections','angle','rightAngle'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector']};
   const TOOL_STEPS = {
     point:['Klik op het werkvlak om een punt te plaatsen.'],
     text:['Klik waar de tekst moet komen.','Voer de tekst in en bevestig met Toevoegen.'],
@@ -15,7 +15,7 @@
     triangle:['Klik het eerste hoekpunt.','Klik het tweede hoekpunt.','Klik het derde hoekpunt om af te sluiten.'],
     polygon:['Klik het eerste hoekpunt.','Klik het volgende hoekpunt. Vanaf drie punten: Enter of klik het beginpunt om af te sluiten. Backspace verwijdert het laatste punt.'],
     'construct:anglePoints':['Kies een bestaand punt op de eerste arm.','Kies het bestaande hoekpunt.','Kies een bestaand punt op de tweede arm.'],
-    'construct:angleDirections':['Kies de eerste richting (begin naar einde).','Kies de tweede richting.'],
+    'construct:angleDirections':['Kies de eerste richting of een as (positieve richting).','Kies de tweede richting of een as.'],
     'construct:angleXAxis':['Kies de richting voor de hoek van de positieve x-as naar deze richting.'],
     angle:['Klik een punt op de eerste arm.','Klik het hoekpunt.','Klik een punt op de tweede arm.'],
     rightAngle:['Klik een punt op de eerste arm.','Klik het hoekpunt.','Klik een punt op de tweede arm voor de rechtehoekmarkering.'],
@@ -53,7 +53,7 @@
       this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
       this.history = new (this.runtime ? MI.RuntimeHistory : services.history || MI.EditorHistory)(this); this.editBefore = null;
       this.linearTool='line';this.figureTool='triangle';this.angleTool='construct:anglePoints';this.splitMenuOpen=null;
-      for(const [group,tools] of Object.entries(SPLIT_TOOLS))try{const saved=storage?.getItem('fzi-math-illustration-'+group+'-tool');if(tools.includes(saved))this[group+'Tool']=saved;}catch(_){}
+      for(const [group,tools] of Object.entries(SPLIT_TOOLS))try{const saved=storage?.getItem('fzi-math-illustration-'+group+'-tool');if(group==='angle'&&saved==='construct:angleXAxis')this.angleTool='construct:angleDirections';else if(tools.includes(saved))this[group+'Tool']=saved;}catch(_){}
       this.nodes = {};
       for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
     }
@@ -64,7 +64,7 @@
     }
     closeCanvasTools(focus=false) {if(this.nodes.canvasToolsMenu)this.nodes.canvasToolsMenu.hidden=true;this.nodes.canvasToolsBtn?.setAttribute?.('aria-expanded','false');if(focus)this.nodes.canvasToolsBtn?.focus?.();}
     syncFullscreen(active) {
-      this.canvasFullscreen=active;if(active)this.document.body?.classList.remove('properties-open','tools-open');this.document.body?.classList.toggle('canvas-fullscreen',active);
+      const entering=active&&!this.canvasFullscreen;this.canvasFullscreen=active;if(entering)this.document.body?.classList.remove('properties-open','tools-open');this.document.body?.classList.toggle('canvas-fullscreen',active);
       const button=this.nodes.canvasFullscreenBtn;if(button){button.setAttribute('aria-pressed',String(active));button.title=active?'Volledig scherm verlaten':'Volledig scherm';button.setAttribute('aria-label',button.title);button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+(active?'M3 3h18v18H3zM17 7l-5 5M12 7v5h5':'M3 3h18v18H3zM10 14l7-7M12 7h5v5')+'"/></svg>';}
       if(this.nodes.fullscreenHint){this.nodes.fullscreenHint.hidden=!active;this.nodes.fullscreenHint.textContent=this.nodes.status.textContent;}
       this.invalidate();
@@ -238,10 +238,11 @@
       return 'pointer';
     }
     hoverAt(event) {
+      if(this.navigationMode==='pan')return null;
       if(this.tool.startsWith('construct:') && (!this.interaction || this.interaction.mode==='construction')) {
         const point=this.pointer(event);if(!point)return null;
         const previous=this.interaction?.sources||[],sources=this.constructionSourcesAt(point,event,previous),source=sources?.[previous.length];
-        return source?{object:this.engine.get(source.objectId),kind:'construction',source}:null;
+        return source?{object:MI.AxisReferences.isAxis(source)?{...MI.AxisReferences.line(source),id:null}:this.engine.get(source.objectId),kind:'construction',source}:null;
       }
       const hit=this.tool==='select' && this.navigationMode!=='pan' && !this.interaction?this.hitAt(event):null;
       return hit && this.groupRoot(hit.object.id)!==hit.object.id && !this.groupCanvasSelectable(hit.object.id)?null:hit;
@@ -252,18 +253,23 @@
         if(!valid){this.hoverId=null;this.hoverHit=null;}else this.hoverHit={...this.hoverHit,object};
       }
       if(force && this.hoverPointer && this.document.elementFromPoint) {
-        this.hoverHit=this.hoverAt({...this.hoverPointer,target:this.document.elementFromPoint(this.hoverPointer.clientX,this.hoverPointer.clientY)});this.hoverId=this.hoverHit?.object.id||null;
+        this.hoverHit=this.hoverAt({...this.hoverPointer,target:this.document.elementFromPoint(this.hoverPointer.clientX,this.hoverPointer.clientY)});this.hoverId=this.hoverHit?.object?.id||null;
       }
       this.nodes.canvasWrap.style.cursor=this.cursorFor(this.hoverHit);
-      const construction=this.tool.startsWith('construct:'),selectedIds=construction?[...new Set((this.interaction?.sources||[]).map(s=>s.objectId))]:this.selectedIds;
-      const key=JSON.stringify([selectedIds,this.hoverId,construction]);if(!force && key===this.presentationKey)return;
+      const construction=this.tool.startsWith('construct:'),selectedIds=construction?[...new Set((this.interaction?.sources||[]).filter(s=>!MI.AxisReferences.isAxis(s)).map(s=>s.objectId))]:this.selectedIds;
+      const axisSelected=(this.interaction?.sources||[]).filter(MI.AxisReferences.isAxis),axisHover=MI.AxisReferences.isAxis(this.hoverHit?.source)?this.hoverHit.source:null;const key=JSON.stringify([selectedIds,this.hoverId,construction,axisSelected,axisHover]);if(!force && key===this.presentationKey)return;
       this.presentationKey=key;
       const service=this.services.overlays||MI.EditorOverlays;
+      this.renderAxisSourceOverlay(axisSelected,axisHover);
       if(service?.selection)service.selection(this.nodes.canvas.querySelector('svg'),{selectedIds,hoverId:this.hoverId,showFrame:!construction,transform:this.transform(),renderer:this.engine.renderer,document:this.document});
+    }
+    renderAxisSourceOverlay(selected,hover){
+      const svg=this.nodes.canvas.querySelector('svg');if(!svg?.querySelectorAll)return;svg.querySelectorAll('[data-axis-source-overlay]').forEach(node=>node.remove());const r=this.engine.renderer,t=this.transform(),rect=this.nodes.canvas.getBoundingClientRect?.(),bounds=rect&&t?.visibleBounds(rect);if(!bounds)return;
+      for(const ref of MI.AxisReferences.references){const chosen=selected.some(s=>s.axis===ref.axis),active=chosen||hover?.axis===ref.axis;if(!active||!r.showAxes||!(ref.axis==='x'?r.showXAxis:r.showYAxis))continue;const node=this.document.createElementNS('http://www.w3.org/2000/svg','line'),attrs=ref.axis==='x'?{x1:r.mapX(bounds.xMin),y1:r.mapY(0),x2:r.mapX(bounds.xMax),y2:r.mapY(0)}:{x1:r.mapX(0),y1:r.mapY(bounds.yMin),x2:r.mapX(0),y2:r.mapY(bounds.yMax)};for(const [key,value] of Object.entries({...attrs,'data-axis-source-overlay':ref.axis,'pointer-events':'none','aria-hidden':'true',stroke:chosen?'#f8cf61':'#55bad9','stroke-width':4,opacity:.8}))node.setAttribute(key,value);svg.appendChild(node);}
     }
     updateHover(event) {
       this.hoverPointer=event?{clientX:event.clientX,clientY:event.clientY,target:event.target}:null;
-      const hit=this.hoverAt(event);this.hoverHit=hit;this.hoverId=hit?.object.id||null;this.renderPresentation();
+      const hit=this.hoverAt(event);this.hoverHit=hit;this.hoverId=hit?.object?.id||null;this.renderPresentation();
     }
     queueHover(event) {
       this.hoverPointer={clientX:event.clientX,clientY:event.clientY,target:event.target};
@@ -278,13 +284,13 @@
     constructionInputs(object){
       if(this.runtime||!object.construction)return '';
       const roles=MI.ConstructionService.contract(object.construction.kind).sourceRoles,esc=MI.escapeXml,labels={point:'Punt',line:'Lijn',segment:'Lijnstuk',circle:'Cirkel',figure:'Figuur'};
-      return '<div class="construction-inputs"><p class="help-text">Constructiebronnen wijzigen</p>'+roles.map((role,i)=>{const current=object.construction.sources[i],canonical=ref=>JSON.stringify({objectId:ref.objectId,...(ref.part!=null?{part:ref.part}:{}),...(ref.index!=null?{index:ref.index}:{})}),options=this.engine.model.objects.filter(o=>o.id!==object.id).flatMap(o=>MI.ConstructionService.referencesForRole(o,role).map(ref=>({ref,name:(o.name||o.id)+(ref.part?' ? '+({start:'beginpunt',end:'eindpunt',vertex:'hoekpunt',edge:'zijde'}[ref.part])+(ref.index!=null?' '+(ref.index+1):''):'' )})));return '<label>'+labels[role]+' '+(i+1)+'<select data-construction-input="'+i+'" aria-label="Constructiebron '+(i+1)+'"'+(object.locked?' disabled':'')+'>'+options.map(({ref,name})=>'<option value="'+esc(canonical(ref))+'"'+(canonical(ref)===canonical(current)?' selected':'')+'>'+esc(name)+'</option>').join('')+'</select></label>';}).join('')+'</div>';
+      return '<div class="construction-inputs"><p class="help-text">Constructiebronnen wijzigen</p>'+roles.map((role,i)=>{const current=object.construction.sources[i],canonical=ref=>JSON.stringify(MI.AxisReferences.isAxis(ref)?ref:{objectId:ref.objectId,...(ref.part!=null?{part:ref.part}:{}),...(ref.index!=null?{index:ref.index}:{})}),options=this.engine.model.objects.filter(o=>o.id!==object.id).flatMap(o=>MI.ConstructionService.referencesForRole(o,role).map(ref=>({ref,name:(o.name||o.id)+(ref.part?' ? '+({start:'beginpunt',end:'eindpunt',vertex:'hoekpunt',edge:'zijde'}[ref.part])+(ref.index!=null?' '+(ref.index+1):''):'' )})));if(MI.AxisReferences.supports(object.construction.kind))options.unshift(...MI.AxisReferences.references.map(ref=>({ref,name:'Positieve '+ref.axis+'-as'})));return '<label>'+labels[role]+' '+(i+1)+'<select data-construction-input="'+i+'" aria-label="Constructiebron '+(i+1)+'"'+(object.locked?' disabled':'')+'>'+options.map(({ref,name})=>'<option value="'+esc(canonical(ref))+'"'+(canonical(ref)===canonical(current)?' selected':'')+'>'+esc(name)+'</option>').join('')+'</select></label>';}).join('')+'</div>';
     }
     constructionPanel(object){
       const info=this.engine.getConstructionInfo(object.id);if(!info)return '';
       const messages={SOURCE_INVALID:'Een bronconstructie bestaat momenteel niet.',COINCIDENT_POINTS:'De twee bronpunten vallen samen.',DEGENERATE_DIRECTION:'De bronlijn heeft geen geldige richting.',DEGENERATE_ARM:'Een arm van de hoek heeft geen lengte.',ZERO_RADIUS:'De broncirkel heeft straal nul.',POINT_INSIDE_CIRCLE:'Het bronpunt ligt binnen de cirkel.',NON_FINITE_RESULT:'De berekening geeft geen eindige meetwaarde.',COORDINATE_LIMIT:'De berekende positie ligt buiten het ondersteunde bereik.'};
       const link=id=>{const source=this.engine.get(id);return source?'<button type="button" class="secondary" data-construction-source="'+MI.escapeXml(id)+'"'+(this.runtime&&!this.capabilities(id).selectList?' disabled':'')+'>'+MI.escapeXml(source.name||id)+'</button>':'';};
-      return '<div class="construction-info" data-construction-mode="'+info.mode+'"><p class="help-text">'+(info.mode==='linked'?'Gekoppelde constructie.':'Vrij object.')+'</p>'+(info.mode==='linked'?'<div>Bronnen: '+info.sources.map(ref=>link(ref.objectId)+(ref.part?'<span class="help-text"> '+({start:'beginpunt',end:'eindpunt',vertex:'hoekpunt',edge:'zijde'}[ref.part]||'')+(ref.index!=null?' '+(ref.index+1):'')+'</span>':'')).join(' ')+(info.hasRestrictedSources?' <span class="help-text">Andere bronnen zijn afgeschermd.</span>':'')+'</div>':'')+(info.dependents.length?'<div>Gebruikt door: '+info.dependents.map(link).join(' ')+'</div>':'')+(!info.valid?'<p class="help-text" data-construction-reason="'+info.reasonCode+'">'+MI.escapeXml(messages[info.reasonCode]||'Constructie bestaat momenteel niet.')+'</p>':'')+'</div>';
+      return '<div class="construction-info" data-construction-mode="'+info.mode+'"><p class="help-text">'+(info.mode==='linked'?'Gekoppelde constructie.':'Vrij object.')+'</p>'+(info.mode==='linked'?'<div>Bronnen: '+info.sources.map(ref=>MI.AxisReferences.isAxis(ref)?'<span>Positieve '+ref.axis+'-as</span>':link(ref.objectId)+(ref.part?'<span class="help-text"> '+({start:'beginpunt',end:'eindpunt',vertex:'hoekpunt',edge:'zijde'}[ref.part]||'')+(ref.index!=null?' '+(ref.index+1):'')+'</span>':'')).join(' ')+(info.hasRestrictedSources?' <span class="help-text">Andere bronnen zijn afgeschermd.</span>':'')+'</div>':'')+(info.dependents.length?'<div>Gebruikt door: '+info.dependents.map(link).join(' ')+'</div>':'')+(!info.valid?'<p class="help-text" data-construction-reason="'+info.reasonCode+'">'+MI.escapeXml(messages[info.reasonCode]||'Constructie bestaat momenteel niet.')+'</p>':'')+'</div>';
     }
     duplicateSelection() {
       if(!this.selectedIds.length)return;this.changeDocument(()=>{this.selectedIds=this.execute('object.duplicate',{ids:this.selectedIds}).result.map(o=>o.id);});
@@ -389,7 +395,7 @@
         const unitInput=e.target.closest('[data-measurement-setting]');if(unitInput?.dataset?.measurementSetting){try{const old=this.engine.model.meta.measurement||{schema:1,unit:'e',scale:1,precision:2},key=unitInput.dataset.measurementSetting,settings=key==='unit'?MI.MeasurementUnits.convert(old,unitInput.value):MI.MeasurementUnits.settings({...old,[key]:unitInput.valueAsNumber});this.changeDocument(()=>this.execute('document.setMeasurement',{settings}));}catch(error){this.status(error.message);this.invalidate();}return;}
 
         const position=e.target.closest('[data-path-parameter]');if(position?.hasAttribute?.('data-path-parameter')){try{this.changeDocument(()=>this.execute('construction.setParameter',{id:this.selectedId,value:position.valueAsNumber}));}catch(error){this.status(error.message);}this.invalidate();return;}
-        const sourceInput=e.target.closest('[data-construction-input]');if(sourceInput?.dataset.constructionInput!=null){try{const object=this.engine.get(this.selectedId),sources=object.construction.sources.map((ref,i)=>i===Number(sourceInput.dataset.constructionInput)?JSON.parse(sourceInput.value):{objectId:ref.objectId,...(ref.part!=null?{part:ref.part}:{}),...(ref.index!=null?{index:ref.index}:{})});this.changeDocument(()=>this.execute('construction.setInputs',{id:object.id,sources}));}catch(error){this.status(error.message);}this.invalidate();return;}
+        const sourceInput=e.target.closest('[data-construction-input]');if(sourceInput?.dataset.constructionInput!=null){try{const object=this.engine.get(this.selectedId),sources=object.construction.sources.map((ref,i)=>i===Number(sourceInput.dataset.constructionInput)?JSON.parse(sourceInput.value):MI.AxisReferences.isAxis(ref)?{...ref}:{objectId:ref.objectId,...(ref.part!=null?{part:ref.part}:{}),...(ref.index!=null?{index:ref.index}:{})});this.changeDocument(()=>this.execute('construction.setInputs',{id:object.id,sources}));}catch(error){this.status(error.message);}this.invalidate();return;}
         const layer=e.target.closest('[data-layer-assign]');if(layer&&layer.dataset.layerAssign!=null){this.assignSelectionLayer(layer.value);return;}
         const axis=e.target.closest('[data-axis-setting]');if(axis?.dataset.axisSetting){try{this.setPresentationFlag(axis.dataset.axisSetting,axis.checked);}catch(error){this.status(error.message);this.invalidate();}return;}
         const common=e.target.closest('[data-common]');if(common?.dataset.common){try{this.setCommonProperty(common.dataset.common,common.type==='checkbox'?common.checked:common.type==='number'?(common.dataset.common==='style.opacity'?common.valueAsNumber/100:common.valueAsNumber):common.value);}catch(error){this.status(error.message);this.invalidate();}return;}
@@ -491,7 +497,8 @@
           else {const radial=Math.hypot(point.x-o.cx,point.y-o.cy),edge=radial?{x:o.cx+(point.x-o.cx)*o.r/radial,y:o.cy+(point.y-o.cy)*o.r/radial}:{x:o.cx+o.r,y:o.cy};add(ref,role==='figure'&&radial<=o.r?0:distance(edge));}
         }
       }
-      candidates.sort((a,b)=>a.distance-b.distance || a.priority-b.priority || a.source.objectId.localeCompare(b.source.objectId));return candidates[0]&&candidates[0].source;
+      if(role==='line'&&MI.AxisReferences.supports(this.tool.slice(10))){const r=this.engine.renderer,zero=transform.mathToScreen({x:0,y:0});for(const ref of MI.AxisReferences.references){if(!r.showAxes||!(ref.axis==='x'?r.showXAxis:r.showYAxis)||this.runtime&&!this.runtime.getAxisSourceTools(ref.axis).includes(this.tool))continue;const d=ref.axis==='x'?Math.abs(screen.y-zero.y):Math.abs(screen.x-zero.x);if(d<=12)candidates.push({source:ref,distance:d,priority:2});}}
+      candidates.sort((a,b)=>(a.priority===2||b.priority===2?a.priority-b.priority:0)||a.distance-b.distance || a.priority-b.priority || String(a.source.objectId||a.source.axis).localeCompare(String(b.source.objectId||b.source.axis)));return candidates[0]&&candidates[0].source;
     }
     constructionSelectable(o) { return !!o && this.engine.isDisplayed(o.id) && o.visible!==false && !(o.construction && o.constructionValid===false) && (!this.runtime || this.capabilities(o.id).sourceTools.includes(this.tool)); }
     constructionSourcesAt(point,event,sources=[]) {

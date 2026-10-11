@@ -1,0 +1,27 @@
+# Cartesian axis references contract
+
+2026-10-11. User authorized inventory, contract-first limited implementation, full regression and publication to chatgpt/math-illustration-m5b only. Manual angle feedback motivates this checkpoint.
+
+## Inventory
+
+construction-service validates objectId/part/index sources, resolves graph postorder and caches recoverable invalid geometry. angleDirections uses start-to-end normalized directions, supporting-line intersection, first start when parallel; angleXAxis separately supplies positive x. Both preserve angleSettings (smallest/directed, deg/rad/document, precision and arc). Axes are renderer presentation, not model objects. Editor constructionPick uses shared screen transform and object/source permission gates; pointerDown owns pan before construction, independent axis-properties navigation. Runtime separately validates source command shapes, sourceTools, graph depth, export read closure and public reference projections. Model constructionSchema 2 has only object references. Menu preferences/fullscreen source palette derive from SPLIT_TOOLS. All these paths require explicit handling.
+
+## Reference and geometry
+
+New source: `{kind:'axis',frame:'cartesian',axis:'x'|'y'}`; no objectId, part, index, user geometry or additional keys. Stable semantic identity independent of view, zoom, axes visibility and IDs. Only angleDirections accepts these references in either position; x/y, same-axis and ordinary-object combinations are valid. Other tools including legacy angleXAxis reject axis references. Existing object source format unchanged. Documents containing an axis reference emit constructionSchema 3; schemas 1/2 retained, no migration of legacy angleXAxis.
+
+Axis evaluation supplies a nonpersistent infinite line at origin with fixed direction +x or +y. Other line/vector/ray/edge orientation remains stored begin-to-end. Nonparallel supporting lines intersect to define vertex, ignoring finite domains. For parallel combinations containing an axis use origin regardless of source order; for object-only measurements retain existing first-start policy. A line through origin therefore stays anchored at origin for every angle, including 0/180; x/y is 90 degrees and y/x directed is 270 degrees. Existing atan2 modes/units/settings, pixel-size arc and invalid-direction recovery preserved. Axes do not enter document object/group/layer lists, graph vertices, cascade, duplication mappings or editable geometry.
+
+## Interaction
+
+Only angleDirections in construction mode permits axis hit selection. Use full-canvas rendered axes and a 12-screen-pixel threshold with shared transform; hidden axes cannot be picked. Ordinary eligible objects win coincident hits (otherwise selecting OP at an axis overlap becomes impossible); choose an unoccupied axis span or use source inspector for exact overlap. At the origin axis/axis ties deterministically choose x; pick y away from origin. Hover and selected axis references receive dedicated pointer-free overlay feedback; no selectable document objects are created. Positive/negative visible axis spans both select the fixed positive axis direction. Pan retains priority; selection and axis-properties button unchanged. Axis source inspector options are labeled positive x/y and preserve typed JSON. Fullscreen uses the same picker.
+
+## Permissions and compatibility
+
+Policy schema 1 adds optional axisSourceTools `{x:[toolIds],y:[toolIds]}` with only construct:angleDirections accepted, default empty, validated strictly. Require both allowedTools and per-axis grant for new restricted construction. Ordinary object sourceTools unchanged. Existing authorized baseline axis-based measurements can be displayed/exported regardless of whether creation is granted; source IDs do not expose hidden objects. Axes are built-in readable constants and not subject to object rules; document visibility governs picking only. Author construction source editing supports axes through existing author-only setInputs. Runtime grants are surfaced read-only to picker, and enforced independently on commands. Restriction/grant changes cannot confer mutation of axes.
+
+Graph traversal and budgets skip axis references; export closure skips built-in constants; public construction info/projections preserve typed fields. Grouped copies retain axes while remapping eligible object references. Legacy angleXAxis recipe remains API/import-supported but menu/pencil palette remove it; old remembered preference falls back to general angleDirections when available. No expansion to perpendicular/parallel/intersections/point tools.
+
+## Acceptance and tests
+
+Unit-circle O, constrained P and linked OP: select x then OP; origin arc and live directed radians. Node and Edge cover x/y/order/parallel/origin, live movement, source invalidity, schema/import/replay, old angleXAxis, malformed refs, other-tool rejection, restricted grants/atomic failures, graph depth/cascade/copies, hover/selection/pan/hidden axes, fullscreen, undo/redo and export. Run full regressions and visual review before push; report exact evidence and risks.

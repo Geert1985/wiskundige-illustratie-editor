@@ -132,3 +132,10 @@ Specification 1.5.0 section 10 delivered at 78d0259 with 346 Node tests and 42 E
 ## Dynamic text delivered (2026-10-10)
 
 One typed value reference per free text object implemented with source/value/precision/prefix/suffix UI and shared notation. Missing/invalid/inaccessible sources remain visibly unavailable; deletion does not cascade to text. 352 Node tests, 43 Edge modules pass; manual acceptance pending. DYNAMIC-TEXT-CONTRACT.md defines persistence/locks/permissions/replay. Multi-field templates, formulas and later broad measurement architecture remain planned.
+
+
+## Typed axis sources (2026-10-11)
+
+User angle-feedback revision implements Cartesian axis constants as angleDirections sources, not document objects. Fixed positive orientation and origin for parallel axis combinations; supporting intersection otherwise. Dedicated menu entry superseded, saved angleXAxis retained. Axis selection is gated per tool, axis visibility and explicit course/assessment grant. ConstructionSchema 3 and graph/export/replay adaptations documented in AXIS-REFERENCES-CONTRACT.md. Other axis-based constructions, skew/multiple frames and wider measurement work remain separate. Manual acceptance pending.
+
+- 2026-10-11 sidebar refinement: vertically stacked, equally wide tool buttons in a 220px sidebar; long names and split-menu bounds verified at desktop, tablet and mobile widths.

@@ -137,3 +137,10 @@ User authorized specification 1.5.0 section 10. Delivered at 78d0259: linked thr
 ## Dynamic text checkpoint (2026-10-10)
 
 User authorized the next step while postponing manual angle testing. Dynamic text bindings delivered: one stable geometry-source value per free text object, source/value/precision/prefix/suffix inspector, shared units and angle notation, explicit unavailable-on-deletion policy, locks/property permissions/history/replay/persistence/fullscreen. 352 Node tests and 43 Edge modules pass; see DYNAMIC-TEXT-CONTRACT.md and DYNAMIC-TEXT-REPORT.md. Both current manual tests remain pending. Multi-field templates are deferred as specified. Next retained original geometry milestone: M6 triangle centers/circles. Development branch publication authorized; main unchanged.
+
+
+## Cartesian axis-source angle revision (2026-10-11)
+
+After manual angle feedback, user authorized inventory/contract-first revision: typed positive x/y sources in angleDirections only, origin/intersection policy, explicit restricted per-axis grants, constructionSchema 3, interaction feedback and legacy angleXAxis compatibility. Separate x-axis menu entry removed. See AXIS-REFERENCES-CONTRACT.md and AXIS-REFERENCES-REPORT.md. Manual acceptance pending; this feedback is not a PASS for the earlier angle step. Original M6 and later additions remain retained; dynamic text acceptance also pending. Publication authorized on chatgpt/math-illustration-m5b only; main unchanged.
+
+- 2026-10-11 sidebar refinement: vertically stacked, equally wide tool buttons in a 220px sidebar; long names and split-menu bounds verified at desktop, tablet and mobile widths.

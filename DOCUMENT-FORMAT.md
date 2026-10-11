@@ -67,3 +67,8 @@ See MEASUREMENTS-GROUPS.md. Version 2 retains optional locked, showMeasurement, 
 Documents containing construction definitions export version 3 and constructionSchema:1. The editor still reads v1/v2 illustrations and writes v2 when no constructions are present. This feature declaration makes older builds reject linked documents rather than silently losing dependencies. See CONSTRUCTIONS.md for references, validation, recalculation, deletion and duplication policy.
 
 Version-3 construction kinds area/perimeter create linked text labels from one circle/polygon source. Text is recomputed on source edits/import; label offsets and style remain persistent.
+
+
+## Cartesian axis source extension
+
+Documents containing built-in source references `{kind:"axis",frame:"cartesian",axis:"x"|"y"}` use constructionSchema 3. These constants are accepted only by angleDirections, not emitted as objects, and do not have objectId/parts/index or editable geometry. Schema 1/2 documents and legacy angleXAxis remain supported unchanged. Older readers lacking schema 3 must reject new files rather than treat axes as missing objects. See docs/AXIS-REFERENCES-CONTRACT.md.
