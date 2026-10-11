@@ -1,4 +1,29 @@
-# Mathematical Illustration Engine
+# Wiskundige illustratie-editor
+
+Zelfstandig project: https://github.com/Geert1985/wiskundige-illustratie-editor
+
+## Starten
+
+Vereist Node.js 22 of nieuwer. Geen build nodig.
+
+```sh
+npm run serve
+```
+
+Open http://127.0.0.1:8080/ (of rechtstreeks /editor.html).
+
+## Tests
+
+```sh
+npm test
+npm install
+npm run test:edge
+```
+
+De Edge-suite gebruikt Playwright en een geinstalleerde Microsoft Edge. Testafbeeldingen komen in `test-results/`. JSON/SVG-bestanden uit het oude project blijven bruikbaar. Browserconcepten zijn lokaal aan de oorsprong gekoppeld: exporteer ze in de oude editor en importeer ze op het nieuwe adres.
+
+Zie [migratierapport](docs/REPOSITORY-MIGRATION.md) en [roadmap](docs/DEVELOPMENT-ROADMAP.md). Historische rapporten behouden hun oorspronkelijke repo-/branchnamen en testcommando's.
+
 
 Stabilized standalone mathematical illustration editor (Milestones 0A–0E).
 
@@ -97,7 +122,7 @@ The exact editor script order is: model → linear-geometry → renderer → ind
 
 The editor is deliberately a standalone entry point during this development phase:
 
-`math-illustration/editor.html`
+`editor.html`
 
 It can be opened directly from the GitHub Pages deployment once the branch is deployed, or locally from the repository. It is not yet exposed through the main application's routing/admin navigation.
 
@@ -136,7 +161,7 @@ Coordinates are mathematical: positive `y` points upward. The renderer handles c
 - `MI.bootstrapEditor({ engine?, services?, document?, window?, storage?, restoreDraft? })` creates one app and disposes the previous app. `MI.editor` exposes `init/dispose`, `setTool`, `loadDocument`, `newDocument` and `invalidate`. The app uses its injected engine; `MI.activeEngine` is only a bootstrap compatibility reference.
 - Pointer moves update the mathematical result synchronously and coalesce visual invalidation until the next animation frame. Commands, keyboard measurement, commit and cancel render immediately and clear any pending frame. See [INTERACTION-RENDER.md](INTERACTION-RENDER.md).
 
-Run `node --test math-illustration/tests/*.test.cjs`. With Playwright and Edge installed, run `node math-illustration/tests/browser.cjs`; it includes the complete functional suite and 10/100/500-object pointer benchmarks. See [PERFORMANCE.md](PERFORMANCE.md) and [tests/README.md](tests/README.md) for methodology, measured limits and regression gates. No new mathematical object types were added during stabilization.
+Run `node --test tests/*.test.cjs`. With Playwright and Edge installed, run `node tests/browser.cjs`; it includes the complete functional suite and 10/100/500-object pointer benchmarks. See [PERFORMANCE.md](PERFORMANCE.md) and [tests/README.md](tests/README.md) for methodology, measured limits and regression gates. No new mathematical object types were added during stabilization.
 
 Measurements, right-angle marks and multiple selection: see [MEASUREMENTS-GROUPS.md](MEASUREMENTS-GROUPS.md). Object style fields apply automatically; no separate apply button is needed.
 

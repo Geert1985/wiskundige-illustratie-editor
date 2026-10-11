@@ -3,7 +3,7 @@
 Run from the repository root with Node.js 20 or later:
 
 ```sh
-node --test math-illustration/tests/*.test.cjs
+node --test tests/*.test.cjs
 ```
 
 No npm install is required for the default tests. They execute the actual browser scripts in isolated Node VM contexts. The wheel/pan integration harness supplies a minimal DOM and invokes the real editor handlers; it is not a replacement for browser layout/event testing.
@@ -26,7 +26,7 @@ Safety tests cover zoom crossing the maximum, blocking further zoom-in while all
 With Playwright resolvable by Node and Microsoft Edge installed:
 
 ```sh
-node math-illustration/tests/browser.cjs
+node tests/browser.cjs
 ```
 
 The test starts a temporary loopback HTTP server, loads the full editor with all existing feature layers, sends a real wheel input plus repeated DOM wheel events, verifies the 0.1/700 boundary and zoom-out safety, then resets the view and creates a point. It collects page errors and closes the browser/server. It does not change user browser profiles or repository files. External Google Fonts are blocked to keep the smoke test independent of font downloads.
@@ -59,7 +59,7 @@ See [INTERACTION-RENDER.md](../INTERACTION-RENDER.md) for commit/cancel policy, 
 
 ## Milestone 0E measured performance regressions
 
-`performance.test.cjs` adds five tests (65 total): candidate construction reuse, geometry/live-mutation/import cache invalidation, detached public results, one render per pointer burst and cleanup/immediate keyboard/commit with a queued frame. No wall-clock assertions are used. `benchmark.cjs` emits Node timings with deterministic mixed fixtures at 10/100/500 objects. Run it separately with `node math-illustration/tests/benchmark.cjs`.
+`performance.test.cjs` adds five tests (65 total): candidate construction reuse, geometry/live-mutation/import cache invalidation, detached public results, one render per pointer burst and cleanup/immediate keyboard/commit with a queued frame. No wall-clock assertions are used. `benchmark.cjs` emits Node timings with deterministic mixed fixtures at 10/100/500 objects. Run it separately with `node tests/benchmark.cjs`.
 
 The complete Edge runner invokes `browser-performance.cjs`: cold/warm timing, 20 moves in one task, one-render assertion, preview=commit, keyboard exact length before a scheduled frame and canceled-frame cleanup. See [PERFORMANCE.md](../PERFORMANCE.md) for before/after samples and what the measured burst time excludes. This suite retains all previous functional browser checks; benchmark timing alone is not a correctness test or an FPS guarantee.
 

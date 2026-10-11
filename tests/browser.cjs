@@ -5,6 +5,7 @@ const path = require('node:path');
 const http = require('node:http');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
+fs.mkdirSync(path.join(root,'test-results'),{recursive:true});
 const server = http.createServer((req, res) => {
   const file = path.resolve(root, '.' + decodeURIComponent(req.url.split('?')[0]));
   if (!file.startsWith(root + path.sep)) { res.writeHead(403).end(); return; }
