@@ -203,16 +203,19 @@
       const state=this.interaction;
       if(!state && this.navigationMode==='pan')return this.allowed('view.pan',{bounds:{...this.engine.renderer.bounds}})?'grab':'default';
       if(this.tool.startsWith('construct:') && (!state || state.mode==='construction'))return hit?'pointer':'crosshair';
-      if(state)return ['object','group','label','pan'].includes(state.mode)?'grabbing':'crosshair';
+       if(state)return ['object','group','label','pan','circleDistributionPoint'].includes(state.mode)?'grabbing':'crosshair';
       if(this.tool!=='select')return 'crosshair';
       if(!hit || !this.canvasSelectable(hit.object))return 'default';
       if(this.groupRoot(hit.object.id)!==hit.object.id && !this.groupCanvasSelectable(hit.object.id))return 'default';
       const o=hit.object;
+       const distribution=this.circleDistributionForPoint(o.id),circle=distribution&&this.engine.get(distribution.circleId);
+       if(!this.runtime&&distribution&&!o.locked&&!circle?.locked)return 'grab';
       if(!o.locked && !o.construction && (!this.runtime || this.capabilities(o.id).geometryFields.length) && this.groupRoot(o.id)===o.id && ['endpoint','vertex'].includes(hit.kind))return 'crosshair';
       if(!o.locked && (!this.runtime || ['labelOffsetX','labelOffsetY'].every(k=>this.capabilities(o.id).propertyFields.includes(k))) && this.groupRoot(o.id)===o.id && hit.kind==='label')return 'move';
       if(this.selectedIds.includes(o.id) && this.moveSelectionPlan())return 'grab';
       return 'pointer';
     }
+     circleDistributionForPoint(id) { return this.engine.model.circleDistributions.find(d=>d.pointIds.includes(id))||null; }
     hoverAt(event) {
       if(this.navigationMode==='pan')return null;
       if(this.tool.startsWith('construct:') && (!this.interaction || this.interaction.mode==='construction')) {
@@ -260,7 +263,7 @@
     constructionInputs(object){
       if(this.runtime||!object.construction)return '';
       const roles=MI.ConstructionService.contract(object.construction.kind).sourceRoles,esc=MI.escapeXml,labels={point:'Punt',line:'Lijn',segment:'Lijnstuk',ray:'Halfrechte',circle:'Cirkel',figure:'Figuur'};
-      return '<div class="construction-inputs"><p class="help-text">Constructiebronnen wijzigen</p>'+roles.map((role,i)=>{const current=object.construction.sources[i],canonical=ref=>JSON.stringify(MI.AxisReferences.isAxis(ref)?ref:{objectId:ref.objectId,...(ref.part!=null?{part:ref.part}:{}),...(ref.index!=null?{index:ref.index}:{})}),options=this.engine.model.objects.filter(o=>o.id!==object.id).flatMap(o=>MI.ConstructionService.referencesForRole(o,role).map(ref=>({ref,name:(o.name||o.id)+(ref.part?' ? '+({start:'beginpunt',end:'eindpunt',vertex:'hoekpunt',edge:'zijde'}[ref.part])+(ref.index!=null?' '+(ref.index+1):''):'' )})));if(MI.AxisReferences.supports(object.construction.kind))options.unshift(...MI.AxisReferences.references.map(ref=>({ref,name:'Positieve '+ref.axis+'-as'})));return '<label>'+labels[role]+' '+(i+1)+'<select data-construction-input="'+i+'" aria-label="Constructiebron '+(i+1)+'"'+(object.locked?' disabled':'')+'>'+options.map(({ref,name})=>'<option value="'+esc(canonical(ref))+'"'+(canonical(ref)===canonical(current)?' selected':'')+'>'+esc(name)+'</option>').join('')+'</select></label>';}).join('')+'</div>';
+      return '<div class="construction-inputs"><p class="help-text">Constructiebronnen wijzigen</p>'+roles.map((role,i)=>{const current=object.construction.sources[i],canonical=ref=>JSON.stringify(MI.AxisReferences.isAxis(ref)?ref:{objectId:ref.objectId,...(ref.part!=null?{part:ref.part}:{}),...(ref.index!=null?{index:ref.index}:{})}),options=this.engine.model.objects.filter(o=>o.id!==object.id).flatMap(o=>MI.ConstructionService.referencesForRole(o,role).map(ref=>({ref,name:(o.name||o.id)+(ref.part?' ? '+({start:'beginpunt',end:'eindpunt',vertex:'hoekpunt',edge:'zijde'}[ref.part])+(ref.index!=null?' '+(ref.index+1):''):'' )})));if(MI.AxisReferences.supports(object.construction.kind,i))options.unshift(...MI.AxisReferences.references.map(ref=>({ref,name:'Positieve '+ref.axis+'-as'})));return '<label>'+labels[role]+' '+(i+1)+'<select data-construction-input="'+i+'" aria-label="Constructiebron '+(i+1)+'"'+(object.locked?' disabled':'')+'>'+options.map(({ref,name})=>'<option value="'+esc(canonical(ref))+'"'+(canonical(ref)===canonical(current)?' selected':'')+'>'+esc(name)+'</option>').join('')+'</select></label>';}).join('')+'</div>';
     }
     constructionPanel(object){
       const info=this.engine.getConstructionInfo(object.id);if(!info)return '';
@@ -457,7 +460,7 @@
     closeDialogs(cancel = false) { this.closeText(); if (this.colorId) this.closeColor(cancel); }
     constructionRole(kind,index) { return MI.ConstructionService.contract(kind).sourceRoles[index]; }
     constructionHint(kind,index=0) { return MI.ToolInstructions.constructionHint(kind,index); }
-    constructionPick(point,role) {
+     constructionPick(point,role,sourceIndex=0) {
       const kind=this.tool.slice(10),transform=this.transform(),screen=transform.mathToScreen(point),candidates=[];
       const distance=p=>{const q=transform.mathToScreen(p);return Math.hypot(q.x-screen.x,q.y-screen.y);};
       const segment=(o,s)=>{const l=MI.ConstructionService.line(o,s),a=transform.mathToScreen({x:l.x1,y:l.y1}),b=transform.mathToScreen({x:l.x2,y:l.y2}),dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy;if(!length)return distance({x:l.x1,y:l.y1});const domain=o.type==='polygon'?[0,1]:MI.LinearGeometry.domain(o),t=Math.max(domain[0],Math.min(domain[1],((screen.x-a.x)*dx+(screen.y-a.y)*dy)/length));return Math.hypot(screen.x-a.x-t*dx,screen.y-a.y-t*dy);};
@@ -472,7 +475,7 @@
           else {const radial=Math.hypot(point.x-o.cx,point.y-o.cy),edge=radial?{x:o.cx+(point.x-o.cx)*o.r/radial,y:o.cy+(point.y-o.cy)*o.r/radial}:{x:o.cx+o.r,y:o.cy};add(ref,role==='figure'&&radial<=o.r?0:distance(edge));}
         }
       }
-      if(role==='line'&&MI.AxisReferences.supports(this.tool.slice(10))){const r=this.engine.renderer,zero=transform.mathToScreen({x:0,y:0});for(const ref of MI.AxisReferences.references){if(!r.showAxes||!(ref.axis==='x'?r.showXAxis:r.showYAxis)||this.runtime&&!this.runtime.getAxisSourceTools(ref.axis).includes(this.tool))continue;const d=ref.axis==='x'?Math.abs(screen.y-zero.y):Math.abs(screen.x-zero.x);if(d<=12)candidates.push({source:ref,distance:d,priority:2});}}
+       if(role==='line'&&MI.AxisReferences.supports(kind,sourceIndex)){const r=this.engine.renderer,zero=transform.mathToScreen({x:0,y:0});for(const ref of MI.AxisReferences.references){if(!r.showAxes||!(ref.axis==='x'?r.showXAxis:r.showYAxis)||this.runtime&&!this.runtime.getAxisSourceTools(ref.axis).includes(this.tool))continue;const d=ref.axis==='x'?Math.abs(screen.y-zero.y):Math.abs(screen.x-zero.x);if(d<=12)candidates.push({source:ref,distance:d,priority:2});}}
       candidates.sort((a,b)=>(a.priority===2||b.priority===2?a.priority-b.priority:0)||a.distance-b.distance || a.priority-b.priority || String(a.source.objectId||a.source.axis).localeCompare(String(b.source.objectId||b.source.axis)));return candidates[0]&&candidates[0].source;
     }
     constructionSelectable(o) { return !!o && this.engine.isDisplayed(o.id) && o.visible!==false && !(o.construction && o.constructionValid===false) && (!this.runtime || this.capabilities(o.id).sourceTools.includes(this.tool)); }
@@ -482,7 +485,7 @@
       if(['area','perimeter'].includes(kind)&&painted&&['polygon','circle'].includes(painted.type))state.sources=[{objectId:painted.id}];
       const angle=!state.sources.length&&kind==='bisector'&&(painted&&painted.type==='angle'?painted:(this.engine.selectAt(point.x,point.y,{transform:this.transform(),tolerancePx:12})||{}).object);
       if(angle&&angle.type==='angle'&&angle.visible!==false&&(!this.runtime || this.capabilities(angle.id).sourceTools.includes(this.tool)))state.sources=[0,1,2].map(index=>({objectId:angle.id,part:'vertex',index}));
-      let source=state.sources.length<MI.ConstructionService.kinds[kind]?this.constructionPick(point,this.constructionRole(kind,state.sources.length)):null;
+       let source=state.sources.length<MI.ConstructionService.kinds[kind]?this.constructionPick(point,this.constructionRole(kind,state.sources.length),state.sources.length):null;
       if(kind==='bisector' && !state.sources.length && source && source.part==='vertex') {const polygon=this.engine.get(source.objectId);if(polygon.type==='polygon')state.sources=[(source.index+polygon.vertices.length-1)%polygon.vertices.length,source.index,(source.index+1)%polygon.vertices.length].map(index=>({objectId:polygon.id,part:'vertex',index}));}
       if(state.sources.length===MI.ConstructionService.kinds[kind]) {}
       else if(!source && !state.sources.length && ['midpoint','perpendicularBisector'].includes(kind)) {const line=this.constructionPick(point,'line');if(line){const o=this.engine.get(line.objectId);state.sources=o.type==='polygon'?[{objectId:o.id,part:'vertex',index:line.index},{objectId:o.id,part:'vertex',index:(line.index+1)%o.vertices.length}]:[{objectId:o.id,part:'start'},{objectId:o.id,part:'end'}];}}
@@ -660,6 +663,8 @@
         if(!this.editableSelection()){this.status('Ontgrendel de selectie eerst.');return;}
         const originals=this.moveSelectionPlan();if(!originals){this.status('Selectie kan niet rigide bewegen: selecteer ook alle ontgrendelde bronobjecten.');return;}this.begin({mode:'group',originals},event);this.status('Verplaats selectie.');this.invalidate();return;
       }
+       const distribution=hit&&this.circleDistributionForPoint(hit.object.id);
+       if(distribution&&!this.runtime){const circle=this.engine.get(distribution.circleId);if(hit.object.locked||circle?.locked){this.selectObject(hit.object.id);this.status('Punt of broncirkel is vergrendeld.');return;}this.begin({mode:'circleDistributionPoint',id:hit.object.id,distributionId:distribution.id,index:distribution.pointIds.indexOf(hit.object.id),count:distribution.count,startAngle:distribution.startAngle,circleId:distribution.circleId},event);this.selectedId=hit.object.id;this.invalidate();return;}
       if(hit && this.runtime && !this.allowed("object.translate",{ids:[hit.object.id],delta:{x:0,y:0}})) {this.selectObject(hit.object.id);this.status("Verplaatsen is niet toegestaan.");return;}
       if(hit && hit.object.locked) { this.selectObject(hit.object.id);this.status('Object is vergrendeld.');return; }
       if(hit && !this.runtime && MI.ConstructionService.pathKind(hit.object.construction?.kind)) {
@@ -715,6 +720,10 @@
         try {const value=MI.ConstructionService.projectParameter(recipe.kind,source,ref,point);this.execute('construction.setParameter',{id:state.id,value});}
         catch(error){this.status(error.message);}
       }
+       if(state.mode==='circleDistributionPoint') {
+         const circle=this.engine.get(state.circleId),dx=point.x-circle.cx,dy=point.y-circle.cy;
+         if(Math.hypot(dx,dy)>1e-9){const tau=2*Math.PI,startAngle=((Math.atan2(dy,dx)-state.index*tau/state.count)%tau+tau)%tau;try{this.execute('circleDistribution.set',{pointId:state.id,count:state.count,startAngle});}catch(error){this.status(error.message);}}
+       }
       if (state.mode === "draw") { state.lastRawPoint = point; this.resolveDraw(); }
       if (state.mode === "label") this.updateObject(state.id, { labelOffsetX: state.offset.x + delta.x, labelOffsetY: state.offset.y + delta.y });
       if (state.mode === "endpoint") { state.resolved = this.services.resolver.endpoint(this.engine, state.original, state.endpoint, point, { transform: this.transform() }); this.feedback = state.resolved.result; }
@@ -752,7 +761,7 @@
       if ((state.mode === "endpoint" || state.mode==='vertex') && state.resolved) { try { this.updateObject(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }
       this.history.record(state.historyBefore); this.invalidate();
       if(state.mode==='group')this.status('Selectie verplaatst.');
-      if(state.lastPointer && ['object','group','label','pan'].includes(state.mode))this.updateHover(state.lastPointer);
+       if(state.lastPointer && ['object','group','label','pan','circleDistributionPoint'].includes(state.mode))this.updateHover(state.lastPointer);
     }
     cancel() {
       if(this.circleDistributionPreview){const preview=this.circleDistributionPreview;this.circleDistributionPreview=null;this.engine.load(JSON.parse(preview.history.document));this.engine.model._nextId=preview.nextId;}
@@ -762,6 +771,7 @@
         if(this.runtime && state.transaction)try{this.runtime.cancel(state.transaction);}catch(_){}
         if (!this.runtime && (state.mode === "object" || state.mode === "label") && this.engine.get(state.id)) this.engine.update(state.id, state.mode==="label"?{labelOffsetX:state.original.labelOffsetX,labelOffsetY:state.original.labelOffsetY}:state.original);
         if(!this.runtime && state.mode==='pathPoint')this.execute('construction.setParameter',{id:state.id,value:state.original.construction.parameter});
+         if(!this.runtime && state.mode==='circleDistributionPoint')this.execute('circleDistribution.set',{pointId:state.id,count:state.count,startAngle:state.startAngle});
         if (!this.runtime && state.mode === "pan") this.engine.renderer.setBounds(state.bounds);
         if(!this.runtime && state.mode==='group')this.engine.updateMany(state.originals.map(o=>({id:o.id,patch:o})));
         this.selectedIds=state.selectionIdsBefore || (state.selectionBefore?[state.selectionBefore]:[]); this.release(state);
@@ -971,7 +981,7 @@
     distributionInspector(object){
       if(this.runtime||object.type!=='point')return '';const d=this.engine.model.circleDistributions.find(item=>item.pointIds.includes(object.id));if(!d&&object.construction?.kind!=='pointOnCircle')return '';
       const count=d?.count||1,angle=d?.startAngle??2*Math.PI*object.construction.parameter,degrees=((angle*180/Math.PI)%360+360)%360,disabled=object.locked?' disabled':'';
-      return '<details data-property-section="circle-distribution" open><summary>Punten op cirkel</summary><label>Aantal punten<input data-circle-distribution="count" type="range" min="1" max="24" step="1" value="'+count+'"'+disabled+' aria-label="Aantal punten"><output>'+count+'</output></label><label>Beginhoek (graden)<input data-circle-distribution="startAngle" type="number" min="0" max="359.999999" step="0.1" value="'+Number(degrees.toFixed(6))+'"'+disabled+'></label><p class="help-text">Verdeel punten gelijkmatig tegen de klok in. Bestaande punt-ID’s blijven behouden.</p></details>';
+      return '<details data-property-section="circle-distribution" open><summary>Punten op cirkel</summary><label>Aantal punten<input data-circle-distribution="count" type="range" min="1" max="24" step="1" value="'+count+'"'+disabled+' aria-label="Aantal punten"><output>'+count+'</output></label><label>Beginhoek (graden)<input data-circle-distribution="startAngle" type="number" min="0" max="359.999999" step="0.1" value="'+Number(degrees.toFixed(6))+'"'+disabled+'></label><p class="help-text">Sleep een punt om de hele verdeling over de cirkel te draaien. Verdeel punten gelijkmatig tegen de klok in. Bestaande punt-ID’s blijven behouden.</p></details>';
     }
     renderInspector(object) {
       const panel = this.nodes.selectionPanel;

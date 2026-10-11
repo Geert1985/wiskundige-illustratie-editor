@@ -53,3 +53,15 @@ The current UI is intentionally capped at 24 even though the pure function allow
 ## Open acceptance risk
 
 The Node evidence supports the model, command, identity, permission, and replay contracts, but it does not prove the real browser interaction sequence. Do not treat phase B as fully user-accepted until the browser preview/cancel/confirm and save/reload flows have been exercised in a working Edge session.
+
+
+## Dragging the distribution
+
+Any unlocked distribution point can now be grabbed in author mode. The editor projects the pointer direction around the source circle center and updates the distribution start angle after subtracting the selected member's index offset. This rotates all members together without changing count or point IDs. The gesture is one history entry; Escape restores the original phase. Restricted mode remains unable to mutate the distribution registry. Interaction tests exercise the real editor event handlers, including movement, cancel and undo/redo.
+
+
+## Dragging follow-up verification (2026-10-12)
+
+The follow-up added phase rotation by dragging any distribution member, with stable member IDs, one-step undo/redo and Escape rollback and refusal when the source circle is locked.
+npm.cmd test: **393 passed, 0 failed** across the full suite, including both index-zero and non-first-member drag tests.
+npm.cmd run test:edge could not execute tests because Playwright Edge closed during startup in its isolated profile; real-browser acceptance remains outstanding. See docs/AXIS-AS-LINE-REFERENCE-REPORT.md for the shared axis-reference extension and detailed test evidence.

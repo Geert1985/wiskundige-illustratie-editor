@@ -62,6 +62,33 @@ function appRuntime() {
   const move = (point, pointerId = 1) => { const p = screen(point); emit(win, 'pointermove', { clientX: p.x, clientY: p.y, pointerId }); };
   return { MI, engine, app, doc, win, emit, down, move };
 }
+test('axis line-source hover and hit testing are role-aware, visible-only, and use the shared picker',()=>{
+  const h=appRuntime();h.engine.add({id:'C',type:'circle',cx:2,cy:0,r:1});h.app.setTool('construct:lineCircleIntersection');
+  assert.deepEqual(plain(h.app.constructionSourcesAt({x:4,y:0},{target:null},[])[0]),{kind:'axis',frame:'cartesian',axis:'x'});
+  assert.deepEqual(plain(h.app.constructionSourcesAt({x:0,y:4},{target:null},[])[0]),{kind:'axis',frame:'cartesian',axis:'y'});
+  assert.deepEqual(plain(h.app.constructionSourcesAt({x:1,y:0},{target:null},[{kind:'axis',frame:'cartesian',axis:'x'}])[1]),{objectId:'C'});
+  const axisScreen=h.app.transform().mathToScreen({x:4,y:0});h.app.updateHover({clientX:axisScreen.x,clientY:axisScreen.y,target:null});assert.deepEqual(plain(h.app.hoverHit.source),{kind:'axis',frame:'cartesian',axis:'x'});
+  h.engine.renderer.showXAxis=false;assert.equal(h.app.constructionSourcesAt({x:4,y:0},{target:null},[]),null);h.app.updateHover({clientX:axisScreen.x,clientY:axisScreen.y,target:null});assert.equal(h.app.hoverHit,null);
+  const options=h.app.constructionInputs({id:'I',type:'point',construction:{kind:'lineCircleIntersection',sources:[{kind:'axis',frame:'cartesian',axis:'x'},{objectId:'C'}]}});
+  assert.match(options,/<option value="\{&quot;kind&quot;:&quot;axis&quot;,&quot;frame&quot;:&quot;cartesian&quot;,&quot;axis&quot;:&quot;x&quot;\}"/);
+});
+test('dragging any distributed circle point rotates the entire distribution in one undo step',()=>{
+  const h=appRuntime();h.engine.add({id:'C',type:'circle',cx:0,cy:0,r:1});const p=h.engine.construct('pointOnCircle',[{objectId:'C'}],0)[0],d=h.engine.setCircleDistribution(p.id,{count:4,startAngle:0}),ids=plain(d.pointIds.slice());
+  h.app.updateHover({clientX:h.app.transform().mathToScreen({x:1,y:0}).x,clientY:h.app.transform().mathToScreen({x:1,y:0}).y,target:null});assert.equal(h.doc.getElementById('canvasWrap').style.cursor,'grab');
+  h.down({x:1,y:0});assert.equal(h.app.interaction.mode,'circleDistributionPoint');h.move({x:0,y:1});
+  assert.ok(Math.abs(h.engine.model.circleDistributions[0].startAngle-Math.PI/2)<1e-10);assert.deepEqual(plain(h.engine.model.circleDistributions[0].pointIds),ids);
+  const coords=ids.map(id=>h.engine.get(id));for(let i=0;i<4;i++){assert.ok(Math.abs(coords[i].x-Math.cos(Math.PI/2+i*Math.PI/2))<1e-10);assert.ok(Math.abs(coords[i].y-Math.sin(Math.PI/2+i*Math.PI/2))<1e-10);}
+  const end=h.app.transform().mathToScreen({x:0,y:1});h.emit(h.win,'pointerup',{clientX:end.x,clientY:end.y});assert.equal(h.app.history.entries.length,1);assert.equal(h.app.history.undo(),true);assert.equal(h.engine.model.circleDistributions.length,1);assert.ok(Math.abs(h.engine.model.circleDistributions[0].startAngle)<1e-10);assert.equal(h.engine.get(p.id).construction.kind,'distributedPointOnCircle');assert.equal(h.app.history.redo(),true);assert.deepEqual(plain(h.engine.model.circleDistributions[0].pointIds),ids);assert.ok(Math.abs(h.engine.get(ids[0]).y-1)<1e-10);
+});
+test('Escape cancellation restores the original circle distribution phase',()=>{
+  const h=appRuntime();h.engine.add({id:'C',type:'circle',cx:0,cy:0,r:2});const p=h.engine.construct('pointOnCircle',[{objectId:'C'}],.125)[0],d=h.engine.setCircleDistribution(p.id,{count:4,startAngle:Math.PI/4});const before=plain(h.engine.toJSON());h.down({x:Math.SQRT2,y:Math.SQRT2});h.move({x:-2,y:0});assert.notEqual(h.engine.model.circleDistributions[0].startAngle,d.startAngle);h.app.cancel();assert.deepEqual(plain(h.engine.toJSON()),before);
+});
+test('dragging a non-first distribution member derives the shared phase from its index',()=>{
+  const h=appRuntime();h.engine.add({id:'C',type:'circle',cx:0,cy:0,r:1});const p=h.engine.construct('pointOnCircle',[{objectId:'C'}],0)[0],d=h.engine.setCircleDistribution(p.id,{count:4,startAngle:0}),memberId=d.pointIds[2];h.down({x:-1,y:0});h.move({x:0,y:1});assert.ok(Math.abs(h.engine.model.circleDistributions[0].startAngle-3*Math.PI/2)<1e-10);assert.ok(Math.abs(h.engine.get(memberId).x)<1e-10);assert.ok(Math.abs(h.engine.get(memberId).y-1)<1e-10);h.app.cancel();
+});
+test('locked source circles prevent distribution-point dragging',()=>{
+  const h=appRuntime();h.engine.add({id:'C',type:'circle',cx:0,cy:0,r:1,locked:true});const p=h.engine.construct('pointOnCircle',[{objectId:'C'}],0)[0],d=h.engine.setCircleDistribution(p.id,{count:3,startAngle:0});h.down({x:1,y:0});assert.equal(h.app.interaction,null);assert.equal(h.engine.model.circleDistributions[0].startAngle,d.startAngle);
+});
 test('M1.1 hover and click share the same hit at eight CSS pixels and clear outside',()=>{
   const h=appRuntime(),p=h.app.transform().mathToScreen({x:0,y:0}),event={clientX:p.x+7,clientY:p.y,target:null};
   assert.equal(h.app.hitAt(event).object.id,'p');h.app.updateHover(event);assert.equal(h.app.hoverId,'p');assert.equal(h.doc.getElementById('canvasWrap').style.cursor,'pointer');
