@@ -21,6 +21,10 @@ test('Security: JavaScript, assignments, arbitrary calls and unsupported units a
 });
 test('Quotas: input, tokens, nodes, semantic depth, sources and encoded bytes',()=>{
  for(const input of ['1'.repeat(2049),'1+'.repeat(256)+'1','('.repeat(1000)+'1'+')'.repeat(1000)])assert.throws(()=>E.parse(input));
+ // Parentheses can collapse to a shallow AST; bound the syntax before descent.
+ assert.equal(E.evaluate(E.parse('('.repeat(30)+'1'+')'.repeat(30))).quantity.value,1);
+ for(const input of ['('.repeat(33)+'1'+')'.repeat(33),'abs('.repeat(33)+'1'+')'.repeat(33)])assert.throws(()=>E.parse(input),e=>e.code==='QUOTA_EXCEEDED');
+ assert.throws(()=>E.parseTokens([...Array.from({length:33},()=>({type:'('})),{type:'number',value:1},...Array.from({length:33},()=>({type:')'}))]),e=>e.code==='QUOTA_EXCEEDED');
  let node={kind:'number',value:1};for(let i=0;i<33;i++)node={kind:'unary',op:'-',argument:node};assert.throws(()=>E.validate(node));
  assert.throws(()=>E.decode(' '.repeat(65537)));
  const source=()=>({kind:'source',sourceId:'S',property:'radius'});

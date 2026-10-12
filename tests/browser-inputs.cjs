@@ -50,7 +50,7 @@ module.exports = async page => {
     await page.locator('#undoBtn').click();assert.deepEqual(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id),object.id),beforeText);
     await page.locator('#redoBtn').click();assert.deepEqual(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id),object.id),afterText);
     await page.locator(`[data-select-object="${object.id}"]`).click();await page.locator('[data-rich-text-edit]').click();
-    await page.locator('#richColor').click();await page.locator('#richColorMenu [data-color="#f4a261"]').click();await page.locator('#textCancel').click();
+    await page.locator('#richColor').click();await page.locator('#richColorMenu [data-color="#f4a261"]').click();await page.locator('#textDialogClose').click();
     assert.deepEqual(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id),object.id),afterText);
     assert.equal(nativeDialogs, 0);
     return { textAddUndoRedo: 'passed', textEscape: 'passed', pointAndTextColor: 'passed', colorCancel: 'passed', nativeDialogs };

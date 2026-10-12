@@ -116,6 +116,14 @@
       if(t.type==='name'&&typeof t.text==='string'&&t.text.length<=32)return {type:'name',text:t.text};
       if('+-*/^();'.split('').includes(t.type))return {type:t.type};fail('INVALID_SYNTAX');
     });
+    // Bound syntax nesting before recursive descent, including function calls.
+    // The separate recursion/AST quotas remain in force as well.
+    let syntaxDepth=0;
+    for(const token of tokens){
+      if(token.type==='('&&++syntaxDepth>limits.depth)fail('QUOTA_EXCEEDED');
+      if(token.type===')'&&--syntaxDepth<0)fail('INVALID_SYNTAX');
+    }
+    if(syntaxDepth!==0)fail('INVALID_SYNTAX');
     let at=0,depth=0;
     const peek=()=>tokens[at]||{type:'end'},take=type=>{if(peek().type!==type)fail('INVALID_SYNTAX');return tokens[at++];};
     function nested(fn){if(++depth>limits.depth)fail('QUOTA_EXCEEDED');try{return fn();}finally{depth--;}}
