@@ -21,6 +21,7 @@ test('symbol catalog exposes stable unique entries and categories with valid for
     assert.ok(item.unicode&&item.label&&Array.isArray(item.keywords),item.id);
     if(item.latex)assert.equal(MI.MathSource.validate(item.latex),item.latex,item.id);
     if(item.source)assert.equal(MI.MathSource.validate(item.source),item.source,item.id);
+    if(item.formula)assert.equal(MI.MathSource.validate(item.formula),item.formula,item.id);
   }
 });
 
