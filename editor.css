@@ -172,6 +172,12 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .sidebar .tool-grid>.tool,.sidebar .tool-grid>.tool-split{width:100%;min-width:0}
 .sidebar .tool-grid .tool span{white-space:normal;overflow-wrap:break-word}
 .sidebar .split-tool-menu{width:100%;max-width:100%;box-sizing:border-box}
+.tool-subgroup,.planned-tools{grid-column:1/-1;min-width:0;width:100%;box-sizing:border-box}
+.tool-subgroup h3,.planned-tools h3{margin:8px 0 6px;color:var(--muted);font-size:11px;font-weight:600;line-height:1.5}
+.planned-tools{padding-bottom:8px}
+.tool-placeholder{display:flex;flex-direction:column;gap:3px;padding:7px 8px;margin-bottom:4px;border-left:2px solid var(--border);background:#132029;color:#bac7d0;font-size:12px;line-height:1.4;cursor:default;overflow-wrap:anywhere}
+.planned-badge{font-size:10px;color:#9daeb9}
+.canvas-tools-menu .tool-placeholder{grid-column:1/-1;margin:0}
 
 #textValue[hidden]{display:none}
 

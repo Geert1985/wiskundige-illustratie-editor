@@ -3,8 +3,8 @@ module.exports=async page=>{
  const viewport=page.viewportSize();
  await page.reload();
  for(const tool of ['angle','rightAngle']){
-  assert.equal(await page.locator('[data-tool-category=basis] #linearToolMenu [data-tool="'+tool+'"]').count(),1);
-  assert.equal(await page.locator('[data-tool-category=meten] [data-tool="'+tool+'"]').count(),0);
+  assert.equal(await page.locator('[data-tool-category=meten] #angleShapeToolMenu [data-tool="'+tool+'"]').count(),1);
+  assert.equal(await page.locator('[data-tool-category=basis] [data-tool="'+tool+'"]').count(),0);
  }
 
  for(const width of [1446,1159,1024,760,390]){
