@@ -1,6 +1,6 @@
 # T5-prep — UX-verfijning teksteditor
 
-Versie 1.1.0 — 2026-10-12
+Versie 1.2.0 — 2026-10-12
 
 Repository: `Geert1985/wiskundige-illustratie-editor`
 
@@ -82,3 +82,11 @@ De screenshots zijn bewijs van de testweergave, geen vervanging voor handmatige 
 - Implementatieplan: versie 1.9.0, UX-checkpoint toegevoegd.
 - Roadmap: versie 1.8.0, UX checkpoint toegevoegd.
 - Featurebacklog: versie 1.3.0, implementatiestatus verduidelijkt.
+
+## Vervolgverfijning waardenpaneel — 2026-10-12
+
+Na de eerdere test- en rapportageronde is het tabblad **Waarden** opnieuw ingedeeld. Bronobject en eigenschap staan naast elkaar; decimalen gebruiken een slider van 0 tot en met 3; de eigenschapsafhankelijke keuzelijst **Eenheid** bevat zowel passende meeteenheden als hoekeenheden; voor- en achtervoegsel staan naast elkaar. De voorbeeldwaarde heeft meer ruimte naast **Waarde invoegen** en **Annuleren** staat gecentreerd onderaan het paneel.
+
+Een bestaande precisiewaarde buiten 0–3 blijft ongewijzigd zolang de slider niet wordt bediend. De bestaande aparte `unitMode`- en `angleMode`-velden blijven in het documentmodel behouden; de enkele gebruikerskeuze wordt naar die velden vertaald.
+
+Voor deze vervolgwijziging zijn op verzoek geen Node- of Edge-tests uitgevoerd. De bestaande resultaten hierboven dateren van vóór deze vervolgwijziging en gelden dus niet als validatie ervan. De bijgewerkte browserstappen staan in `tests/browser-rich-values.cjs`; handmatige/browserverificatie en regressietests blijven door de gebruiker uit te voeren.
