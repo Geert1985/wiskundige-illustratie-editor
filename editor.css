@@ -283,7 +283,7 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .text-editor-dialog .rich-text-toolbar{gap:6px;padding:8px 12px;align-items:center;overflow:visible}
 .text-editor-dialog .rich-toolbar-group{gap:4px;padding:2px 6px;border-right:1px solid #344850;min-width:0}
 .text-editor-dialog .rich-toolbar-group:last-child{border:0}
-.text-editor-dialog .rich-format-group{flex:1 1 600px}
+.text-editor-dialog .rich-format-group{flex:0 1 auto}
 .text-editor-dialog .rich-text-toolbar select{min-width:78px;max-width:124px}
 .text-editor-dialog #richFontSize{min-width:116px}
 .text-editor-dialog .rich-text-toolbar button{min-width:36px;min-height:36px;padding:5px 8px;display:inline-flex;align-items:center;justify-content:center}
@@ -303,11 +303,12 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .palette-swatch{display:block;width:17px;height:17px;border-radius:50%;border:1px solid #fff;box-shadow:0 0 0 1px #071018}
 .rich-color-swatch[aria-pressed="true"]{outline:2px solid #f2ca59;outline-offset:2px}
 .rich-color-swatch[aria-pressed="true"] .palette-swatch{box-shadow:0 0 0 2px #f2ca59}
-.text-editor-dialog .rich-width-group{flex:0 1 285px;gap:7px}
+.text-editor-dialog .rich-width-group{flex:0 1 310px;gap:7px;margin-left:4px;padding:5px 9px;border:1px solid #344850;border-radius:8px;background:#0d2029}
 .rich-width-group label{display:flex;align-items:center;gap:4px;color:#a8bac3;font-size:11px;white-space:nowrap}
-.text-editor-dialog .rich-width-group input[type=range]{width:clamp(78px,12vw,145px);min-height:24px;padding:0;accent-color:#e9c46a;cursor:pointer}
+.text-editor-dialog .rich-width-group input[type=range]{width:clamp(78px,10vw,122px);min-height:24px;padding:0;accent-color:#e9c46a;cursor:pointer}
 .rich-width-group output{min-width:62px;color:#e9eef0;font-size:11px;text-align:right;white-space:nowrap}
 .text-editor-dialog .rich-insert-group{flex:0 1 auto}
+.text-editor-dialog .rich-insert-group button span{display:none}
 .text-editor-dialog .rich-history-group{flex:0 0 auto;margin-left:auto;border:0}
 .text-editor-dialog .rich-history-group button{width:36px;padding:6px}
 .text-editor-dialog .rich-history-group button:disabled{opacity:.4;cursor:default;filter:none}

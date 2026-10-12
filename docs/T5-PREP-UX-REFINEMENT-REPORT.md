@@ -1,6 +1,6 @@
 # T5-prep — UX-verfijning teksteditor
 
-Versie 1.0.0 — 2026-10-12
+Versie 1.1.0 — 2026-10-12
 
 Repository: `Geert1985/wiskundige-illustratie-editor`
 
@@ -21,6 +21,7 @@ De rich-textwerkbalk is compacter gemaakt en de bediening voor tekstopmaak, bree
 - Vet, cursief, onderstrepen, doorhalen, superscript en subscript spiegelen de cursor-/selectiestatus. Een opmaakkeuze vervangt alleen dezelfde markering en behoudt andere markeringen.
 - Lokale undo/redo is als compacte werkbalkknoppen bereikbaar en wordt uitgeschakeld wanneer de lokale ProseMirror-geschiedenis geen actie toestaat. De buitenste documentgeschiedenis blijft apart.
 - De werkbalk is verdeeld in tekstopmaak en breedte/invoegen/geschiedenis, met responsive regels voor desktop, tablet, telefoon en lage vensters.
+- In de verfijningsronde na visuele beoordeling zijn de zichtbare labels onder Symbolen, Formule en Waarde verwijderd; toegankelijke namen en tooltips blijven. De breedteslider staat nu in een subtiel omkaderde groep direct naast tekstopmaak. De nadruk van de handmatige visuele acceptatie ligt op desktop; mobiel is geen blokkade.
 
 ## Gewijzigde implementatiebestanden
 
@@ -38,13 +39,13 @@ De wijziging in de Node-testbootstrap laadt de nieuwe gedeelde editorservices en
 
 ### Node
 
-`npm test` — **PASS: 457/457**, 0 mislukt, 0 overgeslagen; duur 9,935.029 ms.
+`npm test` — follow-up na de compacte werkbalk: **PASS: 457/457**, 0 mislukt, 0 overgeslagen; duur 10,108.919 ms.
 
 De suite bevat onder meer centrale preset/palet-/slidercontracten, architectuurvolgorde, tekstschema, permissies, legacycompatibiliteit, opslag, undo/redo en document-/geometrische regressies.
 
 ### Edge
 
-`npm run test:edge` — **PASS**, proces eindigde met exitcode 0. De volledige Edge-browserregressiesuite doorliep de bestaande browserregressies en de nieuwe UX-scenario's. Voor de UX-integratie rapporteerde de runner alle 13 checks als `passed` en `pageErrors: []`.
+`npm run test:edge` — **PASS**, proces eindigde met exitcode 0. De volledige Edge-browserregressiesuite doorliep de bestaande browserregressies en de nieuwe UX-scenario's. Voor de UX-integratie rapporteerde de runner alle 15 checks als `passed` en `pageErrors: []`, inclusief `compactInsertionButtons` en `widthControlGroupedWithFormatting`.
 
 De UX-integratiecontrole rapporteerde alle onderstaande checks als geslaagd en `pageErrors: []`: label Symbolen & structuren; presets en behoud van afwijkende waarden; gedeeld palet en behoud van aangepaste kleuren; behoud van overige markeringen; gemengde markeringen en uitlijning; uitlijning over alinea's met undo/redo; breedtepreview en behoud van een aangepaste breedte; één undo-stap per drag; toetsenbordbediening en undo/redo; Escape-annulering; annuleren van de volledige tekstdraft en documentcompatibiliteit; responsive bediening.
 

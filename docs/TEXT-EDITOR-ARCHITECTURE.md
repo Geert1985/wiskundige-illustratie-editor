@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.9.0 - 2026-10-12 - T1-T4 geïmplementeerd; T5-prep I1-I4 en UX-verfijning technisch geïntegreerd; handmatige acceptatie staat open.
+Versie 1.9.1 - 2026-10-12 - T1-T4 geïmplementeerd; T5-prep I1-I4 en UX-verfijning technisch geïntegreerd; handmatige acceptatie staat open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -597,6 +597,6 @@ Tekstbreedte blijft `null` of een positieve breedte van 1–1.000.000 SVG-pixels
 
 Uitlijning blijft op het bestaande ProseMirror-paragraafattribuut `align`; de drie iconen passen de betrokken paragrafen in één lokale geschiedenisactie aan. De toolbar publiceert actieve/mixed status op basis van de ProseMirror-selectie, inclusief formule- en dynamische waarde-atomen, en leest undo/redo diepte uit dezelfde ProseMirror-history. Expliciete kleur-/lettergrootte-/lettertypekeuzes vervangen alleen de betreffende mark, zodat andere marks behouden blijven. Undo/redo blijft gescheiden van de documentgeschiedenis.
 
-De werkbalk schaalt in zones voor opmaak, breedte, invoegen en lokale geschiedenis; op smallere schermen lopen zones om en worden invoeglabels compacter. De bestaande contextpanelen blijven overlays die de dialooghoogte niet veranderen. De symboolinvoeging heet overal “Symbolen & structuren” en blijft dezelfde `TextSymbolCatalog`, `TextMathInput`, `TextFormulaEditor` en bestaande formule-atomroute gebruiken.
+De desktopwerkbalk groepeert de breedteslider in een omkaderde bediening direct naast de tekstopmaak, zodat breedte niet als losstaand control oogt. Symbolen, formules en dynamische waarden zijn compacte icoonknoppen zonder zichtbare tekst; toegankelijke namen en tooltips blijven beschikbaar. Op smallere schermen mogen groepen omvallen of scrollen; desktop is het primaire verfijningsdoel en mobiele presentatie is geen acceptatieblokkade. De bestaande contextpanelen blijven overlays die de dialooghoogte niet veranderen. De symboolinvoeging heet overal “Symbolen & structuren” en blijft dezelfde `TextSymbolCatalog`, `TextMathInput`, `TextFormulaEditor` en bestaande formule-atomroute gebruiken.
 
 Normatief testrapport en afbeeldingen: [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-REFINEMENT-REPORT.md). Handmatige IME-/schermlezercontrole is niet uitgevoerd en blijft open; automatische browserresultaten gelden niet als gebruikersacceptatie. Deze UX-verfijning geeft geen toestemming om T5a te starten.

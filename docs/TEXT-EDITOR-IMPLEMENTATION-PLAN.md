@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.9.0 - 2026-10-12. Status: T4 regressiecontrole uitgevoerd maar handmatige acceptatie open; T5-prep I1-I4 plus UX-verfijning technisch geleverd en wacht op gebruikersacceptatie; T5a–T5d niet gestart.
+Versie 1.9.1 - 2026-10-12. Status: T4 regressiecontrole uitgevoerd maar handmatige acceptatie open; T5-prep I1-I4 plus UX-verfijning technisch geleverd en wacht op gebruikersacceptatie; T5a–T5d niet gestart.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
