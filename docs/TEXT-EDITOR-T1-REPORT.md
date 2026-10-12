@@ -1,38 +1,59 @@
-# T1-rapport - Rich-texteditor en gestructureerd tekstmodel
+# T1-rapport — Rich-texteditor en gestructureerd tekstmodel
 
-Versie 1.0.0 - 2026-10-12. Branch: chatgpt/editor-development. Status: klaar voor gebruikerstest; nog niet volledig geaccepteerd.
+Versie 1.1.0 — 2026-10-12
+Branch: `chatgpt/editor-development`
+Status: technische regressiesuite geslaagd; wacht op handmatige controles en expliciete acceptatie. T2 is niet gestart.
 
-## Opgeleverd
+## Resultaat
 
-- textContent schema 1 bevat getypeerde alinea's, tekstfragmenten en harde regeleinden, met begrensde invoer en gevalideerde opmaak. De platte .text blijft een compatibele terugvalwaarde; rich content is leidend.
-- De productie-editor gebruikt een vervangbare ProseMirror-adapter in rich-text-editor.js en een lokaal gebundelde ESM-module in rich-text-editor.bundle.js (210489 bytes), geladen via rich-text-editor-loader.js. De rootdependencyset is niet veranderd; proefdependencies staan onder experiments/text-editor-preflight/.
-- text.commit is een revisiegecontroleerd en atomair geschiedenis-/replaycommando. Restricted bewerkingen onderscheiden inhoud, opmaak en expliciete legacy-migratie. Locks, dynamische bindings en constructietekst worden geweigerd als rijke tekst daarmee onveilig te wijzigen is. Legacy stijlpatches behouden textBinding.
-- De editor werkt voor nieuwe vrije tekst en bestaande statische tekst via de inspector. Annuleren, bevestigen en document undo/redo gebruiken de documentgeschiedenis; editor undo/redo is lokaal.
-- Documenten met rijke tekst gebruiken v7 en textSchema 1. v6 blijft gereserveerd voor cirkelpuntenverdelingen. De reader ondersteunt v1-v6 en v7 kan verdelingen, groepen en lagen bewaren.
-- De editor en zelfstandige SVG gebruiken lokale Source Sans 3- en Source Serif 4-fonts. Rich SVG embedt fonts voor offline export; bestaande SVG voor legacytekst blijft bytecompatibel. Fontbronnen en licenties staan in experiments/text-editor-preflight/fonts/.
+De gepushte T1-baseline (`d47ab7670ae64a31ebc71da7da860243e5ed78f1`) is gecontroleerd. De volledige Node-suite en volledige Edge-suite zijn na de correcties opnieuw uitgevoerd en geslaagd. De Edge-run valideerde de rich-textfunctie, fullscreeninteractie en zelfstandige SVG naar PNG-rastering in offline omstandigheden. De suite meldde `pageErrors: []`.
 
-## Verificatie
+De controle leverde één echte productieregressie en meerdere verouderde/niet-deterministische browserasserties op. De productieregressie is opgelost in `editor.js`: het slepen van een object in restricted modus probeerde onvoorwaardelijk `circleDistributions.find(...)` te gebruiken. De restricted model-facade exposeert die auteursfunctie bewust niet. De editor behandelt de lijst nu als optioneel; slepen, preview en commit werken weer onder permissiecontrole.
 
-- npm.cmd test: 402 geslaagd, 0 mislukt, 0 overgeslagen (Node 22.18.0).
-- node --test tests/text-editor-t1.test.cjs tests/architecture.test.cjs: 10 geslaagd, 0 mislukt.
-- npm.cmd run test:edge: niet volledig uitgevoerd. Een Edge-run bereikte tests/browser-rich-text.cjs maar faalde omdat de proef op Vet klikte met alleen een cursor. De proef selecteert nu eerst tekst. Latere Edge-starts werden door de omgeving afgesloten voor de test kon lopen. De aangepaste rich-textproef, fullscreenchecks en offline SVG-naar-PNG-proef zijn NIET UITGEVOERD.
-- Handmatige gebruikerstests, echte OS-IME-invoer en schermlezerchecks: NIET UITGEVOERD. Daarvoor is een echte interactieve input-/toegankelijkheidsomgeving nodig.
-- Fontbundle: 2341296 bytes als base64-JavaScript; originele TTF-bestanden samen 1755752 bytes volgens het P0-rapport. SVG embedt de fonts alleen als rijke tekst aanwezig is.
+De browserproeven zijn aangescherpt zodat ze de bedoelde scenario's meten: de rich-textproef maakt de ProseMirror-selectie expliciet en controleert dat invoer in een bestaande rich-texteditor wordt opgeslagen zonder een vaste cursorpositie te veronderstellen; de fullscreenproef wacht op het asynchroon geladen tekstvenster; de toolcount verwacht de vier werkelijk aangeboden lijnconstructies; de eenhedenproef opent de asseneigenschappen na documentinvoer en zet de startschaal voor de ongeldige-schaalcontrole expliciet; de asreferentieproef gebruikt `tangent` als tool die volgens het contract geen asreferentie accepteert (`parallel` is wél een geldige asbron).
 
-## Beperkingen en risico's
+## Exacte verificatie
 
-- T1 is klaar voor gebruikerstest maar niet volledig geaccepteerd voordat de Edge-suite en handmatige checks slagen.
-- Volledige dekking van complexe schriften, emoji en alle Unicode-glyphs is niet bewezen. Formulefragmenten vallen onder T2.
-- Automatische tekstomloop, vaste breedte, berekende expressies en meerdere dynamische velden zijn niet opgenomen. Legacy gebonden tekst behoudt het bestaande gedrag; rich editing van gebonden tekst vraagt een expliciete latere migratie.
-- Ingebedde fonts voegen ongeveer 2,34 MB toe aan een zelfstandige SVG met rijke tekst. Omvang en prestaties moeten voor release opnieuw worden beoordeeld.
+Omgeving: Node `v22.18.0`, npm `10.9.3`, Microsoft Edge `155.0.4283.45`.
 
-## Handmatige testlijst
+| Uitvoering | Resultaat |
+|---|---|
+| `npm.cmd test` (`node --test tests/*.test.cjs`) | exit 0; 402 geslaagd, 0 mislukt, 0 geannuleerd, 0 overgeslagen; totale gerapporteerde duur 7.670 ms |
+| `npm.cmd run test:edge` (`node tests/browser.cjs`) | exit 0; alle 49 browsermodules uitgevoerd; `pageErrors: []` |
+| Rich text (`browser-rich-text.cjs`) | `schemaAndSVG`, `embeddedFonts`, `offlinePngRaster`, `paragraphsAndHardBreak`, `formatting`, `inspectorEditor`, `cancel`, `undoRedo`, `jsonRoundtrip`: alle 9 `passed` |
+| Fullscreen (`browser-canvas-fullscreen.cjs`) | `fullscreenAxesPanel`, `distinctIcon`, `nativeFullscreen`, `documentInvariant`, `allTools`, `drawingAndTextDialog`, `keyboardAndOutsideClose`, `escapeKeepsCanvasFullscreen`, `mobileMenu`: alle 9 `passed` |
+| Eenheden/fullscreen (`browser-units-scale.cjs`) | `newDefaults`, `legacy`, `lengthAreaAngle`, `freeText`, `unitConversion`, `geometryPreserved`, `undoRedo`, `invalidScale`, `exactDistance`, `saveReload`, `fullscreen`: alle 11 `passed` |
+| Puntprojecties (`browser-point-projections.cjs`) | 12 resultaten, inclusief `svgAndPngRasterization`, allemaal `passed` |
+| Dynamische hoeken (`browser-dynamic-angles.cjs`) | 14 resultaten, inclusief `fullscreen` en `svgPng`, allemaal `passed` |
+| Dynamische tekst (`browser-dynamic-text.cjs`) | 9 resultaten, inclusief `fullscreen` en `persistence`, allemaal `passed` |
+| Asreferenties (`browser-axis-references.cjs`) | 18 resultaten, inclusief asselectie, oorsprong, drag/herberekening, modus/permissies, fullscreen, geschiedenis, schema/legacy en XML-export, allemaal `passed` |
+| Restricted permissies (`browser-permissions.cjs`) | alle gerapporteerde categorieën `passed`, inclusief zes annuleringstypen, slepen/preview/commit, autorisatie-intrekking en exportredactie |
 
-1. Maak twee alinea's en voeg met Shift+Enter een harde regeleinde toe.
-2. Selecteer tekstfragmenten en test vet, cursief, onderstrepen, sub-/superscript, kleur, lettertype, grootte en uitlijning. Controleer canvas en editor undo/redo.
-3. Annuleer wijzigingen en controleer dat het document gelijk blijft. Bevestig een aparte wijziging en test document undo/redo.
-4. Bewerk bestaande statische tekst via de inspector, sla JSON op/herlaad en controleer de opmaak.
-5. Exporteer JSON en SVG. Open de SVG zonder netwerk en rasteriseer naar PNG. Controleer een oud document met dynamische tekst en behoud van de binding.
-6. Herhaal in fullscreen. Test afzonderlijk IME en een schermlezer; noteer browser, OS en ondersteunende technologie.
+De Edge-hoofdproef rapporteerde daarnaast: `maxScale=699.9999999999999`, `step=0.1`, maximale zoomcorrect begrensd (`blocked=true`), uitzoomen naar `594.9999999999999`, eindige SVG (`finite=true`) en 28 rasterlijnen. De prestatieproef voor 10/100/500 objecten en alle overige browsermodules eindigden met `passed`.
 
-T1 wacht op deze tests en expliciete acceptatie voordat T2 begint.
+## Architectuurbeoordeling voor T2–T5
+
+De huidige verdeling is geschikt om T1 te onderhouden en vormt een bruikbare basis voor vervolgstappen, met een expliciet aandachtspunt vóór uitbreiding van de renderer:
+
+- `model.js` houdt het gestructureerde tekstschema, validatie, quota en documentversie bij de domeinlaag. Het model is onafhankelijk van ProseMirror-JSON; dit is de juiste grens voor import, replay en toekomstige expressie-/referentietypen. Houd toekomstige fragmenttypen getypeerd en valideer ze hier, in plaats van editor-JSON op te slaan.
+- `rich-text-editor.js`, `rich-text-editor-loader.js` en `rich-text-editor.bundle.js` isoleren ProseMirror achter `mount/get/destroy` en een asynchrone loader. T2 kan de adapter uitbreiden met een formule-atom zonder ProseMirror-afhankelijkheden in model of command/runtime te introduceren. T3 moet dynamische bronwaarden als expliciete getypeerde fragmenten behandelen; de huidige legacy `textBinding` mag niet door een volledige editor-serialisatie worden vervangen.
+- `permission-runtime.js` blijft eigenaar van het getypeerde `text.commit`-commando, autorisatie, rebase/revisie en restricted redactie. T3/T5 voegen alleen capability- en payloadregels toe aan die grens; zij horen niet in de visuele editorcomponent.
+- `renderer.js` rendert de schemafragmenten naar SVG en deelt font-resolutie met `text-fonts.js`/`font-assets.js`. De uitvoer is onafhankelijk van de rich editor, wat offline SVG/PNG-export mogelijk maakt. Rich-textlayout zit nu als methode in de algemene renderer. Dat is nog beperkt genoeg voor T1, maar T2-mathlay-out en T4-wrapping zullen dit onderdeel aanzienlijk vergroten. Vóór T2-renderintegratie verdient extractie naar een `rich-text-renderer.js`/layoutmodule de voorkeur, met één getypeerde input en gedeelde SVG-fontcontext; voer die extractie alleen uit als de T2-contracten de extra laag rechtvaardigen.
+- De UI-/dialooglevenscyclus is in `editor.js` geïntegreerd. Houd daar alleen openen/sluiten, actuele documentselectie en commandodispatch. Verplaats editorinteractie niet naar de model- of rendererlaag.
+
+Het belangrijkste onderhoudbaarheidsrisico is de synchronisatie van de bronmodule met de circa 210.489-byte gebundelde runtime (`rich-text-editor.bundle.js`). De bundle is een gegenereerd bestand; toekomstige wijzigingen moeten de adapter en distributiebundle als één wijziging behandelen en de architectuur-/assetinventaris laten controleren. Dit is tijdens T1-tests gedekt door de laadvolgorde- en assetcompatibiliteitscontroles. Voor T2 is een reproduceerbare buildinstructie of buildscript aan te bevelen voordat meerdere adaptermodules ontstaan.
+
+## Handmatige controles en grenzen
+
+Deze punten zijn niet door de headless Edge-suite te vervangen en zijn **NIET UITGEVOERD**:
+
+1. Echte OS-IME-compositie in een interactieve sessie, inclusief invoer midden in bestaande opmaak.
+2. Een handmatige schermlezercontrole met toetsenbordnavigatie, fragmentopmaak en dialooglabels.
+3. Handmatige visuele beoordeling van lettervormen/Unicode en antialiasing in gewone en fullscreenweergave op de ondersteunde apparaten.
+4. Handmatige open-/annuleer-/bevestig-/undo-/redo-cyclus van een bestaand rijk tekstobject en een exportbestand in een externe viewer.
+
+Automatisch is wel bewezen dat Edge rijke tekst met lokaal ingesloten fonts als zelfstandige SVG kan renderen, die SVG zonder netwerk als PNG kan rasteren, en JSON undo/redo en rondtrip behoudt. De handmatige controles zijn nog vereist voor volledige productacceptatie. De volledige T1-functieset is niet verwijderd of verkleind.
+
+## Volgende stap
+
+T1 blijft open totdat de gebruiker de handmatige controles heeft uitgevoerd en T1 expliciet accepteert. T2 is niet gestart. Begin pas daarna aan T2; voeg vóór de formule-rendering de renderergrens/buildreproduceerbaarheid opnieuw toe aan de review.

@@ -215,7 +215,7 @@
       if(this.selectedIds.includes(o.id) && this.moveSelectionPlan())return 'grab';
       return 'pointer';
     }
-     circleDistributionForPoint(id) { return this.engine.model.circleDistributions.find(d=>d.pointIds.includes(id))||null; }
+     circleDistributionForPoint(id) { return this.engine.model.circleDistributions?.find(d=>d.pointIds.includes(id))||null; }
     hoverAt(event) {
       if(this.navigationMode==='pan')return null;
       if(this.tool.startsWith('construct:') && (!this.interaction || this.interaction.mode==='construction')) {
