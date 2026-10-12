@@ -1,8 +1,8 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.13.0 - 2026-10-12. Status: T5a uitgevoerd na definitief rekencontractakkoord en expliciete GO; wacht op T5a-acceptatie. T5b–T5d en Deel B niet gestart. Eerdere handmatige T4/T5-prep-controles worden niet als uitgevoerd aangemerkt.
+Versie 1.14.0 - 2026-10-12. Status: T5a en vernieuwde tekstwerkruimte geaccepteerd, statische auditopvolging voltooid en 573/573 Node-tests volgens gebruikersrapport; geïntegreerd in main. T5b-productafbakening overeengekomen, UI-ontwerp en implementatiestart nog open. T5c–T5d en Deel B niet gestart. Eerdere handmatige T4/T5-prep-controles blijven afzonderlijk open.
 
-Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). De gebruiker heeft voor T5 de nieuwe branch `chatgpt/t5-calculator` vanaf `main` aangewezen; dit vervangt de historische branchkeuze `chatgpt/editor-development` voor deze uitvoering. Geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
+Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). T5a is historisch op `chatgpt/t5-calculator` ontwikkeld en met de volledige tekstwerkruimte via `chatgpt/text-editor-full-workspace` naar `main` geïntegreerd. Nieuwe implementatiemijlpalen vertrekken vanaf de actuele `main` en krijgen een eigen werkbranch; er is nog geen T5b-startopdracht. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
 ## Volgorde en acceptatie
 
@@ -145,3 +145,18 @@ Acceptatiegate die resteert: handmatige IME/schermlezerchecks en gebruikersscena
 Geïmplementeerd op `chatgpt/text-editor-full-workspace` vanaf T5a-commit `ec750d3`, conform de latere expliciete basisbranchinstructie. Geïntegreerde viewportmodus, drie desktopkolommen, afzonderlijke contextpreview rechts, hoofdcommit bovenaan en Meer voor bestaande tekst-JSON-placeholders. Pure rekenmotor, documentmodel, opslag en milestonegates blijven intact.
 
 Geen tests, nieuwe testbestanden, screenshots of browserverificatie uitgevoerd op verzoek van de gebruiker. Technische implementatie is geen claim van functionele acceptatie. Gebruiker controleert layout, formule/waarde-invoeging, autorisatie, cursor, commit/cancel, history, legacy/export, beperkte hoogte/zoom/fullscreen en focus. [Rapport en checklist](TEXT-EDITOR-FULL-WORKSPACE-REPORT.md). T5b/T5c blijven buiten scope en vereisen hun bestaande afzonderlijke toestemming.
+
+## T5b — actuele ontwerpbeslissing en uitvoeringstop (2026-10-12, 1.14.0)
+
+De productrichting is bevestigd: **geen afzonderlijke grafische rekenmachine**. T5b levert één gedeelde, compacte wetenschappelijke rekenmachine met Texas Instruments-geïnspireerd toetsenbord en display, in de eigen donkere applicatiestijl. Een eigen grafiekcanvas, functieplotter, parametrische grafieken, tabellen, nulpunten-/snijpuntvisualisatie en een tweede rekenengine zijn uitdrukkelijk **buiten T5b**. Die grafische mogelijkheden worden later in de bestaande illustratie-editor ontworpen, met hergebruik van canvas, geometrie, coördinatenstelsel en waar passend T5a of een toekomstige variabelen-/functie-uitbreiding.
+
+Voor de aparte Codex-startopdracht moet het T5b-ontwerp eerst concreet zijn goedgekeurd op:
+
+1. De herkenbare toegang vanuit hoofdwerkbalk en `∑` in de tekstwerkruimte; dezelfde gedeelde component met twee dunne hostadapters. Een compact paneel naast het canvas verdient de voorkeur; definitieve positie, eventueel verplaatsen, afmetingen en mobiele variant staan nog open.
+2. Invoerveld, resultaatdisplay, fysiek-toetsenbordachtige knoppen, typed bronchips, bronselectie, graden/radialen, eenheden, precisie, foutmeldingen, kopieerformaat en lokale calculator-undo. Geen nieuwe rekenregels buiten de goedgekeurde T5a-taal.
+3. Focus-/Escape-/sluitgedrag in beide hosts en fullscreen; annuleren herstelt de inline cursorbookmark zonder een tekstconcept te wijzigen. Geen documentmutatie, historyactie, schema-4-fragment of tekstinvoegactie in T5b.
+4. Behoud van de bestaande acceptatiematrix: `2+3*4=14`, `sin(30 deg)=0,5`, dynamische `πr²`, geautoriseerde bronupdates/onthouding, numerieke pariteit en formattering tussen hosts, stale/revoked context, clipboardweigering, keyboard/focus/fullscreen en onveranderde JSON/SVG/PNG/export. Het eerdere wiskundige contract en de toekomstige T5c-/T5d-poorten blijven onverzwakt.
+
+**Actuele voorafgaande gate:** T5a-code en tekstwerkruimte zijn geaccepteerd en gemerged in `main`; de gebruiker rapporteerde voor de gecombineerde versie 573 Node PASS, 0 FAIL, 0 SKIP. De volledige Edge-regressies zijn niet opnieuw gedraaid op die gecombineerde laatste versie. Dit is een statusregistratie, geen nieuwe testuitvoering of bewijs van niet-uitgevoerde browserchecks. Historische werkplantekst over onafgewerkte T5a-acceptatie/een eerdere branch beschrijft de oude situatie.
+
+**Stop:** deze documentatieaanpassing autoriseert uitsluitend ontwerpwerk. Geen T5b-implementatie, calculatedValue-schema, grafiekfunctionaliteit of nieuwe documentenmutaties zonder aparte opdracht en ontwerpgoedkeuring.

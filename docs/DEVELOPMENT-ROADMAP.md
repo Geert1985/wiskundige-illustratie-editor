@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.2.0 (T5a independent calculation engine, 2026-10-12)
-Status: T5a technically delivered after definitive calculation-contract approval and explicit GO; awaiting T5a acceptance. T5b–T5d and Deel B not started. Earlier unexecuted manual T4/T5-prep checks remain recorded.
+Version: 2.3.0 (T5b calculator/product boundary checkpoint, 2026-10-12)
+Status: T5a and full text workspace accepted, audit follow-ups completed, user-reported 573/573 Node tests passed, combined work merged to main. T5b product scope approved for design only; implementation not started. T5c–T5d and Deel B not started. Earlier manual T4/T5-prep and latest combined Edge checks remain unverified.
 Date: 2026-10-12
 
 ## Baseline
@@ -244,3 +244,13 @@ The 56 additional scenarios and original mathematical matrix are automated, with
 ## Text editor full workspace — separate UX delivery (2026-10-12)
 
 Implemented on `chatgpt/text-editor-full-workspace`, based on the user-selected `chatgpt/t5-calculator` commit `ec750d3`. Full application workspace mode, three desktop columns, context preview/actions, top-level text commit and a More menu for the existing disabled text-JSON placeholders. Calculator engine and mathematical contract unchanged; T5b/T5c not started. No tests or verification sessions performed by explicit user instruction; manual acceptance remains open. See [implementation report](TEXT-EDITOR-FULL-WORKSPACE-REPORT.md). Historical T5a test evidence applies to its own delivery, not to this untested UX change.
+
+## T5b calculator versus future function plotting — product boundary (2026-10-12, v2.3.0)
+
+**Confirmed architecture decision:** build **one scientific calculator, not a second graphing calculator or parallel graphing canvas**. T5b reuses the existing T5a numerical/AST/unit engine and source-policy adapter; its Texas Instruments-inspired keypad/display are UI inspiration, not a replacement for the current app's appearance or a literal clone. Keep the established standalone toolbar and inline `∑` entry points, one shared component, private state, authorized source chips, re-evaluation, unit/angle/precision options and explicit result copying. A compact panel is preferred; exact placement, optional dragging, mobile behavior, accessibility/focus, Escape order and clipboard formatting still require user review before an implementation request.
+
+**Function-plotting direction (future, separate milestone to be scoped):** render `f(x)` and parametric/geometric visualizations on the **existing illustration canvas and coordinate system**; integrate parameters, interactive sliders, tabular values and geometric analysis into that editor rather than duplicating them inside the calculator. The present T5a AST does not yet provide a free variable/function-definition language. Any variable-aware evaluator, domain/sampling/discontinuity policy and graph-object/document contract require separate design, numerical tests, user approval and implementation authorization. Do **not** count this capability as part of T5b/T5c/T5d or mark it delivered.
+
+**Milestone gates unchanged:** T5b = calculate/preview only in both hosts, no graphing and no document/inline-draft mutations; T5c = `calculatedValue` with textSchema 4 and three result displays only after separate acceptance; T5d = independent integration/security/accessibility/export audit. Keep document v7, old text schemas and the mathematical contract intact. Existing acceptance scenarios in [architecture section 22](TEXT-EDITOR-ARCHITECTURE.md#22-t5--zelfstandige-en-inline-wetenschappelijke-rekenmachine-150) remain mandatory when implementing T5b. This update is documentation-only, **not an instruction to start T5b code**.
+
+**Latest project status:** T5a audited and accepted, two audit corrections resolved, full text workspace manually accepted, Node suite user-reported **573 PASS / 0 FAIL / 0 SKIP**, all merged into `main`. The latest combined Edge suite has **not** been rerun; historical Edge PASS figures belong to earlier T5a checkpoints. Earlier unaccepted/unmerged status notes above are preserved as history and superseded by this checkpoint. Next decision: approve the detailed calculator interface, then authorize a dedicated implementation branch from `main`.
