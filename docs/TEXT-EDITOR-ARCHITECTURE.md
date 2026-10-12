@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.7.0 - 2026-10-12 - T1-T4 geimplementeerd op de ontwikkelbranch; T4-gebruikersacceptatie en handmatige controles staan open.
+Versie 1.8.0 - 2026-10-12 - T1-T4 geimplementeerd; T5-prep I1-I4 technisch geïntegreerd; handmatige acceptatie staat open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -567,12 +567,20 @@ Rastergate: maximaal 8192 pixels per zijde, 16777216 outputpixels, schaal >0 en 
 
 T5's één-kern/één-interfacecontract uit sectie 22 blijft functioneel goedgekeurd ontwerp. T5a start pas na T4-acceptatie, definitieve rekencontractgoedkeuring en expliciete starttoestemming.
 
-## 24. T5-prep — teksteditor en gedeelde wiskundige invoer (1.7.0)
+## 24. T5-prep — teksteditor en gedeelde wiskundige invoer (1.8.0)
 
-T5-prep is de voorbereidende UI-modernisering tussen T4 en T5a; T5a–T5d blijven ongewijzigd gereserveerd voor de rekenengine en calculator. T4 moet eerst formeel door de gebruiker zijn geaccepteerd. De T5-prep-prototypeproef is uitgevoerd terwijl die handmatige acceptatie nog openstaat en geldt niet als T4-acceptatie.
+T5-prep is de voorbereidende UI-modernisering tussen T4 en T5a; T5a–T5d blijven ongewijzigd gereserveerd voor de rekenengine en calculator. De normale roadmap-gate vraagt eerst T4-acceptatie; voor deze uitvoering gaf de gebruiker afzonderlijk toestemming na gerichte regressiecontrole. De open handmatige T4-acceptatie blijft hierdoor ongewijzigd. De prototypeproef en productie-integratie gelden niet als T4-acceptatie.
 
 De goedgekeurde UI-richting is een donkere, compacte editor met terughoudende gouden accenten, een Nederlandse interface, één zoekveld met categoriechips en een contextpaneel als desktopoverlay of begrensde mobiele sheet. De invoeradapter kiest expliciet tussen Unicode in tekst en gevalideerde LaTeX in formules. Formules behouden selectie-/cursorplaatsing; sjablonen selecteren aanvankelijk het eerste argument. Tab-navigatie tussen argumenten blijft afhankelijk van een afzonderlijke succesvolle gebruiksproef.
 
 Architectuurgrenzen voor latere implementatie: SymbolCatalog blijft UI- en documentonafhankelijk; MathInput beheert invoeging naar de juiste host; FormulaEditor bedient bestaande MathSource-validatie en MathFragments-preview; TextEditor blijft eigenaar van de ProseMirror-editor en private tekstdraft. Dynamische meetwaarden gebruiken uitsluitend bestaande geautoriseerde bronopties en resolver; het prototype gebruikt mocks en is geen bewijs van bronrechten. Geen berekende expressies of calculatorfunctionaliteit valt onder T5-prep.
 
-De huidige geïsoleerde prototype-uitvoering verandert geen productiecode, documentmodel, schema, exporter of opslag. De daadwerkelijke UI-integratie vereist T4-acceptatie, expliciete afzonderlijke T5-prep-acceptatie en regressietests voor ProseMirror-bookmarks, annuleren/bevestigen, bronrechten, export en legacy dynamische tekst. Prototypebevindingen en bewijs staan in [T5-PREP-UI-PROTOTYPE-REPORT.md](T5-PREP-UI-PROTOTYPE-REPORT.md). Dit is een ontwerpcontract en geen claim dat T5-prep-productie is geïmplementeerd.
+De productie-integratie is uitgevoerd na gerichte T4-regressiecontrole, terwijl de afzonderlijke T4-handmatige acceptatie open bleef. I1-I4 behouden document v7, textSchema 1-3, legacy textBinding, MathSource, MathFragments, geautoriseerde bronopties en de bestaande commit-/exportpaden. Er zijn geen modelvelden, parser/evaluator of dependencies toegevoegd. De volledige teststatus en open handmatige controles staan in [T5-PREP-INTEGRATION-REPORT.md](T5-PREP-INTEGRATION-REPORT.md); het prototypebewijs blijft in [T5-PREP-UI-PROTOTYPE-REPORT.md](T5-PREP-UI-PROTOTYPE-REPORT.md). De integratie wacht op afzonderlijke gebruikersacceptatie. T4 is hiermee niet geaccepteerd en T5a is niet gestart.
+
+## 25. Productie-integratie T5-prep — modulegrenzen en status (1.8.0)
+
+De productiedialoog gebruikt een vaste editorruimte met overliggende contextpanelen en onderbalkacties. I1 groepeert bestaande werkbalkfuncties en behoudt tekstcommando's. I2 voegt `TextSymbolCatalog` toe als pure data-/zoekmodule zonder DOM, documentmodel, ProseMirror of MathJax. I3 scheidt `TextMathInput` (host/cursorinvoeging) en `TextFormulaEditor` (veilige validatie, preview en stale-request-afhandeling); de ProseMirror-bookmark en de UTF-16 selectie in het formuleveld blijven aparte selecties. I4 scheidt `TextDynamicValueEditor` en gebruikt alleen `sourceOptions`, `resolveTextValue`, `TextValues` en de bestaande typed text.commit-draft.
+
+`TextInsertPanel` is de host/controller die de modi opent, bookmarks bewaart en annuleert. Het is geen eigenaar van formulegrammatica, symbolendata of meetwaardebeleid. Catalogusitems hebben stabiele ID's, categorie, Unicode, LaTeX/formulemapping of sjabloonbron en Nederlandstalige/Engelstalige zoektermen. Gewone tekst behoudt Unicode-invoeging; LaTeX-context gebruikt alleen `MathSource`-toegestane representaties. Sjablonen selecteren het eerste invulargument; Tab-navigatie is niet geïmplementeerd.
+
+De dynamische waardencontroller bewaart bestaande bronschema's en formattingvelden; hij berekent geen waarden zelf en maakt geen mockbronopties. Bij afwezige of ingetrokken rechten blijft de bestaande resolver de bron verbergen of als niet beschikbaar tonen en weigert de bestaande commit-/exportcontrole ongeoorloofde data. Compatibiliteits- en exporttests zijn onderdeel van de huidige regressie, niet uitgesteld naar T4/T5d.

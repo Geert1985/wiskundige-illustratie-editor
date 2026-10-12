@@ -1,15 +1,15 @@
 # Voorstel — Modernisering teksteditor en gedeelde wiskundige invoer
 
-Versie 1.1.0 — 2026-10-12
+Versie 1.2.0 — 2026-10-12
 Repository: Geert1985/wiskundige-illustratie-editor  
 Branch: chatgpt/editor-development  
-Scope: goedgekeurde T5-prep ontwerpbesluiten en geïsoleerd UI-prototype. Productie-teksteditor en T5a–T5d zijn niet geïmplementeerd.
+Scope: goedgekeurd T5-prep-ontwerp, prototype en I1-I4-productie-integratie. De calculator-milestones T5a–T5d zijn niet gestart.
 
 ## Status en besluitpoort
 
-De ontwikkelbranch staat op commit dd09b2d. T4-code is geïntegreerd op die branch; de laatste T4-regressie telde 449/449 Node-tests en 50 Edge-testmodules. Het T4-rapport noemt de implementatie technisch opgeleverd, maar vraagt nog handmatige gebruikersacceptatie. Deze audit sluit die acceptatie niet namens de gebruiker af. De bestaande roadmap vereist bovendien definitieve goedkeuring van het rekencontract vóór T5a.
+De T4-implementatie blijft wachten op formele handmatige gebruikersacceptatie. De T5-prep-productie-integratie is uitgevoerd op expliciete opdracht na gerichte T4-regressiecontrole, zonder T4 namens de gebruiker af te sluiten. I1-I4 zijn technisch opgeleverd op chatgpt/editor-development; zie [T5-PREP-INTEGRATION-REPORT.md](T5-PREP-INTEGRATION-REPORT.md) voor commits en testbewijs. T5a–T5d blijven afzonderlijke calculator-milestones. T5a vereist nog steeds definitieve goedkeuring van het rekencontract én afzonderlijke starttoestemming.
 
-De gebruiker heeft T5-prep voorwaardelijk goedgekeurd en expliciet gevraagd de ontwerpkeuzes vast te leggen en een geïsoleerd prototype te maken. De bestaande T5a–T5d blijven de milestones voor de rekenmachine. Omdat de handmatige T4-acceptatie nog openstaat, is deze uitvoering alleen een voorbereidend ontwerp/prototype: zij markeert T4 niet als geaccepteerd en staat geen productie-integratie toe.
+De productie-integratie behoudt ProseMirror, MathSource, MathFragments, typed text.commit, de bestaande bronrechten, v7/document-schema's en legacy textBinding. Ze wijzigt de vormgeving en invoeglaag, niet het documentmodel. De I1-I4 implementatie is niet gelijk aan T4-acceptatie of T5-prep-gebruikersacceptatie.
 
 ## 1. Huidige architectuur
 
@@ -167,22 +167,22 @@ Belangrijkste risico's zijn cursorposities verliezen bij focuswissel, TeX-insert
 
 Geschatte omvang: middelgroot tot groot, circa 6–10 ontwikkelaarsdagen voor catalogus, formule-contextinvoeging, dialooglayout en volledige Node/Edge-integratie, plus handmatige IME/AT-acceptatie en eventuele iteratie op visueel ontwerp. Dit is een raming, geen gemeten doorlooptijd. Het meeste risico ligt in selectie-/focusbeheer en responsive dialooggedrag; bestaande math parser, renderer en documentmodel verlagen het opslag- en wiskunderisico.
 
-Aanbevolen volgorde na de prototype-review:
+Uitvoering van de goedgekeurde I1-I4-volgorde:
 
-1. Rond T4-gebruikersacceptatie en eventuele correcties af; dit blijft de eerste formele gate.
-2. Laat de gebruiker het T5-prep-ontwerp, prototype en rapport beoordelen en vraag afzonderlijke toestemming voordat productie-integratie begint.
-3. Implementeer na toestemming de catalogusmapping en invoeging, met de bewezen MathSource-whitelist en bestaande MathFragments-renderer.
-4. Integreer tekstinvoeging en formulecursorinvoeging met afzonderlijke ProseMirror-bookmarktests voor begin/midden/einde, selectie, annuleren, focusherstel en stale previews.
-5. Integreer dynamische waarden uitsluitend via bestaande geautoriseerde sourceOptions/resolveValue-paden; behoud T3-bronrechten, bindingen en T4-exportguards.
-6. Verifieer opslag, undo/redo, restricted projectie, JSON, SVG en offline PNG vanaf de eerste productiefragmentwijziging; voer echte IME-/AT-controles uit waar de testomgeving dat toelaat.
-7. Houd T5a apart: start pas na T4-acceptatie, T5-prep-acceptatie en definitieve goedkeuring van het mathematische contract.
-## 8. Vastgelegde ontwerpkeuzes (1.1.0)
+1. T4 regressie is vóór integratie gericht en na integratie volledig herhaald; formele handmatige acceptatie blijft open.
+2. De gebruiker heeft productie-integratie van I1-I4 expliciet opgedragen.
+3. Catalogus-, cursor-, preview- en dynamische-waardenlogica zijn geïntegreerd via aparte controllers met de bestaande parser, renderer en rechtenservices.
+4. Gerichte en volledige Node/Edge-tests controleren bewerken, selectie, anuleren, undo/redo, rechten, JSON, SVG/PNG en fullscreen; de integratierapportage bevat de exacte aantallen.
+5. Echte IME-/AT-tests en handmatige eindbeoordeling zijn niet uitgevoerd.
+6. T5a blijft apart: pas starten na T4-acceptatie, T5-prep-acceptatie, definitieve goedkeuring van het rekencontract en expliciete starttoestemming.
+
+## 8. Vastgelegde ontwerpkeuzes (1.2.0)
 
 De gebruiker heeft het voorstel voorwaardelijk goedgekeurd en opdracht gegeven de keuzes vast te leggen en een geïsoleerd prototype te bouwen.
 
 | Onderwerp | Besluit |
 |---|---|
-| Milestone en volgorde | T5-prep, na formele T4-gebruikersacceptatie en vóór T5a. T4 is nog niet handmatig geaccepteerd; deze uitvoering is uitsluitend voorbereidend en wijzigt die status niet. |
+| Milestone en volgorde | T5-prep I1-I4 is op expliciete opdracht uitgevoerd na gerichte T4-regressie; T4-handmatige acceptatie blijft open. T5-prep wacht op eigen gebruikersacceptatie en start T5a niet. |
 | Desktopcontextpaneel | Compacte overlay naast de schrijfruimte, zonder de dialooghoogte te veranderen. |
 | Mobiele contextinterface | Begrensde sheet met eigen scrollgebied; hoofdacties blijven zichtbaar. |
 | Symbolencatalogus | Eén zoekveld met filterchips over 10 categorieën. |
@@ -193,8 +193,14 @@ De gebruiker heeft het voorstel voorwaardelijk goedgekeurd en opdracht gegeven d
 | Documentmodel | Ongewijzigd; geen nieuwe opslagvelden, documentversie of migratie in T5-prep. |
 | Rekenfunctionaliteit | Buiten scope; het bestaande T5a–T5d-contract en de nummering blijven behouden. |
 
-### T5-prep-prototype-uitkomst
+### T5-prep-prototype-uitkomst (historisch)
 
 Een geïsoleerd prototype staat in experiments/text-editor-modernization/. Het demonstreert een tekstdialoog, invoegwerkbalk, symbolencatalogus, formulebewerking op cursor/selectie, breuk- en wortelsjablonen met eerste argumentselectie, dynamische-waardepaneel met mockgegevens, Escape/focus en responsieve overlay/sheet. De bestaande MathSource-validator en MathFragments/MathJax-renderer leveren formulevalidatie en lokale preview; er is geen tweede parser of renderer toegevoegd. De mock-waardeselector is expliciet niet gekoppeld aan productiebronnen en doet geen autorisatie- of documentwerk.
 
-Het prototype wijzigt geen bestaande productie-teksteditor, ProseMirror-integratie, opslagmodel of exports. Zie T5-PREP-UI-PROTOTYPE-REPORT.md voor screenshots, exacte Edge-resultaten, niet-uitgevoerde controles en handmatige review. T5-prep blijft ter beoordeling; geen prototypeonderdeel wordt automatisch geïntegreerd.
+Het prototype was geïsoleerd en wijzigde geen productie-editor; het blijft de visuele bronreferentie. De productie-integratie is afzonderlijk uitgevoerd en beschreven in [T5-PREP-INTEGRATION-REPORT.md](T5-PREP-INTEGRATION-REPORT.md). T5-prep wacht op handmatige gebruikersacceptatie. De technische oplevering start T5a niet.
+
+## 10. T5-prep productie-integratie (1.2.0)
+
+I1 levert de responsieve editor-shell en overlay. I2 haalt symbolen naar een pure centrale catalogus. I3 scheidt ProseMirror-hostinvoeging, formuleveldselectie, templateposities en preview. I4 gebruikt een zelfstandige controller voor dynamische waarden die alleen bestaande geautoriseerde bronopties, TextValues en resolver gebruikt. Document v7, textSchema 1-3, exports en legacy textBinding blijven behouden.
+
+De integratie is technisch gereed, gepusht op de ontwikkelbranch en wacht op handmatige acceptatie. T4-handmatige acceptatie blijft eveneens open. Echte IME-/schermlezercontroles en finale handmatige visuele review zijn niet uitgevoerd. T5a blijft buiten scope en vereist afzonderlijk akkoord.

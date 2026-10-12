@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.6.0 (T5-prep design/prototype checkpoint, 2026-10-12)
-Status: proposed sequencing; validate against repository
+Version: 1.7.0 (T5-prep I1-I4 integration checkpoint, 2026-10-12)
+Status: T5-prep I1-I4 technically delivered; awaiting user acceptance. T4 hand acceptance remains open; T5a not started.
 Date: 2026-10-12
 
 ## Baseline
@@ -209,17 +209,14 @@ Explicitly authorized and delivered for user acceptance: optional fixed text wid
 
 ## T5-prep — Modernisering teksteditor en gedeelde wiskundige invoer (2026-10-12)
 
-De modernisering krijgt milestone-ID **T5-prep**, na formele T4-gebruikersacceptatie en vóór T5a. De nummering T5a–T5d blijft uitsluitend voor de wetenschappelijke rekenmachine. T4 handmatige acceptatie is nog open; de hieronder beschreven voorbereiding verandert dat niet.
+I1-I4 zijn technisch geïntegreerd en gepusht naar chatgpt/editor-development na gerichte T4-regressiecontrole. Dit sluit de afzonderlijke handmatige T4-acceptatie niet af. De uitvoering wacht op T5-prep-acceptatie. De mijlpaal T5a–T5d blijft uitsluitend gereserveerd voor de wetenschappelijke rekenmachine.
 
-Het T5-prep-ontwerp is voorwaardelijk goedgekeurd en als voorbereidende stap is een geïsoleerd prototype gebouwd voor ontwerpbeoordeling. De formele T5-prep-productie-integratie blijft na T4-gebruikersacceptatie en afzonderlijke prototype-acceptatie. Het prototype is geen productie-integratie. Geen bestaande teksteditor, opslag/schema, ProseMirror-runtime, MathSource of exportpad is gewijzigd. Zie [moderniseringsvoorstel v1.1.0](T5-TEXT-EDITOR-MODERNIZATION-PROPOSAL.md) en [prototype-rapport](T5-PREP-UI-PROTOTYPE-REPORT.md).
+De geïntegreerde UI gebruikt een compacte responsieve teksteditor met contextuele overlay, stabiele actiezone, centrale symboolcatalogus met stabiele IDs en een gedeelde invoeglaag voor gewone tekst en formules. Formulecursorselecties blijven gescheiden van ProseMirror-bookmarks; sjablonen selecteren het eerste argument. Dynamische waarden gebruiken alleen bestaande geautoriseerde sourceOptions/resolveTextValue- en TextValues-paden. Document v7, textSchema 1-3, legacy textBinding en exportschema's zijn niet gewijzigd. Zie [T5-PREP-INTEGRATION-REPORT.md](T5-PREP-INTEGRATION-REPORT.md), [voorstel v1.2.0](T5-TEXT-EDITOR-MODERNIZATION-PROPOSAL.md) en [prototype-rapport](T5-PREP-UI-PROTOTYPE-REPORT.md).
 
-Vastgelegde keuzes: desktopoverlay en begrensde mobiele sheet; één zoekveld plus categoriechips; Nederlandse UI met Nederlandse/Engelse zoektermen; expliciete Unicode/LaTeX-route per symbool; betrouwbare selectie van het eerste sjabloonargument. Tab-navigatie wordt alleen toegevoegd na aparte geslaagde proef. Documentmodel blijft onveranderd; rekenfunctionaliteit is buiten scope.
-
-| Volgende gate | Vereiste |
+| Statuspoort | Huidige status |
 |---|---|
-| T4-acceptatie | Gebruiker voltooit open handmatige controles en accepteert T4; eventuele correcties vóór verder werk afronden. |
-| T5-prep-review | Gebruiker beoordeelt ontwerp, prototype en rapport; afzonderlijke toestemming vereist vóór productie-integratie. |
-| T5a | Alleen na T5-prep-gate én definitieve goedkeuring van het mathematische contract; bouwt de UI-onafhankelijke parser/AST en evaluatie-engine. |
-| T5b–T5d | Behouden gedeelde calculator UI, typed inline calculatedValue en integratie-audit, elk met eigen start/acceptatiepoort. |
+| T4 handmatige acceptatie | Open; regressietests alleen sluiten deze poort niet. |
+| T5-prep I1-I4 | Technisch geleverd, automatische tests groen, wacht op handmatige gebruikersacceptatie. |
+| T5a | Niet gestart. Vereist T4-acceptatie, T5-prep-acceptatie, definitieve goedkeuring van het mathematische contract en expliciete starttoestemming. |
 
-De prototypescreenshots tonen de bestaande dialoog ter vergelijking en de geïsoleerde nieuwe editor, symbolen, formule en mock dynamische waarden. Edge-tests van dit prototype zijn geen volledige T4-regressie of handmatige gebruikersacceptatie. Ongeteste IME, assistieve technologie, echte bronautorisatie en externe SVG/PNG-viewers blijven open.
+Niet uitgevoerd: echte IME-/schermlezeracceptatie, finale handmatige visuele review en vergelijking op meerdere besturingssystemen. De prototype-mock is niet in productie gebruikt.
