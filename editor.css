@@ -175,14 +175,12 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 
 .rich-text-toolbar{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}.rich-text-toolbar button,.rich-text-toolbar select,.rich-text-toolbar input{min-height:32px;padding:4px 7px}.rich-text-toolbar input[type=number]{width:72px}.rich-text-surface{min-height:180px;max-height:45vh;overflow:auto;padding:12px;background:#fff;color:#222;border:1px solid #7a8991;border-radius:7px;font:16px 'Source Sans 3',sans-serif;outline:none}.rich-text-surface:focus{border-color:#e9c46a;box-shadow:0 0 0 2px #e9c46a55}.rich-text-surface p{margin:0 0 1em}.rich-text-surface p:last-child{margin-bottom:0}#textValue[hidden]{display:none}
 
-.text-insert-panel{border:1px solid var(--border);padding:12px;border-radius:8px;margin:10px 0;max-height:45vh;overflow:auto}.text-insert-panel[hidden]{display:none}.text-insert-panel[data-mode="symbols"] .formula-controls,.text-insert-panel[data-mode="formula"] .symbol-controls{display:none}.symbol-list{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}.symbol-list button{font-size:20px;min-width:40px}.text-insert-panel label{display:block;margin:8px 0}.text-insert-panel input,.text-insert-panel select{width:100%}#mathPreview{min-height:42px;padding:10px;overflow:auto}#mathError{color:#ffb9b9}.rich-math-atom{display:inline-block;padding:2px;cursor:pointer;border-radius:3px}.rich-math-atom.ProseMirror-selectednode{outline:2px solid var(--accent)}.rich-math-atom svg{display:block;overflow:visible}
 
 #textDialog{width:min(640px,calc(100vw - 32px));box-sizing:border-box;max-height:calc(100dvh - 24px);overflow:auto}
 
-.text-insert-panel:not([data-mode="value"]) .value-controls,.text-insert-panel[data-mode="value"] .symbol-controls,.text-insert-panel[data-mode="value"] .formula-controls{display:none}.rich-value-atom{display:inline-block;padding:0 2px;border-bottom:1px dotted #888;cursor:pointer}.rich-value-atom.ProseMirror-selectednode{outline:2px solid var(--accent)}#valuePreview{display:block;margin:10px 0;padding:8px;border:1px solid var(--border);white-space:pre-wrap}
 .value-controls input,.value-controls select{background:var(--panel-2);color:inherit;border:1px solid var(--border);border-radius:5px;min-height:32px;padding:6px 8px}
 
-.rich-width-label{display:flex;align-items:center;gap:5px;font-size:12px}.rich-text-surface .ProseMirror{outline:none;overflow-wrap:anywhere;min-height:140px}.editor-dialog{max-height:calc(100dvh - 32px);overflow:auto}.rich-text-surface .ProseMirror p{white-space:pre-wrap}
+.rich-text-surface .ProseMirror{outline:none;overflow-wrap:anywhere;min-height:140px}.editor-dialog{max-height:calc(100dvh - 32px);overflow:auto}.rich-text-surface .ProseMirror p{white-space:pre-wrap}
 
 /* T5-prep I1 — cohesive text editor surface; existing editor/runtime semantics stay in place. */
 .text-editor-dialog{width:min(1040px,calc(100vw - 28px));height:min(790px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);padding:0;overflow:hidden;border:1px solid #435863;border-radius:14px;background:#10212b;color:#e9eef0;box-shadow:0 22px 80px #0009}
@@ -190,25 +188,15 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .text-editor-form{height:100%;min-height:0;display:flex;flex-direction:column;gap:0}
 .text-editor-heading{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 22px;border-bottom:1px solid #31434c;background:#132630}
 .text-editor-heading h2{margin:2px 0 0;font-size:22px;font-weight:700;color:#edf1f2}
-.text-editor-eyebrow,.context-panel-eyebrow{color:#f2ca59;font-size:9px;font-weight:800;letter-spacing:.16em}
 #textDialogContext{margin:2px 0 0;color:#a8bac3;font-size:12px}
-.text-editor-close,.context-panel-close{width:36px;height:36px;flex:0 0 36px;padding:0;border:1px solid #354b57;border-radius:9px;background:#172c36;color:#e9eef0;font-size:22px;line-height:1}
-.text-editor-close:hover,.context-panel-close:hover{border-color:#e9c85f;color:#f2ca59}
 .text-editor-dialog .rich-text-toolbar{flex:0 0 auto;display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;padding:10px 16px;border-bottom:1px solid #30434d;background:#12252e}
 .rich-toolbar-group{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding:2px 7px;border-right:1px solid #344850}
-.rich-toolbar-label{margin-right:3px;color:#9eafb8;font-size:9px;font-weight:800;letter-spacing:.12em}
 .text-editor-dialog .rich-text-toolbar button,.text-editor-dialog .rich-text-toolbar select,.text-editor-dialog .rich-text-toolbar input{min-height:34px;border:1px solid #364c57;border-radius:7px;background:#192c35;color:#e9eef0;font-size:12px}
 .text-editor-dialog .rich-text-toolbar button{min-width:34px;padding:5px 9px}
 .text-editor-dialog .rich-text-toolbar button:hover,.text-editor-dialog .rich-text-toolbar button[aria-pressed="true"]{border-color:#e9c85f}
 .text-editor-dialog .rich-text-toolbar select{padding:5px 24px 5px 8px}
 .text-editor-dialog .rich-text-toolbar input[type=number]{width:66px;padding:5px 7px}
 .text-editor-dialog .rich-text-toolbar input[type=color]{width:36px;padding:3px}
-.text-editor-dialog .rich-toolbar-group .rich-width-label{color:#9eafb8;font-size:11px}
-.text-editor-dialog .rich-width-label input{width:70px}
-.text-editor-dialog .rich-insert-group button{white-space:nowrap}
-.text-editor-dialog .rich-insert-group button span{font-weight:500}
-.text-editor-dialog .rich-history-group{margin-left:auto;border:0}
-.text-editor-workspace{position:relative;flex:1 1 auto;min-height:0;padding:14px 16px;background:#f7f8f6}
 .text-editor-dialog .rich-text-surface{width:100%;height:100%;min-height:0;max-height:none;overflow:auto;padding:22px 26px;border:1px solid #d9dfdc;border-radius:8px;background:#fff;color:#27343a;font:16px "Source Sans 3",system-ui,sans-serif;outline:none}
 .text-editor-dialog .rich-text-surface:focus{border-color:#d9b846;box-shadow:0 0 0 2px #d9b84633}
 .text-editor-dialog .rich-text-surface .ProseMirror{min-height:100%;outline:none;overflow-wrap:anywhere}
@@ -218,14 +206,8 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .text-editor-dialog .text-editor-actions button{min-height:40px;padding:8px 16px;border:1px solid #3a505b;border-radius:8px;background:#192c35;color:#e9eef0}
 .text-editor-dialog .text-editor-actions button[type=submit]{border-color:#f2ca59;background:#f2ca59;color:#261f0e}
 .text-editor-dialog .text-editor-actions button:hover{filter:brightness(1.08)}
-.text-editor-dialog .text-insert-panel{position:absolute;z-index:2;top:12px;right:12px;bottom:12px;width:min(380px,calc(100% - 24px));max-height:none;overflow:auto;margin:0;padding:16px;border:1px solid #405864;border-radius:12px;background:#132630;color:#e9eef0;box-shadow:0 16px 40px #07101866;scrollbar-color:#536b76 #132630}
-.context-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-2px -2px 12px;padding-bottom:10px;border-bottom:1px solid #344a54}
-.context-panel-heading h3{margin:3px 0 0;font-size:17px}
 .text-insert-panel .context-panel-caption{margin:0 0 12px;color:#a8bac3;font-size:12px;line-height:1.45}
-.text-insert-panel label{margin:10px 0;color:#dce4e7;font-size:11px}
 .text-insert-panel input,.text-insert-panel select,.text-insert-panel textarea{min-height:36px;padding:7px 9px;border:1px solid #39505b;border-radius:7px;background:#0e1d25;color:#e9eef0;font-family:inherit;font-size:13px}
-.text-insert-panel input:focus,.text-insert-panel select:focus,.text-insert-panel textarea:focus{outline:2px solid #d7b849;outline-offset:1px}
-.text-insert-panel textarea{resize:vertical}
 .symbol-list{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:12px 0}
 .symbol-list button{min-width:0;min-height:44px;padding:5px;border:1px solid #334a55;border-radius:8px;background:#192c35;color:#f2ca59;font-size:19px}
 .symbol-list button:hover,.symbol-list button:focus-visible{border-color:#f2ca59;background:#203944}
@@ -243,9 +225,6 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
   .text-editor-heading{padding:13px 16px}
   .text-editor-dialog .rich-text-toolbar{gap:4px;padding:8px}
   .rich-toolbar-group{gap:4px;padding:2px 5px}
-  .rich-toolbar-label{font-size:8px}
-  .text-editor-dialog .rich-insert-group button span{display:none}
-  .text-editor-dialog .text-insert-panel{top:auto;right:8px;bottom:8px;left:8px;width:auto;height:min(72%,520px);padding:13px}
   .text-editor-dialog .text-editor-actions{min-height:62px;padding:8px 12px}
 }
 @media(max-width:480px){
@@ -254,11 +233,7 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
   #textDialogContext{font-size:10px}
   .text-editor-dialog .rich-text-toolbar{align-items:flex-start;max-height:140px;overflow:auto}
   .rich-toolbar-group{max-width:100%;flex-wrap:wrap}
-  .text-editor-dialog .rich-toolbar-label{display:none}
   .text-editor-dialog .rich-text-toolbar select{max-width:78px}
-  .text-editor-dialog .rich-text-toolbar input[type=number]{width:50px}
-  .text-editor-dialog .rich-width-label input{width:46px}
-  .text-editor-workspace{padding:8px}
   .text-editor-dialog .rich-text-surface{padding:14px;min-height:0}
   .symbol-list{grid-template-columns:repeat(4,minmax(0,1fr))}
   .text-editor-dialog .text-editor-actions>span{max-width:35%;font-size:9px}
@@ -271,13 +246,9 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
   .text-editor-dialog .text-editor-actions{min-height:54px}
 }
 
-#textDialog.text-editor-dialog{width:min(1040px,calc(100vw - 28px))}
-@media(max-width:800px){#textDialog.text-editor-dialog{width:calc(100vw - 20px)}}
-@media(max-width:480px){#textDialog.text-editor-dialog{width:calc(100vw - 10px)}}
 
 .text-editor-dialog .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-.text-insert-panel[data-mode=formula] .symbol-controls{display:none}.text-insert-panel[data-mode=formula].formula-symbol-picking .symbol-controls{display:block}.text-insert-panel[data-mode=formula].formula-symbol-picking .formula-controls{display:block}
 
 /* T5-prep UX refinement: compact, keyboard-friendly rich-text controls. */
 .text-editor-dialog .rich-text-toolbar{gap:6px;padding:8px 12px;align-items:center;overflow:visible}
@@ -291,7 +262,7 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .text-editor-dialog .rich-text-toolbar [data-rich-mark][aria-pressed="true"],.text-editor-dialog .rich-align-group button[aria-pressed="true"]{color:#fff4c3;border-color:#f2ca59;background:#354039;box-shadow:inset 0 -3px 0 #f2ca59}
 .text-editor-dialog .rich-text-toolbar [data-rich-mark].is-mixed,.text-editor-dialog .rich-align-group button.is-mixed{background:repeating-linear-gradient(135deg,#192c35 0 5px,#35434a 5px 9px);border-style:dashed}
 .text-editor-dialog .rich-align-group{display:flex;gap:3px;margin-left:3px;padding-left:7px;border-left:1px solid #344850}
-.text-editor-dialog .rich-align-group svg,.text-editor-dialog .rich-history-group svg,.rich-width-group label svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.text-editor-dialog .rich-align-group svg,.text-editor-dialog .rich-history-group svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .text-editor-dialog .rich-color-wrap{position:relative;display:inline-flex}
 .text-editor-dialog .rich-color-button{position:relative;font-size:17px;font-weight:800}
 .text-editor-dialog .rich-color-button:after{content:"";position:absolute;left:7px;right:7px;bottom:4px;height:3px;border-radius:2px;background:var(--rich-text-color,#888);box-shadow:0 0 0 1px #111}
@@ -303,20 +274,86 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .palette-swatch{display:block;width:17px;height:17px;border-radius:50%;border:1px solid #fff;box-shadow:0 0 0 1px #071018}
 .rich-color-swatch[aria-pressed="true"]{outline:2px solid #f2ca59;outline-offset:2px}
 .rich-color-swatch[aria-pressed="true"] .palette-swatch{box-shadow:0 0 0 2px #f2ca59}
-.text-editor-dialog .rich-width-group{flex:0 1 310px;gap:7px;margin-left:4px;padding:5px 9px;border:1px solid #344850;border-radius:8px;background:#0d2029}
-.rich-width-group label{display:flex;align-items:center;gap:4px;color:#a8bac3;font-size:11px;white-space:nowrap}
-.text-editor-dialog .rich-width-group input[type=range]{width:clamp(78px,10vw,122px);min-height:24px;padding:0;accent-color:#e9c46a;cursor:pointer}
-.rich-width-group output{min-width:62px;color:#e9eef0;font-size:11px;text-align:right;white-space:nowrap}
-.text-editor-dialog .rich-insert-group{flex:0 1 auto}
-.text-editor-dialog .rich-insert-group button span{display:none}
 .text-editor-dialog .rich-history-group{flex:0 0 auto;margin-left:auto;border:0}
 .text-editor-dialog .rich-history-group button{width:36px;padding:6px}
 .text-editor-dialog .rich-history-group button:disabled{opacity:.4;cursor:default;filter:none}
-.text-editor-dialog .rich-insert-group button{white-space:nowrap}
+
+/* T5-prep Deel A: permanent two-column mathematical text workspace. */
+#textDialog.text-editor-dialog{width:min(1440px,calc(100vw - 48px));height:min(1080px,calc(100dvh - 32px));max-height:calc(100dvh - 32px)}
+.text-editor-layout{display:flex;flex:1 1 auto;min-height:0;background:#0e2029}
+.text-editor-dialog .text-insert-panel{position:relative;inset:auto;z-index:auto;display:flex;flex:0 0 36%;flex-direction:column;width:auto;min-width:280px;max-width:510px;height:auto;max-height:none;overflow:hidden;margin:0;padding:14px 12px;border:0;border-right:1px solid #344a54;border-radius:0;background:#0d2029;color:#e9eef0;box-shadow:none;scrollbar-color:#536b76 #0d2029}
+.text-editor-dialog .text-insert-panel[hidden]{display:flex}
+.insert-tabs{display:flex;flex:0 0 auto;gap:7px;margin:0 0 12px}
+.insert-tabs [role="tab"]{flex:1 1 0;min-width:0;min-height:48px;padding:6px 8px;border:1px solid #3b515d;border-radius:9px;background:#142832;color:#e9eef0;font-size:13px;font-weight:600;white-space:nowrap}
+.insert-tabs [role="tab"] span{margin-left:3px}
+.insert-tabs [role="tab"][aria-selected="true"]{border-color:#f2ca59;background:#202f2d;color:#f2ca59;box-shadow:inset 0 -3px 0 #f2ca59}
+.insert-tabs [role="tab"]:focus-visible{outline:2px solid #f2ca59;outline-offset:2px}
+.text-insert-pane{flex:1 1 auto;min-height:0;overflow:auto;padding:3px 4px 10px;scrollbar-color:#536b76 #0d2029}
+.text-insert-pane[hidden]{display:none}
+.text-editor-dialog .text-insert-pane label{display:block;margin:11px 0;color:#dce4e7;font-size:12px}
+.text-editor-dialog .text-insert-pane input,.text-editor-dialog .text-insert-pane select,.text-editor-dialog .text-insert-pane textarea{display:block;width:100%;box-sizing:border-box;min-height:40px;padding:8px 10px;border:1px solid #39505b;border-radius:8px;background:#10232d;color:#e9eef0;font-family:inherit;font-size:14px}
+.text-editor-dialog .text-insert-pane textarea{min-height:108px;resize:vertical;font-family:ui-monospace,Consolas,monospace}
+.text-editor-dialog .symbol-list{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:15px}
+.text-editor-dialog .symbol-list button{min-height:58px;border-color:#3b515d;background:#10232d;color:#f2ca59;font-size:21px}
+.text-editor-dialog .text-editor-compose{display:flex;flex:1 1 64%;flex-direction:column;min-width:0;min-height:0;background:#0e2029}
+.text-editor-dialog .rich-text-toolbar{flex:0 0 auto;justify-content:flex-start;gap:5px;padding:10px 12px;border-bottom:0;background:#0e2029}
+.text-editor-dialog .rich-toolbar-group{gap:4px;padding:2px 6px;border-right:0}
+.text-editor-dialog .rich-format-group{flex-wrap:nowrap}
+.text-editor-dialog .rich-text-toolbar button,.text-editor-dialog .rich-text-toolbar select{min-height:44px;border-color:#3b515d;border-radius:9px;background:#112630;font-size:15px}
+.text-editor-dialog .rich-text-toolbar button{min-width:42px}
+.text-editor-dialog .rich-text-toolbar select{min-width:116px;max-width:154px}
+.text-editor-dialog #richFontSize{min-width:118px}
+.text-editor-dialog .rich-align-group{gap:4px;margin-left:2px;padding-left:8px;border-left:1px solid #344a54}
+.text-editor-dialog .rich-history-group{margin-left:auto;padding-left:7px;border-left:1px solid #344a54}
+.text-editor-dialog .rich-history-group button{min-width:44px}
+.text-editor-dialog .rich-color-wrap{display:inline-flex;align-items:center}
+.text-editor-dialog .rich-color-button{position:relative;min-width:44px!important;font-size:18px!important}
+.text-editor-dialog .rich-color-button:after{bottom:5px}
+.text-editor-dialog .text-editor-message{flex:0 0 auto;min-height:0;margin:0;padding:0 18px;color:#ffb9b9;font-size:12px}
+.text-editor-dialog .text-editor-message:empty{display:none}
+.text-editor-dialog .rich-text-surface{flex:1 1 auto;width:auto;height:auto;max-width:none!important;min-height:0;max-height:none;overflow:auto;margin:3px 14px 14px;padding:34px 36px;border:1px solid #aeb8bc;border-radius:9px;background:#fff;color:#222;font:18px "Source Sans 3",system-ui,sans-serif;outline:none}
+.text-editor-dialog .rich-text-surface:focus{border-color:#d9b846;box-shadow:0 0 0 2px #d9b84666}
+.text-editor-dialog .rich-text-surface .ProseMirror{min-height:100%;outline:none;overflow-wrap:anywhere;color:#222}
+.text-editor-dialog .rich-text-surface .ProseMirror p{margin:0 0 .75em}
+.text-editor-dialog .text-editor-help{display:none}
+.text-editor-dialog .text-editor-actions{min-height:68px}
+.text-editor-dialog .text-editor-actions>span{font-size:13px}
+@media(max-width:900px){
+  #textDialog.text-editor-dialog{width:calc(100vw - 24px);height:calc(100dvh - 24px);max-height:calc(100dvh - 24px)}
+  .text-editor-dialog .text-insert-panel{flex-basis:38%;min-width:245px;padding:10px 8px}
+  .insert-tabs{gap:4px}.insert-tabs [role="tab"]{padding:5px 4px;font-size:11px}.insert-tabs [role="tab"] span{display:block;margin:2px 0 0;white-space:normal}
+  .text-editor-dialog .rich-text-toolbar{max-height:134px;overflow:auto;align-items:center;padding:7px}
+  .text-editor-dialog .rich-format-group{flex-wrap:wrap}
+  .text-editor-dialog .rich-text-toolbar select{min-width:84px;max-width:110px}
+  .text-editor-dialog .rich-text-toolbar button{min-width:36px;min-height:38px;padding:4px 6px}
+  .text-editor-dialog .rich-text-surface{margin:4px 8px 8px;padding:18px}
+}
+@media(max-width:560px){
+  #textDialog.text-editor-dialog{width:calc(100vw - 10px);height:calc(100dvh - 10px);max-height:calc(100dvh - 10px)}
+  .text-editor-layout{flex-direction:column}
+  .text-editor-dialog .text-insert-panel{flex:0 0 min(40%,330px);width:auto;min-width:0;max-width:none;border-right:0;border-bottom:1px solid #344a54;padding:7px 8px}
+  .insert-tabs{margin-bottom:5px}.insert-tabs [role="tab"]{min-height:40px;font-size:11px}.insert-tabs [role="tab"] span{display:inline;margin-left:2px}
+  .text-insert-pane{padding:0 4px 4px}.text-editor-dialog .text-insert-pane label{display:inline-block;width:calc(50% - 10px);margin:6px 4px}
+  .text-editor-dialog .text-insert-pane input,.text-editor-dialog .text-insert-pane select{min-height:34px;padding:5px 7px;font-size:12px}
+  .text-editor-dialog .symbol-list{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;margin:6px 0}
+  .text-editor-dialog .symbol-list button{min-height:38px;font-size:17px}
+  .text-editor-dialog .rich-text-toolbar{flex:0 0 auto;max-height:96px;overflow:auto;padding:5px}
+  .text-editor-dialog .rich-toolbar-group{flex-wrap:wrap;padding:1px}
+  .text-editor-dialog .rich-text-toolbar select{min-width:65px;max-width:80px;padding:4px 16px 4px 5px}
+  .text-editor-dialog #richFontSize{min-width:78px}
+  .text-editor-dialog .rich-text-toolbar button{min-width:30px;min-height:34px;padding:3px 4px}
+  .text-editor-dialog .rich-align-group{padding-left:4px}.text-editor-dialog .rich-history-group{margin-left:auto}
+  .text-editor-dialog .rich-text-surface{margin:2px 6px 6px;padding:12px;font-size:16px}
+  .text-editor-dialog .text-editor-actions{min-height:58px;padding:7px 9px}.text-editor-dialog .text-editor-actions>span{max-width:48%;font-size:10px}.text-editor-dialog .text-editor-actions button{min-height:38px;padding:6px 9px}
+}
+@media(max-height:620px){
+  .text-editor-dialog .text-insert-panel{padding-top:7px;padding-bottom:7px}
+  .insert-tabs [role="tab"]{min-height:38px}
+  .text-editor-dialog .rich-text-toolbar{padding-top:4px;padding-bottom:4px}
+  .text-editor-dialog .text-editor-actions{min-height:52px}
+}
 @media(max-width:900px){
   .text-editor-dialog .rich-format-group{flex:1 1 100%;border-right:0;border-bottom:1px solid #344850;padding-bottom:6px}
-  .text-editor-dialog .rich-width-group{flex:1 1 220px}
-  .text-editor-dialog .rich-insert-group{flex:1 1 auto}
   .text-editor-dialog .rich-history-group{margin-left:auto}
 }
 @media(max-width:600px){
@@ -326,9 +363,15 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
   .text-editor-dialog .rich-format-group select{min-width:65px;max-width:90px;padding-right:17px}
   .text-editor-dialog #richFontSize{min-width:91px}
   .text-editor-dialog .rich-text-toolbar button{min-width:34px;min-height:36px;padding:4px 6px}
-  .text-editor-dialog .rich-width-group{flex:1 1 100%;border:0;padding:2px 0}
-  .text-editor-dialog .rich-width-group input[type=range]{flex:1;width:auto}
-  .text-editor-dialog .rich-insert-group{flex:1 1 auto;padding-left:0}
-  .text-editor-dialog .rich-insert-group button span{display:none}
   .text-editor-dialog .rich-history-group{margin-left:auto;padding-right:0}
 }
+/* Formula workspace: one stable LaTeX editor, catalog and preview. */
+.text-editor-dialog .formula-controls{display:flex;flex-direction:column;overflow:hidden;gap:5px}
+.text-editor-dialog .formula-controls>.context-panel-caption,.text-editor-dialog .formula-controls>.help-text{flex:0 0 auto;margin:3px 0;font-size:12px}
+.text-editor-dialog .formula-controls>label{flex:0 0 auto;margin:4px 0}
+.text-editor-dialog #mathSource{min-height:74px;max-height:106px;resize:vertical;font-family:ui-monospace,Consolas,monospace}
+.text-editor-dialog .formula-catalog{flex:1 1 180px;min-height:100px;overflow:auto;align-content:start;grid-template-columns:repeat(5,minmax(0,1fr));padding:3px 5px 8px;overscroll-behavior:contain}
+.text-editor-dialog .formula-catalog button{min-height:46px;font-size:16px}
+.text-editor-dialog .formula-preview-heading,.text-editor-dialog #mathPreview{flex:0 0 auto}
+.text-editor-dialog #mathPreview{min-height:40px;max-height:84px;overflow:auto}
+.text-editor-dialog #mathInsert{flex:0 0 auto;position:sticky;bottom:0;margin-top:3px;z-index:1}

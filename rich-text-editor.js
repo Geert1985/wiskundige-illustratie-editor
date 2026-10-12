@@ -61,10 +61,9 @@ function mount(element,initial,onChange=()=>{},options={}){
  const bookmark=()=>({selection:view.state.selection.getBookmark(),doc:view.state.doc});
  const restore=b=>{if(!b||b.doc!==view.state.doc)throw Error('De tekstselectie is gewijzigd.');view.dispatch(view.state.tr.setSelection(b.selection.resolve(view.state.doc)));};
  return {
-   setWidth(value){MI.TextContent.validate({...fromDoc(view.state.doc,base),width:value});view.dispatch(closeHistory(view.state.tr).setDocAttribute('width',value));},previewWidth(value){const surface=view.dom.closest('.rich-text-surface');if(surface)surface.style.maxWidth=value==null?'none':`${value}px`;},
    view,get:()=>fromDoc(view.state.doc,base),focus:()=>view.focus(),bookmark,restore,toolbarState,
    setValueEditHandler:handler=>{editValue=handler;},refreshValues(){for(const paint of painters)paint();},
-   setMathEditHandler:handler=>{editMath=handler;},setEditable:value=>view.setProps({editable:()=>value}),
+   setMathEditHandler:handler=>{editMath=handler;},
    selectedMath(){const s=view.state.selection;return s instanceof NodeSelection&&s.node.type.name==='math'?{position:s.from,source:s.node.attrs.source}:null;},
    selectedValue(){const s=view.state.selection;return s instanceof NodeSelection&&s.node.type.name==='dynamicValue'?{position:s.from,binding:s.node.attrs.binding,format:s.node.attrs.format}:null;},
    insertValue(binding,format,b,position=null){

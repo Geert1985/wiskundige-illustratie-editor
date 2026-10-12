@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.9.1 - 2026-10-12. Status: T4 regressiecontrole uitgevoerd maar handmatige acceptatie open; T5-prep I1-I4 plus UX-verfijning technisch geleverd en wacht op gebruikersacceptatie; T5a–T5d niet gestart.
+Versie 1.11.0 - 2026-10-12. Status: T4 regressiecontrole uitgevoerd maar handmatige acceptatie open; T5-prep I1-I4 en Deel A technisch geleverd en wachten op gebruikersacceptatie; T5a–T5d en Deel B niet gestart.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
@@ -57,6 +57,14 @@ Status: uitgevoerd na expliciete opdracht. Zie [T4-CONTRACT.md](T4-CONTRACT.md) 
 ## T5-prep — editor-modernisering en gedeelde wiskundige invoer
 
 I1-I4 zijn uitgevoerd onder de expliciete productie-integratieopdracht. De daaropvolgende T5-prep UX-verfijning (1.9.0) moderniseert de bestaande bediening voor symbolen, lettergrootte, kleur, tekstbreedte, uitlijning, mixed formatting en lokale undo/redo. T4 gerichte regressies waren groen vóór de wijzigingen; formele handmatige T4-acceptatie blijft open. Deze uitvoering doet geen uitspraak over die acceptatie. T5a–T5d blijven afzonderlijke, niet gestarte calculatorstappen.
+
+### T5-prep Deel A — definitieve teksteditorwerkruimte (1.11.0)
+
+Status: technisch geïntegreerd; wacht op handmatige gebruikersacceptatie. Het permanente invoegpaneel heeft exact twee tabs: **Formule** en **Waarden**. De formulecatalogus met symbolen, operators en structuren is geïntegreerd in Formule. Catalogusitems wijzigen alleen de LaTeX-bron op de actieve selectie/cursor; structuursjablonen selecteren hun eerste invulpositie. De catalogus maakt geen formule-atoom aan: expliciet **Formule invoegen** commit de draft. Het ProseMirror-werkvlak en de tekstopmaak blijven daarnaast permanent beschikbaar; het bewerkvlak is wit met donkere tekst. Tabwissels behouden open invoegconcepten; de gebruiker moet ze bevestigen of annuleren voordat de buitenste teksttransactie kan worden toegepast. Escape annuleert eerst het actieve concept. Bestaande invoeg-, permissie-, undo-, opslag- en exportpaden blijven van kracht.
+
+De oude overlaybediening en de numerieke tekstbreedteslider zijn verwijderd. De optionele `textContent.width`-attribuut blijft behouden in model, validatie, rendering en export voor compatibiliteit. De UI normaliseert of herschrijft bestaande breedtes niet. Er zijn geen document- of exportschemawijzigingen.
+
+Deel A-verificatie, screenshots, concrete Edge/Node-resultaten en niet-uitgevoerde handmatige controles staan in [T5-PREP-FINAL-UX-DEEL-A-REPORT.md](T5-PREP-FINAL-UX-DEEL-A-REPORT.md). De branch blijft op `chatgpt/editor-development`; na push stopt het werk voor handmatige acceptatie. Deel B canvas-resizing vereist een afzonderlijke opdracht. T5a–T5d blijven calculatorstappen en worden niet gestart.
 
 - I1: responsieve donkere dialoog, gegroepeerde bestaande bediening, vaste actiezone en contextoverlay; annuleren laat documentdraft ongewijzigd.
 - I2: TextSymbolCatalog met stabiele ID's, categorieën, Unicode en afzonderlijke TeX/formule/sjabloonrepresentaties, Nederlandse en Engelse zoektermen; geen afhankelijkheid van DOM, ProseMirror, documentmodel of MathJax.

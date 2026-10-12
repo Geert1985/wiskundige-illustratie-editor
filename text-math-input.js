@@ -11,7 +11,7 @@
   function insertAtSelection(current,item,start,end){
     current=String(current);start=Math.max(0,Math.min(current.length,Number(start)||0));end=Math.max(start,Math.min(current.length,Number(end)||0));
     const inserted=catalogValue(item),value=current.slice(0,start)+inserted+current.slice(end);
-    const selection=item.source?templateSelection(inserted):{start:inserted.length,end:inserted.length};
+    const selection=item.source||item.formula||item.latex?templateSelection(inserted):{start:inserted.length,end:inserted.length};
     return Object.freeze({value,selectionStart:start+selection.start,selectionEnd:start+selection.end,asFormula:Boolean(item.source||item.formula||item.latex)});
   }
   async function insertSymbol(editor,item,bookmark){

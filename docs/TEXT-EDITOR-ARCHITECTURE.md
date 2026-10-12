@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.9.1 - 2026-10-12 - T1-T4 geïmplementeerd; T5-prep I1-I4 en UX-verfijning technisch geïntegreerd; handmatige acceptatie staat open.
+Versie 1.11.0 - 2026-10-12 - T5-prep Deel A tweedelig formule-/waardenpaneel en wit tekstcanvas; handmatige acceptatie staat open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -600,3 +600,17 @@ Uitlijning blijft op het bestaande ProseMirror-paragraafattribuut `align`; de dr
 De desktopwerkbalk groepeert de breedteslider in een omkaderde bediening direct naast de tekstopmaak, zodat breedte niet als losstaand control oogt. Symbolen, formules en dynamische waarden zijn compacte icoonknoppen zonder zichtbare tekst; toegankelijke namen en tooltips blijven beschikbaar. Op smallere schermen mogen groepen omvallen of scrollen; desktop is het primaire verfijningsdoel en mobiele presentatie is geen acceptatieblokkade. De bestaande contextpanelen blijven overlays die de dialooghoogte niet veranderen. De symboolinvoeging heet overal “Symbolen & structuren” en blijft dezelfde `TextSymbolCatalog`, `TextMathInput`, `TextFormulaEditor` en bestaande formule-atomroute gebruiken.
 
 Normatief testrapport en afbeeldingen: [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-REFINEMENT-REPORT.md). Handmatige IME-/schermlezercontrole is niet uitgevoerd en blijft open; automatische browserresultaten gelden niet als gebruikersacceptatie. Deze UX-verfijning geeft geen toestemming om T5a te starten.
+
+## 27. T5-prep Deel A — permanente teksteditorwerkruimte (1.11.0)
+
+**Status:** technisch geïntegreerd op `chatgpt/editor-development`; wacht op handmatige acceptatie. Alleen de editorbediening verandert. T4-handmatige acceptatie blijft open, T5a–T5d zijn niet gestart en canvas-resizing uit Deel B is niet uitgevoerd.
+
+De invoegmogelijkheden vormen een permanent linker paneel met exact twee tabs: **Formule** en **Waarden**. De formulecatalogus (symbolen, operators en structuursjablonen) staat binnen Formule; er is geen afzonderlijk Symbooltabblad. Het ProseMirror-werkvlak blijft permanent daarnaast zichtbaar op een witte achtergrond met donkere tekst voor contrast. Tabwissels sluiten geen open formule- of waardeconceptdraft; het concept blijft lokaal totdat het wordt bevestigd of expliciet geannuleerd. Een open concept blokkeert de buitenste Toepassen/Toevoegen-actie totdat het is afgerond. Escape annuleert eerst het actieve invoegconcept; een volgende Escape kan de teksteditor sluiten. Focus, bestaande MathInput-/FormulaEditor-/TextDynamicValueEditor-routes, bookmarks, bronrechten en de bestaande `text.commit`-grens blijven leidend.
+
+Catalogusselectie schrijft uitsluitend LaTeX in het bronveld op de opgeslagen selectie/cursorpositie. Een gewone catalogusterm vervangt de selectie en laat de cursor erna; een structuur met invulvelden selecteert de eerste placeholder. De selectiebookmark blijft behouden wanneer focus naar zoeken of categorie wisselt. Catalogusinteractie creëert of vervangt nooit zelf een formule-atoom; alleen **Formule invoegen** bevestigt de draft en gebruikt de bestaande teksttransactie. De gewone Unicode-invoer en -plakactie in de ProseMirror-tekst blijven intact.
+
+De tijdelijke invoegoverlay, overlaysluiting en tekstbreedteslider zijn uit de actieve UI verwijderd. De bestaande optionele `textContent.width` blijft als document-/renderattribuut behouden: openen, toepassen, annuleren en export wijzigen haar niet. Alleen nieuwe invoer voor breedte is verwijderd; historische aangepaste breedtes worden niet genormaliseerd of gemigreerd. Er zijn geen documentversies, schema's, permissies, opslag- of exportcontracten gewijzigd. Symbolen-/formulecatalogus, presetgroottes, gedeeld kleurenpalet, uitlijningsiconen, actieve opmaak en ProseMirror undo/redo blijven bestaande infrastructuur gebruiken.
+
+De desktopdialoog heeft een vaste tweekolomsindeling met blijvende invoertabs, opmaakwerkbalk, wit editoroppervlak en vaste actiezone. Bij smallere breedtes stapelt de indeling; dit is een bedieningsfallback, geen primaire ontwerpdoelstelling. Historische sectie 26 beschrijft de vorige UX-checkpoint en is door deze sectie voor de definitieve Deel A-indeling vervangen waar ze conflicteert.
+
+Rapport en screenshotbewijs: [T5-PREP-FINAL-UX-DEEL-A-REPORT.md](T5-PREP-FINAL-UX-DEEL-A-REPORT.md). Geen Deel B-werk of calculatorimplementatie is door deze update geautoriseerd.

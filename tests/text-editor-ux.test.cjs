@@ -14,11 +14,10 @@ test('text UI sizes are centralized point presets mapped to document SVG-pixel u
  assert.equal(ux.pointLabel(17),'12,75 pt');
 });
 
-test('logarithmic width slider preserves the existing model boundaries and maps both endpoints',()=>{
- const ux=setup().TextEditorUX;
- assert.deepEqual({...ux.width},{min:1,max:1e6,sliderSteps:100000,defaultPreview:320});
- assert.equal(ux.widthToSlider(1),0);assert.equal(ux.widthToSlider(1e6),100000);
- for(const width of [1,17,90,145,320,1e3,1e6])assert.ok(Math.abs(ux.sliderToWidth(ux.widthToSlider(width))-width)<Math.max(.0001,width*1e-12));
+test('text editor no longer defines UI width slider mapping; document width schema remains separate',()=>{
+ const html=fs.readFileSync(path.join(root,'editor.html'),'utf8'),css=fs.readFileSync(path.join(root,'editor.css'),'utf8'),editor=fs.readFileSync(path.join(root,'editor.js'),'utf8');
+ assert.doesNotMatch(html,/richWidth/);assert.doesNotMatch(css,/rich-width|richWidth/);assert.doesNotMatch(editor,/richWidth|textWidthGesture|sliderToWidth|widthToSlider/);
+ assert.equal('width' in setup().TextEditorUX,false);
 });
 
 test('text palette is the same immutable palette source for geometry and rich text',()=>{

@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.8.0 (T5-prep UX refinement checkpoint, 2026-10-12)
-Status: T5-prep I1-I4 and UX refinement technically delivered; awaiting user acceptance. T4 hand acceptance remains open; T5a not started.
+Version: 2.0.0 (T5-prep Deel A formula/values workspace and white text canvas, 2026-10-12)
+Status: T5-prep I1-I4 and Deel A technically delivered; awaiting user acceptance. T4 hand acceptance remains open; T5a and Deel B not started.
 Date: 2026-10-12
 
 ## Baseline
@@ -226,3 +226,9 @@ Niet uitgevoerd: echte IME-/schermlezeracceptatie, finale handmatige visuele rev
 De editor gebruikt nu vier semantische lettergroottepresetknoppen binnen de bestaande SVG-pixelschaal, één gedeelde palettebron voor geometrie en tekst, een logaritmische breedteslider over de bestaande 1–1.000.000 px grenzen, drie alineauitlijningsiconen, actuele/mixed opmaakstatus en lokale undo/redo-bediening. “Symbolen & structuren” hergebruikt de centrale catalogus en bestaande formule-/invoegarchitectuur. Geen documentmodel-, schema-, permissie-, opslag- of exportcontract is aangepast.
 
 Status: code- en regressiewerk technisch geleverd; wacht op handmatige gebruikersacceptatie. Rapport: [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-REFINEMENT-REPORT.md). De exacte geautomatiseerde Node-/Edge-resultaten en resterende handmatige punten staan daar. T4-acceptatie blijft apart open. T5a is niet gestart en houdt de bestaande voorwaarden: T4-acceptatie, T5-prep-acceptatie, definitieve mathematische-contractgoedkeuring en expliciete starttoestemming.
+
+### T5-prep Deel A — definitieve editorwerkruimte (2026-10-12, documentatie 2.0.0)
+
+Het permanente invoegpaneel heeft exact twee tabs: Formule en Waarden. De Formule-tab bevat de LaTeX-bron, zoek-/categoriegestuurde symbolen- en formulecatalogus, preview en expliciete invoeg-/bijwerkactie. Een catalogusklik schrijft LaTeX op de actieve bronselectie/cursorpositie; structuursjablonen selecteren het eerste invulveld. De catalogus maakt nooit op zichzelf een tekstformule-atoom aan. Waarden behoudt de bestaande dynamische-broneditor en rechten. Het ProseMirror-tekstvlak staat blijvend naast het paneel op wit met donkere tekst. De eerdere contextoverlay is verwijderd. De UI-breedteslider is verwijderd, terwijl bestaand `textContent.width` behouden blijft in opslag, rendering en export, zonder automatische wijziging. Deel A wijzigt geen documentversie, schema, permissies of exportcontract. De desktop tweekolomsindeling volgt de aangeleverde visuele referentie; small-screen fallback blijft ondersteund maar is geen primaire ontwerpdoelstelling.
+
+Status: technisch geleverd en gepusht na regressiecontrole; wacht op handmatige acceptatie. Rapport en screenshotset: [T5-PREP-FINAL-UX-DEEL-A-REPORT.md](T5-PREP-FINAL-UX-DEEL-A-REPORT.md). T4-acceptatie blijft afzonderlijk open. Deel B canvas-resizing vereist afzonderlijke toestemming. T5a blijft onder de bestaande acceptatie- en mathematische-gates.

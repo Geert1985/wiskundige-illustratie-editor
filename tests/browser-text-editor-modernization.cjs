@@ -1,50 +1,38 @@
-const assert=require('node:assert/strict');const fs=require('node:fs');
-const path=require('node:path'),http=require('node:http');
+﻿const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const http=require('node:http');
 const {chromium}=require('playwright');
-module.exports=async page=>{const screenshots=path.join(__dirname,'..','experiments','text-editor-integration','screenshots');fs.mkdirSync(screenshots,{recursive:true});
- const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.evaluate(async()=>{await FZI.MathIllustration.MathFragments.load();FZI.MathIllustration.editor.loadDocument({version:7,textSchema:3,objects:[{id:'T',type:'text',name:'Lesnotitie',x:0,y:0,textContent:{schema:3,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:120,paragraphs:[{id:'p',align:'left',lineHeight:1.25,runs:[{id:'r',kind:'text',text:'Wrapbare tekst voor controle van de nieuwe teksteditor en de bestaande inhoud.',marks:{bold:true}}]}]}}]});await FZI.MathIllustration.editor.openRichText('T');});
+
+module.exports=async page=>{
+ const screenshots=path.resolve(__dirname,'../docs/images/t5-prep-final-ux');fs.mkdirSync(screenshots,{recursive:true});
+ const errors=[];page.on('pageerror',error=>errors.push(error.message));
+ const content={schema:3,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:137,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:'Zwarte tekst blijft goed leesbaar.',marks:{bold:true}}]}]};
+ await page.evaluate(async value=>{await FZI.MathIllustration.MathFragments.load();FZI.MathIllustration.editor.loadDocument({version:7,textSchema:3,objects:[{id:'T',type:'text',name:'Lesnotitie',x:0,y:0,textContent:value}]});await FZI.MathIllustration.editor.openRichText('T');},content);
  await page.locator('#textDialog').waitFor({state:'visible'});
- assert.equal(await page.locator('#textDialogTitle').textContent(),'Tekst bewerken');
- assert.equal(await page.locator('#textDialogContext').textContent(),'Lesnotitie');
- assert.equal(await page.locator('#textSubmit').textContent(),'Toepassen');
- assert.equal(await page.locator('.rich-toolbar-group').count(),4);
- const initial=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());await page.screenshot({path:path.join(screenshots,'01-editor-desktop.png')});
+ assert.equal(await page.locator('#textDialogTitle').textContent(),'Tekst bewerken');assert.equal(await page.locator('#textDialogContext').textContent(),'Lesnotitie');assert.equal(await page.locator('#textSubmit').textContent(),'Toepassen');
+ assert.equal(await page.locator('[role="tab"]').count(),2);assert.deepEqual(await page.locator('[role="tab"] span').allTextContents(),['Formule','Waarden']);assert.equal(await page.locator('#insertTabSymbols').count(),0);assert.equal(await page.locator('#symbolPane').count(),0);assert.equal(await page.locator('#textInsertPanel').isVisible(),true);assert.equal(await page.locator('#richWidth').count(),0);
+ assert.equal(await page.locator('#richFontSize option').count(),4);assert.equal(await page.locator('#richUndo').isVisible(),true);
+ const color=await page.locator('#richTextSurface').evaluate(node=>({background:getComputedStyle(node).backgroundColor,color:getComputedStyle(node).color}));assert.equal(color.background,'rgb(255, 255, 255)');assert.equal(color.color,'rgb(34, 34, 34)');
+ const unchanged=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());await page.screenshot({path:path.join(screenshots,'01-editor-desktop.png')});
  const responsive=[];
- for(const viewport of [{width:1280,height:900},{width:768,height:900},{width:390,height:844},{width:1280,height:580}]){
-   await page.setViewportSize(viewport);
-   const before=await page.locator('#textDialog').boundingBox();
-   await page.locator('#richSymbols').click();
-   const open=await page.locator('#textDialog').boundingBox();
-   const metrics=await page.evaluate(()=>{const d=document.querySelector('#textDialog'),actions=document.querySelector('.text-editor-actions').getBoundingClientRect(),panel=document.querySelector('#textInsertPanel').getBoundingClientRect();return {viewportWidth:innerWidth,documentWidth:document.documentElement.scrollWidth,dialog:{x:Math.round(d.getBoundingClientRect().x),y:Math.round(d.getBoundingClientRect().y),width:Math.round(d.getBoundingClientRect().width),height:Math.round(d.getBoundingClientRect().height)},actionsVisible:actions.top>=0&&actions.bottom<=innerHeight+1,panelVisible:panel.left>=0&&panel.right<=innerWidth+1};});
-   assert.ok(metrics.documentWidth<=metrics.viewportWidth,JSON.stringify(metrics));
-   assert.equal(Math.round(before.height),Math.round(open.height));
-   assert.ok(metrics.actionsVisible,JSON.stringify(metrics));assert.ok(metrics.panelVisible,JSON.stringify(metrics));if(viewport.width===1280&&viewport.height===900)assert.ok(metrics.dialog.width>=900,JSON.stringify(metrics));
-   responsive.push({...viewport,...metrics});if(viewport.width===1280&&viewport.height===900)await page.screenshot({path:path.join(screenshots,'02-symbol-panel-desktop.png')});if(viewport.width===390)await page.screenshot({path:path.join(screenshots,'03-editor-mobile.png')});if(viewport.height===580)await page.screenshot({path:path.join(screenshots,'04-editor-short-window.png')});
-   await page.locator('#textInsertClose').click();
+ for(const viewport of [{width:1448,height:1086},{width:1280,height:900},{width:768,height:900},{width:390,height:844},{width:1280,height:580}]){
+   await page.setViewportSize(viewport);const bounds=await page.evaluate(()=>{const d=document.querySelector('#textDialog').getBoundingClientRect(),layout=document.querySelector('.text-editor-layout').getBoundingClientRect(),left=document.querySelector('#textInsertPanel').getBoundingClientRect(),right=document.querySelector('.text-editor-compose').getBoundingClientRect(),actions=document.querySelector('.text-editor-actions').getBoundingClientRect();return{viewportWidth:innerWidth,documentWidth:document.documentElement.scrollWidth,dialog:{x:Math.round(d.x),y:Math.round(d.y),width:Math.round(d.width),height:Math.round(d.height)},layoutWidth:Math.round(layout.width),left:{x:Math.round(left.x),width:Math.round(left.width)},right:{x:Math.round(right.x),width:Math.round(right.width)},actionsVisible:actions.top>=0&&actions.bottom<=innerHeight+1,vertical:innerWidth<=560};});
+   assert.ok(bounds.documentWidth<=bounds.viewportWidth,JSON.stringify(bounds));assert.ok(bounds.actionsVisible,JSON.stringify(bounds));assert.ok(bounds.left.width>0&&bounds.right.width>0,JSON.stringify(bounds));
+   if(viewport.width===1448){assert.ok(Math.abs(bounds.left.width/bounds.layoutWidth-.36)<.04,JSON.stringify(bounds));await page.screenshot({path:path.join(screenshots,'02-editor-visual-target.png')});}
+   if(viewport.width===768)await page.screenshot({path:path.join(screenshots,'08-editor-tablet.png')});if(viewport.width===390)await page.screenshot({path:path.join(screenshots,'09-editor-mobile.png')});if(viewport.height===580)await page.screenshot({path:path.join(screenshots,'10-editor-short-window.png')});responsive.push({...viewport,...bounds});
  }
  await page.setViewportSize({width:1280,height:900});
- await page.locator('#textDialogClose').click();
- assert.equal(await page.locator('#textDialog').isVisible(),false);
- assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON()),initial,'Close button must cancel the draft without committing.');
- await page.evaluate(()=>FZI.MathIllustration.editor.openRichText('T'));
- await page.locator('#richSymbols').click();
- assert.equal(await page.locator('#symbolCategory option').count(),14);
- await page.locator('#symbolSearch').fill('thèta');
- await page.getByRole('button',{name:'theta (θ)',exact:true}).click();
- assert.ok(await page.evaluate(()=>FZI.MathIllustration.editor.richTextEditor.get().paragraphs.flatMap(p=>p.runs).some(run=>run.kind==='text'&&run.text.includes('θ'))),'Unicode symbols should insert at the saved rich-text cursor.');
- await page.locator('#richSymbols').click();await page.locator('#symbolCategory').selectOption('powers-roots');await page.locator('#symbolSearch').fill('root');
- await page.getByRole('button',{name:/^wortel \(√\)/}).click();
- assert.equal(await page.locator('#textInsertPanel').getAttribute('data-mode'),'formula');assert.equal(await page.locator('#mathSource').inputValue(),'\\sqrt{x}');
- await page.locator('#formulaSymbols').click();await page.locator('#symbolSearch').fill('thèta');await page.getByRole('button',{name:'theta (θ)',exact:true}).click();
- assert.equal(await page.locator('#mathSource').inputValue(),'\\sqrt{\\theta}','A catalog symbol should replace the selected template argument in the LaTeX field.');
- await page.waitForFunction(()=>!document.getElementById('mathInsert').disabled);await page.locator('#mathInsert').click();await page.locator('#textInsertPanel').waitFor({state:'hidden'});
- assert.ok(await page.evaluate(()=>FZI.MathIllustration.editor.richTextEditor.get().paragraphs.flatMap(p=>p.runs).some(run=>run.kind==='math'&&run.source==='\\sqrt{\\theta}')),'Applying the formula should insert one validated math atom.');
- await page.locator('#textCancel').click();assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON()),initial,'Cancel should leave symbol/formula drafts uncommitted.');
- assert.deepEqual(errors,[]);
- return {titleAndObjectContext:'passed',groupedToolbar:'passed',closeCancels:'passed',unicodeCatalogInsertion:'passed',accentInsensitiveSearch:'passed',categoryFilter:'passed',formulaTemplateRoute:'passed',formulaArgumentReplacement:'passed',formulaCommitAndCancel:'passed',panelOverlayPreservesDialogHeight:'passed',responsive,actionBar:'passed',screenshots:fs.readdirSync(screenshots),browserErrors:errors};
+ const formula=page.locator('#mathSource');await formula.fill('x^2+y^2=r^2');await page.waitForFunction(()=>!document.getElementById('mathInsert').disabled);await page.screenshot({path:path.join(screenshots,'04-formula-catalog.png')});
+ const setRange=async(start,end)=>{await formula.evaluate((node,range)=>{node.focus();node.setSelectionRange(range[0],range[1]);node.dispatchEvent(new Event('select',{bubbles:true}));},[start,end]);};
+ await setRange((await formula.inputValue()).length,(await formula.inputValue()).length);await page.locator('#symbolSearch').fill('xi');await page.getByRole('button',{name:/xi; LaTeX/}).click();assert.equal(await formula.inputValue(),'x^2+y^2=r^2\\xi');assert.equal((await page.evaluate(()=>FZI.MathIllustration.editor.richTextEditor.get())).paragraphs.flatMap(p=>p.runs).filter(r=>r.kind==='math').length,0,'A catalog click only edits the LaTeX source; it cannot create a text atom.');
+  await setRange(4,5);await page.locator('#symbolSearch').fill('alpha');await page.getByRole('button',{name:/alpha; LaTeX/}).click();assert.equal(await formula.inputValue(),'x^2+\\alpha^2=r^2\\xi','A LaTeX selection is replaced without changing the saved cursor range.');
+  await setRange(0,0);await page.locator('#symbolSearch').fill('fraction');await page.getByRole('button',{name:/breuk; LaTeX/}).click();assert.equal(await formula.inputValue(),'\\frac{a}{b}x^2+\\alpha^2=r^2\\xi');const selection=await formula.evaluate(node=>[node.selectionStart,node.selectionEnd]);assert.deepEqual(selection,[6,7],'A structure template selects its first placeholder.');await page.screenshot({path:path.join(screenshots,'05-template-placeholder.png')});
+ await page.locator('#symbolCategory').selectOption('greek');await page.locator('#symbolSearch').fill('\\xi');assert.ok(await page.locator('#symbolList button').count()>0,'Search accepts LaTeX command names.');await page.locator('#symbolSearch').fill('does-not-exist');assert.equal(await page.locator('#symbolList button').count(),0);await page.locator('#symbolCategory').selectOption('fractions');await page.locator('#symbolSearch').fill('');assert.ok(await page.locator('#symbolList button').count()>0,'Category filter retains catalog entries.');
+  await formula.fill('\\href{https://bad}{x}');await page.waitForFunction(()=>document.getElementById('mathInsert').disabled&&document.getElementById('mathError').textContent.length>0);assert.match(await page.locator('#mathError').textContent(),/formuleopdracht|formule/i);await page.screenshot({path:path.join(screenshots,'06-invalid-formula.png')});
+ await formula.fill('\\frac{a}{b}');await page.waitForFunction(()=>!document.getElementById('mathInsert').disabled);await page.screenshot({path:path.join(screenshots,'07-live-preview.png')});await page.locator('#mathInsert').click();let draft=await page.evaluate(()=>FZI.MathIllustration.editor.richTextEditor.get());assert.equal(draft.width,137,'Removing the width control must not normalize stored custom widths.');assert.ok(draft.paragraphs.flatMap(p=>p.runs).some(run=>run.kind==='math'&&run.source==='\\frac{a}{b}'));await page.locator('#richUndo').click();assert.equal((await page.evaluate(()=>FZI.MathIllustration.editor.richTextEditor.get())).paragraphs.flatMap(p=>p.runs).filter(run=>run.kind==='math').length,0);await page.locator('#richRedo').click();
+ await page.locator('#insertTabValues').click();assert.equal(await page.locator('#valuePane').isVisible(),true);await page.screenshot({path:path.join(screenshots,'11-values-tab.png')});
+ await page.locator('#textCancel').click();assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON()),unchanged,'Outer Cancel discards all editor changes and leaves stored width unchanged.');assert.deepEqual(errors,[]);
+ return {twoTabs:'passed',noStandaloneSymbolsTab:'passed',whiteTextCanvas:'passed',catalogSearchAndCategory:'passed',LaTeXCursorInsertReplace:'passed',formulaTemplateSelection:'passed',catalogDoesNotCreateAtom:'passed',livePreviewAndValidation:'passed',formulaCommitAndUndoRedo:'passed',dynamicValuesTabVisible:'passed',storedWidthPreserved:'passed',responsiveLayout:'passed',responsive,screenshots:fs.readdirSync(screenshots),pageErrors:errors};
 };
-if(require.main===module){
- const root=path.resolve(__dirname,'..'),server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://local').pathname));if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}require('node:fs').readFile(file,(e,d)=>{if(e){res.writeHead(404).end();return;}res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(d);});});
- (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));let browser;try{browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage({viewport:{width:1280,height:900}});await page.route('https://fonts.googleapis.com/**',r=>r.abort());await page.goto('http://127.0.0.1:'+server.address().port+'/editor.html');console.log(JSON.stringify(await module.exports(page),null,2));}finally{if(browser)await browser.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;});
-}
+if(require.main===module){const root=path.resolve(__dirname,'..'),server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://local').pathname));if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}fs.readFile(file,(error,data)=>{if(error){res.writeHead(404).end();return;}res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(data);});});(async()=>{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));let browser;try{browser=await chromium.launch({channel:'msedge',headless:true});const page=await browser.newPage({viewport:{width:1280,height:900}});await page.route('https://fonts.googleapis.com/**',route=>route.abort());await page.goto(`http://127.0.0.1:${server.address().port}/editor.html`);console.log(JSON.stringify(await module.exports(page),null,2));}finally{if(browser)await browser.close();server.close();}})().catch(error=>{console.error(error);process.exitCode=1;});}
