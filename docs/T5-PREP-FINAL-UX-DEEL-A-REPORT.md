@@ -1,6 +1,6 @@
 # T5-prep Deel A — UX-opleverrapport
 
-Versie 1.1.0 — 2026-10-12
+Versie 1.2.0 — 2026-10-12
 
 Branch: `chatgpt/editor-development`
 Status: geïmplementeerd en geautomatiseerd gecontroleerd; wacht op handmatige acceptatie.
@@ -61,3 +61,10 @@ Na push stopt de uitvoering voor handmatige acceptatie. Er is geen toestemming g
 - De formule- en waardenpanelen hebben expliciete, exclusieve zichtbaarheid. CSS kan de verborgen paneelstatus niet meer overschrijven.
 
 Voor deze correctieronde zijn op verzoek **geen Node- of Edge-testsuites uitgevoerd**. Handmatige verificatie van tabwisselen, undo/redo in de kop en de kleurstaal blijft open voor de gebruiker.
+
+## Annuleren van invoerdrafts
+
+- Een tabwissel annuleert nu de nog niet ingevoegde formule- of waardedraft en herstelt de oorspronkelijke tekstselectie voordat het andere paneel opent.
+- Beide tabs hebben een eigen knop **Annuleren**. Deze verwerpt alleen de lopende formule- of waardedraft; de buitenste teksteditor blijft open en documentgeschiedenis wordt niet gewijzigd.
+- Na annuleren kan het betreffende tabblad opnieuw worden geopend om een nieuwe draft te starten. De knop **Invoegen** is uitgeschakeld zolang er geen actieve waardedraft bestaat.
+- Voor deze correctie zijn op verzoek **geen Node- of Edge-testsuites uitgevoerd**. Handmatige acceptatie van annuleren via tabwissel en beide Annuleren-knoppen blijft open.
