@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.5.0 (T4 checkpoint, 2026-10-12)
+Version: 1.6.0 (T5-prep design/prototype checkpoint, 2026-10-12)
 Status: proposed sequencing; validate against repository
 Date: 2026-10-12
 
@@ -206,3 +206,20 @@ Future function graphs, parametric constructions and exercises may reuse this en
 ## T4 implementation checkpoint (2026-10-12)
 
 Explicitly authorized and delivered for user acceptance: optional fixed text width with mixed wrapping, local width history/format grants, atomic math/source values, shared canvas/export layout and stable anchors; production SVG/PNG controls with local asset readiness, native-font PNG rastering, layer preservation, quotas and revision/epoch delivery guards. Legacy v7/schema 1–3 and metadata/binding compatibility retained. See [T4 contract](T4-CONTRACT.md) and [T4 report](T4-REPORT.md) for actual test/measurement evidence and remaining manual controls. No new dependencies. Await T4 acceptance; T5a additionally requires definitive mathematical contract approval and explicit start. The approved standalone/inline shared calculator design remains unimplemented.
+
+## T5-prep — Modernisering teksteditor en gedeelde wiskundige invoer (2026-10-12)
+
+De modernisering krijgt milestone-ID **T5-prep**, na formele T4-gebruikersacceptatie en vóór T5a. De nummering T5a–T5d blijft uitsluitend voor de wetenschappelijke rekenmachine. T4 handmatige acceptatie is nog open; de hieronder beschreven voorbereiding verandert dat niet.
+
+Het T5-prep-ontwerp is voorwaardelijk goedgekeurd en als voorbereidende stap is een geïsoleerd prototype gebouwd voor ontwerpbeoordeling. De formele T5-prep-productie-integratie blijft na T4-gebruikersacceptatie en afzonderlijke prototype-acceptatie. Het prototype is geen productie-integratie. Geen bestaande teksteditor, opslag/schema, ProseMirror-runtime, MathSource of exportpad is gewijzigd. Zie [moderniseringsvoorstel v1.1.0](T5-TEXT-EDITOR-MODERNIZATION-PROPOSAL.md) en [prototype-rapport](T5-PREP-UI-PROTOTYPE-REPORT.md).
+
+Vastgelegde keuzes: desktopoverlay en begrensde mobiele sheet; één zoekveld plus categoriechips; Nederlandse UI met Nederlandse/Engelse zoektermen; expliciete Unicode/LaTeX-route per symbool; betrouwbare selectie van het eerste sjabloonargument. Tab-navigatie wordt alleen toegevoegd na aparte geslaagde proef. Documentmodel blijft onveranderd; rekenfunctionaliteit is buiten scope.
+
+| Volgende gate | Vereiste |
+|---|---|
+| T4-acceptatie | Gebruiker voltooit open handmatige controles en accepteert T4; eventuele correcties vóór verder werk afronden. |
+| T5-prep-review | Gebruiker beoordeelt ontwerp, prototype en rapport; afzonderlijke toestemming vereist vóór productie-integratie. |
+| T5a | Alleen na T5-prep-gate én definitieve goedkeuring van het mathematische contract; bouwt de UI-onafhankelijke parser/AST en evaluatie-engine. |
+| T5b–T5d | Behouden gedeelde calculator UI, typed inline calculatedValue en integratie-audit, elk met eigen start/acceptatiepoort. |
+
+De prototypescreenshots tonen de bestaande dialoog ter vergelijking en de geïsoleerde nieuwe editor, symbolen, formule en mock dynamische waarden. Edge-tests van dit prototype zijn geen volledige T4-regressie of handmatige gebruikersacceptatie. Ongeteste IME, assistieve technologie, echte bronautorisatie en externe SVG/PNG-viewers blijven open.

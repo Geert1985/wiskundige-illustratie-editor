@@ -1,10 +1,10 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.6.0 - 2026-10-12 - T1-T4 geimplementeerd op de ontwikkelbranch; T4-gebruikersacceptatie en handmatige controles staan open.
+Versie 1.7.0 - 2026-10-12 - T1-T4 geimplementeerd op de ontwikkelbranch; T4-gebruikersacceptatie en handmatige controles staan open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
-Sectie 1 bewaart de historische inventaris van fase 0. Secties 19-21 beschrijven de geleverde T1-T3-implementatie en zijn leidend voor hun actuele status. Sectie 23 beschrijft T4; T5 blijft ontwerp. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
+Sectie 1 bewaart de historische inventaris van fase 0. Secties 19-21 beschrijven de geleverde T1-T3-implementatie en zijn leidend voor hun actuele status. Sectie 23 beschrijft T4; sectie 24 legt T5-prep als ontwerp/prototype vast; T5a–T5d blijven afzonderlijke rekenmilestones. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
 
 Audit B1–B7 is verwerkt in secties 11–18 en [audit resolution](TEXT-EDITOR-ARCHITECTURE-AUDIT-RESOLUTION.md). Die secties preciseren het eerdere voorstel en zijn leidend bij verschil. Bibliotheek- en fontkeuzes blijven open tot afzonderlijk goedgekeurde technische proeven resultaat leveren.
 
@@ -566,3 +566,13 @@ De eerdere Chromium SVG→Image-proef gebruikte fallbackfonts. Fontnamen met num
 Rastergate: maximaal 8192 pixels per zijde, 16777216 outputpixels, schaal >0 en ≤4; afzonderlijk maximaal 16777216 tijdelijke tekstpixels en 65536 graphemes. Afmetingen worden vóór allocatie gecontroleerd. Native-text-indexverlies, decode-timeout (30 s), canvas-/toBlob-fout en budgetoverschrijding worden expliciet geweigerd. Tijdelijke DOM en Blob-URLs worden altijd verwijderd. Kleuren/focus/keyboardlabels, dialogscrolling en Escape/fullscreen zijn geautomatiseerd gecontroleerd; echte IME/AT, externe viewers/clipboard en fysieke visuele acceptatie blijven niet uitgevoerd. Complexe wereldwijde shaping buiten de bestaande fontdekking is niet bewezen.
 
 T5's één-kern/één-interfacecontract uit sectie 22 blijft functioneel goedgekeurd ontwerp. T5a start pas na T4-acceptatie, definitieve rekencontractgoedkeuring en expliciete starttoestemming.
+
+## 24. T5-prep — teksteditor en gedeelde wiskundige invoer (1.7.0)
+
+T5-prep is de voorbereidende UI-modernisering tussen T4 en T5a; T5a–T5d blijven ongewijzigd gereserveerd voor de rekenengine en calculator. T4 moet eerst formeel door de gebruiker zijn geaccepteerd. De T5-prep-prototypeproef is uitgevoerd terwijl die handmatige acceptatie nog openstaat en geldt niet als T4-acceptatie.
+
+De goedgekeurde UI-richting is een donkere, compacte editor met terughoudende gouden accenten, een Nederlandse interface, één zoekveld met categoriechips en een contextpaneel als desktopoverlay of begrensde mobiele sheet. De invoeradapter kiest expliciet tussen Unicode in tekst en gevalideerde LaTeX in formules. Formules behouden selectie-/cursorplaatsing; sjablonen selecteren aanvankelijk het eerste argument. Tab-navigatie tussen argumenten blijft afhankelijk van een afzonderlijke succesvolle gebruiksproef.
+
+Architectuurgrenzen voor latere implementatie: SymbolCatalog blijft UI- en documentonafhankelijk; MathInput beheert invoeging naar de juiste host; FormulaEditor bedient bestaande MathSource-validatie en MathFragments-preview; TextEditor blijft eigenaar van de ProseMirror-editor en private tekstdraft. Dynamische meetwaarden gebruiken uitsluitend bestaande geautoriseerde bronopties en resolver; het prototype gebruikt mocks en is geen bewijs van bronrechten. Geen berekende expressies of calculatorfunctionaliteit valt onder T5-prep.
+
+De huidige geïsoleerde prototype-uitvoering verandert geen productiecode, documentmodel, schema, exporter of opslag. De daadwerkelijke UI-integratie vereist T4-acceptatie, expliciete afzonderlijke T5-prep-acceptatie en regressietests voor ProseMirror-bookmarks, annuleren/bevestigen, bronrechten, export en legacy dynamische tekst. Prototypebevindingen en bewijs staan in [T5-PREP-UI-PROTOTYPE-REPORT.md](T5-PREP-UI-PROTOTYPE-REPORT.md). Dit is een ontwerpcontract en geen claim dat T5-prep-productie is geïmplementeerd.

@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Teksteditor prototype — Wiskundige Illustratie Editor</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="../../math-source.js?v=t5-prep-1"></script>
+  <script src="../../math-fragments.js?v=t5-prep-1"></script>
+</head>
+<body>
+  <header class="appbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">∞</span><div><small>FROM ZERO 2 INFINITY</small><strong>Wiskundige illustratie-editor</strong></div></div>
+    <div class="app-actions"><button class="quiet" type="button">Ongedaan</button><button class="quiet" type="button">Opnieuw</button><button class="gold" type="button">Opslaan</button></div>
+  </header>
+  <main class="canvas-context" aria-label="Voorbeeld van de editorachtergrond">
+    <aside class="mock-tools"><b>Objecten</b><hr><span>Basisobjecten</span><button>Punt</button><button>Lijnstuk</button><span>Meten</span><button>Hoek tussen richtingen</button><span>Constructies</span><button>Middelpunt</button></aside>
+    <section class="mock-canvas"><div class="gridlines"></div><div class="axis x-axis"></div><div class="axis y-axis"></div><span class="point a">A</span><span class="point b">B</span><span class="point c">C</span><div class="mock-line one"></div><div class="mock-line two"></div></section>
+    <aside class="mock-inspector"><b>Eigenschappen</b><hr><span>Selecteer een object of het assenstelsel.</span></aside>
+  </main>
+  <div class="scrim" aria-hidden="true"></div>
+  <section class="editor-dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+    <header class="dialog-heading">
+      <div class="heading-copy"><span class="eyebrow">TEKSTOBJECT · NIEUW</span><h1 id="dialogTitle">Tekst toevoegen</h1><p>Nieuwe tekst · wordt geplaatst op de illustratie</p></div>
+      <button id="closeDialog" class="icon-button" type="button" aria-label="Teksteditor sluiten" title="Sluiten">×</button>
+    </header>
+    <section class="editor-shell" aria-label="Teksteditor">
+      <div class="toolbar-row" role="toolbar" aria-label="Tekst en invoer">
+        <div class="tool-group"><span class="group-label">Tekst</span>
+          <label class="sr-only" for="fontFamily">Lettertype</label><select id="fontFamily" aria-label="Lettertype"><option value="Source Sans 3">Sans</option><option value="Source Serif 4">Serif</option></select>
+          <label class="sr-only" for="fontSize">Lettergrootte</label><select id="fontSize" aria-label="Lettergrootte"><option>14</option><option selected>16</option><option>20</option><option>24</option></select>
+          <button type="button" data-command="bold" aria-label="Vet" title="Vet"><b>B</b></button><button type="button" data-command="italic" aria-label="Cursief" title="Cursief"><i>I</i></button><button type="button" data-command="underline" aria-label="Onderstrepen" title="Onderstrepen"><u>U</u></button><button type="button" data-command="strikeThrough" aria-label="Doorhalen" title="Doorhalen"><s>S</s></button>
+          <button type="button" data-command="superscript" aria-label="Superscript" title="Superscript">x<sup>2</sup></button><button type="button" data-command="subscript" aria-label="Subscript" title="Subscript">x<sub>2</sub></button>
+          <label class="color-control" title="Tekstkleur"><span class="sr-only">Tekstkleur</span><input id="textColor" type="color" value="#e8e3d7" aria-label="Tekstkleur"></label>
+        </div>
+        <div class="tool-group insert-group"><span class="group-label">Invoegen</span>
+          <button type="button" data-panel="symbols-text" aria-label="Symbolen invoegen">Ω <span>Symbolen</span></button>
+          <button type="button" data-panel="formula" aria-label="Formule invoegen">ƒ(x) <span>Formule</span></button>
+          <button type="button" data-panel="values" aria-label="Dynamische waarde invoegen">{} <span>Waarde</span></button>
+        </div>
+        <div class="tool-group paragraph-group"><span class="group-label">Alinea</span>
+          <button type="button" data-align="left" aria-label="Links uitlijnen" title="Links uitlijnen">≡</button><button type="button" data-align="center" aria-label="Centreren" title="Centreren">☰</button><button type="button" data-align="right" aria-label="Rechts uitlijnen" title="Rechts uitlijnen">≡</button>
+          <label class="width-control">Breedte <input id="textWidth" type="number" min="1" max="1000000" placeholder="Auto" aria-label="Tekstbreedte in pixels; leeg voor automatisch"></label>
+        </div>
+      </div>
+      <div class="writing-stage" id="writingStage">
+        <div class="stage-hint"><span class="status-dot"></span> Bewerk de tekst; invoegpanelen openen naast de schrijfzone.</div>
+        <div id="textSurface" class="text-surface" contenteditable="true" role="textbox" aria-label="Tekstinhoud" aria-multiline="true" spellcheck="true"><p>Een wiskundige illustratie kan <strong>duidelijke uitleg</strong> combineren met formules en meetwaarden.</p><p>Probeer de symbolenkiezer of voeg hier een formule in.</p></div>
+        <div class="surface-footer"><span>Enter maakt een alinea · Shift+Enter maakt een regeleinde</span><span id="wordCount">0 woorden</span></div>
+        <aside class="context-panel" id="contextPanel" aria-label="Invoegpaneel" hidden>
+          <div class="panel-heading"><div><span class="eyebrow" id="panelEyebrow">INVOEGEN</span><h2 id="panelTitle">Symbolen</h2></div><button type="button" class="icon-button small" id="panelClose" aria-label="Paneel sluiten">×</button></div>
+          <section id="symbolView" class="panel-view" hidden>
+            <p class="panel-caption" id="symbolContext">Kies een symbool om Unicode in je tekst in te voegen.</p>
+            <label class="field-label" for="symbolSearch">Zoeken</label><input id="symbolSearch" type="search" placeholder="Bijv. theta, wortel, integraal" autocomplete="off">
+            <div id="categoryFilters" class="category-filters" aria-label="Symbolencategorieën"></div>
+            <div id="symbolGrid" class="symbol-grid" role="group" aria-label="Symbolen"></div>
+            <p id="emptySearch" class="empty-search" hidden>Geen symbolen gevonden.</p>
+          </section>
+          <section id="formulaView" class="panel-view" hidden>
+            <p class="panel-caption">Schrijf in LaTeX. Symbolen worden ingevoegd op de cursor of vervangen de selectie.</p>
+            <label class="field-label" for="formulaSource">Formule (LaTeX)</label>
+            <textarea id="formulaSource" rows="3" spellcheck="false" aria-label="LaTeX-formule">x^2+y^2=r^2</textarea>
+            <div class="formula-preview-wrap"><div class="preview-heading"><span>Voorbeeld</span><span id="formulaState" class="preview-state">Laden…</span></div><div id="formulaPreview" class="formula-preview" aria-label="Formulevoorbeeld"></div><p id="formulaError" class="error-message" role="alert" hidden></p></div>
+            <div class="formula-tools"><button id="formulaSymbols" type="button" class="secondary">Ω Symbolen</button><button id="formulaStructures" type="button" class="secondary" aria-expanded="false">∑ Structuren</button></div>
+            <div id="formulaCatalog" class="formula-catalog" hidden>
+              <label class="field-label" for="formulaSymbolSearch">Zoek in de symbolencatalogus</label><input id="formulaSymbolSearch" type="search" placeholder="theta, breuk, wortel…" autocomplete="off">
+              <div id="formulaCategoryFilters" class="category-filters" aria-label="Formulecategorieën"></div>
+              <div id="formulaSymbolGrid" class="symbol-grid compact" role="group" aria-label="Formulesymbolen"></div>
+            </div>
+            <div id="structureTray" class="structure-tray" hidden>
+              <button type="button" data-template="fraction">a⁄b Breuk</button><button type="button" data-template="root">√ Wortel</button><button type="button" data-template="sum">∑ Som</button><button type="button" data-template="integral">∫ Integraal</button>
+            </div>
+            <div class="panel-actions"><button type="button" class="secondary" id="formulaCancel">Annuleren</button><button type="button" id="formulaApply">Toepassen op tekst</button></div>
+          </section>
+          <section id="valuesView" class="panel-view" hidden>
+            <p class="panel-caption">Voorbeeldinstellingen; de productiebronadapter is in dit prototype niet aangesloten.</p>
+            <div class="field-grid">
+              <label>Bronobject<select id="valueSource"><option value="P">Punt P</option><option value="c">Cirkel c</option></select></label>
+              <label>Eigenschap<select id="valueProperty"><option value="x">x-coördinaat</option><option value="y">y-coördinaat</option><option value="radius">Straal</option><option value="length">Lengte</option></select></label>
+              <label>Decimalen<select id="valuePrecision"><option>0</option><option>1</option><option selected>2</option><option>3</option></select></label>
+              <label>Eenheid<select id="valueUnit"><option>Documentstandaard</option><option>cm</option><option>mm</option><option>Geen eenheid</option></select></label>
+              <label>Hoekeenheid<select id="valueAngle"><option>Documentstandaard</option><option>Graden</option><option>Radialen</option></select></label>
+              <label>Voorvoegsel<input id="valuePrefix" type="text" value="x = "></label>
+              <label class="wide">Achtervoegsel<input id="valueSuffix" type="text" value=""></label>
+            </div>
+            <div class="value-preview"><span>Live voorbeeldwaarde</span><strong id="valuePreview">x = 1,25 cm</strong></div>
+            <p class="prototype-note">Demo-inhoud · geen echte geometrische bron of opgeslagen binding.</p>
+            <div class="panel-actions"><button type="button" class="secondary" id="valueCancel">Annuleren</button><button type="button" id="valueApply">Waarde invoegen</button></div>
+          </section>
+        </aside>
+      </div>
+    </section>
+    <footer class="dialog-actions"><span id="saveStatus" role="status" aria-live="polite">Voorbeeld · wijzigingen worden niet opgeslagen</span><div><button class="secondary" id="cancelDialog" type="button">Annuleren</button><button class="primary" id="applyDialog" type="button">Toevoegen</button></div></footer>
+  </section>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script src="symbol-catalog.js"></script>
+  <script src="math-input.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

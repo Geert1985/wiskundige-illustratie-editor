@@ -1,12 +1,12 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.6.0 - 2026-10-12. Status: T4 geimplementeerd; wacht op T4-gebruikersacceptatie. T5 niet gestart.
+Versie 1.7.0 - 2026-10-12. Status: T4 geïmplementeerd; wacht op T4-gebruikersacceptatie. T5-prep-prototype ter beoordeling; T5a–T5d niet gestart.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
 ## Volgorde en acceptatie
 
-Fase 0-correcties → toestemming voor P0-tech → proefrapport en keuzeacceptatie → expliciet T1-akkoord → T1 → acceptatie → T2 → acceptatie → T3 → acceptatie → T4 → acceptatie én definitieve rekencontractgoedkeuring → T5a → acceptatie → T5b → acceptatie → T5c → acceptatie → T5d → acceptatie.
+Fase 0-correcties → toestemming voor P0-tech → proefrapport en keuzeacceptatie → expliciet T1-akkoord → T1 → acceptatie → T2 → acceptatie → T3 → acceptatie → T4 → formele acceptatie → T5-prep-productie-integratie na prototype-acceptatie → definitieve rekencontractgoedkeuring → expliciet T5a-startakkoord → T5a → acceptatie → T5b → acceptatie → T5c → acceptatie → T5d → acceptatie.
 
 Een groene suite is geen gebruikersacceptatie. Iedere stap eindigt met rapport, commit/push op ontwikkelbranch en handmatige testinstructies. Preview, veiligheid en export worden vanaf hun eerste relevante milestone getest; T4/T5d zijn geen uitstel voor eerdere correctheid.
 
@@ -53,6 +53,14 @@ Status: uitgevoerd na expliciete opdracht. Zie [T4-CONTRACT.md](T4-CONTRACT.md) 
 2. Productie-SVG/PNG-export met assetreadiness, zelfstandige fonts/glyphs, rasterlimieten en foutafhandeling.
 3. Keyboard/focus/tabvolgorde, Escape, responsive dialog en fullscreen audit. Schermlezerlabels naast visuele glyphuitvoer verifiëren.
 4. Offline roundtrip/export, screenshotvergelijking en load/performance meten. Volledige regressie; T4-REPORT.md en acceptatie.
+
+## T5-prep — Editor-modernisering en invoerprototype
+
+T5-prep is voorbereidend op de rekenmachine; T5a–T5d blijven ongewijzigd. T4 moet eerst formeel door de gebruiker zijn geaccepteerd voordat T5-prep-productie-integratie begint. Het huidige geïsoleerde prototype is voorbereid terwijl T4-acceptatie nog openstaat; dit heft de gate niet op.
+
+Voor de afzonderlijke T5-prep-implementatiepoort moet de gebruiker het voorstel v1.1.0, prototype en rapport accepteren en expliciet productie-integratie autoriseren. Ontwerp: desktopoverlay / begrensde mobiele sheet; Nederlandse UI; één gecombineerde cataloguszoeker met categorieën; expliciete Unicode- en gevalideerde LaTeX-representaties; sjablonen plaatsen betrouwbare eerste argumentselectie; Tab alleen na aparte proef. Documentmodel blijft onveranderd.
+
+Het prototype staat buiten de runtime in experiments/text-editor-modernization/, gebruikt bestaande MathSource/MathFragments, en gebruikt uitsluitend mock dynamische waarden. Het is geen implementatie van dynamische bronrechten, opslag, export, rekenfunctionaliteit of ProseMirror-integratie. Zie T5-PREP-UI-PROTOTYPE-REPORT.md. Geen wijziging aan productiecode is toegestaan onder de prototypeautorisatie.
 
 ## T5a — Veilige rekenkern
 
