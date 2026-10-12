@@ -11,37 +11,28 @@
     const formulaEditor=MI.TextFormulaEditor.mount({source,preview,error,onApply:value=>{try{editor.setEditable(true);MI.TextMathInput.insertFormula(editor,value,bookmark,position);close(false);return true;}catch(e){editor.setEditable(false);error.textContent=e.message;return false;}}});
     function close(restore=true){serial++;formulaEditor.cancel();panel.classList.remove('formula-symbol-picking');panel.hidden=true;editor.setEditable(true);for(const [node,prior] of disabled.splice(0))node.disabled=prior;if(restore&&bookmark)try{editor.restore(bookmark);}catch{}bookmark=null;position=null;if(!dead)editor.focus();}
     async function update(){const request=++serial;apply.disabled=true;error.textContent='';preview.textContent='Formule voorbereiden…';const ready=await formulaEditor.render();if(dead||panel.hidden||request!==serial)return;apply.disabled=!ready;}
-    function showFormula(value,selection=null){panel.dataset.mode='formula';panel.classList.remove('formula-symbol-picking');source.value=value;position=null;const range=selection||MI.TextMathInput.templateSelection(value);source.focus();source.setSelectionRange(range.start,range.end);update();}
-    const vSource=panel.querySelector('#valueSource'),vProperty=panel.querySelector('#valueProperty'),vPrecision=panel.querySelector('#valuePrecision'),vUnit=panel.querySelector('#valueUnit'),vAngle=panel.querySelector('#valueAngle'),vPrefix=panel.querySelector('#valuePrefix'),vSuffix=panel.querySelector('#valueSuffix'),vApply=panel.querySelector('#valueInsert'),vPreview=panel.querySelector('#valuePreview');
-    const labels={name:'Naam',label:'Label',length:'Lengte',radius:'Straal',perimeter:'Omtrek',area:'Oppervlakte',angle:'Hoek',x:'x-coordinaat',y:'y-coordinaat'};
-    const fillOptions=(node,items,value)=>{node.replaceChildren();for(const item of items){const option=document.createElement('option');option.value=item.value;option.textContent=item.label;node.append(option);}node.value=value;if(!node.value&&items.length)node.value=items[0].value;};
-    fillOptions(vUnit,MI.TextValues.units.map(value=>({value,label:{document:'Documentstandaard',none:'Geen eenheidssuffix',u:'Abstract (u)',dimensionless:'Dimensieloos'}[value]||value})),'document');
-    function valueData(){return MI.TextValues.validate({sourceId:vSource.value,property:vProperty.value},{precision:vPrecision.value===''?null:vPrecision.valueAsNumber,unitMode:vUnit.value,angleMode:vAngle.value,prefix:vPrefix.value,suffix:vSuffix.value});}
-    function valuePreview(){if(panel.hidden||panel.dataset.mode!=='value')return;try{const data=valueData(),result=options.resolveValue?.({...data,kind:'dynamicValue'})||{status:'missing',text:'niet beschikbaar'};vPreview.textContent=result.text;vPreview.dataset.valueStatus=result.status;vApply.disabled=result.status==='denied';error.textContent=result.status==='denied'?'Bronwaarde niet toegestaan.':'';}catch(e){vPreview.textContent='niet beschikbaar';vApply.disabled=true;error.textContent=e.message;}}
-    function properties(value){const source=(options.sourceOptions?.()||[]).find(o=>o.id===vSource.value),items=source?.properties|| (value?[value]:[]);fillOptions(vProperty,items.map(value=>({value,label:labels[value]})),value);valuePreview();}
-    function openValue(pos=null){
-      if(!panel.hidden)close();bookmark=editor.bookmark();freeze();panel.hidden=false;panel.dataset.mode='value';error.textContent='';
-      const selected=editor.selectedValue(),node=pos!=null?editor.view.state.doc.nodeAt(pos):null,existing=node?.type.name==='dynamicValue'?node.attrs:selected;
-      position=pos??selected?.position??null;const data=existing||{binding:{},format:{precision:null,unitMode:'document',angleMode:'document',prefix:'',suffix:''}},choices=(options.sourceOptions?.()||[]).map(o=>({value:o.id,label:o.name}));
-      if(data.binding.sourceId&&!choices.some(o=>o.value===data.binding.sourceId))choices.unshift({value:data.binding.sourceId,label:'Bron niet beschikbaar'});
-      fillOptions(vSource,choices,data.binding.sourceId);vPrecision.value=data.format.precision??'';vUnit.value=data.format.unitMode;vAngle.value=data.format.angleMode;vPrefix.value=data.format.prefix;vSuffix.value=data.format.suffix;properties(data.binding.property);vSource.focus();
+    function showFormula(value,selection=null){panel.dataset.mode='formula';panel.classList.remove('formula-symbol-picking');panel.querySelector('#textInsertTitle').textContent='Formule';source.value=value;position=null;const range=selection||MI.TextMathInput.templateSelection(value);source.focus();source.setSelectionRange(range.start,range.end);update();}
+    function beginMode(mode){
+      if(!panel.hidden)close();bookmark=editor.bookmark();freeze();panel.hidden=false;panel.dataset.mode=mode;panel.classList.remove('formula-symbol-picking');error.textContent='';
+      panel.querySelector('#textInsertTitle').textContent={symbols:'Symbolen',formula:'Formule',value:'Dynamische waarde'}[mode]||'Invoegen';
+      return bookmark;
     }
-    on(dialog.querySelector('#richValues'),'click',()=>openValue());on(vSource,'change',()=>properties(vProperty.value));for(const node of [vProperty,vPrecision,vUnit,vAngle,vPrefix,vSuffix])on(node,'input',valuePreview);
-    on(vApply,'click',()=>{try{const data=valueData();editor.setEditable(true);editor.insertValue(data.binding,data.format,bookmark,position);close(false);}catch(e){editor.setEditable(false);error.textContent=e.message;}});editor.setValueEditHandler(pos=>openValue(pos));
+    const valueEditor=MI.TextDynamicValueEditor.mount(panel,editor,options,{begin:beginMode,close,fail:exception=>{error.textContent=exception.message;}});
+    on(dialog.querySelector('#richValues'),'click',()=>valueEditor.open());
     function open(mode,pos=null){
-      if(!panel.hidden)close();bookmark=editor.bookmark();freeze();panel.hidden=false;error.textContent='';
+      beginMode(mode);
       const selected=editor.selectedMath(),node=pos!=null?editor.view.state.doc.nodeAt(pos):null;
-      if(mode==='formula'){panel.dataset.mode='formula';position=pos??selected?.position??null;source.value=node?.attrs.source||selected?.source||'x^2+y^2=r^2';source.focus();update();}
-      else {position=null;panel.dataset.mode='symbols';search.value='';category.value='all';results();search.focus();}
+      if(mode==='formula'){position=pos??selected?.position??null;source.value=node?.attrs.source||selected?.source||'x^2+y^2=r^2';source.focus();source.setSelectionRange(source.value.length,source.value.length);update();}
+      else {position=null;search.value='';category.value='all';results();search.focus();}
     }
     on(dialog.querySelector('#richSymbols'),'click',()=>open('symbols'));on(dialog.querySelector('#richMath'),'click',()=>open('formula'));
     on(panel.querySelector('#formulaSymbols'),'click',()=>{panel.classList.toggle('formula-symbol-picking');search.value='';category.value='all';results();if(panel.classList.contains('formula-symbol-picking'))search.focus();else source.focus();});
     on(panel.querySelector('#textInsertClose'),'click',()=>close());on(search,'input',results);on(category,'change',results);on(source,'input',update);
     on(list,'click',async event=>{const button=event.target.closest('[data-symbol-index]');if(!button)return;const item=currentItems[Number(button.dataset.symbolIndex)];if(panel.dataset.mode==='formula'){const inserted=MI.TextMathInput.insertAtSelection(source.value,item,source.selectionStart,source.selectionEnd);source.value=inserted.value;source.focus();source.setSelectionRange(inserted.selectionStart,inserted.selectionEnd);panel.classList.remove('formula-symbol-picking');update();return;}const request=++serial;try{const result=await MI.TextMathInput.insertSymbol(editor,item,bookmark);if(dead||panel.hidden||request!==serial)return;if(result.mode==='formula'){showFormula(result.source,result.selection);return;}close(false);}catch(e){if(!dead&&request===serial)error.textContent=e.message;}});
     on(apply,'click',()=>{apply.disabled=true;formulaEditor.apply().finally(()=>{if(!dead&&!panel.hidden&&panel.dataset.mode==='formula'&&!error.textContent)apply.disabled=false;});});
-    on(dialog,'keydown',event=>{if(panel.hidden)return;if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close();}else if(event.key==='Enter'&&event.target===source){event.preventDefault();if(!apply.disabled)apply.click();}else if(event.key==='Enter'&&panel.dataset.mode==='value'&&event.target.tagName==='INPUT'){event.preventDefault();if(!vApply.disabled)vApply.click();}else if(event.key==='Enter'&&event.target===search){event.preventDefault();}},true);
+    on(dialog,'keydown',event=>{if(panel.hidden)return;if(event.key==='Escape'){event.preventDefault();event.stopImmediatePropagation();close();}else if(event.key==='Enter'&&event.target===source){event.preventDefault();if(!apply.disabled)apply.click();}else if(event.key==='Enter'&&panel.dataset.mode==='value'&&event.target.tagName==='INPUT'){event.preventDefault();const valueApply=panel.querySelector('#valueInsert');if(!valueApply.disabled)valueApply.click();}else if(event.key==='Enter'&&event.target===search){event.preventDefault();}},true);
     editor.setMathEditHandler(pos=>open('formula',pos));
-    return {isOpen:()=>!panel.hidden,refresh:valuePreview,destroy(){dead=true;formulaEditor.destroy();close(false);listeners.splice(0).forEach(remove=>remove());}};
+    return {isOpen:()=>!panel.hidden,refresh:valueEditor.refresh,destroy(){dead=true;formulaEditor.destroy();valueEditor.destroy();close(false);listeners.splice(0).forEach(remove=>remove());}};
   }
   MI.TextInsertPanel=Object.freeze({mount,categories:catalog.categories.map(item=>item.label)});
 })(window);
