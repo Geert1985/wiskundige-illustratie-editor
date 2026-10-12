@@ -1,6 +1,6 @@
 # Wiskundige Tekst Editor — geïntegreerde werkruimte
 
-Versie 1.2.0 — 2026-10-12.
+Versie 1.3.0 — 2026-10-12.
 Status: volledige UI-implementatie geleverd; gebruikersacceptatie nog niet uitgevoerd.
 Branch: `chatgpt/text-editor-full-workspace`.
 Basis: `chatgpt/t5-calculator`, commit `ec750d3e793e40bdfac9acc683b24307600cc3d6`.
@@ -118,3 +118,11 @@ Oorzaak: na succesvolle invoeging werd de actieve value-draft afgesloten en de k
 Correctie: de knopbeschikbaarheid volgt de huidige bronvalidatie, zonder een permanent actief concept te eisen. Na succesvolle invoeging worden positie/bookmark en pending-status afgesloten, blijven gekozen bron-/opmaakinstellingen staan en wordt het voorbeeld opnieuw ververst. Een volgende invoegklik opent pas dan een nieuw concept met de actuele tekstbookmark en zonder oude updatepositie. Daardoor blijft de volledige tekstcommit mogelijk tussen invoegingen; het laatste bronveld wordt niet door een oude bewerkingspositie opnieuw aangepast. Bestaande expliciete atoomediting en stale-bookmarkcontrole blijven aanwezig. Iedere klik ververst tevens bronfeedback voordat invoeging wordt toegestaan.
 
 Ook de focusroute bij een openstaand waardeconcept gebruikt nu de verplaatste invoegknop in de sessieroot. Geen tests uitgevoerd. Handmatig controleren: meerdere invoegingen zonder tabwissel, verplaatste cursor/nieuwe alinea, gewijzigde bron/eigenschap/opmaak, bestaand veld bewerken, lokale undo/redo, tussentijds volledige commit, annuleren en gewijzigde bronrechten.
+
+## 12. Eenheidsmenu en zichtbare precisie
+
+Geen eenheidssuffix is uit de nieuwe numerieke eenheidskeuzes verwijderd; Dimensieloos blijft beschikbaar. De bestaande none-opslagwaarde blijft ondersteund en wordt bij openen zonder expliciete eenheidswijziging niet geconverteerd. Voor hoeken heet de bestaande suffixloze keuze eveneens Dimensieloos; de bestaande hoekformattering blijft behouden.
+
+De precisie-uitvoer toont vanaf openen het effectieve aantal decimalen, inclusief de actieve documentprecisie en bij hoeken de eventuele bronprecisie. De slider toont hetzelfde aantal binnen zijn bestaande 0–3-bereik. Bestaande hogere precisies worden numeriek getoond en niet afgerond bij openen. Een opgeslagen null blijft de document-/bronprecisie volgen totdat de gebruiker de slider bedient; de numerieke UI-weergave verandert geen opslaginstelling. Bronprecisie wordt uitsluitend via de bestaande toegestane bronroute gelezen.
+
+Geen tests uitgevoerd. Handmatig controleren: standaard 2 decimalen, andere document-/hoekprecisie, bron-/eigenschapswissel, oude none-velden en afwijkende precisies, expliciet slidergebruik en ongewijzigd bevestigen/annuleren.
