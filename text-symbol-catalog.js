@@ -16,11 +16,11 @@
     {id:'structures',label:'Structuren'}
   ];
   const entries=[];
-  function add(category,id,unicode,label,keywords=[],latex=null,source=null){
-    entries.push(Object.freeze({category,id,unicode,label,keywords:Object.freeze(keywords),latex,source}));
+  function add(category,id,unicode,label,keywords=[],latex=null,source=null,formula=latex){
+    entries.push(Object.freeze({category,id,unicode,label,keywords:Object.freeze(keywords),latex,source,formula}));
   }
   const greek='alpha alfa α;beta β;gamma γ;delta δ;epsilon ε;zeta ζ;eta η;theta thèta θ;iota ι;kappa κ;lambda λ;mu μ;nu ν;xi ξ;omicron omikron ο;pi π;rho ρ;sigma σ;tau τ;upsilon υ;phi φ;chi χ;psi ψ;omega ω;Gamma Γ;Delta Δ;Theta Θ;Lambda Λ;Xi Ξ;Pi Π;Sigma Σ;Upsilon Υ;Phi Φ;Psi Ψ;Omega Ω'.split(';');
-  for(const value of greek){const [name,aliasOrGlyph,glyph]=value.split(' ');const unicode=glyph||aliasOrGlyph;const aliases=glyph?[name,aliasOrGlyph,'grieks']:[name,'grieks'];const id=name[0].toUpperCase()===name[0]?`greek-${name}`:name;add('greek',id,unicode,name,aliases);}
+  for(const value of greek){const [name,aliasOrGlyph,glyph]=value.split(' ');const unicode=glyph||aliasOrGlyph;const aliases=glyph?[name,aliasOrGlyph,'grieks']:[name,'grieks'];const id=name[0].toUpperCase()===name[0]?`greek-${name}`:name;add('greek',id,unicode,name,aliases,null,null,name==='omicron'?null:`\\${name}`);}
   const categoryById={relations:['equals','not-equal','approx','less-than','greater-than','less-equal','greater-equal','equiv'],sets:['element','not-element','subset','subset-equal','union','intersection','empty-set','natural-numbers','integers','rationals','reals'],geometry:['angle','triangle','parallel','perpendicular','degree'],arrows:['right-arrow','left-arrow','both-arrows','implies','iff','mapsto'],logic:['forall','exists','not','and','or'],analysis:['infinity','integral','partial','nabla'],vectors:['vector-arrow']};
   for(const [id,glyph,label,latex,keywords] of [
     ['plus','+','plus',null,['optellen']],['minus','−','min',null,['aftrekken']],['plus-minus','±','plus of min','\\pm',['plus minus']],['times','×','maal','\\times',['keer','product']],['divide','÷','delen','\\div',['deling']],['cdot','·','product','\\cdot',['maal']],
@@ -47,7 +47,7 @@
   function normalize(value){return String(value).toLocaleLowerCase('nl').normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
   function search(query='',category='all'){
     const q=normalize(query);
-    return entries.filter(entry=>(category==='all'||entry.category===category)&&(!q||normalize([entry.id,entry.unicode,entry.label,entry.latex||'',entry.source||'',...entry.keywords].join(' ')).includes(q)));
+    return entries.filter(entry=>(category==='all'||entry.category===category)&&(!q||normalize([entry.id,entry.unicode,entry.label,entry.latex||'',entry.source||'',entry.formula||'',...entry.keywords].join(' ')).includes(q)));
   }
   global.FZI=global.FZI||{};global.FZI.MathIllustration=global.FZI.MathIllustration||{};
   global.FZI.MathIllustration.TextSymbolCatalog=Object.freeze({entries:Object.freeze(entries),categories:Object.freeze(categories.map(Object.freeze)),search});
