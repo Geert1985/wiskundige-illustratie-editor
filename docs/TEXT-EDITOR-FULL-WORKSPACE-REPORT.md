@@ -1,6 +1,6 @@
 # Wiskundige Tekst Editor — geïntegreerde werkruimte
 
-Versie 1.3.0 — 2026-10-12.
+Versie 1.4.0 — 2026-10-12.
 Status: volledige UI-implementatie geleverd; gebruikersacceptatie nog niet uitgevoerd.
 Branch: `chatgpt/text-editor-full-workspace`.
 Basis: `chatgpt/t5-calculator`, commit `ec750d3e793e40bdfac9acc683b24307600cc3d6`.
@@ -126,3 +126,7 @@ Geen eenheidssuffix is uit de nieuwe numerieke eenheidskeuzes verwijderd; Dimens
 De precisie-uitvoer toont vanaf openen het effectieve aantal decimalen, inclusief de actieve documentprecisie en bij hoeken de eventuele bronprecisie. De slider toont hetzelfde aantal binnen zijn bestaande 0–3-bereik. Bestaande hogere precisies worden numeriek getoond en niet afgerond bij openen. Een opgeslagen null blijft de document-/bronprecisie volgen totdat de gebruiker de slider bedient; de numerieke UI-weergave verandert geen opslaginstelling. Bronprecisie wordt uitsluitend via de bestaande toegestane bronroute gelezen.
 
 Geen tests uitgevoerd. Handmatig controleren: standaard 2 decimalen, andere document-/hoekprecisie, bron-/eigenschapswissel, oude none-velden en afwijkende precisies, expliciet slidergebruik en ongewijzigd bevestigen/annuleren.
+
+## 13. Zichtbare selectie van inlinevelden
+
+De bestaande ProseMirror NodeSelection-class krijgt voor formule- en waardeatomen een gouden omlijning en lichte achtergrond op het witte tekstcanvas. De indicator is niet afhankelijk van editorfocus en blijft daardoor zichtbaar bij bediening van invoerpanelen. Waardetekst krijgt ook een passende native tekstselectiekleur. Selectie blijft uitsluitend presentatiestatus en wordt niet opgeslagen of geëxporteerd. Geen wijziging aan editortransacties, atoomediting of documentmodel; geen tests uitgevoerd. Gebruiker controleert selectie via klik/toetsenbord, focusverplaatsing, dubbelklikbewerking, deselectie en donkere/gekleurde veldinhoud.
