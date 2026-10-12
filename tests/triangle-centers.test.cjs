@@ -27,4 +27,25 @@ test('M6a reuses source identity, topology protection, dependents, schema 2 and 
 
 test('M6a rejects invalid triangle-role sources on construction, import and replay atomically',()=>{const MI=runtime(['model.js','renderer.js','index.js','semantic-sequence.js']).MI,{e}=setup(),before=plain(e.toJSON());for(const invalid of [[{id:'T',type:'circle',cx:0,cy:0,r:1}],[{id:'T',type:'polygon',vertices:[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]}]]){const engine=new MI.Engine({objects:invalid}),snapshot=plain(engine.toJSON());assert.throws(()=>engine.construct('centroid',[ref]));assert.deepEqual(plain(engine.toJSON()),snapshot);}const bad=plain(before);bad.objects[0].vertices.push({x:2,y:2});bad.objects.push({id:'C',type:'point',x:0,y:0,construction:{kind:'centroid',sources:[ref]}});bad.constructionSchema=2;assert.throws(()=>e.load(bad));assert.deepEqual(plain(e.toJSON()),before);const sequence=new MI.SemanticSequence(before),snapshot=plain(sequence.document);assert.throws(()=>sequence.execute('construction.create',{toolId:'construct:centroid',sources:[{objectId:'missing'}]}));assert.deepEqual(plain(sequence.document),snapshot);});
 
+test('M6a polygon exception preserves ordinary polygon validation, topology and degenerate-source roundtrips',()=>{
+ const {MI,e}=setup(),ordinary=setup().e;
+ assert.throws(()=>ordinary.update('T',{vertices:[{x:0,y:0},{x:1,y:0},{x:2,y:0}]}));
+ const polygons=[
+  {id:'Q',type:'polygon',vertices:[{x:0,y:0},{x:3,y:0},{x:3,y:2},{x:0,y:2}]},
+  {id:'P5',type:'polygon',vertices:[{x:0,y:0},{x:2,y:0},{x:3,y:1},{x:2,y:3},{x:0,y:2}]}
+ ];
+ const shapes=new MI.Engine({objects:polygons});
+ assert.equal(shapes.get('Q').vertices.length,4);assert.equal(shapes.get('P5').vertices.length,5);
+ const snapshot=plain(shapes.toJSON()),invalid=plain(snapshot);invalid.objects[0].vertices=[{x:0,y:0},{x:2,y:2},{x:0,y:2},{x:2,y:0}];
+ assert.throws(()=>shapes.load(invalid));assert.deepEqual(plain(shapes.toJSON()),snapshot);
+ const midpoint=ordinary.construct('midpoint',[{objectId:'T',part:'vertex',index:0},{objectId:'T',part:'vertex',index:1}])[0],ordinaryBefore=plain(ordinary.toJSON());
+ assert.throws(()=>ordinary.update('T',{vertices:[{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:0,y:2}]}),error=>error.code==='TOPOLOGY_REFERENCED');assert.deepEqual(plain(ordinary.toJSON()),ordinaryBefore);assert.ok(ordinary.get(midpoint.id));
+ for(const kind of ['centroid','circumcenter','orthocenter']){
+  const engine=setup().e,center=engine.construct(kind,[ref])[0];engine.update('T',{vertices:[{x:0,y:0},{x:1,y:0},{x:.5,y:0}]});
+  assert.equal(engine.getConstructionInfo(center.id).reasonCode,'DEGENERATE_TRIANGLE');
+  const roundTrip=new MI.Engine(plain(engine.toJSON()));assert.equal(roundTrip.getConstructionInfo(center.id).reasonCode,'DEGENERATE_TRIANGLE');
+  roundTrip.update('T',{vertices:[{x:0,y:0},{x:4,y:0},{x:1,y:3}]});assert.equal(roundTrip.getConstructionInfo(center.id).reasonCode,'VALID');assert.equal(roundTrip.get(center.id).id,center.id);
+ }
+});
+
 test('M6a restricted construction needs tool, triangle source and point capabilities',()=>{const {MI}=runtime(),{fixture}=require('./permission-fixtures.cjs'),policy=fixture('course',{parameters:{},allowedTools:['construct:centroid'],initialObjectRules:{T:{sourceTools:['construct:centroid']}},createdObjectRules:{point:{read:true,display:true,selectCanvas:true,selectList:true}}});policy.initialDocument={objects:[triangle([{x:0,y:0},{x:4,y:0},{x:1,y:3}])]};const {session,owner}=MI.RuntimeSession.create(policy);const result=session.engine.construct('centroid',[ref])[0];assert.ok(Number.isFinite(result.x));const snapshot=plain(owner.inspect());assert.throws(()=>session.engine.construct('circumcenter',[ref]));policy.policy.initialObjectRules.T={};assert.throws(()=>MI.RuntimeSession.create(policy).session.engine.construct('centroid',[ref]),error=>error.code==='MISSING_SOURCE_PERMISSION');assert.deepEqual(plain(owner.inspect()),snapshot);});
