@@ -1057,7 +1057,7 @@
       }
       html+='<label>Dekking<span class="stroke-slider"><input aria-label="Dekking" data-style="opacity" type="range" min="0" max="100" step="1" value="'+esc(style.opacity*100)+'"><output>'+esc(Math.round(style.opacity*100))+'%</output></span></label><p class="help-text">0% is onzichtbaar, 100% is volledig zichtbaar.</p></fieldset>';
       const split=html.indexOf('<details data-property-section="labels"'),appearance=html.indexOf('<fieldset');
-      if(object.type==='text')html='<details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split);
+      if(object.type==='text')html='<details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       else html='<details data-property-section="appearance" open><summary>Uiterlijk</summary>'+html.slice(appearance)+'</details><details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       html=html.replace('<details data-property-section="labels" open><summary>Label en meting</summary></details>','');
       panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+html;

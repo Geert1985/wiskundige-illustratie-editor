@@ -1,6 +1,6 @@
 # T5-prep — UX-verfijning teksteditor
 
-Versie 1.3.0 — 2026-10-12
+Versie 1.4.0 — 2026-10-12
 
 Repository: `Geert1985/wiskundige-illustratie-editor`
 
@@ -81,7 +81,7 @@ De screenshots zijn bewijs van de testweergave, geen vervanging voor handmatige 
 - Architectuur: versie 1.9.0, UI-contract voor T5-prep UX toegevoegd.
 - Implementatieplan: versie 1.9.0, UX-checkpoint toegevoegd.
 - Roadmap: versie 1.8.0, UX checkpoint toegevoegd.
-- Featurebacklog: versie 1.3.0, implementatiestatus verduidelijkt.
+- Featurebacklog: Versie 1.4.0 — 2026-10-12
 
 ## Vervolgverfijning waardenpaneel — 2026-10-12
 
@@ -96,3 +96,7 @@ Voor deze vervolgwijziging zijn op verzoek geen Node- of Edge-tests uitgevoerd. 
 De teksteditor toont nu het vaste merkblok **From Zero 2 Infinity** met het infinitysymbool en de titel **Wiskundige Tekst Editor**. De kopknoppen gebruiken gelijke afmetingen; de zichtbare tekst voor undo is verkort tot **Ongedaan**. Er staan ook uitgeschakelde placeholders voor **JSON Importeren** en **JSON Exporteren** in de kop. Deze knoppen hebben bewust nog geen acties.
 
 Ook voor deze correctie zijn geen Node- of Edge-testsuites uitgevoerd. De browserasserties zijn aangepast; de daadwerkelijke validatie blijft open.
+
+## Inspector-correctie tekststijl — 2026-10-12
+
+Het volledige `object-style`-veldset is voor tekstobjecten uit de inspector verwijderd. Tekstkleur, tekstgrootte en dekking zijn daarmee alleen via **Tekst bewerken** te bedienen. De browserassertie controleert dat de dubbele inspectorbediening ontbreekt. Er zijn op verzoek geen tests uitgevoerd.
