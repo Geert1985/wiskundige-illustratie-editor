@@ -1,8 +1,8 @@
 {
   "rich-text-editor": {
-    "bytes": 217605,
-    "gzipBytes": 67752,
-    "sha256": "7514cd92ef28adb5f1e6795545608be7bbff527695ceb52fe593ad475fbdff80",
+    "bytes": 219288,
+    "gzipBytes": 68396,
+    "sha256": "3cd01f11781ab1d6c1135746e463f392178903e0c08ef98aa8bd854cb5208a56",
     "inputs": [
       "experiments/text-editor-preflight/node_modules/orderedmap/dist/index.js",
       "experiments/text-editor-preflight/node_modules/prosemirror-model/dist/index.js",

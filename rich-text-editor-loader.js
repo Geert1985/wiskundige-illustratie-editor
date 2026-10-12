@@ -1,5 +1,5 @@
 (function(global){
   'use strict';
   const MI=global.FZI.MathIllustration;
-  MI.RichTextEditor=Object.freeze({load:()=>import('./rich-text-editor.bundle.js?v=text-t4-1')});
+  MI.RichTextEditor=Object.freeze({load:()=>import('./rich-text-editor.bundle.js?v=text-t5-prep-ux-1')});
 })(window);

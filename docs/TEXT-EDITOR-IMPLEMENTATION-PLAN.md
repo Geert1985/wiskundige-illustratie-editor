@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.8.0 - 2026-10-12. Status: T4 regressiecontrole uitgevoerd maar handmatige acceptatie open; T5-prep I1-I4 technisch geleverd en wacht op gebruikersacceptatie; T5a–T5d niet gestart.
+Versie 1.9.0 - 2026-10-12. Status: T4 regressiecontrole uitgevoerd maar handmatige acceptatie open; T5-prep I1-I4 plus UX-verfijning technisch geleverd en wacht op gebruikersacceptatie; T5a–T5d niet gestart.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
@@ -56,7 +56,7 @@ Status: uitgevoerd na expliciete opdracht. Zie [T4-CONTRACT.md](T4-CONTRACT.md) 
 
 ## T5-prep — editor-modernisering en gedeelde wiskundige invoer
 
-I1-I4 zijn uitgevoerd onder de expliciete productie-integratieopdracht. T4 gerichte regressies waren groen vóór de wijzigingen en zijn opnieuw in de volledige regressie opgenomen; formele handmatige T4-acceptatie blijft open. Deze uitvoering doet geen uitspraak over die acceptatie. T5a–T5d blijven afzonderlijke, niet gestarte calculatorstappen.
+I1-I4 zijn uitgevoerd onder de expliciete productie-integratieopdracht. De daaropvolgende T5-prep UX-verfijning (1.9.0) moderniseert de bestaande bediening voor symbolen, lettergrootte, kleur, tekstbreedte, uitlijning, mixed formatting en lokale undo/redo. T4 gerichte regressies waren groen vóór de wijzigingen; formele handmatige T4-acceptatie blijft open. Deze uitvoering doet geen uitspraak over die acceptatie. T5a–T5d blijven afzonderlijke, niet gestarte calculatorstappen.
 
 - I1: responsieve donkere dialoog, gegroepeerde bestaande bediening, vaste actiezone en contextoverlay; annuleren laat documentdraft ongewijzigd.
 - I2: TextSymbolCatalog met stabiele ID's, categorieën, Unicode en afzonderlijke TeX/formule/sjabloonrepresentaties, Nederlandse en Engelse zoektermen; geen afhankelijkheid van DOM, ProseMirror, documentmodel of MathJax.
@@ -64,6 +64,8 @@ I1-I4 zijn uitgevoerd onder de expliciete productie-integratieopdracht. T4 geric
 - I4: TextDynamicValueEditor hergebruikt bestaande bronopties, resolver, TextValues en typed draft commit. Geen mocks, autorisatievervanging of nieuw opslagformaat.
 
 Testbewijs en beperkingen: [T5-PREP-INTEGRATION-REPORT.md](T5-PREP-INTEGRATION-REPORT.md). Prototype en oorspronkelijke visuele proef: [T5-PREP-UI-PROTOTYPE-REPORT.md](T5-PREP-UI-PROTOTYPE-REPORT.md). JSON-/SVG-/PNG-, legacy-, restricted-, undo/redo-, fullscreen- en cancelcontroles worden vanaf deze fase getest. Handmatige visuele review, echte IME en schermlezercontrole zijn niet uitgevoerd. Wacht na I4 op gebruikersacceptatie; start T5a niet zonder nieuw expliciet akkoord én definitieve goedkeuring van het rekencontract.
+
+UX-uitvoering en regressiebewijs: [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-REFINEMENT-REPORT.md). Er zijn geen documentmodel-, opslag-, permissie- of exportschemawijzigingen. De volledige Edge-run blijft verplicht na iedere UI-iteratie; handmatige visuele, IME- en schermlezeracceptatie blijft apart.
 
 ## T5a — Veilige rekenkern
 

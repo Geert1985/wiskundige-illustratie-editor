@@ -2,7 +2,7 @@ import {Schema} from 'prosemirror-model';
 import {EditorState,TextSelection,NodeSelection} from 'prosemirror-state';
 import {EditorView} from 'prosemirror-view';
 import {toggleMark,baseKeymap} from 'prosemirror-commands';
-import {history,undo,redo,closeHistory} from 'prosemirror-history';
+import {history,undo,redo,undoDepth,redoDepth,closeHistory} from 'prosemirror-history';
 import {keymap} from 'prosemirror-keymap';
 
 const marks={};
@@ -32,11 +32,16 @@ function fromDoc(doc,base){
 }
 function mount(element,initial,onChange=()=>{},options={}){
  const MI=window.FZI.MathIllustration,base=MI.TextContent.validate(initial);let view,editMath=()=>{},editValue=()=>{},serial=0,destroyed=false;const painters=new Set();
+ const markNames=['bold','italic','underline','strike','script','fontSize','fontId','color'];
+ const markValue=(marks,name)=>{const mark=marks.find(item=>item.type.name===name);return mark?mark.attrs.value??true:(name==='fontSize'?base.defaults.fontSize:name==='fontId'?base.defaults.fontId:name==='color'?base.defaults.color:false);};
+ const common=values=>{if(!values.length)return {value:null,mixed:false};const first=values[0];return values.some(value=>value!==first)?{value:null,mixed:true}:{value:first,mixed:false};};
+ const replaceMark=(name,attrs)=>{const mark=schema.marks[name],selection=view.state.selection;if(selection.empty){const current=view.state.storedMarks||selection.$from.marks(),next=current.filter(item=>item.type!==mark);next.push(mark.create(attrs));view.dispatch(view.state.tr.setStoredMarks(next));}else view.dispatch(view.state.tr.removeMark(selection.from,selection.to,mark).addMark(selection.from,selection.to,mark.create(attrs)));view.focus();};
+ const toolbarState=()=>{if(!view)return null;const state=view.state,selection=state.selection,marks=[];if(selection.empty){marks.push(state.storedMarks||selection.$from.marks());}else state.doc.nodesBetween(selection.from,selection.to,node=>{if(node.isText||['math','dynamicValue'].includes(node.type.name))marks.push(node.marks);});if(!marks.length)marks.push(state.storedMarks||selection.$from.marks());const style=Object.fromEntries(markNames.map(name=>[name,common(marks.map(list=>markValue(list,name)))]));const paragraphs=[];let pos=0;state.doc.forEach(paragraph=>{if(selection.empty?pos<=selection.from&&selection.from<=pos+paragraph.nodeSize:pos<selection.to&&pos+paragraph.nodeSize>selection.from)paragraphs.push(paragraph.attrs.align);pos+=paragraph.nodeSize;});const align=common(paragraphs.length?paragraphs:['left']);return {...style,align,canUndo:undoDepth(state)>0,canRedo:redoDepth(state)>0};};
  const state=EditorState.create({schema,doc:toDoc(base),plugins:[history(),keymap({'Mod-z':undo,'Mod-y':redo,'Mod-Shift-z':redo,'Mod-b':toggleMark(schema.marks.bold),'Mod-i':toggleMark(schema.marks.italic),'Shift-Enter':(state,dispatch)=>{dispatch(state.tr.replaceSelectionWith(schema.node('hardBreak')));return true;},...baseKeymap})]});
  view=new EditorView(element,{
    attributes:{style:`font-size:${base.defaults.fontSize}px;font-family:${base.defaults.fontId==='serif'?'"Source Serif 4"':'"Source Sans 3"'};color:${base.defaults.color};font-kerning:none;font-variant-ligatures:none`,role:'textbox','aria-label':'Tekstinhoud','aria-multiline':'true',tabindex:'0'},state,
    handleKeyDown(view,event){if(event.key==='Enter'&&view.state.selection instanceof NodeSelection&&['math','dynamicValue'].includes(view.state.selection.node.type.name)){(view.state.selection.node.type.name==='math'?editMath:editValue)(view.state.selection.from);return true;}return false;},
-   dispatchTransaction(tr){const next=view.state.apply(tr);try{const canonical=fromDoc(next.doc,base);view.updateState(next);onChange(canonical);}catch(e){onChange(null,e);}},
+   dispatchTransaction(tr){const next=view.state.apply(tr);try{const canonical=fromDoc(next.doc,base);view.updateState(next);onChange(canonical);options.onStateChange?.(toolbarState());}catch(e){onChange(null,e);}},
    nodeViews:{dynamicValue(node,view,getPos){
      const dom=document.createElement('span');dom.className='rich-value-atom';dom.contentEditable='false';dom.draggable=true;dom.setAttribute('role','group');let lastPaint=null;
      const paint=()=>{if(destroyed)return;const run={kind:'dynamicValue',binding:node.attrs.binding,format:node.attrs.format},value=options.resolveValue?.(run)||{status:'missing',text:'niet beschikbaar'},m=Object.fromEntries(node.marks.map(mark=>[mark.type.name,mark.attrs.value??true]));const signature=JSON.stringify([value.text,value.status,m]);if(signature===lastPaint)return;lastPaint=signature;dom.textContent=value.text;dom.dataset.valueStatus=value.status;dom.setAttribute('aria-label','Dynamische waarde: '+value.text);dom.style.fontSize=(m.fontSize||base.defaults.fontSize)+'px';dom.style.color=m.color||base.defaults.color;dom.style.fontFamily=(m.fontId||base.defaults.fontId)==='serif'?'"Source Serif 4"':'"Source Sans 3"';dom.style.fontWeight=m.bold?'700':'400';dom.style.fontStyle=m.italic?'italic':'normal';dom.style.textDecoration=[m.underline?'underline':'',m.strike?'line-through':''].filter(Boolean).join(' ');dom.style.verticalAlign=m.script==='super'?'super':m.script==='sub'?'sub':'baseline';if(m.script)dom.style.fontSize=((m.fontSize||base.defaults.fontSize)*.7)+'px';};
@@ -56,8 +61,8 @@ function mount(element,initial,onChange=()=>{},options={}){
  const bookmark=()=>({selection:view.state.selection.getBookmark(),doc:view.state.doc});
  const restore=b=>{if(!b||b.doc!==view.state.doc)throw Error('De tekstselectie is gewijzigd.');view.dispatch(view.state.tr.setSelection(b.selection.resolve(view.state.doc)));};
  return {
-   setWidth(value){MI.TextContent.validate({...fromDoc(view.state.doc,base),width:value});view.dispatch(closeHistory(view.state.tr).setDocAttribute('width',value));},
-   view,get:()=>fromDoc(view.state.doc,base),focus:()=>view.focus(),bookmark,restore,
+   setWidth(value){MI.TextContent.validate({...fromDoc(view.state.doc,base),width:value});view.dispatch(closeHistory(view.state.tr).setDocAttribute('width',value));},previewWidth(value){const surface=view.dom.closest('.rich-text-surface');if(surface)surface.style.maxWidth=value==null?'none':`${value}px`;},
+   view,get:()=>fromDoc(view.state.doc,base),focus:()=>view.focus(),bookmark,restore,toolbarState,
    setValueEditHandler:handler=>{editValue=handler;},refreshValues(){for(const paint of painters)paint();},
    setMathEditHandler:handler=>{editMath=handler;},setEditable:value=>view.setProps({editable:()=>value}),
    selectedMath(){const s=view.state.selection;return s instanceof NodeSelection&&s.node.type.name==='math'?{position:s.from,source:s.node.attrs.source}:null;},
@@ -75,11 +80,11 @@ function mount(element,initial,onChange=()=>{},options={}){
      else {const end=view.state.selection.to;tr=tr.replaceSelectionWith(schema.nodes.math.create({source,runId:`math-new-${++serial}`},null,view.state.storedMarks||view.state.selection.$from.marks()));tr=tr.setSelection(TextSelection.near(tr.doc.resolve(tr.mapping.map(end,1)),1));}
      view.dispatch(closeHistory(tr));view.dispatch(closeHistory(view.state.tr).setMeta('addToHistory',false));view.focus();
    },
-   toggle(name,value){const mark=schema.marks[name];if(mark)toggleMark(mark,name==='script'?{value}:undefined)(view.state,view.dispatch,view);view.focus();},
-   setColor(value){toggleMark(schema.marks.color,{value})(view.state,view.dispatch,view);view.focus();},
-   setFontSize(value){toggleMark(schema.marks.fontSize,{value:Number(value)})(view.state,view.dispatch,view);view.focus();},
-   setFont(value){toggleMark(schema.marks.fontId,{value})(view.state,view.dispatch,view);view.focus();},
-   setAlign(align){view.dispatch(view.state.tr.setNodeMarkup(view.state.selection.$from.before(1),schema.nodes.paragraph,{align,lineHeight:1.25}));view.focus();},
+   toggle(name,value){const mark=schema.marks[name];if(name==='script'&&mark){const current=toolbarState().script;if(current.mixed||current.value!==value)replaceMark(name,{value});else toggleMark(mark,{value})(view.state,view.dispatch,view);}else if(mark)toggleMark(mark)(view.state,view.dispatch,view);view.focus();},
+   setColor(value){replaceMark('color',{value});},
+   setFontSize(value){replaceMark('fontSize',{value:Number(value)});},
+   setFont(value){replaceMark('fontId',{value});},
+   setAlign(align){const selection=view.state.selection,positions=[];let offset=0;view.state.doc.forEach(paragraph=>{if(selection.empty?offset<=selection.from&&selection.from<=offset+paragraph.nodeSize:offset<selection.to&&offset+paragraph.nodeSize>selection.from)positions.push([offset,paragraph]);offset+=paragraph.nodeSize;});let tr=view.state.tr;for(const [position,paragraph] of positions)if(paragraph.attrs.align!==align)tr=tr.setNodeMarkup(position,schema.nodes.paragraph,{...paragraph.attrs,align});if(tr.docChanged)view.dispatch(tr);view.focus();},
    undo(){undo(view.state,view.dispatch);view.focus();},redo(){redo(view.state,view.dispatch);view.focus();},destroy(){destroyed=true;view.destroy();}
  };
 }

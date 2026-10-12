@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.8.0 - 2026-10-12 - T1-T4 geimplementeerd; T5-prep I1-I4 technisch geïntegreerd; handmatige acceptatie staat open.
+Versie 1.9.0 - 2026-10-12 - T1-T4 geïmplementeerd; T5-prep I1-I4 en UX-verfijning technisch geïntegreerd; handmatige acceptatie staat open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -584,3 +584,19 @@ De productiedialoog gebruikt een vaste editorruimte met overliggende contextpane
 `TextInsertPanel` is de host/controller die de modi opent, bookmarks bewaart en annuleert. Het is geen eigenaar van formulegrammatica, symbolendata of meetwaardebeleid. Catalogusitems hebben stabiele ID's, categorie, Unicode, LaTeX/formulemapping of sjabloonbron en Nederlandstalige/Engelstalige zoektermen. Gewone tekst behoudt Unicode-invoeging; LaTeX-context gebruikt alleen `MathSource`-toegestane representaties. Sjablonen selecteren het eerste invulargument; Tab-navigatie is niet geïmplementeerd.
 
 De dynamische waardencontroller bewaart bestaande bronschema's en formattingvelden; hij berekent geen waarden zelf en maakt geen mockbronopties. Bij afwezige of ingetrokken rechten blijft de bestaande resolver de bron verbergen of als niet beschikbaar tonen en weigert de bestaande commit-/exportcontrole ongeoorloofde data. Compatibiliteits- en exporttests zijn onderdeel van de huidige regressie, niet uitgesteld naar T4/T5d.
+
+## 26. T5-prep UX-verfijning teksteditor (1.9.0)
+
+**Status:** UX-integratie technisch uitgevoerd op `chatgpt/editor-development`; wacht op handmatige gebruikersacceptatie. Dit wijzigt geen documentvelden, textSchema-versies, documentversie, transactiegrenzen, permissies of exportschema's. T4 handmatige acceptatie blijft open; T5a–T5d zijn niet gestart.
+
+De toolbar houdt bestaande textContent-waarden aan. Lettergroottes zijn centrale puntpresets in `TextEditorUX` en worden naar de bestaande SVG-/CSS-pixeleenheid geconverteerd met 96/72 px per punt: 12 pt→16 px, 16 pt→64/3 px, 20 pt→80/3 px en 28 pt→112/3 px. Alleen de nieuwe keuze is beperkt tot deze vier opties; bestaande waarden blijven exact en krijgen een aangepaste status. Gemengde selectie toont geen actief preset. `fontSize` blijft hetzelfde bestaande rich mark in dezelfde opslagstructuur.
+
+`EditorColor.palette` is de enige paletbron; `EditorColor.renderPalette` bouwt zowel de bestaande geometrische kleurkiezer als de rich-textkiezer uit dezelfde kleurenlijst. Een aangepaste documentkleur blijft ongewijzigd en krijgt een expliciete status totdat de gebruiker bewust een paletkleur kiest. De text-toolbar gebruikt geen vrije RGB-invoer; de geometrische kleurbediening behoudt haar bestaande werking.
+
+Tekstbreedte blijft `null` of een positieve breedte van 1–1.000.000 SVG-pixels zoals de bestaande modelvalidator voorschrijft. De nieuwe horizontale slider beeldt deze grenzen logaritmisch af op 100.000 stappen; bestaande exacte waarden worden bij openen en bij annuleren behouden. Tijdens muis-/toetsenbordinteractie wijzigt alleen een CSS-preview de beschikbare tekstbreedte, waarna de bestaande ProseMirror-layout direct opnieuw omloopt. Loslaten/beëindigen commit één lokale history-transactie; Escape herstelt de startwaarde zonder die geschiedenis te wijzigen. Buitenste Annuleren verwerpt nog steeds de gehele private tekst-draft.
+
+Uitlijning blijft op het bestaande ProseMirror-paragraafattribuut `align`; de drie iconen passen de betrokken paragrafen in één lokale geschiedenisactie aan. De toolbar publiceert actieve/mixed status op basis van de ProseMirror-selectie, inclusief formule- en dynamische waarde-atomen, en leest undo/redo diepte uit dezelfde ProseMirror-history. Expliciete kleur-/lettergrootte-/lettertypekeuzes vervangen alleen de betreffende mark, zodat andere marks behouden blijven. Undo/redo blijft gescheiden van de documentgeschiedenis.
+
+De werkbalk schaalt in zones voor opmaak, breedte, invoegen en lokale geschiedenis; op smallere schermen lopen zones om en worden invoeglabels compacter. De bestaande contextpanelen blijven overlays die de dialooghoogte niet veranderen. De symboolinvoeging heet overal “Symbolen & structuren” en blijft dezelfde `TextSymbolCatalog`, `TextMathInput`, `TextFormulaEditor` en bestaande formule-atomroute gebruiken.
+
+Normatief testrapport en afbeeldingen: [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-REFINEMENT-REPORT.md). Handmatige IME-/schermlezercontrole is niet uitgevoerd en blijft open; automatische browserresultaten gelden niet als gebruikersacceptatie. Deze UX-verfijning geeft geen toestemming om T5a te starten.

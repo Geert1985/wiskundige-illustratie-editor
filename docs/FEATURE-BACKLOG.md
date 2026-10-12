@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.2.0
-Status: proposed; reconcile with repository before implementation
+Version: 1.3.0
+Status: proposed; reconcile with repository before implementation. T5-prep I1-I4 and the UX refinement are technically integrated and await user acceptance; calculator F11 remains unimplemented.
 Date: 2026-10-12
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
@@ -154,3 +154,7 @@ Status: **functionally approved; not implemented**. Documentation-only scope; no
 Required future acceptance evidence: empty-document toolbar `2+3*4=14` with unchanged objects/revision/history; `sin(30 deg)=0.5`; circle radius→area live update with scale applied once; identical quantities/results in both modes; restricted non-disclosure including revocation; T5c insertion/edit/undo/redo/JSON/SVG/all three modes; focus/keyboard/Escape/fullscreen/Cancel in both contexts. Test explicit clipboard success/denial and offline SVG→PNG; manual IME/AT/OS-clipboard checks are not PASS until performed.
 
 **Future reuse, not implementation:** F05 function graphs, F06 parametric constructions and F07/F08 exercises may consume the same engine via independently validated adapters. No plotting, parametric feature or exercise evaluation is marked implemented by this amendment. Toolbar/icon/responsive details and clipboard notation remain decisions before T5b; exact calculatedValue payload/grants before T5c. The T5a mathematical contract remains an independent definitive approval requirement.
+
+### T5-prep UX delivery note (2026-10-12)
+
+The rich-text editor now has four point-based size presets mapped to its existing SVG-pixel values, one color palette source shared by geometry and text, a log-mapped width slider over the existing model limits, three paragraph alignment controls, visible mixed/active marks, local ProseMirror undo/redo, and the label “Symbolen & structuren”. Existing custom values and document compatibility remain supported. This is a UX delivery checkpoint only; it does not implement or change F11 or authorize T5a. See [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-REFINEMENT-REPORT.md) for evidence and remaining manual acceptance.

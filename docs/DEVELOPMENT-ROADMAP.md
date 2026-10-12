@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.7.0 (T5-prep I1-I4 integration checkpoint, 2026-10-12)
-Status: T5-prep I1-I4 technically delivered; awaiting user acceptance. T4 hand acceptance remains open; T5a not started.
+Version: 1.8.0 (T5-prep UX refinement checkpoint, 2026-10-12)
+Status: T5-prep I1-I4 and UX refinement technically delivered; awaiting user acceptance. T4 hand acceptance remains open; T5a not started.
 Date: 2026-10-12
 
 ## Baseline
@@ -220,3 +220,9 @@ De geïntegreerde UI gebruikt een compacte responsieve teksteditor met contextue
 | T5a | Niet gestart. Vereist T4-acceptatie, T5-prep-acceptatie, definitieve goedkeuring van het mathematische contract en expliciete starttoestemming. |
 
 Niet uitgevoerd: echte IME-/schermlezeracceptatie, finale handmatige visuele review en vergelijking op meerdere besturingssystemen. De prototype-mock is niet in productie gebruikt.
+
+### T5-prep UX-verfijning (2026-10-12)
+
+De editor gebruikt nu vier semantische lettergroottepresetknoppen binnen de bestaande SVG-pixelschaal, één gedeelde palettebron voor geometrie en tekst, een logaritmische breedteslider over de bestaande 1–1.000.000 px grenzen, drie alineauitlijningsiconen, actuele/mixed opmaakstatus en lokale undo/redo-bediening. “Symbolen & structuren” hergebruikt de centrale catalogus en bestaande formule-/invoegarchitectuur. Geen documentmodel-, schema-, permissie-, opslag- of exportcontract is aangepast.
+
+Status: code- en regressiewerk technisch geleverd; wacht op handmatige gebruikersacceptatie. Rapport: [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-REFINEMENT-REPORT.md). De exacte geautomatiseerde Node-/Edge-resultaten en resterende handmatige punten staan daar. T4-acceptatie blijft apart open. T5a is niet gestart en houdt de bestaande voorwaarden: T4-acceptatie, T5-prep-acceptatie, definitieve mathematische-contractgoedkeuring en expliciete starttoestemming.

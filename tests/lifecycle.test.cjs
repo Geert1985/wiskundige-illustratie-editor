@@ -42,10 +42,12 @@ test('source has one canvas render owner and no alternative feature interaction/
 // The lifecycle API is exercised without relying on a real DOM parser.
 function appRuntime() {
   const { MI, context } = runtime();
+  for (const file of ['editor-color.js', 'text-editor-ux.js']) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
   vm.runInContext(fs.readFileSync(path.join(root, 'editor-tool-instructions.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(root, 'editor.js'), 'utf8'), context);
   const events = new Map();
-  function target() { return { value: '', style: {}, dataset: {}, events: new Map(), classList: { add() {}, remove() {}, toggle() {} },
+  function target() { return { value: '', style: { setProperty() {} }, dataset: {}, attributes: {}, events: new Map(), classList: { add() {}, remove() {}, toggle() {} },
+    setAttribute(name, value) { this.attributes[name] = String(value); }, getAttribute(name) { return this.attributes[name] ?? null; },
     addEventListener(type, fn) { (this.events.get(type) || (this.events.set(type, new Set()), this.events.get(type))).add(fn); },
     removeEventListener(type, fn) { this.events.get(type)?.delete(fn); },
     querySelector: () => null, querySelectorAll: () => [], focus() {}, getBoundingClientRect: () => ({ left: 0, top: 0 }), contains: () => true,

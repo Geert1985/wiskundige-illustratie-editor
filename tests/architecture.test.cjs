@@ -45,6 +45,7 @@ const modules = [
   { file: 'editor-label-drag.js', provides: ['LabelOffsets'], after: ['linear-geometry.js'] },
   { file: 'editor-enhancements.js', provides: ['EditorOverlays', 'SnapFeedback'], after: ['linear-geometry.js'] },
   { file: 'editor-color.js', provides: ['EditorColor'], after: ['model.js'] },
+  { file: 'text-editor-ux.js', provides: ['TextEditorUX'], after: ['editor-color.js'] },
   { file: 'editor-axis-settings.js', provides: ['AxisSettings'], after: ['renderer.js'] },
   { file: 'editor-history.js', provides: ['EditorHistory', 'RuntimeHistory'], after: ['index.js', 'permission-runtime.js'] },
   { file: 'editor-tool-instructions.js', provides: ['ToolInstructions'], after: ['renderer.js'] },
@@ -60,7 +61,7 @@ function modulesBeforeEditor() {
     'renderer.js', 'index.js', 'semantic-sequence.js', 'coordinate-transform.js',
     'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js',
     'permission-runtime.js', 'editor-startup.js', 'editor-adaptive-grid.js',
-    'editor-label-drag.js', 'editor-enhancements.js', 'editor-color.js',
+    'editor-label-drag.js', 'editor-enhancements.js', 'editor-color.js', 'text-editor-ux.js',
     'editor-axis-settings.js', 'editor-history.js', 'editor-tool-instructions.js',
   ];
 }
