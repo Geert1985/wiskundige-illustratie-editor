@@ -31,17 +31,19 @@ module.exports=async page=>{
     assert.equal((await doc()).objects.find(o=>o.id===id).style.fill,'none');
   }
   await page.locator('[data-select-object="t"]').click();assert.equal(await page.locator('[data-style="strokeWidth"]').count(),0);
-  await roundtrip(()=>edit('fontSize',32));await roundtrip(()=>edit('opacity',50));
-  assert.equal(await page.locator('[data-object-id="t"] text').getAttribute('font-size'),'32');assert.equal(await page.locator('[data-object-id="t"]').getAttribute('opacity'),'0.5');
+  assert.equal(await page.locator('#selectionPanel [data-style="fontSize"]').count(),0);
+  async function textSize(value){await page.locator('[data-select-object="t"]').click();await page.locator('[data-rich-text-edit]').click();await page.locator('#textDialog').waitFor({state:'visible'});await page.evaluate(()=>{const view=FZI.MathIllustration.editor.richTextEditor.view,Selection=view.state.selection.constructor;view.dispatch(view.state.tr.setSelection(Selection.create(view.state.doc,1,view.state.doc.content.size-1)));});await page.locator('#richFontSize').selectOption(String(value));await page.locator('#textForm button[type="submit"]').click();}
+  const textOpacity=value=>page.evaluate(value=>{const app=FZI.MathIllustration.editor;app.changeDocument(()=>app.engine.update('t',{style:{opacity:value}}));},value);
+  await roundtrip(()=>textSize(80/3));await roundtrip(()=>textOpacity(.5));
+  assert.equal((await doc()).objects.find(o=>o.id==='t').textContent.paragraphs[0].runs[0].marks.fontSize,80/3);assert.equal(await page.locator('[data-object-id="t"]').getAttribute('opacity'),'0.5');
   assert.equal((await doc()).objects.find(o=>o.id==='t').style.extension.keep,true);
   assert.equal(await page.locator('[data-style-apply]').count(),0);
-  await roundtrip(()=>edit('fontSize',36));await roundtrip(()=>edit('opacity',60));
-  assert.equal(await page.locator('[data-object-id="t"] text').getAttribute('font-size'),'36');
-  const valid=await doc();assert.equal(await page.locator('[data-style=fontSize]').getAttribute('type'),'range');assert.equal(await page.evaluate(()=>{try{FZI.MathIllustration.editor.engine.update('t',{style:{fontSize:0}});return false;}catch{return true;}}),true);assert.deepEqual(await doc(),valid);
-  assert.equal(await page.locator('[data-style="opacity"]').getAttribute('type'),'range');
-  assert.equal(await page.locator('[data-style="opacity"]').getAttribute('max'),'100');
+  await roundtrip(()=>textSize(112/3));await roundtrip(()=>textOpacity(.6));
+  assert.equal((await doc()).objects.find(o=>o.id==='t').textContent.paragraphs[0].runs[0].marks.fontSize,112/3);
+  const valid=await doc();assert.equal(await page.evaluate(()=>{try{FZI.MathIllustration.editor.engine.update('t',{style:{fontSize:0}});return false;}catch{return true;}}),true);assert.deepEqual(await doc(),valid);
+  assert.equal(await page.locator('#selectionPanel [data-style="opacity"]').count(),0);
   assert.equal(await page.evaluate(()=>{try{FZI.MathIllustration.editor.engine.update('t',{style:{opacity:1.01}});return false;}catch{return true;}}),true);assert.deepEqual(await doc(),valid);
-  const download=page.waitForEvent('download');await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/font-size="36"/);assert.match(svg,/stroke-dasharray="8 5"/);assert.match(svg,/opacity="0.6"/);
+  const download=page.waitForEvent('download');await require('./browser-tool-menu.cjs').action(page,'#exportSvgBtn');const svg=fs.readFileSync(await(await download).path(),'utf8');assert.match(svg,/font-size="37\.333/);assert.match(svg,/stroke-dasharray="8 5"/);assert.match(svg,/opacity="0.6"/);
   await page.locator('#saveBtn').click();const saved=await doc();await page.reload();assert.deepEqual(await doc(),saved);
   await page.locator('#fileInput').setInputFiles({name:'styles.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(saved))});await page.waitForFunction(()=>document.getElementById('status').textContent==='Illustratie geladen.');assert.deepEqual(await doc(),saved);
   await page.evaluate(()=>localStorage.removeItem(FZI.MathIllustration.DraftStore.key));

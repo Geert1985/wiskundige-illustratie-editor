@@ -1,8 +1,8 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.12.0 - 2026-10-12 - Verduidelijking rekencontract: hoekdimensies, afronding en underflow. Voorstel wacht op definitieve goedkeuring; T5a niet gestart.
+Versie 1.13.0 - 2026-10-12 - Rekencontract 1.12.0 definitief goedgekeurd; T5a technisch uitgevoerd, wacht op gebruikersacceptatie. T5b/T5c niet gestart.
 
-Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
+Repository: Geert1985/wiskundige-illustratie-editor. Actuele T5a-branch: `chatgpt/t5-calculator`; historische fase-0-branch: `chatgpt/editor-development`. Historisch onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
 Sectie 1 bewaart de historische inventaris van fase 0. Secties 19-21 beschrijven de geleverde T1-T3-implementatie en zijn leidend voor hun actuele status. Sectie 23 beschrijft T4; sectie 24 legt T5-prep als ontwerp/prototype vast; T5a–T5d blijven afzonderlijke rekenmilestones. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
 
@@ -313,7 +313,7 @@ De thresholds zijn voorgestelde beoordelingsnormen, geen metingen. Registreer ma
 
 ## 14. B4 — Verfijnd rekencontract, goedkeuringspoort vóór T5a
 
-Dit contract is inhoudelijk voorwaardelijk goedgekeurd. De drie verduidelijkingen hieronder en de [aanvullende acceptatiespecificatie](T5A-NUMERIC-ACCEPTANCE.md) zijn voorstellen die nog definitieve gebruikersgoedkeuring vragen. Deze documentatie op `chatgpt/t5-calculator` start T5a niet en wijzigt geen overige roadmapvoorwaarden. Presentatieformules (T2) en berekenbare expressies (T5) zijn verschillende talen; TeX is geen evaluatorinvoer.
+Dit contract (architectuur 1.12.0) en de [aanvullende acceptatiespecificatie 1.0.0](T5A-NUMERIC-ACCEPTANCE.md) zijn door de gebruiker definitief inhoudelijk goedgekeurd, met expliciete GO voor T5a op `chatgpt/t5-calculator`. De wiskundige regels hieronder zijn ongewijzigd. Actuele uitvoering en bewijs: sectie 28 en [T5a-rapport](T5a-REPORT.md). Dit sluit overige handmatige roadmapvoorwaarden niet af en autoriseert geen T5b/T5c. Presentatieformules (T2) en berekenbare expressies (T5) zijn verschillende talen; TeX is geen evaluatorinvoer.
 
 ### Hoeveelheden en eenheden
 
@@ -329,7 +329,7 @@ Expliciet `round(q;digits;unit)` voor dimensionele q: unit moet dezelfde dimensi
 
 Trigonometrie: sin/cos/tan accepteert A¹ of dimensieloos; A¹ altijd intern rad, dimensieloos gebruikt angleMode/documentkeuze op evaluatietijdstip. asin/acos/atan vereist dimensieloos en levert A¹. `sin(30 deg)` blijft 0,5 bij elke documenthoekkeuze; `sin(30)` verandert bij wissel van graden naar rad. ln/log10/exp vereisen dimensieloos; abs houdt dimensie. Samengestelde output drukt exponenten expliciet uit (`cm⁻¹`, `cm·rad`, `rad²`), geen oppervlakte-eenheid voor een dimensieloze verhouding.
 
-### 14.1 Hoekdimensie, graden en verhoudingen — verduidelijkingsvoorstel
+### 14.1 Hoekdimensie, graden en verhoudingen — goedgekeurde verduidelijking
 
 `A` is een semantische dimensie van deze engine: radiaal wordt hier niet stil met dimensieloos vereenzelvigd. `rad` en `deg` zijn eenheden van hetzelfde A¹-type; `1 deg` wordt eenmaal omgerekend met de binary64-factor `π/180`, `1 rad` met factor 1. De constante `pi`/`π` blijft dimensieloos; `π * 1 rad` is een hoek. Dat onderscheid beschermt dimensiecontrole en de bestaande documenthoekkeuze. Geen nieuwe hoeksoort of wijziging van de geometrische hoekmeting.
 
@@ -339,7 +339,7 @@ Optellen van hoek en dimensieloos, ook nul, is ongeldig; hoek + hoek converteert
 
 Geen impliciete modulo 2π, omzetting naar kleinste hoek, herstel van teken of snapping naar speciale hoeken. Bestaande kleinste/gerichte geometriewaarden behouden hun betekenis. Inverse functies leveren hoofdwaarden A¹: asin in [-π/2,π/2], acos in [0,π], atan in (-π/2,π/2); een displaykeuze converteert die waarde alleen. `sin(π rad)` en `cos(90 deg)` mogen een kleine binary64-rest opleveren; een nabijheidstest is geen toestemming om de engine-uitkomst tot nul te wijzigen. De bestaande tan-singulariteitsregel blijft gelden.
 
-### 14.2 Exacte regel voor round — verduidelijkingsvoorstel
+### 14.2 Exacte regel voor round — goedgekeurde verduidelijking
 
 Handtekeningen: `round(q;digits)` uitsluitend voor dimensieloos; `round(q;digits;unit)` uitsluitend voor dimensionele q met exact overeenkomende dimensie/eenheidsruimte. `digits` moet evalueren naar een eindige dimensieloze gehele waarde 0–10; ontbrekende/extra argumenten en andere digits zijn fouten (`INVALID_ARGUMENT`). Dit voegt geen compile-time-constantbeperking toe aan dit functieargument: een geldige expressie is toegestaan onder de bestaande bronrechten en quotas. De unit is een getypeerde, eindige positieve conversiefactor in de canonical basis en dezelfde dimensie als q, ook voor samengestelde dimensies. Geen impliciete documenteenheid of extra functie-argumenten.
 
@@ -351,7 +351,7 @@ Geen tussentijdse binary64-vermenigvuldiging met 10^d die een halfgrens verschui
 
 `round` mag bewust naar nul kwantiseren; canonical nul en zichtbare afgeronde nul zijn positief 0. Als de exact gekwantiseerde rationale uitkomst niet nul is maar de uiteindelijke binary64-conversie naar nul onderloopt, geldt 14.3. Overflow blijft `NON_FINITE_RESULT`. `floor/ceil/trunc` behouden hun bestaande richtingsregel en unitvereiste; hun bedoelde nuluitkomsten zijn evenmin underflow. Alle overige domein-, dimensie-, unit-, quota- en machtregels blijven van kracht.
 
-### 14.3 Underflow, subnormale waarden en nul — verduidelijkingsvoorstel
+### 14.3 Underflow, subnormale waarden en nul — goedgekeurde verduidelijking
 
 Definieer N=`2^-1022` (kleinste positieve normale binary64) en S=`2^-1074` (kleinste positieve subnormale binary64). Een finite resultaat met 0<abs(q)<N is geldig: behoud zijn waarde, teken en dimensie, inclusief ±S; geen flush-to-zero, minimale positieve clamp of epsilon-normalisatie. Een actuele evaluatie mag een niet-persistente `SUBNORMAL_RESULT`-waarschuwing geven wegens verminderde relatieve precisie. Deze diagnostiek bevat geen verboden brongegevens en wordt geen AST-/documentwaarde. Controleer alle tussenresultaten; een later normaal resultaat wist eerdere rangefouten niet.
 
@@ -361,7 +361,7 @@ Nul is geldig bij exacte algebraïsche cancellation, een werkelijk aangeleverde 
 
 Alle unitconversies/adapterstappen vallen onder hetzelfde rangebeleid. Een bron die al 0 aanlevert geldt als supplied zero; de adapter claimt geen detectie van historisch rekenverlies binnen bestaande geometriecode. Underflow in zijn eigen conversies wordt wel geweigerd. Ontbrekende/verboden bronnen blijven unavailable en worden nooit numeric zero. Numerieke fouten zijn generiek en geven geen bron-ID/naam/waarde prijs. Een subnormaal resultaat dat alleen door displayprecisie als 0 verschijnt behoudt de niet-nulwaarde voor vervolgcalculaties en toont `≈` plus een veilige indicatie dat een niet-nulwaarde is afgerond; canonical/scientific notatie blijft beschikbaar. Print/AST-roundtrip mag subnormale waarden niet verliezen.
 
-ECMAScript ondersteunt gradual underflow; transcendentale Math-functies zijn implementation-approximated en garanderen geen engine-onafhankelijke laatste bit. Acceptatietests voor exacte reken-/roundgrenzen gebruiken exacte bitvergelijking en onafhankelijke rationale fixtures; transcendentalen gebruiken afzonderlijk vastgelegde toleranties en moeten bij nul-/underflowgrenzen de juiste classificatie bewijzen. Geen absolute tolerantie van 1e-12 gebruiken om S en 0 als gelijk te accepteren. Bronnen voor de platformbeperking: [ECMA-262 Number-type](https://tc39.es/ecma262/#sec-ecmascript-language-types-number-type), [Math.round](https://tc39.es/ecma262/#sec-math.round), [Math.exp](https://tc39.es/ecma262/#sec-math.exp). Deze projectregels zijn een voorstel, geen claim dat JavaScript de engineguards al levert.
+ECMAScript ondersteunt gradual underflow; transcendentale Math-functies zijn implementation-approximated en garanderen geen engine-onafhankelijke laatste bit. Acceptatietests voor exacte reken-/roundgrenzen gebruiken exacte bitvergelijking en onafhankelijke rationale fixtures; transcendentalen gebruiken afzonderlijk vastgelegde toleranties en moeten bij nul-/underflowgrenzen de juiste classificatie bewijzen. Geen absolute tolerantie van 1e-12 gebruiken om S en 0 als gelijk te accepteren. Bronnen voor de platformbeperking: [ECMA-262 Number-type](https://tc39.es/ecma262/#sec-ecmascript-language-types-number-type), [Math.round](https://tc39.es/ecma262/#sec-math.round), [Math.exp](https://tc39.es/ecma262/#sec-math.exp). Dit zijn goedgekeurde projectregels, geen claim dat JavaScript de engineguards al levert.
 
 ### UI-invoer, AST en weergave
 
@@ -648,3 +648,19 @@ De tijdelijke invoegoverlay, overlaysluiting en tekstbreedteslider zijn uit de a
 De desktopdialoog heeft een vaste tweekolomsindeling met blijvende invoertabs, opmaakwerkbalk, wit editoroppervlak en vaste actiezone. Bij smallere breedtes stapelt de indeling; dit is een bedieningsfallback, geen primaire ontwerpdoelstelling. Historische sectie 26 beschrijft de vorige UX-checkpoint en is door deze sectie voor de definitieve Deel A-indeling vervangen waar ze conflicteert.
 
 Rapport en screenshotbewijs: [T5-PREP-FINAL-UX-DEEL-A-REPORT.md](T5-PREP-FINAL-UX-DEEL-A-REPORT.md). Geen Deel B-werk of calculatorimplementatie is door deze update geautoriseerd.
+
+## 28. T5a — uitgevoerde onafhankelijke rekenkern (1.13.0)
+
+De gebruiker gaf definitief rekencontractakkoord en expliciete GO voor T5a. De actuele uitvoering op `chatgpt/t5-calculator` is leidend boven historische niet-gestartstatussen in de T5-prep-secties. T5a wacht op gebruikersacceptatie; T5b/T5c en overige milestones zijn niet gestart. De mathematische regels van sectie 14 zijn niet gewijzigd.
+
+Modulegrenzen: `expression-numeric.js` bevat binary64-rangeguards en begrensde BigInt-rationale tussenberekeningen; `expression-ast.js` bevat grammatica, typed tokens, schema-1-codec, validatie en canonical printer; `expression-engine.js` bevat quantities, dimensies, evaluatie, formatting en veilige formulepresentatie. Die drie modules gebruiken geen DOM, ProseMirror, tekstobjecten of geometrisch documentmodel en werken als CommonJS of browsermodule. Er zijn geen nieuwe dependencies. `expression-sources.js` is de afzonderlijke geometrie-/policyhostadapter; dit is geen onderdeel van de pure kern.
+
+De bronadapter heeft afzonderlijke gebonden author/restricted-factories en één gedeelde omzetting. Restricted leest alleen via `RuntimeSession.getExpressionSource`, dat bestaande T3 `sourceAllowed`-read/display/property/laagrechten hergebruikt. De bridge retourneert uitsluitend de geautoriseerde numerieke waarde, property en meetinstellingen; geen kernelobject, naam of object-ID. Source locks blokkeren toegestaan lezen niet. De restricted facade kan niet als author-engine worden aangeboden. Per evaluatie worden huidige revision/epoch en geldigheid gecontroleerd; bronverwijdering, invalidity, revocation en disposal leveren generieke onbeschikbaarheid. Er is geen resultaatcache tussen berekeningen, mutatie, documentrevisie of historyactie door een berekening.
+
+Kern-API: `parse`, `parseTokens`, `normalizeInput`, `validate`, `print`/`parsePrinted`, `encode`/`decode`, `quantity`, `evaluate`, `format`, `formula`. Snapshot-quantities bevatten `value` en de volledige `(Lphysical,Labstract,A)`-tuple; AST's kunnen geen inferred dimension of cached resultaat claimen. `evaluate` accepteert alleen expliciete `angleMode` en een host-owned `resolveSource`-callback. Zonder documenthost is de default radialen; de bronadapter levert steeds de actuele documentkeuze (legacy graden). De UI moet later de hostkeuze gebruiken. Displayopties worden expliciet geleverd; formatting verandert de quantity niet.
+
+Unitarguments zijn getypeerde `unit`-nodes op de betreffende positie van round/floor/ceil/trunc; geen vrij identificeerbare variabelen. Een unitdescriptor heeft `{name,exponent}` of maximaal drie expliciete `{factors:[...]}` voor samengestelde eenheden. De canonical invoer gebruikt `unit` en `^`; presentatie gebruikt `u` en superscript/dot-notatie. Een unit-node is buiten een unitargument ongeldig. Signed number literals worden canonical unary-negation en -0 wordt pas na rangebewaking positief nul; geen algebraïsche folding of herschikking. Validatie bewaakt tevens de printbare tekst-/tokenquota zodat serialize/parse/print geen alternatieve overschrijdingsroute is.
+
+Underflowbewijs: voor finite binary64-input zijn sin/tan-nulpunten alleen input 0 (een niet-nul dyadische rationale is geen niet-nul veelvoud van de irrationale π); cos en exp hebben geen echte nul op dergelijke inputs. De andere nulgevallen zijn expliciet volgens sectie 14 gecodeerd. Iedere onverwachte +0/-0 van een mathematisch niet-nulbewerking is NUMERIC_UNDERFLOW vóór zero-normalisatie. De gekozen JS Math-route is aanvullend getest met onafhankelijke Decimal-referenties aan beide zijden van de exp-zero-grens, de normal/subnormal-grens, kleine sin-inputs en ln bij 1. Dit bewijst de guards en benoemde runtimes/fixtures, geen onbeperkte laatste-bitgarantie voor alle platformen. Contractgrenzen en toleranties zijn behouden; geen onderloop-epsilon of flush-to-zero toegevoegd.
+
+Tests, exact-rationale fixturegenerator, resultaten, moduleomvang, beperkte bestaande-regressiecorrecties en niet-uitgevoerde controles: [T5a-REPORT.md](T5a-REPORT.md). Wacht na push op T5a-acceptatie en expliciete T5b-starttoestemming.

@@ -180,9 +180,11 @@ test('M1 keyboard rectangle uses same resolver and does not intercept text entry
 test('M1 once a drag starts returning to its origin still suppresses its contextmenu',()=>{
   const h=appRuntime();rightRectangle(h,{x:0,y:0},{x:.5,y:-.5});const p=h.app.transform().mathToScreen({x:0,y:0});h.emit(h.win,'pointermove',{clientX:p.x,clientY:p.y});assert.equal(h.app.interaction.active,true);h.emit(h.win,'pointerup',{clientX:p.x,clientY:p.y});let blocked=false;h.emit(h.doc.getElementById('canvasWrap'),'contextmenu',{preventDefault(){blocked=true;}});assert.equal(blocked,true);
 });
-test('style inspector edits font size and stroke without replacing other style fields',()=>{
+test('legacy style patches preserve fields/history; text inspector delegates to text editor',()=>{
   const {app,engine,emit,doc}=appRuntime();const o=engine.add({type:'text',x:1,y:1,text:'T',style:{fontSize:16,extension:{keep:true}}});app.selectedId=o.id;app.invalidate();
-  assert.match(doc.getElementById('selectionPanel').innerHTML,/data-style="fontSize"/);
+  assert.doesNotMatch(doc.getElementById('selectionPanel').innerHTML,/data-style="fontSize"/);
+  assert.match(doc.getElementById('selectionPanel').innerHTML,/data-rich-text-edit/);
+  // Legacy patch/history compatibility remains tested even though text has no duplicate UI.
   const input={dataset:{style:'fontSize'},type:'number',valueAsNumber:30};input.closest=()=>input;
   emit(doc.getElementById('selectionPanel'),'change',{target:input});assert.equal(engine.get(o.id).style.fontSize,30);assert.equal(engine.get(o.id).style.extension.keep,true);
   app.travelHistory();assert.equal(engine.get(o.id).style.fontSize,16);app.travelHistory(true);assert.equal(engine.get(o.id).style.fontSize,30);

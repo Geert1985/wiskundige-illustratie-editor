@@ -245,6 +245,21 @@
     get permissionEpoch(){return states.get(this).epoch;}
     get documentRevision(){return states.get(this).revision;}
     get activityId(){return states.get(this).policy.activityId;}
+    // T5a read-only bridge: reuse the exact T3 source authorization boundary.
+    // No kernel object, forbidden name/ID, formatted string, write or history action.
+    getExpressionSource(binding){
+      const s=states.get(this);
+      if(s.disposed)return null;
+      try{
+        tree(binding);
+        keys(binding,['sourceId','property']);
+        if(Reflect.ownKeys(binding).some(k=>typeof k!=='string')||typeof binding.sourceId!=='string'||binding.sourceId.length>128||!['length','radius','perimeter','area','angle','x','y'].includes(binding.property)||!sourceAllowed(s,binding.sourceId,binding.property))return null;
+        const o=s.kernel.get(binding.sourceId),p=binding.property;
+        const value=p==='radius'?o.r:['area','perimeter'].includes(p)?MI.MeasurementUnits.figureValue(o,p):['length','angle'].includes(p)?MI.MeasurementGeometry.value(o):o[p];
+        if(!Number.isFinite(value))return null;
+        return freeze({value,property:p,measurement:s.kernel.model.meta.measurement?clone(s.kernel.model.meta.measurement):null});
+      }catch{return null;}
+    }
     get canUndo(){const s=states.get(this);return !!s.policy.document.undo&&s.cursor>0;}
     get canRedo(){const s=states.get(this);return !!s.policy.document.redo&&s.cursor<s.history.length;}
     subscribe(fn){if(typeof fn!=='function')fail('INVALID_COMMAND');const s=states.get(this);s.listeners.add(fn);return ()=>s.listeners.delete(fn);}

@@ -1,10 +1,10 @@
 # T5a — aanvullende numerieke acceptatiespecificatie
 
-Versie 1.0.0 — 2026-10-12. Status: voorgestelde contractverduidelijkingen, wacht op definitieve gebruikersgoedkeuring. **T5a niet gestart.**
+Versie 1.1.0 — 2026-10-12. Status: contractinhoud van 1.0.0 definitief goedgekeurd; 56 scenario's geautomatiseerd in T5a. Technische uitvoering wacht op gebruikersacceptatie; T5b/T5c niet gestart.
 
-Repository: `Geert1985/wiskundige-illustratie-editor`; branch: `chatgpt/t5-calculator`. Normatief voorstel: [architectuur 1.12.0, sectie 14](TEXT-EDITOR-ARCHITECTURE.md#14-b4--verfijnd-rekencontract-goedkeuringspoort-vóór-t5a). Dit document specificeert toekomstige tests; het bevat geen testimplementatie of uitgevoerde engine-/Node-/Edge-tests. Alle onderstaande enginegevallen hebben status **niet uitgevoerd**.
+Repository: `Geert1985/wiskundige-illustratie-editor`; branch: `chatgpt/t5-calculator`. Normatief goedgekeurd contract: [sectie 14, inhoud van architectuur 1.12.0](TEXT-EDITOR-ARCHITECTURE.md#14-b4--verfijnd-rekencontract-goedkeuringspoort-vóór-t5a). De hieronder bewaarde scenario's zijn zonder versoepeling geautomatiseerd in `tests/expression-cases.js`, met aanvullende bronadapter- en onafhankelijke referentietests. Uitvoeringsbewijs en feitelijke resultaten: [T5a-REPORT.md](T5a-REPORT.md). Calculator-UI- en calculatedValue-opslagtests blijven voor T5b/T5c.
 
-De drie aanvullingen vervangen geen bestaande eisen of fixtures. De oorspronkelijke matrix in sectie 14 en de security-, quota-, AST-, bronadapter-, export- en milestonepoorten blijven verplicht. T4-/T5-prep-handmatige acceptatie wordt hiermee niet voltooid. De inhoudelijke voorwaardelijke goedkeuring is vastgelegd; het aangepaste contract vraagt definitief akkoord vóór T5a.
+De drie aanvullingen vervangen geen bestaande eisen of fixtures. De oorspronkelijke matrix in sectie 14 en de security-, quota-, AST-, bronadapter-, export- en milestonepoorten blijven verplicht. T4-/T5-prep-handmatige acceptatie wordt hiermee niet voltooid. De contractgoedkeuringspoort is vervuld; T5a-uitvoering is afzonderlijk geautoriseerd en wacht nu op faseacceptatie.
 
 ## 1. Meetmethode en onafhankelijke verwachtingen
 
@@ -91,7 +91,7 @@ Gebruik voor R03/R04/R17 een exact bit-/rationale fixturelog. Test daarnaast all
 | U17 | Bron read/display ingetrokken tijdens preview, subnormale waarde in cache | Bestaande redactie/epochregels; geen waarde, waarschuwing met brondata of cached result uitlekken |
 | U18 | `exp(1000)` en extreme eindige deling/power | NON_FINITE_RESULT; bestaande overflowregel behouden, onderscheid van NUMERIC_UNDERFLOW |
 
-Voor benaderde functies komen daarnaast toekomstige next-representable-input-fixtures aan beide zijden van hun nul-underflowgrens. Het concrete oraclebewijs moet vóór T5a-acceptatie beschikbaar zijn. Die fixtures zijn hier niet gegenereerd en hun resultaten zijn niet gemeten. De gekozen engine-/libraryroute moet nulgevallen per functie van rangeverlies onderscheiden; een geaccepteerde subnormale tussenwaarde kan wel gevolgd worden door een geldige normale waarde.
+Voor benaderde functies zijn next-representable-input-fixtures aan beide zijden van de exp-zero-grens en de normal/subnormal-grens gegenereerd met Python Decimal (precisie 1200); kleine sin-inputs en ln bij 1 worden aanvullend getoetst. Het oraclebewijs staat in `tests/fixtures/expression-reference.json` en het T5a-rapport. De overige goedgekeurde regels blijven gelden: nulgevallen per functie van rangeverlies onderscheiden; een geaccepteerde subnormale tussenwaarde kan gevolgd worden door een geldige normale waarde.
 
 ## 5. Gevonden onduidelijkheden en voorgestelde oplossing
 
@@ -109,8 +109,8 @@ Geen conflict met v7, textSchema 1–3, legacybindings, veilige parser/AST, bron
 
 ## 6. Oplevering en grenzen
 
-Gewijzigd: uitsluitend architectuurcontract (versie 1.12.0) en deze aanvullende acceptatiespecificatie (versie 1.0.0). Geen productiecode, dependencies, runtimefunctionaliteit of roadmapvolgorde gewijzigd. Geen uitvoerbare T5a-tests toegevoegd; de 56 tabelrijen zijn toekomstige acceptatiescenario's.
+Historische documentatieoplevering 1.0.0: uitsluitend architectuurcontract en acceptatiespecificatie, geen productiecode. De 56 tabelrijen blijven inhoudelijk behouden. Deze 1.1.0-statusupdate registreert de inmiddels afzonderlijk geautoriseerde T5a-implementatie en bewijslinks; het contract is niet gewijzigd.
 
-Uitgevoerde documentatieverificatie: `git diff --check`, gebalanceerde codefences en het lokale documentlinkdoel gecontroleerd. Met een tijdelijke Python 3.13/Fraction-referentieberekening zijn 22 opgegeven numerieke verwachtingen gecontroleerd: 15 roundgevallen, drie exacte nonzero→zero-grenzen, drie overige subnormale grenzen en één trigonometrische referentiewaarde. Alle 22 kwamen overeen met de voorgestelde verwachtingen. Dit verifieert de documentvoorbeelden, **niet** een applicatie-engine. Geen Node-/Edge-suite of T5a-implementatietest uitgevoerd; alle applicatieacceptatiescenario's blijven niet uitgevoerd.
+Historische verificatie 1.0.0: documentchecks en 22 numerieke referentiecontroles, toen nog geen applicatie-engine-test. Actueel: alle A01–A19, R01–R19 en U01–U18 zijn afzonderlijke Node-/Edge-scenariogroepen. Node- en Edge-bronadaptergroepen toetsen A18/A19/R19/U12/U13/U17 met de werkelijke geometry-/permissionruntime. Onafhankelijke 912 round- en 19 transcendentale fixtures toetsen bits, ULP en rangeclassificatie. Exacte aantallen en volledige regressiestatus staan in het [T5a-rapport](T5a-REPORT.md); een groeps-PASS claimt geen niet-uitgevoerde toekomstige calculator-UI/inline-exporttest.
 
-**Stoppoort:** definitieve goedkeuring van het aangepaste contract afwachten. Geen T5a-start, calculator-UI of nieuwe fragmentopslag door deze opdracht.
+**Stoppoort:** T5a-gebruikersacceptatie en afzonderlijke toestemming voor T5b afwachten. Geen calculator-UI of nieuwe tekstfragmentopslag in T5a.
