@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.14.0 - 2026-10-12 - Rekencontract 1.12.0 definitief goedgekeurd; T5a technisch uitgevoerd, wacht op gebruikersacceptatie. T5b/T5c niet gestart.
+Versie 1.15.0 - 2026-10-12 - Rekencontract 1.12.0 definitief goedgekeurd; T5a technisch uitgevoerd, wacht op gebruikersacceptatie. T5b/T5c niet gestart.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Actuele T5a-branch: `chatgpt/t5-calculator`; historische fase-0-branch: `chatgpt/editor-development`. Historisch onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -676,3 +676,5 @@ Desktop: links scrollbare Formule/Waarden-invoer met bereikbare tabs, midden wit
 De volledige commitknop staat bovenaan na Opnieuw: Toevoegen voor nieuw, Wijzigingen opslaan voor bestaand. De tweede submit onderaan is verwijderd. Sluiten en de sessie-Annuleren verwerpen niet-bevestigde wijzigingen volgens de bestaande workflow. Formule-/waarde-Annuleren verwerpt alleen het betreffende concept. Meer bundelt de bestaande disabled tekst-JSON-placeholders; er zijn op deze basis geen tekst-JSON-handlers. Globale illustratie-import/export blijft op applicatieniveau. Geen nieuwe JSON-functionaliteit, opslagformaat of schema.
 
 Bij compacte breedte staat feedback onder het tekstcanvas; bij zeer smalle breedte staan invoer, tekst en feedback onder elkaar in begrensde grid-rijen. Menu/focus/hoogtegedrag is geïmplementeerd, maar niet uitgevoerd of visueel geverifieerd: de gebruiker verbood alle tests en browsersessies voor deze opdracht. Zie [werkruimterapport](TEXT-EDITOR-FULL-WORKSPACE-REPORT.md) voor de open handmatige acceptatie.
+
+Visuele vervolgcorrectie (2026-10-12): de tekstheader hergebruikt de hoofdapplicatieklassen en gedeelde titeltypografie. Invoeg-/annuleeracties staan direct onder de contextpreview. De sessiefooter vervalt; volledige Annuleren staat rechtsboven. Sessiefouten blijven in de rechterkolom zichtbaar. Deze correctie vervangt de footer-/Sluiten-presentatie hierboven; geen tests uitgevoerd. Zie rapport v1.1.0.

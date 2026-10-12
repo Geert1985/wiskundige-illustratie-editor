@@ -1,6 +1,6 @@
 # Wiskundige Tekst Editor — geïntegreerde werkruimte
 
-Versie 1.0.0 — 2026-10-12.
+Versie 1.1.0 — 2026-10-12.
 Status: volledige UI-implementatie geleverd; gebruikersacceptatie nog niet uitgevoerd.
 Branch: `chatgpt/text-editor-full-workspace`.
 Basis: `chatgpt/t5-calculator`, commit `ec750d3e793e40bdfac9acc683b24307600cc3d6`.
@@ -98,3 +98,15 @@ De JSON-tekstacties blijven bewust niet operationeel omdat ze op de basis niet o
 12. Sla documenten op/herlaad; controleer legacybindings, bestaande afwijkende opmaak/breedte, JSON/SVG/PNG-export via de bestaande illustratorfuncties.
 
 Geen van deze controles is door Codex uitgevoerd. Wacht op gebruikersacceptatie; geen automatische merge naar main of start van volgende milestones.
+
+## 10. Visuele vervolgcorrecties op gebruikersfeedback
+
+Deze sectie is leidend boven de oorspronkelijke beschrijving van footer en bovenbalk in secties 2–9.
+
+De bovenbalk hergebruikt nu rechtstreeks de hoofdapplicatieklassen topbar, brand, brand-logo, eyebrow, top-actions en file-menu. De titelstijl is gedeeld tussen h1 en de teksteditor-h2, inclusief de bestaande responsieve regels. Afzonderlijke kleinere headerlettergroottes en knopstijlen zijn verwijderd. Ongedaan/Opnieuw/Meer gebruiken dezelfde bestaande tekens; de hoofdbevestiging gebruikt het bestaande opslagpictogram.
+
+De formule- en waardeactieknoppen volgen nu direct op hun preview in plaats van onderaan de rechterkolom. Previewinhoud kan bij ruimtegebrek krimpen/scrollen; contextacties behouden hun plaats in de normale paneelflow.
+
+De onderste sessiebalk en zijn dubbele Annuleren-knop zijn verwijderd. De bovenste Sluiten-knop heet nu Annuleren en gebruikt dezelfde bestaande closeText-route. Autorisatie-, revisie- en conceptmeldingen blijven bereikbaar in een lege-tot-nodig live meldingsregio in de rechterkolom; geen permanente footer/statusbalk.
+
+Ook deze vervolgcorrecties zijn niet getest op verzoek van de gebruiker. Handmatig te controleren: overeenkomst hoofdheader, positie onder preview, bereikbaarheid bij lange formules en beperkte hoogte, bovenste Annuleren, Escape, zichtbaarheid van commitfouten en herstel van focus. De footercontrole uit de oorspronkelijke checklist is vervangen door deze nieuwe plaatsing.
