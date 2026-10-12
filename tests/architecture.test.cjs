@@ -26,7 +26,8 @@ const modules = [
   { file: 'math-fragments.js', provides: ['MathFragments'], after: ['math-source.js','model.js'] },
   { file: 'text-metrics.js', provides: ['TextMetrics'], after: ['model.js'] },
   { file: 'rich-text-renderer.js', provides: ['RichTextRenderer'], after: ['math-fragments.js','text-metrics.js','model.js'] },
-  { file: 'text-insert-panel.js', provides: ['TextInsertPanel'], after: ['math-fragments.js'] },
+  { file: 'text-symbol-catalog.js', provides: ['TextSymbolCatalog'], after: [] },
+  { file: 'text-insert-panel.js', provides: ['TextInsertPanel'], after: ['math-fragments.js','text-symbol-catalog.js'] },
   { file: 'renderer.js', provides: ['SvgRenderer', 'escapeXml'], after: ['model.js', 'document-layers.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'construction-service.js'] },
   { file: 'index.js', provides: ['CONSTRUCTION_COLOR', 'Engine', 'distancePointToSegment'], after: ['model.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'construction-service.js', 'renderer.js'] },
   { file: 'semantic-sequence.js', provides: ['SemanticSequence'], after: ['index.js'] },
@@ -51,7 +52,7 @@ const modules = [
 
 function modulesBeforeEditor() {
   return [
-    'math-source.js', 'text-values.js', 'text-dependencies.js', 'math-fragments.js', 'text-metrics.js', 'rich-text-renderer.js', 'text-insert-panel.js', 'export-service.js', 'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
+    'math-source.js', 'text-values.js', 'text-dependencies.js', 'math-fragments.js', 'text-metrics.js', 'rich-text-renderer.js', 'text-symbol-catalog.js', 'text-insert-panel.js', 'export-service.js', 'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
     'linear-geometry.js', 'measurement-geometry.js', 'construction-service.js',
     'renderer.js', 'index.js', 'semantic-sequence.js', 'coordinate-transform.js',
     'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js',

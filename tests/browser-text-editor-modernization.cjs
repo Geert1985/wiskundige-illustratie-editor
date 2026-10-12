@@ -27,8 +27,18 @@ module.exports=async page=>{const screenshots=path.join(__dirname,'..','experime
  await page.locator('#textDialogClose').click();
  assert.equal(await page.locator('#textDialog').isVisible(),false);
  assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON()),initial,'Close button must cancel the draft without committing.');
+ await page.evaluate(()=>FZI.MathIllustration.editor.openRichText('T'));
+ await page.locator('#richSymbols').click();
+ assert.equal(await page.locator('#symbolCategory option').count(),14);
+ await page.locator('#symbolSearch').fill('thèta');
+ await page.getByRole('button',{name:'theta (θ)',exact:true}).click();
+ assert.ok(await page.evaluate(()=>FZI.MathIllustration.editor.richTextEditor.get().paragraphs.flatMap(p=>p.runs).some(run=>run.kind==='text'&&run.text.includes('θ'))),'Unicode symbols should insert at the saved rich-text cursor.');
+ await page.locator('#richSymbols').click();await page.locator('#symbolCategory').selectOption('powers-roots');await page.locator('#symbolSearch').fill('root');
+ await page.getByRole('button',{name:/^wortel \(√\)/}).click();
+ assert.equal(await page.locator('#textInsertPanel').getAttribute('data-mode'),'formula');assert.equal(await page.locator('#mathSource').inputValue(),'\\sqrt{x}');
+ await page.locator('#textCancel').click();assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON()),initial,'Cancel should leave symbol/formula drafts uncommitted.');
  assert.deepEqual(errors,[]);
- return {titleAndObjectContext:'passed',groupedToolbar:'passed',closeCancels:'passed',panelOverlayPreservesDialogHeight:'passed',responsive,actionBar:'passed',screenshots:fs.readdirSync(screenshots),browserErrors:errors};
+ return {titleAndObjectContext:'passed',groupedToolbar:'passed',closeCancels:'passed',unicodeCatalogInsertion:'passed',accentInsensitiveSearch:'passed',categoryFilter:'passed',formulaTemplateRoute:'passed',symbolCancel:'passed',panelOverlayPreservesDialogHeight:'passed',responsive,actionBar:'passed',screenshots:fs.readdirSync(screenshots),browserErrors:errors};
 };
 if(require.main===module){
  const root=path.resolve(__dirname,'..'),server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+decodeURIComponent(new URL(req.url,'http://local').pathname));if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}require('node:fs').readFile(file,(e,d)=>{if(e){res.writeHead(404).end();return;}res.setHeader('Content-Type',file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':'text/html');res.end(d);});});
