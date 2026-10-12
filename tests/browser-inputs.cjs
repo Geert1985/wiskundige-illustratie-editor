@@ -10,7 +10,7 @@ module.exports = async page => {
     await page.mouse.click(p.x, p.y);
     await page.locator('#textDialog').waitFor({ state: 'visible', timeout: 2000 });
     const position = await page.evaluate(() => FZI.MathIllustration.editor.pendingText.point);
-    await page.locator('#richTextSurface').fill('Hallo <wereld>');
+    await page.locator('#richTextSurface .ProseMirror').fill('Hallo <wereld>');
     await page.locator('#textForm button[type="submit"]').click();
     const object = await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.at(-1));
     assert.equal(object.type, 'text'); assert.equal(object.text, 'Hallo <wereld>');
@@ -19,7 +19,7 @@ module.exports = async page => {
     assert.equal(await page.locator(`[data-object-id="${object.id}"]`).textContent(), object.text);
     await page.locator('#undoBtn').click(); assert.equal(await page.locator(`[data-object-id="${object.id}"]`).count(), 0);
     await page.locator('#redoBtn').click(); assert.equal(await page.locator(`[data-object-id="${object.id}"]`).count(), 1);
-    await page.mouse.click(p.x, p.y); await page.locator('#richTextSurface').fill('Niet toevoegen'); await page.locator('#richTextSurface').press('Escape');
+    await page.mouse.click(p.x, p.y); await page.locator('#richTextSurface .ProseMirror').fill('Niet toevoegen'); await page.locator('#richTextSurface .ProseMirror').press('Escape');
     assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.length), 2);
     for (const id of ['p', object.id]) {
       const before = await page.evaluate(id => FZI.MathIllustration.editor.engine.get(id).style, id);

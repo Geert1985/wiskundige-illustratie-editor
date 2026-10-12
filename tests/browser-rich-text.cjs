@@ -3,7 +3,7 @@ module.exports=async page=>{
  await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[]}));
  await page.evaluate(()=>FZI.MathIllustration.editor.setTool('text'));
  let p=await page.evaluate(()=>FZI.MathIllustration.editor.transform().mathToScreen({x:1,y:1}));await page.mouse.click(p.x,p.y);await page.locator('#textDialog').waitFor({state:'visible'});
- const editor=page.locator('#richTextSurface');await editor.fill('Eerste alinea');await page.keyboard.press('Enter');await page.keyboard.type('Tweede regel');await page.keyboard.press('Shift+Enter');await page.keyboard.type('derde');
+ const editor=page.locator('#richTextSurface .ProseMirror');await editor.fill('Eerste alinea');await page.keyboard.press('Enter');await page.keyboard.type('Tweede regel');await page.keyboard.press('Shift+Enter');await page.keyboard.type('derde');
  // Select the whole ProseMirror document explicitly. Keyboard Control+A is not
  // deterministic for contenteditable selection in the Edge automation host.
  await page.evaluate(()=>{const view=FZI.MathIllustration.editor.richTextEditor.view,Selection=view.state.selection.constructor;view.dispatch(view.state.tr.setSelection(Selection.create(view.state.doc,1,view.state.doc.content.size-1)));});

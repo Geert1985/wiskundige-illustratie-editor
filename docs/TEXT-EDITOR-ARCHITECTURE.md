@@ -1,10 +1,10 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.2.0 - 2026-10-12 - T1 geimplementeerd op de goedgekeurde ontwikkelbranch; gebruikersacceptatie staat open.
+Versie 1.3.0 - 2026-10-12 - T1 en T2 geimplementeerd op de ontwikkelbranch; T2-gebruikersacceptatie en handmatige controles staan open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
-Dit document beschrijft toekomstige implementatie, geen reeds geleverde functionaliteit. De masteropdracht vereist expliciete goedkeuring na fase 0 en na iedere milestone, inclusief T5a–d. T1 is niet gestart. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
+Sectie 1 bewaart de historische inventaris van fase 0. Secties 19 en 20 beschrijven de geleverde T1/T2-implementatie en zijn leidend voor hun actuele status. T3-T5 blijven ontwerp. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
 
 Audit B1–B7 is verwerkt in secties 11–18 en [audit resolution](TEXT-EDITOR-ARCHITECTURE-AUDIT-RESOLUTION.md). Die secties preciseren het eerdere voorstel en zijn leidend bij verschil. Bibliotheek- en fontkeuzes blijven open tot afzonderlijk goedgekeurde technische proeven resultaat leveren.
 
@@ -426,3 +426,49 @@ T1 voegt textContent schema 1 toe als applicatie-eigen structuur voor alinea's, 
 Rijke tekst gebruikt documentformaat v7 en textSchema 1, omdat v6 al is toegewezen aan cirkelpuntenverdelingen. Bestaande v1-v6-documenten behouden hun betekenis. v7 bewaart aanwezige cirkelpuntenverdelingen, groepen, lagen en constructieschema's. De applicatie embedt lokale Source Sans 3- en Source Serif 4-fonts in SVG met rijke tekst; bestaande SVG-uitvoer blijft gelijk. Licenties staan bij de fontbestanden in experiments/text-editor-preflight/fonts.
 
 Het getypeerde text.commit-commando controleert revisie, doel, slot, permissiecategorieen en expliciete migratiebevoegdheid atomair. Legacy textBinding-objecten openen niet in de rich editor; het bestaande stijlpad behoudt hun binding. Zie TEXT-EDITOR-T1-REPORT.md voor resultaten en beperkingen.
+
+## 20. T2-contract en uitvoering (1.3.0)
+
+T2 is gestart op expliciete gebruikersopdracht. [T2-REPORT.md](T2-REPORT.md) bevat de formuleproef en testbewijzen. De historische keuzes uit sectie 18 zijn voor T1/T2 ingevuld: lokale ProseMirror-adapter, lokale tekstfonts en MathJax 3.2.2-glyphpaden. Dit is geen volledige IME/AT-goedkeuring. T3–T5 en het definitieve T5a-rekencontract blijven open.
+
+### Opslag en bronnotatie
+
+Document v7 accepteert `textSchema: 1 | 2`. Schema 1 blijft text/hardBreak; schema 2 voegt `{id,kind:"math",source,marks}` toe. De writer declareert het hoogste aanwezige schema, ook na restricted filtering. Schema 2 mag na formuleverwijdering behouden blijven. Schema 3/4 en dynamic/calculated-fragmenten worden nog geweigerd. JSON bevat bron en gevalideerde marks; geen HTML, SVG, glyphcache of bibliotheekdocument. De afgeleide `.text`-fallback bevat leesbare bronnotatie.
+
+`MathSource` is een presentatiegrammatica, geen rekenkern. De whitelist ondersteunt onder meer Griekse letters, operators, breuken, wortels, trigonometrie, scripts en gegroepeerde haakjes. HTML, URLs, externe assets, macrodefinities, uitbreidingsloaders, comments en onbekende opdrachten worden geweigerd. Quota: 2048 brontekens, 256 tokens, diepte 32, 128 formules per tekstobject, 512 per document en 8192 documenttokens. Import/add/update controleren het totale budget vóór mutatie. Dit is een beperkte TeX-subset, geen algemene LaTeX-import.
+
+### Modulegrenzen en assets
+
+| Module | Verantwoordelijkheid |
+|---|---|
+| `model.js`, `math-source.js` | Applicatieschema, bronvalidatie, documentversie en quota; geen editor-/MathJax-import |
+| `text-content-diff.js` | Pure semantische categorieverschillen; geen rechten of UI-state |
+| `permission-runtime.js` | Actuele grants/locks/revisie, getypeerde commit, history en restricted export |
+| `math-renderer.js` | Build-only MathJax-adapter; bron naar begrensde, gesanitiseerde SVG-box |
+| `math-fragments.js` | Lazy lokale assets, begrensde cache en gedeelde formule-SVG |
+| `text-metrics.js`, `rich-text-renderer.js` | Fontmetingen en mixed baseline-layout; T1-renderroute behouden voor tekst zonder formules |
+| `rich-text-editor.js` | ProseMirror-adapter, atomische nodeview, bookmarks en lokale history |
+| `text-insert-panel.js`, `editor.js` | Symbool-/formuledraft respectievelijk dialooglevenscyclus en commandodispatch |
+
+`npm run build:text` reproduceert bundles/fontmetingen uit gepinde experiment-lockfiles. Inputs en SHA-256 staan in `experiments/math-fragments-preflight/build-results.json`. MathJax gebruikt ingebouwde TeX-glyphpaden, `fontCache:none`, geen CDN/autoload. Output: gecontroleerde SVG-vormen/attributen, maximaal 4096 nodes/65536 bytes per box. Cache: 128 boxes/4 MiB. Gewone fontkeuze verandert het wiskundige TeX-font niet; bold/italic zijn formulevarianten.
+
+De synchrone SVG-API meldt ontbrekende formule-assets; hosts voeren eerst `await MI.MathFragments.load()` uit. De editor regelt readiness bij openen/renderherstel/export. Late callbacks gebruiken de actuele staat en mogen een geannuleerde draft niet terugbrengen. Kleuren gaan expliciet naar color/fill/stroke; ascent/descent bepalen baselines. Uitlijning blijft ten opzichte van het objectanker. Mixed tekst gebruikt fontadvances zonder kerning/ligaturen; wrapping en uitgebreide shaping blijven T4-werk.
+
+### Interactie en autorisatie
+
+Ω bewaart een bookmark en biedt tien categorieën plus zoeken. Ondersteunde fontglyphs worden tekst; ontbrekende glyphs gebruiken de veilige math-atomroute. ƒ(x) opent bron/preview en bevriest de editor. Bevestigen valideert dezelfde draftselectie. Dubbelklik of Enter op een geselecteerde atom opent de formule. Verplaatsen behoudt ID/bron/marks; delete/undo werken atomisch. Escape sluit eerst het kindpaneel, daarna de editor; fullscreen blijft behouden. Eén documentbevestiging levert één `text.commit`.
+
+| Bewerking | Vereiste categorieën naast normale target-/revisiegrants |
+|---|---|
+| Gewone inhoud of bestaande atom verplaatsen | `content`; `format` als opmaak wijzigt |
+| Marks/defaults/alineaopmaak | `format` |
+| Formule toevoegen/verwijderen/bron wijzigen | `content` + `math`; ook `format` als opmaak wijzigt |
+| Nieuw object/duplicaat | create/duplicate + created `content` + `format`; ook `math` wanneer formules aanwezig zijn |
+
+Bronnen verwisselen tussen behouden atom-IDs geldt als bronwijziging, ook bij dezelfde bronmultiset. Verschoven text-markgrenzen mogen format-rechten niet omzeilen. De diff is conservatief bij gemengde text-marks: een lengtewijziging die grenzen wijzigt kan `format` vereisen. Uniform opgemaakte tekst kan met inhoudsrechten van lengte veranderen. Execute hercontroleert policy-epoch/revisie; afwijzing is atomair. De dialoog bewaart de openingsrevisie en behoudt de draft bij conflict.
+
+### Legacy en acceptatie
+
+Geen T3-migratie: legacy `textBinding` blijft buiten de rich editor. Format/history en author-save/reload behouden de binding exact. Bestaande duplicatie bewaart `sourceId`, ook als de bron samen gekopieerd wordt; geen stilzwijgende remapping. Restricted export redigeert een ontbrekende/onleesbare bron volgens het bestaande contract en kan de binding verwijderen; trusted owner-inspect behoudt het origineel. Zie de 12-fixturematrix in het rapport.
+
+JSON/replay/restricted SVG, fullscreen en offline SVG→PNG zijn bij introductie getest. Echte OS-IME, schermlezer, handmatige visuele/externe-vieweracceptatie zijn niet uitgevoerd. T4 behoudt productie-PNG-bediening/wrapping. T3 start pas na afzonderlijke toestemming.

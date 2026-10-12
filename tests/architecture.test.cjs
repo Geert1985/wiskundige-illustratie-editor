@@ -10,7 +10,8 @@ const root = path.join(__dirname, '..');
 // documented separately and must not be mistaken for initialization edges.
 const modules = [
   { file: 'regular-geometry.js', provides: ['RegularGeometry'], after: [] },
-  { file: 'model.js', provides: ['PointProjections', 'DynamicText', 'TextContent', 'MODEL_VERSION', 'OBJECT_TYPES', 'LINEAR_OBJECT_TYPES', 'IllustrationModel', 'normaliseObject', 'PRESENTATION_FLAGS'], after: ['regular-geometry.js'] },
+  { file: 'math-source.js', provides: ['MathSource'], after: [] },
+  { file: 'model.js', provides: ['PointProjections', 'DynamicText', 'TextContent', 'MODEL_VERSION', 'OBJECT_TYPES', 'LINEAR_OBJECT_TYPES', 'IllustrationModel', 'normaliseObject', 'PRESENTATION_FLAGS'], after: ['regular-geometry.js','math-source.js'] },
   { file: 'rich-text-editor-loader.js', provides: ['RichTextEditor'], after: ['model.js'] },
   { file: 'font-assets.js', provides: ['TextFontData'], after: ['model.js'] },
   { file: 'text-fonts.js', provides: ['TextFonts'], after: ['font-assets.js'] },
@@ -20,6 +21,10 @@ const modules = [
   { file: 'linear-geometry.js', provides: ['LinearGeometry'], after: ['model.js'] },
   { file: 'measurement-geometry.js', provides: ['AngleMeasurements', 'MeasurementUnits', 'MeasurementGeometry'], after: ['model.js', 'polygon-geometry.js', 'linear-geometry.js'] },
   { file: 'construction-service.js', provides: ['AxisReferences', 'ConstructionService'], after: ['model.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js'] },
+  { file: 'math-fragments.js', provides: ['MathFragments'], after: ['math-source.js','model.js'] },
+  { file: 'text-metrics.js', provides: ['TextMetrics'], after: ['model.js'] },
+  { file: 'rich-text-renderer.js', provides: ['RichTextRenderer'], after: ['math-fragments.js','text-metrics.js','model.js'] },
+  { file: 'text-insert-panel.js', provides: ['TextInsertPanel'], after: ['math-fragments.js'] },
   { file: 'renderer.js', provides: ['SvgRenderer', 'escapeXml'], after: ['model.js', 'document-layers.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'construction-service.js'] },
   { file: 'index.js', provides: ['CONSTRUCTION_COLOR', 'Engine', 'distancePointToSegment'], after: ['model.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'construction-service.js', 'renderer.js'] },
   { file: 'semantic-sequence.js', provides: ['SemanticSequence'], after: ['index.js'] },
@@ -27,6 +32,7 @@ const modules = [
   { file: 'snap-service.js', provides: ['SnapService', 'getSnapCandidates', 'snapPoint', 'publishSnapResult'], after: ['index.js', 'coordinate-transform.js', 'construction-service.js', 'measurement-geometry.js', 'linear-geometry.js'] },
   { file: 'interaction-resolver.js', provides: ['InteractionResolver'], after: ['index.js', 'snap-service.js', 'measurement-geometry.js', 'polygon-geometry.js'] },
   { file: 'rectangle-selection.js', provides: ['RectangleSelection'], after: ['linear-geometry.js', 'measurement-geometry.js', 'polygon-geometry.js', 'coordinate-transform.js'] },
+  { file: 'text-content-diff.js', provides: ['TextContentDiff'], after: ['model.js'] },
   { file: 'permission-runtime.js', provides: ['PermissionError', 'PermissionPolicy', 'PermissionEvaluator', 'RuntimeSession', 'PermissionFields', 'AuthorCommands'], after: ['index.js', 'construction-service.js', 'measurement-geometry.js', 'document-layers.js', 'persistent-groups.js'] },
   { file: 'editor-startup.js', provides: ['DraftStore'], after: ['model.js'] },
   { file: 'editor-adaptive-grid.js', provides: ['adaptiveGridStep', 'adaptiveGridMinStep', 'adaptiveGridMaxScale'], after: ['renderer.js'] },
@@ -42,10 +48,10 @@ const modules = [
 
 function modulesBeforeEditor() {
   return [
-    'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
+    'math-source.js', 'math-fragments.js', 'text-metrics.js', 'rich-text-renderer.js', 'text-insert-panel.js', 'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
     'linear-geometry.js', 'measurement-geometry.js', 'construction-service.js',
     'renderer.js', 'index.js', 'semantic-sequence.js', 'coordinate-transform.js',
-    'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js',
+    'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js',
     'permission-runtime.js', 'editor-startup.js', 'editor-adaptive-grid.js',
     'editor-label-drag.js', 'editor-enhancements.js', 'editor-color.js',
     'editor-axis-settings.js', 'editor-history.js', 'editor-tool-instructions.js',

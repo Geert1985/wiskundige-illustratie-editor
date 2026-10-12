@@ -1,6 +1,6 @@
 # Editor regression tests
 
-Run from the repository root with Node.js 20 or later:
+Run from the repository root with Node.js 22 (the supported package runtime):
 
 ```sh
 node --test tests/*.test.cjs

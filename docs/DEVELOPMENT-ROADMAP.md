@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.1.0
+Version: 1.2.0 (T2 checkpoint, 2026-10-12)
 Status: proposed sequencing; validate against repository
 Date: 2026-10-09
 
@@ -173,3 +173,8 @@ Status: fase 0 onderzocht; architectuur en plan voorgesteld, gebruikersgoedkeuri
 - T5d: volledige export-, security- en regressieaudit.
 
 Elke stap vereist afzonderlijke technische verificatie, rapport en expliciete gebruikersacceptatie. T1 is nog niet gestart. Werk uitsluitend op chatgpt/editor-development; geen automatische merge naar main. Zie de architectuur voor open ontwerpkeuzes en het plan voor concrete taken en handmatige acceptatie.
+
+
+## T2 checkpoint (2026-10-12)
+
+User explicitly authorized T2 after T1. Delivered: symbols/search/bookmarks, atomic inline math with safe source notation, textSchema 2 in v7, shared offline glyph renderer, bounded local assets, permission categories and reproducible builds. See [T2-REPORT.md](T2-REPORT.md) for the measured MathJax/KaTeX comparison and exact regression evidence. Real IME/AT and manual visual/external-viewer acceptance remain open; historical statements that T1 has not started are superseded by the T1/T2 reports. Await T2 acceptance; T3 not started. No main merge.

@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.2.0 - 2026-10-12. Status: T1 geimplementeerd; wacht op handmatige gebruikerstest en acceptatie.
+Versie 1.3.0 - 2026-10-12. Status: T2 geimplementeerd; wacht op T2-gebruikersacceptatie. T3 niet gestart.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
@@ -20,12 +20,14 @@ Status: geimplementeerd op chatgpt/editor-development; wacht op handmatige test 
 
 - Opgeleverd: veilig textContent-model, alinea's, hardBreaks en marks, begrensde ProseMirror-adapter, editor voor nieuwe en statische bestaande teksten, typed text.commit, revisie-, lock- en categoriespecifieke permission checks, lokale editor undo, document undo/redo, JSON/replay en offline SVG-fontembedding.
 - Legacy dynamische tekst behoudt textBinding. Bestaande bindingen worden niet automatisch gemigreerd of geopend in de rich editor. Toegestane legacy stijlwijziging blijft via het bestaande stijlpad en verandert de binding niet.
-- Tests: npm test (401/401 bij laatste volledige run; de actuele uitslag staat in het T1-rapport). Restricted JSON/SVG en v7 met v6-distributies, groepen en lagen vallen onder regressiecriteria.
-- T2-symbolen/formules starten pas na T1-acceptatie. T3-meerdere bronnen, T4-wrapping/exportvoltooiing en T5-rekenengine vallen buiten deze stap.
+- Tests: historische T1-cijfers staan in het T1-rapport; actuele volledige T2-regressie: 418/418 Node-tests. Restricted JSON/SVG en v7 met v6-distributies, groepen en lagen vallen onder regressiecriteria.
+- De expliciete opdracht "Begin met T2" autoriseerde T2; resterende handmatige T1-controles blijven open. T3-meerdere bronnen, T4-wrapping/exportvoltooiing en T5-rekenengine vallen buiten deze stap.
 
 Handmatige acceptatiechecklist: meerdere alinea's; Shift+Enter; fragmentopmaak; editor undo/redo; annuleren versus bevestigen; statische bestaande tekst via inspector; undo/redo van commit; JSON opslaan/herladen; offline SVG en rastering; fullscreen; oude dynamische tekstbinding; echte IME en schermlezer. IME en schermlezer blijven expliciet niet uitgevoerd tot er bewijs uit een echte input-/AT-omgeving is. Zie TEXT-EDITOR-T1-REPORT.md.
 
 ## T2 — Symbolen en formules
+
+Status: uitgevoerd na expliciete starttoestemming. [T2-REPORT.md](T2-REPORT.md) bevat proefresultaten, contract, testbewijs en beperkingen. De onderstaande taken zijn uitgevoerd; handmatige IME/AT/visuele acceptatie blijft open. Stop na rapportage en push; geen T3 zonder nieuwe toestemming.
 
 1. Afzonderlijke formulebibliotheekproef met gemeten code/assets, lokale fonts, baseline en offline SVG-rastering. MathJax/KaTeX/alternatief zijn kandidaten; keuze pas na resultaten. Leg whitelist, rendererquotas en sanitized SVG vast.
 2. Activeer math-fragment en tekstschema 2; bronnotatie is autoritatief. Bouw Ω-paneel met zoeken en alle gevraagde categorieën.

@@ -56,4 +56,6 @@ Automatisch is wel bewezen dat Edge rijke tekst met lokaal ingesloten fonts als 
 
 ## Volgende stap
 
+Statusupdate 2026-10-12: de gebruiker gaf daarna expliciet opdracht "Begin met T2". T2 is uitgevoerd, inclusief rendererextractie en reproduceerbare build. Zie [T2-REPORT.md](T2-REPORT.md). De onderstaande stopregel is historische T1-status; de resterende handmatige T1-checks zijn niet als uitgevoerd aangemerkt.
+
 T1 blijft open totdat de gebruiker de handmatige controles heeft uitgevoerd en T1 expliciet accepteert. T2 is niet gestart. Begin pas daarna aan T2; voeg vóór de formule-rendering de renderergrens/buildreproduceerbaarheid opnieuw toe aan de review.

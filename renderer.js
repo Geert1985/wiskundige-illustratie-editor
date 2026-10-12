@@ -280,9 +280,9 @@
       return svg;
     }
     renderRichText(object) {
-      const esc=MI.escapeXml,c=object.textContent,s=object.style||{},x=this.mapX(object.x),y=this.mapY(object.y),baseSize=c.defaults.fontSize||s.fontSize||16,baseColor=c.defaults.color||s.fill||'#222222',family=id=>id==='serif'?'Source Serif 4, serif':'Source Sans 3, sans-serif';
-      const transform=object.rotation?' transform="rotate('+number(object.rotation)+' '+number(x)+' '+number(y)+')"':'';let out='<text data-rich-text="1" xml:space="preserve" x="'+number(x)+'" y="'+number(y)+'" fill="'+esc(baseColor)+'" font-size="'+number(baseSize)+'" font-family="'+esc(family(c.defaults.fontId))+'" text-anchor="start"'+transform+'>';
-      c.paragraphs.forEach((p,pi)=>{if(pi)out+='<tspan x="'+number(x)+'" dy="'+number(baseSize*(c.paragraphs[pi-1].lineHeight||1.25))+'"></tspan>';const anchor=p.align==='center'?'middle':p.align==='right'?'end':'start';let first=true;for(const r of p.runs){if(r.kind==='hardBreak'){out+='<tspan x="'+number(x)+'" dy="'+number(baseSize*p.lineHeight)+'"></tspan>';first=true;continue;}const m=r.marks||{},attrs=[];if(m.bold)attrs.push('font-weight="700"');if(m.italic)attrs.push('font-style="italic"');if(m.underline||m.strike)attrs.push('text-decoration="'+[m.underline?'underline':'',m.strike?'line-through':''].filter(Boolean).join(' ')+'"');if(m.color)attrs.push('fill="'+esc(m.color)+'"');if(m.fontId)attrs.push('font-family="'+esc(family(m.fontId))+'"');if(m.fontSize)attrs.push('font-size="'+number(m.fontSize)+'"');if(m.script)attrs.push('baseline-shift="'+(m.script==='super'?'super':'sub')+'"');out+='<tspan'+(first?' text-anchor="'+anchor+'"':'')+(attrs.length?' '+attrs.join(' '):'')+'>'+esc(r.text)+'</tspan>';first=false;}});return out+'</text>';
+      return object.textContent.paragraphs.some(p=>p.runs.some(r=>r.kind==='math'))
+        ? MI.RichTextRenderer.render(object,this.mapX(object.x),this.mapY(object.y))
+        : MI.RichTextRenderer.legacy.call(this,object);
     }
     renderMeasurement(object) {
       const style=object.style||{},label=MI.MeasurementGeometry.label(object,this.measurement,this.angleMeasurement);let svg='',anchor;

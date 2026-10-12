@@ -54,7 +54,8 @@ function appRuntime() {
   const doc = { getElementById(id) { if (!nodes.has(id)) nodes.set(id, target()); return nodes.get(id); }, querySelectorAll: () => [], addEventListener() {}, removeEventListener() {}, activeElement: { tagName: 'BODY' } };
   doc.getElementById('canvas').querySelector = selector => selector === 'svg' ? { getScreenCTM: () => ({ a: .5, d: .5, b: 0, c: 0, e: 0, f: 0 }), querySelector: () => null } : null;
   const engine = new MI.Engine({ objects: [{ id: 'p', type: 'point', x: 0, y: 0, showLabel: true }, { id: 'l', type: 'line', x1: 0, y1: 1, x2: 1, y2: 1, showLabel: true }] });
-  MI.RichTextEditor={load:async()=>({mount(){return{get(){const value=doc.getElementById('textValue').value.trim();return value?{schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:value,marks:{}}]}]}:null;},destroy(){}};}})};
+  MI.TextInsertPanel={mount:()=>({destroy(){},isOpen:()=>false})};
+  MI.RichTextEditor={load:async()=>({mount(){return{get(){const value=doc.getElementById('textValue').value.trim();return value?{schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:value,marks:{}}]}]}:null;},focus(){},destroy(){}};}})};
   const app = new MI.EditorApp({ engine, document: doc, window: win, storage: { getItem: () => null }, services: { transform: MI.CoordinateTransform, snap: MI.SnapService, resolver: MI.InteractionResolver } });
   app.init();
   const emit = (node, type, values = {}) => [...(node.events.get(type) || [])].forEach(fn => fn({ pointerId: 1, button: 0, preventDefault() {}, ...values }));

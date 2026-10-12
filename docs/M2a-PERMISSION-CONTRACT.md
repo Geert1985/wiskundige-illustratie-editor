@@ -312,3 +312,8 @@ PASS M2b vereist:
 8. Alle negatieve testgevallen uit M2a-TEST-PLAN hebben hun expliciete denial en unchanged-statecheck. Browser-only resultaten claimen geen summative beveiliging.
 
 Er zijn geen fundamentele M2b-permissievragen open: beslissingen hierboven zijn normatief. M17 transport/authenticatie/replay-tolerances en toekomstige niet-geregistreerde operators vragen later ontwerp, maar hun huidige gedrag is expliciet weigeren. Alleen productkeuzes zoals welke specifieke punten/tools de auteur enablet zijn activiteitsconfiguratie, geen implementatiebeslissing.
+
+
+## T2 text.commit extension (2026-10-12)
+
+Existing textCapabilities.math is now active for math atoms. Insertion, removal and source changes require content+math; mark/default/alignment changes require format. Moving an unchanged atom retains its ID/source/marks and requires content only unless formatting changes. Swapping retained atom sources is a math change even when the source multiset is equal. Mixed text-mark boundaries are compared conservatively to prevent formatting escalation; uniform text may change length without format. New rich text and duplication also check createdObjectRules.text content/format, plus math when applicable, in addition to existing tool/duplicate grants. Stale revisions, locks and policy revocation are rechecked atomically. No new source-reference or expression capabilities are activated. See TEXT-EDITOR-ARCHITECTURE.md section 20 and T2-REPORT.md.
