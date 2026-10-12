@@ -38,7 +38,7 @@
       if(!sourceSelect.value||!propertySelect.value){preview.textContent='Geen beschikbare bron.';preview.dataset.valueStatus='missing';apply.disabled=true;error.textContent='';return;}
       try{
         const data=valueData(),result=options.resolveValue?.({...data,kind:'dynamicValue'})||{status:'missing',text:'niet beschikbaar'};
-        preview.textContent=result.text;preview.dataset.valueStatus=result.status;apply.disabled=!editing||result.status==='denied';error.textContent=result.status==='denied'?'Bronwaarde niet toegestaan.':'';
+        preview.textContent=result.text;preview.dataset.valueStatus=result.status;apply.disabled=result.status==='denied';error.textContent=result.status==='denied'?'Bronwaarde niet toegestaan.':'';
       }catch(exception){preview.textContent='niet beschikbaar';preview.dataset.valueStatus='invalid';apply.disabled=true;error.textContent=exception.message;}
     }
     function setProperties(value){
@@ -63,7 +63,7 @@
     on(unit,'change',()=>{unitTouched=true;refresh();});
     on(precision,'input',()=>{precisionTouched=true;updatePrecisionLabel();refresh();});
     for(const node of [prefix,suffix])on(node,'input',refresh);
-    on(apply,'click',()=>{if(!editing)return;try{const data=valueData();editor.insertValue(data.binding,data.format,bookmark,position);editing=false;position=null;bookmark=null;apply.disabled=true;close(false);}catch(exception){fail(exception);}});
+    on(apply,'click',()=>{try{refresh();if(apply.disabled)return;const data=valueData();if(!editing){bookmark=begin('value');position=null;editing=true;}editor.insertValue(data.binding,data.format,bookmark,position);editing=false;position=null;bookmark=null;close(false);refresh();}catch(exception){fail(exception);}});
     editor.setValueEditHandler(open);
     return Object.freeze({open,refresh,cancel(){editing=false;position=null;bookmark=null;apply.disabled=true;preview.textContent='';preview.dataset.valueStatus='idle';},destroy(){destroyed=true;listeners.splice(0).forEach(remove=>remove());editor.setValueEditHandler(null);}});
   }

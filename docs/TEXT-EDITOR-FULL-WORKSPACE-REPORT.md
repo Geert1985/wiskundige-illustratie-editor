@@ -1,6 +1,6 @@
 # Wiskundige Tekst Editor — geïntegreerde werkruimte
 
-Versie 1.1.0 — 2026-10-12.
+Versie 1.2.0 — 2026-10-12.
 Status: volledige UI-implementatie geleverd; gebruikersacceptatie nog niet uitgevoerd.
 Branch: `chatgpt/text-editor-full-workspace`.
 Basis: `chatgpt/t5-calculator`, commit `ec750d3e793e40bdfac9acc683b24307600cc3d6`.
@@ -110,3 +110,11 @@ De formule- en waardeactieknoppen volgen nu direct op hun preview in plaats van 
 De onderste sessiebalk en zijn dubbele Annuleren-knop zijn verwijderd. De bovenste Sluiten-knop heet nu Annuleren en gebruikt dezelfde bestaande closeText-route. Autorisatie-, revisie- en conceptmeldingen blijven bereikbaar in een lege-tot-nodig live meldingsregio in de rechterkolom; geen permanente footer/statusbalk.
 
 Ook deze vervolgcorrecties zijn niet getest op verzoek van de gebruiker. Handmatig te controleren: overeenkomst hoofdheader, positie onder preview, bereikbaarheid bij lange formules en beperkte hoogte, bovenste Annuleren, Escape, zichtbaarheid van commitfouten en herstel van focus. De footercontrole uit de oorspronkelijke checklist is vervangen door deze nieuwe plaatsing.
+
+## 11. Herhaald dynamische waarden invoegen
+
+Oorzaak: na succesvolle invoeging werd de actieve value-draft afgesloten en de knop disabled, terwijl bronselectie en preview zichtbaar bleven. Alleen opnieuw openen van de tab maakte een nieuwe draft.
+
+Correctie: de knopbeschikbaarheid volgt de huidige bronvalidatie, zonder een permanent actief concept te eisen. Na succesvolle invoeging worden positie/bookmark en pending-status afgesloten, blijven gekozen bron-/opmaakinstellingen staan en wordt het voorbeeld opnieuw ververst. Een volgende invoegklik opent pas dan een nieuw concept met de actuele tekstbookmark en zonder oude updatepositie. Daardoor blijft de volledige tekstcommit mogelijk tussen invoegingen; het laatste bronveld wordt niet door een oude bewerkingspositie opnieuw aangepast. Bestaande expliciete atoomediting en stale-bookmarkcontrole blijven aanwezig. Iedere klik ververst tevens bronfeedback voordat invoeging wordt toegestaan.
+
+Ook de focusroute bij een openstaand waardeconcept gebruikt nu de verplaatste invoegknop in de sessieroot. Geen tests uitgevoerd. Handmatig controleren: meerdere invoegingen zonder tabwissel, verplaatste cursor/nieuwe alinea, gewijzigde bron/eigenschap/opmaak, bestaand veld bewerken, lokale undo/redo, tussentijds volledige commit, annuleren en gewijzigde bronrechten.

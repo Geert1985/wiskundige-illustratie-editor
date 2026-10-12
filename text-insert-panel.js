@@ -35,7 +35,7 @@
     on(apply,'click',()=>{apply.disabled=true;formulaEditor.apply().finally(()=>{if(!dead&&formulaPending&&!error.textContent)apply.disabled=false;});});
     editor.setMathEditHandler(pos=>openFormula(pos));editor.setValueEditHandler(pos=>{if(valuePending){selectTab('value');error.textContent='Bevestig of annuleer eerst de openstaande dynamische waarde.';return;}valueEditor.open(pos);});
     panel.dataset.mode='text';selectTab('formula');apply.disabled=true;results();
-    return {isOpen:()=>formulaPending||valuePending,refresh:valueEditor.refresh,announcePending(){const kind=formulaPending?'formula':'value';error.textContent=kind==='formula'?'Bevestig of annuleer de formule voordat je de tekst toepast.':'Bevestig of annuleer de dynamische waarde voordat je de tekst toepast.';selectTab(kind);(kind==='formula'?apply:panel.querySelector('#valueInsert')).focus();},destroy(){dead=true;formulaEditor.destroy();valueEditor.destroy();listeners.splice(0).forEach(remove=>remove());}};
+    return {isOpen:()=>formulaPending||valuePending,refresh:valueEditor.refresh,announcePending(){const kind=formulaPending?'formula':'value';error.textContent=kind==='formula'?'Bevestig of annuleer de formule voordat je de tekst toepast.':'Bevestig of annuleer de dynamische waarde voordat je de tekst toepast.';selectTab(kind);(kind==='formula'?apply:dialog.querySelector('#valueInsert')).focus();},destroy(){dead=true;formulaEditor.destroy();valueEditor.destroy();listeners.splice(0).forEach(remove=>remove());}};
   }
   MI.TextInsertPanel=Object.freeze({mount,categories:catalog.categories.map(item=>item.label)});
 })(window);
