@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.13.0 - 2026-10-12 - Rekencontract 1.12.0 definitief goedgekeurd; T5a technisch uitgevoerd, wacht op gebruikersacceptatie. T5b/T5c niet gestart.
+Versie 1.14.0 - 2026-10-12 - Rekencontract 1.12.0 definitief goedgekeurd; T5a technisch uitgevoerd, wacht op gebruikersacceptatie. T5b/T5c niet gestart.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Actuele T5a-branch: `chatgpt/t5-calculator`; historische fase-0-branch: `chatgpt/editor-development`. Historisch onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -664,3 +664,15 @@ Unitarguments zijn getypeerde `unit`-nodes op de betreffende positie van round/f
 Underflowbewijs: voor finite binary64-input zijn sin/tan-nulpunten alleen input 0 (een niet-nul dyadische rationale is geen niet-nul veelvoud van de irrationale π); cos en exp hebben geen echte nul op dergelijke inputs. De andere nulgevallen zijn expliciet volgens sectie 14 gecodeerd. Iedere onverwachte +0/-0 van een mathematisch niet-nulbewerking is NUMERIC_UNDERFLOW vóór zero-normalisatie. De gekozen JS Math-route is aanvullend getest met onafhankelijke Decimal-referenties aan beide zijden van de exp-zero-grens, de normal/subnormal-grens, kleine sin-inputs en ln bij 1. Dit bewijst de guards en benoemde runtimes/fixtures, geen onbeperkte laatste-bitgarantie voor alle platformen. Contractgrenzen en toleranties zijn behouden; geen onderloop-epsilon of flush-to-zero toegevoegd.
 
 Tests, exact-rationale fixturegenerator, resultaten, moduleomvang, beperkte bestaande-regressiecorrecties en niet-uitgevoerde controles: [T5a-REPORT.md](T5a-REPORT.md). Wacht na push op T5a-acceptatie en expliciete T5b-starttoestemming.
+
+## 29. Geïntegreerde tekstwerkruimte (2026-10-12)
+
+De volledige UX-refactoring op `chatgpt/text-editor-full-workspace` is gebaseerd op de door de gebruiker aangewezen T5a-versie `ec750d3e793e40bdfac9acc683b24307600cc3d6` van `chatgpt/t5-calculator`. Sectie 14 en de rekenmotor worden niet gewijzigd. Deze sectie vervangt uitsluitend de historische beperkte dialoog- en tweekolomspresentatie; T5b/T5c worden niet gestart.
+
+`text-workspace.js` beheert uitsluitend de presentatiemodus: de bestaande dialog-container opent met `show()` als viewportvullende werkruimte. De illustratorheader en -werkruimte worden tijdelijk verborgen en inert; focus blijft binnen de tekstwerkruimte en wordt via de bestaande closeText-route teruggegeven. Geen nieuw venster, browser-Fullscreen-API of documentobject. De bestaande ProseMirror-sessie, bookmarks, lokale history en text.commit-transactie blijven eigenaar van inhoud en autorisatie.
+
+Desktop: links scrollbare Formule/Waarden-invoer met bereikbare tabs, midden witte ProseMirror-surface met opmaak, rechts contextafhankelijke formule-/waardepreview en dezelfde invoeg-/annuleerhandlers. Preview/acties zijn afzonderlijke DOM-regio's; TextInsertPanel en TextDynamicValueEditor zoeken gedeelde feedback binnen de sessieroot, zonder tweede invoeglogica. Iedere paneelketen heeft min-height:0. De catalogus gebruikt de scrollruimte van het invoerpaneel, geen geneste vaste catalogushoogte. Rechts scrollt feedback, terwijl de acties buiten de scrollregio blijven.
+
+De volledige commitknop staat bovenaan na Opnieuw: Toevoegen voor nieuw, Wijzigingen opslaan voor bestaand. De tweede submit onderaan is verwijderd. Sluiten en de sessie-Annuleren verwerpen niet-bevestigde wijzigingen volgens de bestaande workflow. Formule-/waarde-Annuleren verwerpt alleen het betreffende concept. Meer bundelt de bestaande disabled tekst-JSON-placeholders; er zijn op deze basis geen tekst-JSON-handlers. Globale illustratie-import/export blijft op applicatieniveau. Geen nieuwe JSON-functionaliteit, opslagformaat of schema.
+
+Bij compacte breedte staat feedback onder het tekstcanvas; bij zeer smalle breedte staan invoer, tekst en feedback onder elkaar in begrensde grid-rijen. Menu/focus/hoogtegedrag is geïmplementeerd, maar niet uitgevoerd of visueel geverifieerd: de gebruiker verbood alle tests en browsersessies voor deze opdracht. Zie [werkruimterapport](TEXT-EDITOR-FULL-WORKSPACE-REPORT.md) voor de open handmatige acceptatie.

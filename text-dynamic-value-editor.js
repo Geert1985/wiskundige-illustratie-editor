@@ -34,7 +34,7 @@
       return MI.TextValues.validate({sourceId:sourceSelect.value,property},{precision:precisionTouched?precision.valueAsNumber:precisionStored,unitMode:base.unitMode,angleMode:base.angleMode,prefix:prefix.value,suffix:suffix.value});
     }
     function refresh(){
-      if(destroyed||panel.dataset.tab!=='value')return;
+      if(destroyed||panel.querySelector('#textInsertPanel').dataset.tab!=='value')return;
       if(!sourceSelect.value||!propertySelect.value){preview.textContent='Geen beschikbare bron.';preview.dataset.valueStatus='missing';apply.disabled=true;error.textContent='';return;}
       try{
         const data=valueData(),result=options.resolveValue?.({...data,kind:'dynamicValue'})||{status:'missing',text:'niet beschikbaar'};

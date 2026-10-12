@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.12.0 - 2026-10-12. Status: T5a uitgevoerd na definitief rekencontractakkoord en expliciete GO; wacht op T5a-acceptatie. T5b–T5d en Deel B niet gestart. Eerdere handmatige T4/T5-prep-controles worden niet als uitgevoerd aangemerkt.
+Versie 1.13.0 - 2026-10-12. Status: T5a uitgevoerd na definitief rekencontractakkoord en expliciete GO; wacht op T5a-acceptatie. T5b–T5d en Deel B niet gestart. Eerdere handmatige T4/T5-prep-controles worden niet als uitgevoerd aangemerkt.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). De gebruiker heeft voor T5 de nieuwe branch `chatgpt/t5-calculator` vanaf `main` aangewezen; dit vervangt de historische branchkeuze `chatgpt/editor-development` voor deze uitvoering. Geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
@@ -139,3 +139,9 @@ T1 is uitgevoerd na expliciet akkoord. De rich-textstructuur is opgenomen in doc
 Implementatie omvat ProseMirror via lokaal gebundelde adapter, gestructureerd model schema 1, `text.commit`, categoriespecifieke restricted checks, legacy-bindingbehoud, inspector bewerken, undo/redo, JSON v7 en offline font-embedded rich SVG. Geen formule-, dynamische inlineveld- of T2/T3-functie is gestart.
 
 Acceptatiegate die resteert: handmatige IME/schermlezerchecks en gebruikersscenario?s uit het T1-rapport. T1 wordt niet als volledig geaccepteerd aangemerkt voor die checks. Test de browsereditor op paragrafen/Shift+Enter, fragmentopmaak, annuleren/bevestigen, bestaande tekst bewerken, undo/redo, herladen, fullscreen en zelfstandige offline SVG/PNG.
+
+## Afzonderlijke UX-opdracht: volledige tekstwerkruimte
+
+Geïmplementeerd op `chatgpt/text-editor-full-workspace` vanaf T5a-commit `ec750d3`, conform de latere expliciete basisbranchinstructie. Geïntegreerde viewportmodus, drie desktopkolommen, afzonderlijke contextpreview rechts, hoofdcommit bovenaan en Meer voor bestaande tekst-JSON-placeholders. Pure rekenmotor, documentmodel, opslag en milestonegates blijven intact.
+
+Geen tests, nieuwe testbestanden, screenshots of browserverificatie uitgevoerd op verzoek van de gebruiker. Technische implementatie is geen claim van functionele acceptatie. Gebruiker controleert layout, formule/waarde-invoeging, autorisatie, cursor, commit/cancel, history, legacy/export, beperkte hoogte/zoom/fullscreen en focus. [Rapport en checklist](TEXT-EDITOR-FULL-WORKSPACE-REPORT.md). T5b/T5c blijven buiten scope en vereisen hun bestaande afzonderlijke toestemming.

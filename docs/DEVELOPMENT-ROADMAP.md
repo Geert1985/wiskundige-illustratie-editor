@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.1.0 (T5a independent calculation engine, 2026-10-12)
+Version: 2.2.0 (T5a independent calculation engine, 2026-10-12)
 Status: T5a technically delivered after definitive calculation-contract approval and explicit GO; awaiting T5a acceptance. T5b–T5d and Deel B not started. Earlier unexecuted manual T4/T5-prep checks remain recorded.
 Date: 2026-10-12
 
@@ -240,3 +240,7 @@ Executed after definitive approval of architecture section 14 v1.12.0 and numeri
 Delivered: UI/document-independent safe parser, typed/canonical AST and codec, dimensional quantities, exact binary64 decimal quantization, unit conversion, principal angles, domain/range guards and printers. A separate shared geometry source adapter reuses current read/display/property/layer rights and enforces revision/epoch freshness. One pure engine remains reusable by later calculators, graphs, parametric geometry and exercises; those future functions are not implemented.
 
 The 56 additional scenarios and original mathematical matrix are automated, with independent numerical references and Node/Edge regression evidence. [T5a-REPORT.md](T5a-REPORT.md) records actual outcomes and limitations. No T5b calculator interface, T5c calculatedValue fields or schema-4 document change. Stop for T5a user acceptance; T5b still requires an explicit start instruction.
+
+## Text editor full workspace — separate UX delivery (2026-10-12)
+
+Implemented on `chatgpt/text-editor-full-workspace`, based on the user-selected `chatgpt/t5-calculator` commit `ec750d3`. Full application workspace mode, three desktop columns, context preview/actions, top-level text commit and a More menu for the existing disabled text-JSON placeholders. Calculator engine and mathematical contract unchanged; T5b/T5c not started. No tests or verification sessions performed by explicit user instruction; manual acceptance remains open. See [implementation report](TEXT-EDITOR-FULL-WORKSPACE-REPORT.md). Historical T5a test evidence applies to its own delivery, not to this untested UX change.
