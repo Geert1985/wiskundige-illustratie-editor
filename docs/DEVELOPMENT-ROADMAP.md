@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.0.0 (T5-prep Deel A formula/values workspace and white text canvas, 2026-10-12)
-Status: T5-prep I1-I4 and Deel A technically delivered; awaiting user acceptance. T4 hand acceptance remains open; T5a and Deel B not started.
+Version: 2.2.0 (T5a independent calculation engine, 2026-10-12)
+Status: T5a technically delivered after definitive calculation-contract approval and explicit GO; awaiting T5a acceptance. T5b–T5d and Deel B not started. Earlier unexecuted manual T4/T5-prep checks remain recorded.
 Date: 2026-10-12
 
 ## Baseline
@@ -232,3 +232,15 @@ Status: code- en regressiewerk technisch geleverd; wacht op handmatige gebruiker
 Het permanente invoegpaneel heeft exact twee tabs: Formule en Waarden. De Formule-tab bevat de LaTeX-bron, zoek-/categoriegestuurde symbolen- en formulecatalogus, preview en expliciete invoeg-/bijwerkactie. Een catalogusklik schrijft LaTeX op de actieve bronselectie/cursorpositie; structuursjablonen selecteren het eerste invulveld. De catalogus maakt nooit op zichzelf een tekstformule-atoom aan. Waarden behoudt de bestaande dynamische-broneditor en rechten. Het ProseMirror-tekstvlak staat blijvend naast het paneel op wit met donkere tekst. De eerdere contextoverlay is verwijderd. De UI-breedteslider is verwijderd, terwijl bestaand `textContent.width` behouden blijft in opslag, rendering en export, zonder automatische wijziging. Deel A wijzigt geen documentversie, schema, permissies of exportcontract. De desktop tweekolomsindeling volgt de aangeleverde visuele referentie; small-screen fallback blijft ondersteund maar is geen primaire ontwerpdoelstelling.
 
 Status: technisch geleverd en gepusht na regressiecontrole; wacht op handmatige acceptatie. Rapport en screenshotset: [T5-PREP-FINAL-UX-DEEL-A-REPORT.md](T5-PREP-FINAL-UX-DEEL-A-REPORT.md). T4-acceptatie blijft afzonderlijk open. Deel B canvas-resizing vereist afzonderlijke toestemming. T5a blijft onder de bestaande acceptatie- en mathematische-gates.
+
+## T5a — independent calculation engine (2026-10-12)
+
+Executed after definitive approval of architecture section 14 v1.12.0 and numeric acceptance v1.0.0, followed by explicit GO. Branch: `chatgpt/t5-calculator`, based on main. Current T5a status here supersedes historical not-started notes; earlier unexecuted manual checks are not claimed as performed.
+
+Delivered: UI/document-independent safe parser, typed/canonical AST and codec, dimensional quantities, exact binary64 decimal quantization, unit conversion, principal angles, domain/range guards and printers. A separate shared geometry source adapter reuses current read/display/property/layer rights and enforces revision/epoch freshness. One pure engine remains reusable by later calculators, graphs, parametric geometry and exercises; those future functions are not implemented.
+
+The 56 additional scenarios and original mathematical matrix are automated, with independent numerical references and Node/Edge regression evidence. [T5a-REPORT.md](T5a-REPORT.md) records actual outcomes and limitations. No T5b calculator interface, T5c calculatedValue fields or schema-4 document change. Stop for T5a user acceptance; T5b still requires an explicit start instruction.
+
+## Text editor full workspace — separate UX delivery (2026-10-12)
+
+Implemented on `chatgpt/text-editor-full-workspace`, based on the user-selected `chatgpt/t5-calculator` commit `ec750d3`. Full application workspace mode, three desktop columns, context preview/actions, top-level text commit and a More menu for the existing disabled text-JSON placeholders. Calculator engine and mathematical contract unchanged; T5b/T5c not started. No tests or verification sessions performed by explicit user instruction; manual acceptance remains open. See [implementation report](TEXT-EDITOR-FULL-WORKSPACE-REPORT.md). Historical T5a test evidence applies to its own delivery, not to this untested UX change.

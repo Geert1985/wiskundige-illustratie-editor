@@ -1,0 +1,958 @@
+{
+  "date": "2026-10-12",
+  "node": {
+    "total": 573,
+    "passed": 573,
+    "failed": 0,
+    "skipped": 0
+  },
+  "edge": {
+    "browser": "Edge",
+    "expressionEngine": {
+      "contract": {
+        "total": 73,
+        "passed": 73
+      },
+      "roundReference": {
+        "total": 912,
+        "passed": 912
+      },
+      "transcendentalReference": {
+        "total": 19,
+        "passed": 19
+      },
+      "adapter": {
+        "total": 14,
+        "passed": 14
+      },
+      "failed": [],
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0"
+    },
+    "maxScale": 699.9999999999999,
+    "step": 0.1,
+    "blocked": true,
+    "outScale": 594.9999999999999,
+    "finite": true,
+    "lines": 28,
+    "pointCreation": "passed",
+    "legacyImport": "passed",
+    "saveReload": "passed",
+    "labelRoundtrip": "passed",
+    "presentationRestore": "passed",
+    "exportImport": "passed",
+    "atomicFailedImport": "passed",
+    "corruptDraftRetained": "passed",
+    "explicitNew": "passed",
+    "snapping": {
+      "previewCommit": "passed",
+      "exactLength1": "passed",
+      "exactRadius1": "passed",
+      "rigidTranslation": "passed",
+      "endpointGrid": "passed",
+      "endpointPoint": "passed",
+      "intersections": "passed",
+      "keyboardMeasurement": "passed",
+      "shortShapeCleanup": "passed",
+      "responsiveTolerance": "passed"
+    },
+    "lifecycle": {
+      "startup": "passed",
+      "responsiveLabelDrag": "passed",
+      "toolGate": "passed",
+      "cancelCases": 15,
+      "lostCapture": "passed",
+      "pointerOwnership": "passed",
+      "pointerUpOutside": "passed",
+      "newDuringInteraction": 5,
+      "disposeDuringInteraction": 5,
+      "reinit": "passed",
+      "endpointRenderConsistency": "passed",
+      "selectionAndInspector": "passed",
+      "visibilityColorAxisExport": "passed",
+      "engineInjection": "passed",
+      "opaqueIds": "passed"
+    },
+    "performance": [
+      {
+        "count": 10,
+        "coldMs": 0.6999999284744263,
+        "warmMedianMs": 0,
+        "streamWorkMs": 1.9000000953674316,
+        "rendersPerBurst": 1
+      },
+      {
+        "count": 100,
+        "coldMs": 8.899999976158142,
+        "warmMedianMs": 1.100000023841858,
+        "streamWorkMs": 12,
+        "rendersPerBurst": 1
+      },
+      {
+        "count": 500,
+        "coldMs": 88.09999990463257,
+        "warmMedianMs": 8.400000095367432,
+        "streamWorkMs": 174.30000007152557,
+        "rendersPerBurst": 1
+      }
+    ],
+    "selection": {
+      "objects": 500,
+      "circleCenterDrag": "passed",
+      "topmostSelection": "passed",
+      "sidebarSelectionTool": "passed"
+    },
+    "auditFinal": {
+      "screenSelectionCases": 24,
+      "textBodyDrag": "passed",
+      "invalidInspectorRollback": "passed",
+      "styleMergeRoundtrip": "passed",
+      "detachedGet": "passed"
+    },
+    "linear": {
+      "lineSegmentPoints": "passed",
+      "types": [
+        "straight",
+        "ray",
+        "vector"
+      ],
+      "exactMeasurement": "passed",
+      "rigidTranslation": "passed",
+      "endpointGrid": "passed",
+      "labelDrag": "passed",
+      "Escape": "passed",
+      "SVGExport": "passed",
+      "saveReloadImport": "passed",
+      "intersectionSnapping": "passed",
+      "shortShapeCleanup": "passed"
+    },
+    "assetCompat": {
+      "cachedModelWithoutRegistry": "passed",
+      "allFourDrawingTools": "passed",
+      "noPan": "passed",
+      "consistentAssetVersion": "passed"
+    },
+    "history": {
+      "checks": [
+        "point",
+        "line",
+        "straight",
+        "ray",
+        "vector",
+        "circle",
+        "rigid drag",
+        "endpoint",
+        "label",
+        "inspector",
+        "visibility",
+        "color batch",
+        "axes",
+        "pan",
+        "zoom",
+        "metadata typing batch",
+        "delete"
+      ],
+      "cancelledGesture": "passed",
+      "shortcuts": "passed",
+      "saveReload": "passed",
+      "transientHistory": "passed"
+    },
+    "inputs": {
+      "textAddUndoRedo": "passed",
+      "textEscape": "passed",
+      "pointAndTextColor": "passed",
+      "colorCancel": "passed",
+      "nativeDialogs": 0
+    },
+    "richText": {
+      "schemaAndSVG": "passed",
+      "embeddedFonts": "passed",
+      "offlinePngRaster": "passed",
+      "paragraphsAndHardBreak": "passed",
+      "formatting": "passed",
+      "inspectorEditor": "passed",
+      "cancel": "passed",
+      "undoRedo": "passed",
+      "jsonRoundtrip": "passed"
+    },
+    "richMath": {
+      "symbolsAndCategories": "passed",
+      "missingGlyphPaths": "passed",
+      "keyboardFormulaApply": "passed",
+      "staleCommit": "passed",
+      "bookmarks": "passed",
+      "formulaInsertEdit": "passed",
+      "atomDeleteUndo": "passed",
+      "atomDrag": "passed",
+      "unsafeSource": "passed",
+      "history": "passed",
+      "sourceRoundtrip": "passed",
+      "cancel": "passed",
+      "fullscreenEscape": "passed",
+      "stalePreview": "passed",
+      "offlineSvgPng": "passed",
+      "zoom": "passed",
+      "zoomChecks": [
+        {
+          "scale": 180.07447228840653,
+          "width": 66.8416,
+          "finite": true
+        },
+        {
+          "scale": 67.91499999999999,
+          "width": 66.8416,
+          "finite": true
+        },
+        {
+          "scale": 110.58823529411765,
+          "width": 66.8416,
+          "finite": true
+        }
+      ],
+      "rasterChecks": [
+        {
+          "source": "x^2+y^2=r^2",
+          "red": 98,
+          "png": true,
+          "finite": true,
+          "standalone": true
+        },
+        {
+          "source": "\\sin^2(\\theta)+\\cos^2(\\theta)=1",
+          "red": 251,
+          "png": true,
+          "finite": true,
+          "standalone": true
+        },
+        {
+          "source": "\\frac{1}{2}",
+          "red": 21,
+          "png": true,
+          "finite": true,
+          "standalone": true
+        },
+        {
+          "source": "\\sqrt{x^2+y^2}",
+          "red": 114,
+          "png": true,
+          "finite": true,
+          "standalone": true
+        }
+      ]
+    },
+    "richValues": {
+      "threeFieldsTwoSources": "passed",
+      "sourceChooser": "passed",
+      "notation": "passed",
+      "atomicStyleDeleteUndo": "passed",
+      "atomDrag": "passed",
+      "mathMixed": "passed",
+      "documentHistory": "passed",
+      "pointDrag": "passed",
+      "deleteRecovery": "passed",
+      "scale": "passed",
+      "cancel": "passed",
+      "saveReload": "passed",
+      "offlineSvgPng": "passed",
+      "fullscreenEscape": "passed",
+      "legacyMigration": "passed",
+      "legacyStaticRestore": "passed",
+      "restrictedChooser": "passed",
+      "staleRevision": "passed",
+      "epochRevocationRedaction": "passed",
+      "redactedDraftPreservesBinding": "passed",
+      "raster": {
+        "png": true,
+        "ink": 2463,
+        "currentValue": true,
+        "standalone": true
+      }
+    },
+    "richLayout": {
+      "loadMetrics": {
+        "domContentLoadedMs": 277.60000002384186,
+        "scriptResources": 45,
+        "scriptTransferBytes": 4774534
+      },
+      "mixedWrapping": "passed",
+      "atomicValuesMath": "passed",
+      "widthControlRemovedAndCustomWidthPreserved": "passed",
+      "cancelFocus": "passed",
+      "documentHistory": "passed",
+      "fullscreenKeyboardEscape": "passed",
+      "offlineSvgDownload": "passed",
+      "offlinePngDownload": "passed",
+      "noExportMutation": "passed",
+      "rasterLimits": "passed",
+      "validFontDeclarations": "passed",
+      "accessibleLabels": "passed",
+      "responsive": "passed",
+      "restrictedRedaction": "passed",
+      "exportGrantDenial": "passed",
+      "staleEpochDelivery": "passed",
+      "pixelComparison": {
+        "comparedBytes": 2496000,
+        "differences": 0
+      },
+      "nativeComparison": {
+        "nativeWidth": 1000,
+        "nativeHeight": 624,
+        "exportWidth": 1000,
+        "exportHeight": 624,
+        "changedPixels": 2741,
+        "totalPixels": 624000
+      },
+      "fontMatrix": [
+        {
+          "fontId": "sans",
+          "bold": false,
+          "italic": false,
+          "bytes": 82930
+        },
+        {
+          "fontId": "sans",
+          "bold": true,
+          "italic": false,
+          "bytes": 82534
+        },
+        {
+          "fontId": "sans",
+          "bold": false,
+          "italic": true,
+          "bytes": 82036
+        },
+        {
+          "fontId": "sans",
+          "bold": true,
+          "italic": true,
+          "bytes": 82382
+        },
+        {
+          "fontId": "serif",
+          "bold": false,
+          "italic": false,
+          "bytes": 86541
+        }
+      ],
+      "layerOrder": [
+        0,
+        407
+      ],
+      "parity": {
+        "ink": 2879,
+        "width": 1000,
+        "height": 624
+      },
+      "meanLayoutMs": 0.05100000023841858,
+      "pngBytes": 44458
+    },
+    "richUx": {
+      "fixedPointSizePresets": "passed",
+      "legacyCustomSizePreserved": "passed",
+      "sharedPaletteAndCustomColor": "passed",
+      "stylePreservation": "passed",
+      "mixedMarkAndAlignmentState": "passed",
+      "alignmentMultiParagraphUndoRedo": "passed",
+      "permanentFormulaAndCatalogPanel": "passed",
+      "widthControlRemovedAndStoredWidthPreserved": "passed",
+      "outerCancelAndDocumentCompatibility": "passed",
+      "pageErrors": [],
+      "screenshots": [
+        "01-editor-desktop.png",
+        "02-editor-visual-target.png",
+        "02-font-size-preset.png",
+        "03-shared-palette.png",
+        "04-formula-catalog.png",
+        "04-functions-tab.png",
+        "04-mixed-format-state.png",
+        "05-alignment-icons.png",
+        "05-formula-template-selection.png",
+        "05-template-placeholder.png",
+        "06-dynamic-values-tab.png",
+        "06-invalid-formula.png",
+        "07-editor-with-formula.png",
+        "07-live-preview.png",
+        "08-editor-tablet.png",
+        "09-editor-mobile.png",
+        "10-editor-short-window.png",
+        "11-values-tab.png"
+      ]
+    },
+    "textEditorModernization": {
+      "twoTabs": "passed",
+      "noStandaloneSymbolsTab": "passed",
+      "whiteTextCanvas": "passed",
+      "catalogSearchAndCategory": "passed",
+      "LaTeXCursorInsertReplace": "passed",
+      "formulaTemplateSelection": "passed",
+      "catalogDoesNotCreateAtom": "passed",
+      "livePreviewAndValidation": "passed",
+      "formulaCommitAndUndoRedo": "passed",
+      "dynamicValuesTabVisible": "passed",
+      "storedWidthPreserved": "passed",
+      "responsiveLayout": "passed",
+      "responsive": [
+        {
+          "width": 1448,
+          "height": 1086,
+          "viewportWidth": 1448,
+          "documentWidth": 1448,
+          "dialog": {
+            "x": 24,
+            "y": 16,
+            "width": 1400,
+            "height": 1054
+          },
+          "layoutWidth": 1154,
+          "left": {
+            "x": 25,
+            "width": 415
+          },
+          "right": {
+            "x": 440,
+            "width": 738
+          },
+          "actionsVisible": true,
+          "vertical": false
+        },
+        {
+          "width": 1280,
+          "height": 900,
+          "viewportWidth": 1280,
+          "documentWidth": 1280,
+          "dialog": {
+            "x": 24,
+            "y": 16,
+            "width": 1232,
+            "height": 868
+          },
+          "layoutWidth": 1154,
+          "left": {
+            "x": 25,
+            "width": 415
+          },
+          "right": {
+            "x": 440,
+            "width": 738
+          },
+          "actionsVisible": true,
+          "vertical": false
+        },
+        {
+          "width": 768,
+          "height": 900,
+          "viewportWidth": 768,
+          "documentWidth": 768,
+          "dialog": {
+            "x": 19,
+            "y": 12,
+            "width": 730,
+            "height": 876
+          },
+          "layoutWidth": 915,
+          "left": {
+            "x": 20,
+            "width": 348
+          },
+          "right": {
+            "x": 368,
+            "width": 567
+          },
+          "actionsVisible": true,
+          "vertical": false
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "viewportWidth": 390,
+          "documentWidth": 390,
+          "dialog": {
+            "x": 19,
+            "y": 5,
+            "width": 352,
+            "height": 834
+          },
+          "layoutWidth": 894,
+          "left": {
+            "x": 20,
+            "width": 894
+          },
+          "right": {
+            "x": 20,
+            "width": 894
+          },
+          "actionsVisible": true,
+          "vertical": true
+        },
+        {
+          "width": 1280,
+          "height": 580,
+          "viewportWidth": 1280,
+          "documentWidth": 1280,
+          "dialog": {
+            "x": 24,
+            "y": 16,
+            "width": 1232,
+            "height": 548
+          },
+          "layoutWidth": 1154,
+          "left": {
+            "x": 25,
+            "width": 415
+          },
+          "right": {
+            "x": 440,
+            "width": 738
+          },
+          "actionsVisible": true,
+          "vertical": false
+        }
+      ],
+      "screenshots": [
+        "01-editor-desktop.png",
+        "02-editor-visual-target.png",
+        "02-font-size-preset.png",
+        "03-shared-palette.png",
+        "04-formula-catalog.png",
+        "04-functions-tab.png",
+        "04-mixed-format-state.png",
+        "05-alignment-icons.png",
+        "05-formula-template-selection.png",
+        "05-template-placeholder.png",
+        "06-dynamic-values-tab.png",
+        "06-invalid-formula.png",
+        "07-editor-with-formula.png",
+        "07-live-preview.png",
+        "08-editor-tablet.png",
+        "09-editor-mobile.png",
+        "10-editor-short-window.png",
+        "11-values-tab.png"
+      ],
+      "pageErrors": []
+    },
+    "polygon": {
+      "triangle": "passed",
+      "polygonEnterAndClosure": "passed",
+      "rigidDrag": "passed",
+      "vertexInspectorUndoRedo": "passed",
+      "labelDrag": "passed",
+      "SVGExport": "passed",
+      "saveReloadImport": "passed",
+      "BackspaceEscape": "passed",
+      "invalidShape": "passed"
+    },
+    "styles": {
+      "strokeWidthDash": "passed",
+      "customDashPreserved": "passed",
+      "fillAndSeparateColor": "passed",
+      "opacity": "passed",
+      "fontSize": "passed",
+      "undoRedo": "passed",
+      "invalidValues": "passed",
+      "SVGSaveReloadImport": "passed"
+    },
+    "measurementsGroups": {
+      "dimensionExactLength": "passed",
+      "computedAndFreeText": "passed",
+      "angleAndRightAngle": "passed",
+      "lineAndRadiusAnnotations": "passed",
+      "shiftSelection": "passed",
+      "rigidGroupDrag": "passed",
+      "cancelGroupDrag": "passed",
+      "duplicateLockDelete": "passed",
+      "undoRedoSelection": "passed",
+      "SVGSaveReloadImport": "passed"
+    },
+    "constructions": {
+      "sixTools": "passed",
+      "constructionVisibilityLockUndoRedo": "passed",
+      "linkedUpdate": "passed",
+      "noDerivedHandles": "passed",
+      "Escape": "passed",
+      "history": "passed",
+      "cascadeDelete": "passed",
+      "saveReloadImportExport": "passed"
+    },
+    "areaMenu": {
+      "accordion": "passed",
+      "activeSummary": "passed",
+      "perimeterArea": "passed",
+      "linkedLabels": "passed",
+      "labelDrag": "passed",
+      "historyAndSaveReloadSVG": "passed"
+    },
+    "rectangleSelection": {
+      "geometry": "passed",
+      "direction": "passed",
+      "modifiers": "passed",
+      "hiddenLocked": "passed",
+      "responsiveZoom": "passed",
+      "cancelEscapeBlurCaptureNewDispose": "passed",
+      "contextmenu": "passed",
+      "outsideMouseup": "passed",
+      "keyboard": "passed",
+      "renderSync": "passed"
+    },
+    "selectionPresentation": {
+      "allTenObjectTypes": "passed",
+      "constantCSSTolerance": "passed",
+      "lightDarkAndSmallObjects": "passed",
+      "overlap": "passed",
+      "noIdleGeometryRenders": "passed",
+      "handleLabelCursors": "passed",
+      "locks": "passed",
+      "groupCursorFrameDrag": "passed",
+      "labelKeepsGroup": "passed",
+      "dependencies": "passed",
+      "undoCancel": "passed",
+      "SVGExport": "passed",
+      "toolLeaveDispose": "passed"
+    },
+    "permissions": {
+      "startupIsolation": "passed",
+      "detachedPreviewCommit": "passed",
+      "indirectPreview": "passed",
+      "cancelCases": 6,
+      "epochRevocation": "passed",
+      "atomicGroup": "passed",
+      "rigidDependencies": "passed",
+      "inspectorBypass": "passed",
+      "directFacade": "passed",
+      "privateHistory": "passed",
+      "boundedParameter": "passed",
+      "resetBaseline": "passed",
+      "visibilitySnapExport": "passed",
+      "courseAssessment": "passed",
+      "authorRestore": "passed",
+      "responsiveLabel": "passed",
+      "colorTransaction": "passed",
+      "perFieldInspector": "passed",
+      "endpointFieldPermissions": "passed",
+      "lockedNonselectableSource": "passed",
+      "outsidePointerup": "passed"
+    },
+    "importHistory": {
+      "fileImportOneStep": "passed",
+      "documentPresentationSelection": "passed",
+      "linkedRoundtrip": "passed",
+      "undoRedo": "passed",
+      "failedImportRetainsRedo": "passed",
+      "invalidJSON": "passed",
+      "noOpPreservesRedo": "passed",
+      "NewResetsHistory": "passed"
+    },
+    "persistentGroups": {
+      "inspectorShortcuts": "passed",
+      "memberAndLabelSelection": "passed",
+      "rigidPreviewCommit": "passed",
+      "nestedUngroupDuplicateDelete": "passed",
+      "undoRedo": "passed",
+      "saveReloadJSONSVG": "passed",
+      "directionalZoomCases": 2,
+      "cancelCases": 6,
+      "NewCancelsAndClears": "passed",
+      "outsidePointerUp": "passed",
+      "locks": "passed",
+      "hiddenGroupHoverSelectAll": "passed",
+      "linkedTranslation": "passed",
+      "restrictedStructure": "passed"
+    },
+    "layers": {
+      "createRenameAssign": "passed",
+      "paintHitOrder": "passed",
+      "orderUndoRedo": "passed",
+      "visibilityAndSnapping": "passed",
+      "groupAtomicityLocks": "passed",
+      "hiddenSourcesLinkedUpdate": "passed",
+      "saveReloadJSONSVG": "passed",
+      "importHistory": "passed",
+      "liveDragCancellation": "passed",
+      "deleteMergeHistory": "passed",
+      "restrictedRuntime": "passed"
+    },
+    "constructionContract": {
+      "sourceAndDependentNavigation": "passed",
+      "labelCancelWithSourceUpdate": "passed",
+      "sourceRecompute": "passed",
+      "detachIdentityGroupsLayers": "passed",
+      "undoRedo": "passed",
+      "downstreamLinks": "passed",
+      "saveReloadImportSVG": "passed",
+      "invalidReasonRecovery": "passed",
+      "lockedDetach": "passed",
+      "topologyAtomicity": "passed",
+      "malformedImport": "passed",
+      "courseAssessmentGuard": "passed",
+      "unreadSourceRedaction": "passed"
+    },
+    "uiModernization": {
+      "independentCategories": "passed",
+      "axesContextVisibility": "passed",
+      "gridSync": "passed",
+      "menuKeyboard": "passed",
+      "commonStyleUndo": "passed",
+      "panZoom": "passed",
+      "responsiveDocumentInvariant": "passed",
+      "allTools": "passed",
+      "inputFocusSections": "passed",
+      "labelBatch": "passed",
+      "unsavedImportCancel": "passed",
+      "courseAssessmentView": "passed",
+      "keyboardDrawers": "passed"
+    },
+    "uiRefinements": {
+      "distinctSelectionHover": "passed",
+      "sourceStylePreserved": "passed",
+      "layerHierarchyVisible": "passed",
+      "unlayeredEmpty": "passed",
+      "listSelection": "passed",
+      "export": "passed"
+    },
+    "inspectorFeedback": {
+      "headingRenameUndo": "passed",
+      "relationsFirst": "passed",
+      "precisionDisplayOnly": "passed",
+      "actionIcons": "passed",
+      "fillSwatch": "passed",
+      "opacityKeyboardUndo": "passed",
+      "paletteNoNestedScroll": "passed"
+    },
+    "axesGrid": {
+      "toolbar": "passed",
+      "eyeControlsUndo": "passed",
+      "minorGridPersistenceExport": "passed",
+      "oneEscape": "passed",
+      "noFillPickerUndo": "passed",
+      "visualDashKeyboard": "passed",
+      "labelIconUndo": "passed",
+      "restrictedView": "passed"
+    },
+    "constructionHover": {
+      "roleAwareHover": "passed",
+      "screenToleranceZoom": "passed",
+      "chosenSourceHighlight": "passed",
+      "lockedSource": "passed",
+      "overlapHoverClick": "passed",
+      "cancelExport": "passed"
+    },
+    "fullCanvasAxes": {
+      "fullCanvasGrid": "passed",
+      "fullCanvasMinorGrid": "passed",
+      "fullCanvasAxes": "passed",
+      "equalScale": "passed",
+      "responsiveDocumentInvariant": "passed",
+      "visibilityUndoExport": "passed"
+    },
+    "splitTools": {
+      "splitDirectMenu": "passed",
+      "keyboard": "passed",
+      "independentPreferences": "passed",
+      "figureCategory": "passed",
+      "menuWithinPanel": "passed",
+      "fullToolName": "passed",
+      "fontSizeUndo": "passed",
+      "panelInstructions": "passed",
+      "extendedAxisNumbers": "passed",
+      "restrictedTools": "passed"
+    },
+    "bisectorClip": {
+      "bisectorStartsAtVertex": "passed",
+      "zoomResizeInvariant": "passed",
+      "viewportTransformMatchesDOM": "passed",
+      "fullConstructionName": "passed"
+    },
+    "minimalObjectList": {
+      "minimalRows": "passed",
+      "visibility": "passed",
+      "inspectorActions": "passed",
+      "bisectorSplitPreference": "passed"
+    },
+    "canvasFullscreen": {
+      "fullscreenAxesPanel": "passed",
+      "distinctIcon": "passed",
+      "nativeFullscreen": "passed",
+      "documentInvariant": "passed",
+      "allTools": "passed",
+      "drawingAndTextDialog": "passed",
+      "keyboardAndOutsideClose": "passed",
+      "escapeKeepsCanvasFullscreen": "passed",
+      "mobileMenu": "passed"
+    },
+    "semanticSequence": {
+      "sourceInputUndoRedo": "passed",
+      "lockedInput": "passed",
+      "deterministicReplay": "passed",
+      "liveEditorIsolation": "passed"
+    },
+    "linkedPaths": {
+      "pathDragging": "passed",
+      "dragUndoRedo": "passed",
+      "dragEscape": "passed",
+      "segmentClamp": "passed",
+      "failedCreationRetry": "passed",
+      "linkedLineCreation": "passed",
+      "pathClickProjection": "passed",
+      "parameterUndoRedo": "passed",
+      "parentFollow": "passed",
+      "circleCreation": "passed",
+      "parameterLock": "passed",
+      "schema2Roundtrip": "passed"
+    },
+    "postM5aUX": {
+      "newGrid": "passed",
+      "savedGrid": "passed",
+      "allTools": "passed",
+      "sourceSteps": "passed",
+      "invalidSelection": "passed",
+      "alternativeSource": "passed",
+      "redConstruction": "passed",
+      "polygonEscape": "passed",
+      "textCancel": "passed",
+      "fullscreen": "passed"
+    },
+    "lineIntersection": {
+      "sourceSelection": "passed",
+      "parallelRetry": "passed",
+      "redPoint": "passed",
+      "undoRedo": "passed",
+      "parentFollow": "passed",
+      "invalidRecovery": "passed",
+      "roundtrip": "passed"
+    },
+    "lineCircle": {
+      "twoBranches": "passed",
+      "oneUndo": "passed",
+      "tangentMerge": "passed",
+      "noIntersection": "passed",
+      "recovery": "passed",
+      "roundtrip": "passed"
+    },
+    "circleCircle": {
+      "twoPoints": "passed",
+      "coincidentRetry": "passed",
+      "oneUndo": "passed",
+      "tangent": "passed",
+      "separationRecovery": "passed",
+      "roundtrip": "passed"
+    },
+    "derivedCircle": {
+      "twoSourceCreation": "passed",
+      "invalidRetry": "passed",
+      "undoRedo": "passed",
+      "parentFollow": "passed",
+      "zeroRadiusRecovery": "passed",
+      "readOnlyRadius": "passed",
+      "roundtrip": "passed"
+    },
+    "linkedTangent": {
+      "oneTangent": "passed",
+      "pointDrag": "passed",
+      "perpendicularity": "passed",
+      "undoRedo": "passed",
+      "circleParentFollow": "passed",
+      "roundtrip": "passed"
+    },
+    "unitsScale": {
+      "newDefaults": "passed",
+      "legacy": "passed",
+      "lengthAreaAngle": "passed",
+      "freeText": "passed",
+      "unitConversion": "passed",
+      "geometryPreserved": "passed",
+      "undoRedo": "passed",
+      "invalidScale": "passed",
+      "exactDistance": "passed",
+      "saveReload": "passed",
+      "fullscreen": "passed"
+    },
+    "pointProjections": {
+      "choices": "passed",
+      "signedUnits": "passed",
+      "valuesToggle": "passed",
+      "dragUndoRedo": "passed",
+      "nonSelectableHelpers": "passed",
+      "lockedControls": "passed",
+      "linkedParent": "passed",
+      "fullscreen": "passed",
+      "zoomPan": "passed",
+      "svgAndPngRasterization": "passed",
+      "saveReload": "passed",
+      "restrictedControls": "passed"
+    },
+    "dynamicAngles": {
+      "threePoints": "passed",
+      "twoDirections": "passed",
+      "positiveXAxis": "passed",
+      "directedArc": "passed",
+      "radAndOverrides": "passed",
+      "documentDefaults": "passed",
+      "geometryPreserved": "passed",
+      "parentDrag": "passed",
+      "invalidRecovery": "passed",
+      "locks": "passed",
+      "undoRedo": "passed",
+      "fullscreen": "passed",
+      "saveReload": "passed",
+      "svgPng": "passed"
+    },
+    "dynamicText": {
+      "bindingInspector": "passed",
+      "liveGeometry": "passed",
+      "precision": "passed",
+      "history": "passed",
+      "deletionRecovery": "passed",
+      "staticRestore": "passed",
+      "locks": "passed",
+      "fullscreen": "passed",
+      "persistence": "passed"
+    },
+    "axisReferences": {
+      "axisPicking": "passed",
+      "hoverFeedback": "passed",
+      "origin": "passed",
+      "unitCircleDrag": "passed",
+      "directedRadians": "passed",
+      "xyAndYx": "passed",
+      "inspectorRebind": "passed",
+      "hiddenAxes": "passed",
+      "objectPriority": "passed",
+      "toolScope": "passed",
+      "panAndProperties": "passed",
+      "fullscreen": "passed",
+      "history": "passed",
+      "schemaRoundtrip": "passed",
+      "legacyPreference": "passed",
+      "legacyMeasurement": "passed",
+      "restrictedCourseAssessment": "passed",
+      "xmlExport": "passed"
+    },
+    "stackedTools": {
+      "singleColumn": "passed",
+      "equalWidths": "passed",
+      "narrowSidebar": "passed",
+      "splitMenuBounds": "passed",
+      "viewports": 5
+    },
+    "angleArms": {
+      "axisClickedArms": "passed",
+      "clickedShortArms": "passed",
+      "actualPicking": "passed",
+      "interiorArms": "passed",
+      "history": "passed",
+      "dynamicUpdate": "passed",
+      "saveReload": "passed"
+    },
+    "pageErrors": []
+  },
+  "metrics": {
+    "platform": "win32",
+    "arch": "x64",
+    "node": "v22.18.0",
+    "rawBytes": 32452,
+    "gzipBytes": 9553,
+    "batchSize": 100,
+    "warmRuns": 20,
+    "expression": "sin(30 deg)+sqrt(9)+round(2.675;2)",
+    "medianMs": 17.950499999999977,
+    "p95Ms": 23.209100000000035
+  }
+}

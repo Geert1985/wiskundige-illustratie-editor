@@ -1,8 +1,8 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.11.0 - 2026-10-12. Status: T4 regressiecontrole uitgevoerd maar handmatige acceptatie open; T5-prep I1-I4 en Deel A technisch geleverd en wachten op gebruikersacceptatie; T5a–T5d en Deel B niet gestart.
+Versie 1.13.0 - 2026-10-12. Status: T5a uitgevoerd na definitief rekencontractakkoord en expliciete GO; wacht op T5a-acceptatie. T5b–T5d en Deel B niet gestart. Eerdere handmatige T4/T5-prep-controles worden niet als uitgevoerd aangemerkt.
 
-Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
+Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). De gebruiker heeft voor T5 de nieuwe branch `chatgpt/t5-calculator` vanaf `main` aangewezen; dit vervangt de historische branchkeuze `chatgpt/editor-development` voor deze uitvoering. Geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
 ## Volgorde en acceptatie
 
@@ -77,6 +77,8 @@ UX-uitvoering en regressiebewijs: [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-R
 
 ## T5a — Veilige rekenkern
 
+**Uitvoering:** definitief akkoord op sectie 14 (architectuur 1.12.0) en de 56 extra scenario's (acceptatiespecificatie 1.0.0), gevolgd door expliciete GO. Geleverd: drie pure kernmodules en een afzonderlijke hostbronadapter; geen calculator-UI of calculatedValue/schema-4-opslag. [T5a-REPORT.md](T5a-REPORT.md) bevat API, numerieke bewijsvoering, werkelijk uitgevoerde tests en grenzen. De eisen hieronder blijven de normatieve checklist; de eerder vereiste contractgoedkeuring is vervuld. Wacht nu op T5a-acceptatie en afzonderlijke T5b-starttoestemming. Eerdere niet-uitgevoerde handmatige controles blijven als zodanig geregistreerd.
+
 1. Eerst afzonderlijke definitieve goedkeuring van architectuur sectie 14 (dimensies, eenheden, hoekwaarden, UI-adjacency, normalisatie, printer en grensgevallen); geen T5a start zolang dit open is. Daarna grammatica, typed AST, parser/printer en quotas zonder eval/Function.
 2. Pure quantity-engine met lengte-/hoekexponenten en physical/abstract-ruimte; ruwe geometrieadapter zet schaal/SI/rad één keer om.
 3. Functies, domeinfouten, expliciete numerieke toleranties en afrondingsbeleid. Tests voor precedence, omgekeerde eenheden, samengestelde dimensies, powers/roots en graden/radialen.
@@ -137,3 +139,9 @@ T1 is uitgevoerd na expliciet akkoord. De rich-textstructuur is opgenomen in doc
 Implementatie omvat ProseMirror via lokaal gebundelde adapter, gestructureerd model schema 1, `text.commit`, categoriespecifieke restricted checks, legacy-bindingbehoud, inspector bewerken, undo/redo, JSON v7 en offline font-embedded rich SVG. Geen formule-, dynamische inlineveld- of T2/T3-functie is gestart.
 
 Acceptatiegate die resteert: handmatige IME/schermlezerchecks en gebruikersscenario?s uit het T1-rapport. T1 wordt niet als volledig geaccepteerd aangemerkt voor die checks. Test de browsereditor op paragrafen/Shift+Enter, fragmentopmaak, annuleren/bevestigen, bestaande tekst bewerken, undo/redo, herladen, fullscreen en zelfstandige offline SVG/PNG.
+
+## Afzonderlijke UX-opdracht: volledige tekstwerkruimte
+
+Geïmplementeerd op `chatgpt/text-editor-full-workspace` vanaf T5a-commit `ec750d3`, conform de latere expliciete basisbranchinstructie. Geïntegreerde viewportmodus, drie desktopkolommen, afzonderlijke contextpreview rechts, hoofdcommit bovenaan en Meer voor bestaande tekst-JSON-placeholders. Pure rekenmotor, documentmodel, opslag en milestonegates blijven intact.
+
+Geen tests, nieuwe testbestanden, screenshots of browserverificatie uitgevoerd op verzoek van de gebruiker. Technische implementatie is geen claim van functionele acceptatie. Gebruiker controleert layout, formule/waarde-invoeging, autorisatie, cursor, commit/cancel, history, legacy/export, beperkte hoogte/zoom/fullscreen en focus. [Rapport en checklist](TEXT-EDITOR-FULL-WORKSPACE-REPORT.md). T5b/T5c blijven buiten scope en vereisen hun bestaande afzonderlijke toestemming.

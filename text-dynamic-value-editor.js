@@ -2,7 +2,7 @@
   'use strict';
   const MI=global.FZI.MathIllustration;
   const labels={name:'Naam',label:'Label',length:'Lengte',radius:'Straal',perimeter:'Omtrek',area:'Oppervlakte',angle:'Hoek',x:'x-coördinaat',y:'y-coördinaat'};
-  const unitLabels={document:'Documentstandaard',none:'Geen eenheidssuffix',u:'Abstract (u)',dimensionless:'Dimensieloos',mm:'Millimeter (mm)',cm:'Centimeter (cm)',m:'Meter (m)',km:'Kilometer (km)',deg:'Graden (°)',rad:'Radialen (rad)'};
+  const unitLabels={document:'Documentstandaard',none:'Dimensieloos',u:'Abstract (u)',dimensionless:'Dimensieloos',mm:'Millimeter (mm)',cm:'Centimeter (cm)',m:'Meter (m)',km:'Kilometer (km)',deg:'Graden (°)',rad:'Radialen (rad)'};
   const defaultFormat=()=>({precision:null,unitMode:'document',angleMode:'document',prefix:'',suffix:''});
   function mount(panel,editor,options,{begin,close,fail}){
     const sourceSelect=panel.querySelector('#valueSource'),propertySelect=panel.querySelector('#valueProperty'),precision=panel.querySelector('#valuePrecision'),precisionLabel=panel.querySelector('#valuePrecisionLabel'),unit=panel.querySelector('#valueUnit'),prefix=panel.querySelector('#valuePrefix'),suffix=panel.querySelector('#valueSuffix'),apply=panel.querySelector('#valueInsert'),preview=panel.querySelector('#valuePreview'),error=panel.querySelector('#mathError')||panel.closest('dialog')?.querySelector('#mathError');
@@ -12,12 +12,12 @@
     function optionsForProperty(property){
       if(property==='angle')return ['document','deg','rad','none'].map(value=>({value,label:unitLabels[value]}));
       if(property==='name'||property==='label')return [{value:'document',label:'Geen eenheid'}];
-      return MI.TextValues.units.map(value=>({value,label:unitLabels[value]||value}));
+      return MI.TextValues.units.filter(value=>value!=='none').map(value=>({value,label:unitLabels[value]||value}));
     }
     function unitChoice(format,property){
       if(property==='angle')return format.unitMode==='none'?'none':format.angleMode||'document';
       if(property==='name'||property==='label')return 'document';
-      return format.unitMode||'document';
+      return format.unitMode==='none'?'dimensionless':format.unitMode||'document';
     }
     function formatForUnit(choice,property,base){
       if(property==='angle')return {...base,unitMode:choice==='none'?'none':'document',angleMode:choice==='none'?'document':choice};
@@ -25,19 +25,22 @@
       return {...base,unitMode:choice,angleMode:'document'};
     }
     function updatePrecisionLabel(){
-      if(!precisionTouched&&precisionStored===null){precisionLabel.textContent='Documentstandaard';return;}
-      if(!precisionTouched&&precisionStored>3){precisionLabel.textContent=`Aangepast (${precisionStored})`;return;}
-      precisionLabel.textContent=`${precision.value} ${Number(precision.value)===1?'decimaal':'decimalen'}`;
+      const effective=precisionTouched?precision.valueAsNumber:precisionStored??options.precisionFor?.({sourceId:sourceSelect.value,property:propertySelect.value})??2;
+      if(!precisionTouched)precision.value=String(Math.min(3,Math.max(0,effective)));
+      precisionLabel.textContent=effective+' '+(effective===1?'decimaal':'decimalen');
+      precision.setAttribute('aria-valuetext',precisionLabel.textContent);
     }
     function valueData(){
       const property=propertySelect.value,base=unitTouched?formatForUnit(unit.value,property,activeBaseFormat):activeBaseFormat;
       return MI.TextValues.validate({sourceId:sourceSelect.value,property},{precision:precisionTouched?precision.valueAsNumber:precisionStored,unitMode:base.unitMode,angleMode:base.angleMode,prefix:prefix.value,suffix:suffix.value});
     }
     function refresh(){
-      if(destroyed||panel.dataset.tab!=='value')return;
+      if(destroyed||panel.querySelector('#textInsertPanel').dataset.tab!=='value')return;
+      updatePrecisionLabel();
+      if(!sourceSelect.value||!propertySelect.value){preview.textContent='Geen beschikbare bron.';preview.dataset.valueStatus='missing';apply.disabled=true;error.textContent='';return;}
       try{
         const data=valueData(),result=options.resolveValue?.({...data,kind:'dynamicValue'})||{status:'missing',text:'niet beschikbaar'};
-        preview.textContent=result.text;preview.dataset.valueStatus=result.status;apply.disabled=!editing||result.status==='denied';error.textContent=result.status==='denied'?'Bronwaarde niet toegestaan.':'';
+        preview.textContent=result.text;preview.dataset.valueStatus=result.status;apply.disabled=result.status==='denied';error.textContent=result.status==='denied'?'Bronwaarde niet toegestaan.':'';
       }catch(exception){preview.textContent='niet beschikbaar';preview.dataset.valueStatus='invalid';apply.disabled=true;error.textContent=exception.message;}
     }
     function setProperties(value){
@@ -62,7 +65,7 @@
     on(unit,'change',()=>{unitTouched=true;refresh();});
     on(precision,'input',()=>{precisionTouched=true;updatePrecisionLabel();refresh();});
     for(const node of [prefix,suffix])on(node,'input',refresh);
-    on(apply,'click',()=>{if(!editing)return;try{const data=valueData();editor.insertValue(data.binding,data.format,bookmark,position);editing=false;position=null;bookmark=null;apply.disabled=true;close(false);}catch(exception){fail(exception);}});
+    on(apply,'click',()=>{try{refresh();if(apply.disabled)return;const data=valueData();if(!editing){bookmark=begin('value');position=null;editing=true;}editor.insertValue(data.binding,data.format,bookmark,position);editing=false;position=null;bookmark=null;close(false);refresh();}catch(exception){fail(exception);}});
     editor.setValueEditHandler(open);
     return Object.freeze({open,refresh,cancel(){editing=false;position=null;bookmark=null;apply.disabled=true;preview.textContent='';preview.dataset.valueStatus='idle';},destroy(){destroyed=true;listeners.splice(0).forEach(remove=>remove());editor.setValueEditHandler(null);}});
   }

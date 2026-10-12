@@ -1,0 +1,5594 @@
+{
+  "schema": 1,
+  "oracle": "Python stdlib Fraction exact rationals; Decimal precision=1200; seed=512014",
+  "rounds": [
+    {
+      "value": 2.5,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "4008000000000000"
+    },
+    {
+      "value": 2.5,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4003f770e9584ba6"
+    },
+    {
+      "value": 2.5,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4003fe970599397e"
+    },
+    {
+      "value": 2.5,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "400400050b3fcf76"
+    },
+    {
+      "value": 2.5,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4003ffffffffff1c"
+    },
+    {
+      "value": -2.5,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "c008000000000000"
+    },
+    {
+      "value": -2.5,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c003f770e9584ba6"
+    },
+    {
+      "value": -2.5,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c003fe970599397e"
+    },
+    {
+      "value": -2.5,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c00400050b3fcf76"
+    },
+    {
+      "value": -2.5,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c003ffffffffff1c"
+    },
+    {
+      "value": 1.005,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "3ff0000000000000"
+    },
+    {
+      "value": 1.005,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "3ff0000000000000"
+    },
+    {
+      "value": 1.005,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "3ff03258031ade7c"
+    },
+    {
+      "value": 1.005,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "3ff0000000000000"
+    },
+    {
+      "value": 1.005,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "3ff0147ae147ae15"
+    },
+    {
+      "value": 1.005,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "3ff015bf9217271a"
+    },
+    {
+      "value": 1.005,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "3ff0000000000000"
+    },
+    {
+      "value": 1.005,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "3ff0147ae147ae15"
+    },
+    {
+      "value": 1.005,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "3ff014518c709122"
+    },
+    {
+      "value": 1.005,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "3ff0147ae147ae14"
+    },
+    {
+      "value": 1.005,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "3ff0147ae147ae15"
+    },
+    {
+      "value": 1.005,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "3ff0147ae1479f6d"
+    },
+    {
+      "value": -1.005,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "bff0000000000000"
+    },
+    {
+      "value": -1.005,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "bff0000000000000"
+    },
+    {
+      "value": -1.005,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "bff03258031ade7c"
+    },
+    {
+      "value": -1.005,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "bff0000000000000"
+    },
+    {
+      "value": -1.005,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "bff0147ae147ae15"
+    },
+    {
+      "value": -1.005,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "bff015bf9217271a"
+    },
+    {
+      "value": -1.005,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "bff0000000000000"
+    },
+    {
+      "value": -1.005,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "bff0147ae147ae15"
+    },
+    {
+      "value": -1.005,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "bff014518c709122"
+    },
+    {
+      "value": -1.005,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "bff0147ae147ae14"
+    },
+    {
+      "value": -1.005,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "bff0147ae147ae15"
+    },
+    {
+      "value": -1.005,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "bff0147ae1479f6d"
+    },
+    {
+      "value": 2.675,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "4008000000000000"
+    },
+    {
+      "value": 2.675,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "40055c28f5c28f5c"
+    },
+    {
+      "value": 2.675,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "40055ce26e06bfee"
+    },
+    {
+      "value": 2.675,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "400599999999999a"
+    },
+    {
+      "value": 2.675,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "4005666666666667"
+    },
+    {
+      "value": 2.675,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4005679b986824b3"
+    },
+    {
+      "value": 2.675,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "40055c28f5c28f5c"
+    },
+    {
+      "value": 2.675,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "4005666666666667"
+    },
+    {
+      "value": 2.675,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "40056689142b3439"
+    },
+    {
+      "value": 2.675,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "4005666666666666"
+    },
+    {
+      "value": 2.675,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "4005666666666667"
+    },
+    {
+      "value": 2.675,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4005666666666723"
+    },
+    {
+      "value": -2.675,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "c008000000000000"
+    },
+    {
+      "value": -2.675,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "c0055c28f5c28f5c"
+    },
+    {
+      "value": -2.675,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c0055ce26e06bfee"
+    },
+    {
+      "value": -2.675,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "c00599999999999a"
+    },
+    {
+      "value": -2.675,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "c005666666666667"
+    },
+    {
+      "value": -2.675,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c005679b986824b3"
+    },
+    {
+      "value": -2.675,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "c0055c28f5c28f5c"
+    },
+    {
+      "value": -2.675,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "c005666666666667"
+    },
+    {
+      "value": -2.675,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c0056689142b3439"
+    },
+    {
+      "value": -2.675,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "c005666666666666"
+    },
+    {
+      "value": -2.675,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "c005666666666667"
+    },
+    {
+      "value": -2.675,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c005666666666723"
+    },
+    {
+      "value": 1e+308,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 1e+308,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "7fe1ccf385ebc8a0"
+    },
+    {
+      "value": 5e-324,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5e-324,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "4008000000000000"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4003f770e9584ba6"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4003fe970599397e"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "400400050b3fcf76"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.5000000000000004,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4003ffffffffff1c"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "4000000000000000"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4003f770e9584ba6"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4003fe970599397e"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "400400050b3fcf76"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "4004000000000000"
+    },
+    {
+      "value": 2.4999999999999996,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "4003ffffffffff1c"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "c000000000000000"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c003f770e9584ba6"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c003fe970599397e"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c00400050b3fcf76"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.4999999999999996,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c003ffffffffff1c"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "c008000000000000"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c003f770e9584ba6"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c003fe970599397e"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c00400050b3fcf76"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "c004000000000000"
+    },
+    {
+      "value": -2.5000000000000004,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "c003ffffffffff1c"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -2.8026734990231845e+169,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e31db492f35a3048"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.588692087216195e-146,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "bfbc28f5c28f5c29"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "bfbacee9f37bebd6"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "bfb999999999999a"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "bfbcac083126e979"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "bfbc987103b761f5"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "bfbc28f5c28f5c29"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "bfbcc63f141205bc"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "bfbcc631b88a20f8"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "bfbcc48699d9fdaf"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "bfbcc48699eee1b6"
+    },
+    {
+      "value": -0.11237374551852135,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "bfbcc48699ee93dc"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -6.073191334728765e+173,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e403a4dbc4f58882"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.3678103727472098e-132,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.51627112768761e-18,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.5703097246908951e+97,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "541d681f4d4f7046"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.9955518661390397e-303,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "413d0fe600000000"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "413d0fe635c28f5c"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "413d0fe63680d77d"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "413d0fe633333333"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "413d0fe6353f7cee"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "413d0fe63529b231"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "413d0fe635c28f5c"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "413d0fe635532618"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "413d0fe6355772e6"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "413d0fe635548985"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "413d0fe635548985"
+    },
+    {
+      "value": 1904614.208321185,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "413d0fe635548985"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -2.560392657926899e+178,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e4f9461255a763c4"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4907668973204998e-134,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6490272812322657e-71,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "be6550539269c89d"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "be654a01173f5c1d"
+    },
+    {
+      "value": -3.965444390078159e-08,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "be6549fce3d5f384"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.28744018525264e-225,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.605784191845652e-83,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": 2.4726538484908636e+224,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6e8560621999da41"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.171214530496893e-268,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.032516693901822e-180,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.150304645134415e-171,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.6495976723257574e-256,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -6.588840841191228e-253,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.434687215519425e-120,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.071187605260934e-308,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": -2.693888738862182e+258,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f5966d3563a9e69d"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 5.922073937084575e-15,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.9588240101861227e+165,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e24101fe42d61ed5"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.0931622727786037e-73,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.1141569368552817e-112,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.804291809268605e-268,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.0426720420532243e+207,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6ae9fb35bddef43f"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7010461152262088e+44,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "491e82d21953e8d1"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.7225881418055357e-29,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4159902959380548e-13,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 4.242660617506077e-13,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": -9.937949091045377e+173,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e41012853a21eeb5"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": 5.017967509819626e+171,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6394c6837398aad8"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.0947737665976159e+131,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "db23be02ea664d1e"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": -1.196313323838567e+133,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "db90daa988aeceff"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 8.571968006670117e+137,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5c926d65c485edb9"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.9894584450506948e+220,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "6dac2ddd59ec2d89"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.4390889664287467e-80,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.2898254697261406e-191,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": 3.576681409171867e+45,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "49640c493f4b3726"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.572492122404907e-43,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -4.65762043508382e+169,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "e328aed3c6f45b91"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.652377434460114e-125,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 2.829888965756289e+106,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5608ad6fb40b15aa"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.0266629113249774e-234,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.5610677035085725e-171,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -3.0532584544787875e+146,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "de587396106e7093"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.4217477728120142e-127,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -1.9130432597788706e+264,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f6ce60662ba52166"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -9.425539872197116e-157,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.6591003047871802e-105,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -8.360570599483911e+102,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "d54ddcd248cc4569"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": -2.2921216806180725e+290,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "fc37852ebdfa67e9"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.639215981299586e-183,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 2.3062186584181648e+293,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "7cd71c397f319f69"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 1.593541716383955e+138,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "5ca120db3d199cfa"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 6.430336492747266e-79,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": 1.1425425615072031e-191,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "0000000000000000"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -2.8064869874294795e+233,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "f06698a3db5c0ade"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": -3.7292759315721e+149,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "defd2a51ff2c2a82"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 0,
+      "factor": 1.0,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 0,
+      "factor": 0.01,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 0,
+      "factor": 0.017453292519943295,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 1,
+      "factor": 1.0,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 1,
+      "factor": 0.01,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 1,
+      "factor": 0.017453292519943295,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 2,
+      "factor": 1.0,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 2,
+      "factor": 0.01,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 2,
+      "factor": 0.017453292519943295,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 10,
+      "factor": 1.0,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 10,
+      "factor": 0.01,
+      "expectedBits": "52d8e0f7464e942c"
+    },
+    {
+      "value": 1.266973896880688e+91,
+      "digits": 10,
+      "factor": 0.017453292519943295,
+      "expectedBits": "52d8e0f7464e942c"
+    }
+  ],
+  "transcendentals": [
+    {
+      "function": "exp",
+      "value": -744.0,
+      "expectedBits": "0000000000000002",
+      "code": null
+    },
+    {
+      "function": "exp",
+      "value": -745.0,
+      "expectedBits": "0000000000000001",
+      "code": null
+    },
+    {
+      "function": "exp",
+      "value": -746.0,
+      "expectedBits": "0000000000000000",
+      "code": "NUMERIC_UNDERFLOW"
+    },
+    {
+      "function": "exp",
+      "value": -1000.0,
+      "expectedBits": "0000000000000000",
+      "code": "NUMERIC_UNDERFLOW"
+    },
+    {
+      "function": "exp",
+      "value": -745.1332191019413,
+      "expectedBits": "0000000000000000",
+      "code": "NUMERIC_UNDERFLOW"
+    },
+    {
+      "function": "exp",
+      "value": -745.1332191019412,
+      "expectedBits": "0000000000000000",
+      "code": "NUMERIC_UNDERFLOW"
+    },
+    {
+      "function": "exp",
+      "value": -745.1332191019411,
+      "expectedBits": "0000000000000001",
+      "code": null
+    },
+    {
+      "function": "exp",
+      "value": -708.3964185322642,
+      "expectedBits": "000ffffffffffe7c",
+      "code": null
+    },
+    {
+      "function": "exp",
+      "value": -708.3964185322641,
+      "expectedBits": "001000000000007c",
+      "code": null
+    },
+    {
+      "function": "exp",
+      "value": -708.396418532264,
+      "expectedBits": "001000000000027c",
+      "code": null
+    },
+    {
+      "function": "sin",
+      "value": 5e-324,
+      "expectedBits": "0000000000000001",
+      "code": null
+    },
+    {
+      "function": "sin",
+      "value": -5e-324,
+      "expectedBits": "8000000000000001",
+      "code": null
+    },
+    {
+      "function": "sin",
+      "value": 1.1125369292536007e-308,
+      "expectedBits": "0008000000000000",
+      "code": null
+    },
+    {
+      "function": "sin",
+      "value": -1.1125369292536007e-308,
+      "expectedBits": "8008000000000000",
+      "code": null
+    },
+    {
+      "function": "sin",
+      "value": 1e-300,
+      "expectedBits": "01a56e1fc2f8f359",
+      "code": null
+    },
+    {
+      "function": "sin",
+      "value": -1e-300,
+      "expectedBits": "81a56e1fc2f8f359",
+      "code": null
+    },
+    {
+      "function": "ln",
+      "value": 0.9999999999999999,
+      "expectedBits": "bca0000000000000",
+      "code": null
+    },
+    {
+      "function": "ln",
+      "value": 1.0,
+      "expectedBits": "0000000000000000",
+      "code": null
+    },
+    {
+      "function": "ln",
+      "value": 1.0000000000000002,
+      "expectedBits": "3cafffffffffffff",
+      "code": null
+    }
+  ]
+}
