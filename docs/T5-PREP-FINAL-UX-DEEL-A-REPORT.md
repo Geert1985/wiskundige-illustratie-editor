@@ -1,6 +1,6 @@
 # T5-prep Deel A — UX-opleverrapport
 
-Versie 1.0.0 — 2026-10-12
+Versie 1.1.0 — 2026-10-12
 
 Branch: `chatgpt/editor-development`
 Status: geïmplementeerd en geautomatiseerd gecontroleerd; wacht op handmatige acceptatie.
@@ -52,3 +52,12 @@ De browsercontrole heeft ook tablet- en smalle-scherm-layouts doorlopen. Mobiele
 - Er is geen handmatige controle uitgevoerd op elk individueel legacydocument; compatibiliteit is afgedekt door bestaande Node-/Edge-regressies en het onveranderde documentmodel.
 
 Na push stopt de uitvoering voor handmatige acceptatie. Er is geen toestemming gegeven om T5a–T5d of canvas-resizing te starten.
+
+## Correcties na gebruikersfeedback
+
+- Het wisselen tussen **Formule** en **Waarden** is nu een zuivere paneel/tabwissel. Het toont niet langer de foutmelding dat een openstaande waarde eerst moet worden bevestigd. Een niet-afgeronde invoer blijft behouden; een conflicterende invoeractie blijft apart begrensd en toont dan pas een passende melding.
+- Lokale tekstgeschiedenis staat in de kop van het tekstvenster met de zichtbare knoppen **Ongedaan maken** en **Opnieuw**, in de knopstijl van de illustratie-editor.
+- De tekstkleurknop toont een vierkant kleurstaal met de actuele kleur. Aangepaste en gemengde kleuren behouden hun bestaande statusweergave.
+- De formule- en waardenpanelen hebben expliciete, exclusieve zichtbaarheid. CSS kan de verborgen paneelstatus niet meer overschrijven.
+
+Voor deze correctieronde zijn op verzoek **geen Node- of Edge-testsuites uitgevoerd**. Handmatige verificatie van tabwisselen, undo/redo in de kop en de kleurstaal blijft open voor de gebruiker.

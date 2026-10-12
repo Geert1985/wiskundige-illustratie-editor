@@ -189,6 +189,9 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .text-editor-heading{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 22px;border-bottom:1px solid #31434c;background:#132630}
 .text-editor-heading h2{margin:2px 0 0;font-size:22px;font-weight:700;color:#edf1f2}
 #textDialogContext{margin:2px 0 0;color:#a8bac3;font-size:12px}
+.text-editor-header-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.text-editor-history{display:flex;align-items:center;gap:8px}
+.text-editor-history button.secondary{height:40px;padding:8px 15px}
 .text-editor-dialog .rich-text-toolbar{flex:0 0 auto;display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;padding:10px 16px;border-bottom:1px solid #30434d;background:#12252e}
 .rich-toolbar-group{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding:2px 7px;border-right:1px solid #344850}
 .text-editor-dialog .rich-text-toolbar button,.text-editor-dialog .rich-text-toolbar select,.text-editor-dialog .rich-text-toolbar input{min-height:34px;border:1px solid #364c57;border-radius:7px;background:#192c35;color:#e9eef0;font-size:12px}
@@ -262,21 +265,15 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .text-editor-dialog .rich-text-toolbar [data-rich-mark][aria-pressed="true"],.text-editor-dialog .rich-align-group button[aria-pressed="true"]{color:#fff4c3;border-color:#f2ca59;background:#354039;box-shadow:inset 0 -3px 0 #f2ca59}
 .text-editor-dialog .rich-text-toolbar [data-rich-mark].is-mixed,.text-editor-dialog .rich-align-group button.is-mixed{background:repeating-linear-gradient(135deg,#192c35 0 5px,#35434a 5px 9px);border-style:dashed}
 .text-editor-dialog .rich-align-group{display:flex;gap:3px;margin-left:3px;padding-left:7px;border-left:1px solid #344850}
-.text-editor-dialog .rich-align-group svg,.text-editor-dialog .rich-history-group svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.text-editor-dialog .rich-align-group svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .text-editor-dialog .rich-color-wrap{position:relative;display:inline-flex}
-.text-editor-dialog .rich-color-button{position:relative;font-size:17px;font-weight:800}
-.text-editor-dialog .rich-color-button:after{content:"";position:absolute;left:7px;right:7px;bottom:4px;height:3px;border-radius:2px;background:var(--rich-text-color,#888);box-shadow:0 0 0 1px #111}
-.text-editor-dialog .rich-color-button.is-custom:before{content:"";position:absolute;inset:2px;border:1px dashed #f2ca59;border-radius:5px}
-.text-editor-dialog .rich-color-button.is-mixed:after{background:repeating-linear-gradient(90deg,#e63946 0 4px,#e9c46a 4px 8px,#457b9d 8px 12px)}
+.text-editor-dialog .rich-color-button{position:relative}
 .rich-color-menu{position:absolute;z-index:6;top:calc(100% + 7px);left:0;display:grid;grid-template-columns:repeat(4,36px);gap:5px;width:max-content;padding:8px;border:1px solid #526872;border-radius:9px;background:#132630;box-shadow:0 10px 30px #07101888}
 .rich-color-menu[hidden]{display:none}
 .rich-color-swatch{width:36px;height:36px;min-width:36px!important;padding:5px!important}
 .palette-swatch{display:block;width:17px;height:17px;border-radius:50%;border:1px solid #fff;box-shadow:0 0 0 1px #071018}
 .rich-color-swatch[aria-pressed="true"]{outline:2px solid #f2ca59;outline-offset:2px}
 .rich-color-swatch[aria-pressed="true"] .palette-swatch{box-shadow:0 0 0 2px #f2ca59}
-.text-editor-dialog .rich-history-group{flex:0 0 auto;margin-left:auto;border:0}
-.text-editor-dialog .rich-history-group button{width:36px;padding:6px}
-.text-editor-dialog .rich-history-group button:disabled{opacity:.4;cursor:default;filter:none}
 
 /* T5-prep Deel A: permanent two-column mathematical text workspace. */
 #textDialog.text-editor-dialog{width:min(1440px,calc(100vw - 48px));height:min(1080px,calc(100dvh - 32px));max-height:calc(100dvh - 32px)}
@@ -289,7 +286,7 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .insert-tabs [role="tab"][aria-selected="true"]{border-color:#f2ca59;background:#202f2d;color:#f2ca59;box-shadow:inset 0 -3px 0 #f2ca59}
 .insert-tabs [role="tab"]:focus-visible{outline:2px solid #f2ca59;outline-offset:2px}
 .text-insert-pane{flex:1 1 auto;min-height:0;overflow:auto;padding:3px 4px 10px;scrollbar-color:#536b76 #0d2029}
-.text-insert-pane[hidden]{display:none}
+.text-insert-pane[hidden],.text-editor-dialog .text-insert-pane[hidden]{display:none!important}
 .text-editor-dialog .text-insert-pane label{display:block;margin:11px 0;color:#dce4e7;font-size:12px}
 .text-editor-dialog .text-insert-pane input,.text-editor-dialog .text-insert-pane select,.text-editor-dialog .text-insert-pane textarea{display:block;width:100%;box-sizing:border-box;min-height:40px;padding:8px 10px;border:1px solid #39505b;border-radius:8px;background:#10232d;color:#e9eef0;font-family:inherit;font-size:14px}
 .text-editor-dialog .text-insert-pane textarea{min-height:108px;resize:vertical;font-family:ui-monospace,Consolas,monospace}
@@ -304,11 +301,12 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .text-editor-dialog .rich-text-toolbar select{min-width:116px;max-width:154px}
 .text-editor-dialog #richFontSize{min-width:118px}
 .text-editor-dialog .rich-align-group{gap:4px;margin-left:2px;padding-left:8px;border-left:1px solid #344a54}
-.text-editor-dialog .rich-history-group{margin-left:auto;padding-left:7px;border-left:1px solid #344a54}
-.text-editor-dialog .rich-history-group button{min-width:44px}
 .text-editor-dialog .rich-color-wrap{display:inline-flex;align-items:center}
-.text-editor-dialog .rich-color-button{position:relative;min-width:44px!important;font-size:18px!important}
-.text-editor-dialog .rich-color-button:after{bottom:5px}
+.text-editor-dialog .rich-color-button{position:relative;min-width:44px!important}
+.text-editor-dialog .rich-color-button{display:flex;align-items:center;justify-content:center}
+.rich-color-indicator{display:block;width:18px;height:18px;border:1px solid #f0f3f4;border-radius:3px;background:var(--rich-text-color,#888);box-shadow:0 0 0 1px #071018}
+.rich-color-button.is-custom .rich-color-indicator{outline:1px dashed #f2ca59;outline-offset:2px}
+.rich-color-button.is-mixed .rich-color-indicator{background:repeating-linear-gradient(135deg,#e63946 0 4px,#e9c46a 4px 8px,#457b9d 8px 12px)}
 .text-editor-dialog .text-editor-message{flex:0 0 auto;min-height:0;margin:0;padding:0 18px;color:#ffb9b9;font-size:12px}
 .text-editor-dialog .text-editor-message:empty{display:none}
 .text-editor-dialog .rich-text-surface{flex:1 1 auto;width:auto;height:auto;max-width:none!important;min-height:0;max-height:none;overflow:auto;margin:3px 14px 14px;padding:34px 36px;border:1px solid #aeb8bc;border-radius:9px;background:#fff;color:#222;font:18px "Source Sans 3",system-ui,sans-serif;outline:none}
@@ -342,7 +340,7 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
   .text-editor-dialog .rich-text-toolbar select{min-width:65px;max-width:80px;padding:4px 16px 4px 5px}
   .text-editor-dialog #richFontSize{min-width:78px}
   .text-editor-dialog .rich-text-toolbar button{min-width:30px;min-height:34px;padding:3px 4px}
-  .text-editor-dialog .rich-align-group{padding-left:4px}.text-editor-dialog .rich-history-group{margin-left:auto}
+  .text-editor-dialog .rich-align-group{padding-left:4px}
   .text-editor-dialog .rich-text-surface{margin:2px 6px 6px;padding:12px;font-size:16px}
   .text-editor-dialog .text-editor-actions{min-height:58px;padding:7px 9px}.text-editor-dialog .text-editor-actions>span{max-width:48%;font-size:10px}.text-editor-dialog .text-editor-actions button{min-height:38px;padding:6px 9px}
 }
@@ -354,7 +352,6 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 }
 @media(max-width:900px){
   .text-editor-dialog .rich-format-group{flex:1 1 100%;border-right:0;border-bottom:1px solid #344850;padding-bottom:6px}
-  .text-editor-dialog .rich-history-group{margin-left:auto}
 }
 @media(max-width:600px){
   .text-editor-dialog .rich-text-toolbar{max-height:168px;overflow:auto;align-items:center;padding:6px}
@@ -363,7 +360,6 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
   .text-editor-dialog .rich-format-group select{min-width:65px;max-width:90px;padding-right:17px}
   .text-editor-dialog #richFontSize{min-width:91px}
   .text-editor-dialog .rich-text-toolbar button{min-width:34px;min-height:36px;padding:4px 6px}
-  .text-editor-dialog .rich-history-group{margin-left:auto;padding-right:0}
 }
 /* Formula workspace: one stable LaTeX editor, catalog and preview. */
 .text-editor-dialog .formula-controls{display:flex;flex-direction:column;overflow:hidden;gap:5px}
