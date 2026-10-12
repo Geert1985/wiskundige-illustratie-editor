@@ -9,3 +9,6 @@ exports.choose=async(page,selector)=>{
 exports.action=async(page,selector)=>{if(!(await page.locator('#fileMenu').evaluate(el=>el.open)))await page.locator('#moreBtn').click();await page.locator(selector).click();};
 
 exports.importFile=async(page,file)=>{const confirm=d=>{if(d.type()==='confirm')d.accept();};page.on('dialog',confirm);try{await page.locator('#fileInput').setInputFiles(file);await page.waitForFunction(()=>FZI.MathIllustration.editor.reader===null);}finally{page.off('dialog',confirm);}};
+
+// Base64 font bytes may contain the letters NaN/Infinity; they are not numeric SVG values.
+exports.numericSVG=svg=>svg.replace(/data:font\/ttf;base64,[A-Za-z0-9+/=]+/g,'embedded-font');

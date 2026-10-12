@@ -9,8 +9,10 @@ function runtime(files = ['model.js', 'renderer.js', 'index.js'], additions = {}
   context.window = context;
   vm.createContext(context);
   for (const file of files) {
+    if(file==='model.js')for(const service of ['math-source.js','text-values.js','text-dependencies.js'])vm.runInContext(fs.readFileSync(path.join(root,service),'utf8'),context,{filename:service});
+    if (file === 'renderer.js') for(const service of ['math-fragments.js','text-metrics.js','rich-text-renderer.js'])vm.runInContext(fs.readFileSync(path.join(root,service),'utf8'),context,{filename:service});
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'regular-geometry.js'), 'utf8'), context, { filename: 'regular-geometry.js' });
-    if (file === 'editor.js') vm.runInContext(fs.readFileSync(path.join(root, 'editor-tool-instructions.js'), 'utf8'), context, { filename: 'editor-tool-instructions.js' });
+    if (file === 'editor.js') for (const service of ['editor-color.js', 'text-editor-ux.js', 'editor-tool-instructions.js']) vm.runInContext(fs.readFileSync(path.join(root, service), 'utf8'), context, { filename: service });
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'persistent-groups.js'), 'utf8'), context);
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'document-layers.js'), 'utf8'), context);
@@ -19,7 +21,7 @@ function runtime(files = ['model.js', 'renderer.js', 'index.js'], additions = {}
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'measurement-geometry.js'), 'utf8'), context);
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'construction-service.js'), 'utf8'), context);
     if (file === 'editor.js') vm.runInContext(fs.readFileSync(path.join(root, 'editor-bootstrap.js'), 'utf8'), context);
-    if (file === 'index.js') for (const service of ['editor-history.js', 'coordinate-transform.js', 'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'permission-runtime.js']) {
+    if (file === 'index.js') for (const service of ['editor-history.js', 'coordinate-transform.js', 'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js', 'permission-runtime.js']) {
       vm.runInContext(fs.readFileSync(path.join(root, service), 'utf8'), context, { filename: service });
     }
   }

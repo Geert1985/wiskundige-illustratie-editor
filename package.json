@@ -7,6 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "build:text": "node scripts/build-text-metrics.cjs && node scripts/build-text-editor.cjs",
     "serve": "node scripts/serve.cjs",
     "test": "node --test tests/*.test.cjs",
     "test:edge": "node tests/browser.cjs"

@@ -1,10 +1,10 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.1.0 — 2026-10-11 — **gecorrigeerd voorstel, fase 0; niet definitief goedgekeurd**.
+Versie 1.11.0 - 2026-10-12 - T5-prep Deel A tweedelig formule-/waardenpaneel en wit tekstcanvas; handmatige acceptatie staat open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
-Dit document beschrijft toekomstige implementatie, geen reeds geleverde functionaliteit. De masteropdracht vereist expliciete goedkeuring na fase 0 en na iedere milestone, inclusief T5a–d. T1 is niet gestart. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
+Sectie 1 bewaart de historische inventaris van fase 0. Secties 19-21 beschrijven de geleverde T1-T3-implementatie en zijn leidend voor hun actuele status. Sectie 23 beschrijft T4; sectie 24 legt T5-prep als ontwerp/prototype vast; T5a–T5d blijven afzonderlijke rekenmilestones. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
 
 Audit B1–B7 is verwerkt in secties 11–18 en [audit resolution](TEXT-EDITOR-ARCHITECTURE-AUDIT-RESOLUTION.md). Die secties preciseren het eerdere voorstel en zijn leidend bij verschil. Bibliotheek- en fontkeuzes blijven open tot afzonderlijk goedgekeurde technische proeven resultaat leveren.
 
@@ -68,11 +68,11 @@ Een AST bewaart stabiele bron-IDs; zichtbare namen zijn geen sleutels. Eventuele
 
 ## 3. Formaat en migratie
 
-Voorstel: document v6 zodra rich text aanwezig is, met afzonderlijke tekstschemaversie. Tekstschema 1=T1, 2=T2, 3=T3, 4=T5c. Onbekende toekomstige fragmenten worden vóór mutatie afgewezen. Constructieschema's blijven onafhankelijk. Vervang exacte versievergelijkingen voor lagen door feature-/minimumversiechecks.
+Oud voorstel: document v6 zodra rich text aanwezig is, met afzonderlijke tekstschemaversie; dit is door T1-amendement sectie 19 bijgewerkt naar v7. Tekstschema 1=T1, 2=T2, 3=T3, 4=T5c. Onbekende toekomstige fragmenten worden vóór mutatie afgewezen. Constructieschema's blijven onafhankelijk. Vervang exacte versievergelijkingen voor lagen door feature-/minimumversiechecks.
 
 Ongewijzigde legacydocumenten blijven v1–5 lezen en hun bestaande writerpad gebruiken. Statische tekst wordt pas bij bevestigen van een bewerking naar textContent omgezet. Annuleren migreert niets. T1 behoudt bestaande dynamische bindings en hun inspector; gebonden inhoud wordt niet tot statische tekst afgevlakt. T3 kan die binding bij een bevestigde bewerking omzetten naar prefix + dynamicValue + suffix; bewaar de bestaande statische terugval voor expliciet ontkoppelen. textBinding en textContent zijn wederzijds uitsluitend.
 
-Constructietekst voor oppervlakte/omtrek blijft receptgestuurd; vrij bewerken vraagt eerst bewust losmaken. Ontbrekende bron-IDs blijven in auteursdocumenten bewaard zodat undo herstel mogelijk maakt. Duplicatie van alleen tekst behoudt bron-IDs; duplicatie met bronnen remapt uitsluitend meegekopieerde IDs. Import, duplicatie, exportprojectie en replay krijgen dezelfde validator. Oude applicatieversies mogen v6 afwijzen; stil verlies van opmaak is geen downgradebeleid.
+Constructietekst voor oppervlakte/omtrek blijft receptgestuurd; vrij bewerken vraagt eerst bewust losmaken. Ontbrekende bron-IDs blijven in auteursdocumenten bewaard zodat undo herstel mogelijk maakt. Duplicatie van alleen tekst behoudt bron-IDs; duplicatie met bronnen remapt uitsluitend meegekopieerde IDs. Import, duplicatie, exportprojectie en replay krijgen dezelfde validator. Oude applicatieversies mogen v7 afwijzen; stil verlies van opmaak is geen downgradebeleid.
 
 ## 4. Modules en transacties
 
@@ -87,15 +87,16 @@ Voorgestelde modules:
 | text-layout.js | Advances, ascent/descent, regels, baseline, totale bounds |
 | text-svg.js | Gedeelde SVG-uitvoer voor preview, canvas en export |
 | math-fragments.js | Begrensde formuleadapter, assetreadiness, cache |
-| expression-engine.js | Pure parser, typecontrole en evaluator |
-| text-calculator.js | Rekenmachine en bronkiezer |
+| expression-engine.js | UI-onafhankelijke parser, AST, dimensies, eenheden en evaluator (T5a) |
+| calculator-source-adapter.js (voorgesteld) | Gedeelde geautoriseerde geometrie-quantitysnapshot voor beide calculatormodi en calculatedValue |
+| text-calculator.js (voorgesteld) | Eén herbruikbare interface met zelfstandige en inline hostadapter (T5b/T5c); geen eigen evaluator |
 | export-service.js | Expliciete assetvoorbereiding, zelfstandige SVG en PNG |
 
 Pipeline: geautoriseerde snapshot → waarden oplossen → lay-out → SVG. De bestaande synchrone Engine.renderSVG blijft beschikbaar voor legacy en voorbereide assets. Een expliciete asynchrone voorbereidings-/exportlaag wacht op fonts/formules; geen impliciete wijziging naar Promise. Resultaten van oude async-taken worden verworpen op documentrevisie, inhoudshash en permission epoch.
 
 Voorstel één getypeerde `text.commit`-actie voor maken/bewerken. Payload bevat doel (nieuw/bestaand), inhoud en verwachte revisie. AuthorCommands, restricted runtime en semantic replay valideren deze centraal. Autorisatie vergelijkt wijzigingen per categorie: inhoud, opmaak en bronnen. Geen algemene vrijbrief voor een complete AST via bestaande stijlgrants.
 
-De dialog bewerkt uitsluitend een private draft. Lokale undo/redo tijdens typen verandert documentgeschiedenis niet. OK levert één atomaire documentactie; Annuleren nul. Controleer bij OK opnieuw bronrechten, locks, bestaan en revisie. Bij conflict niet stil overschrijven. Native Escape sluit eerst een kindpaneel, dan de dialog; fullscreen blijft actief. Import/dispose en gewijzigde selectie mogen geen stale draft bevestigen.
+De teksteditor- en inline-dialog bewerken uitsluitend een private draft. De zelfstandige calculator heeft uitsluitend sessiestaat zonder documentcommit (sectie 22). Lokale undo/redo tijdens typen verandert documentgeschiedenis niet. OK levert één atomaire documentactie; Annuleren nul. Controleer bij OK opnieuw bronrechten, locks, bestaan en revisie. Bij conflict niet stil overschrijven. Native Escape sluit eerst een kindpaneel, dan de dialog; fullscreen blijft actief. Import/dispose en gewijzigde selectie mogen geen stale draft bevestigen.
 
 Toolbaracties bewaren tekstselectie via editorbookmarks. Formule- en waardeatomen zijn met toetsenbord selecteerbaar, verplaatsbaar en opnieuw te openen. Test IME, Unicode, plakken en cursorposities naast atomen. Het dialoogontwerp volgt de bestaande donkere UI en gele accenten; een afzonderlijke eerder besproken mockup was niet beschikbaar voor deze analyse.
 
@@ -142,7 +143,7 @@ Machten zijn rechtsassociatief; -2^2 = -4 en 2^-2 is geldig. UI normaliseert dec
 
 Functies: sqrt, abs, sin/cos/tan, asin/acos/atan, ln, log10, exp, floor, ceil, trunc en round met gecontroleerd aantal decimalen. Voorstel limieten: 2048 invoertekens, 512 tokens, 256 AST-nodes, diepte 32, 1024 evaluatiestappen, 64 bronverwijzingen; aanvullend documentwerkbudget. Geen CAS of complexe getallen.
 
-Interne quantity: eindige binary64-waarde, dimensie-exponenten voor lengte en hoek, en physical/abstract-eenheidsruimte. Fysieke basis is meter/radiaal. Abstracte e kan zonder kalibratie niet bij fysieke lengte worden opgeteld. Dimensieloze waarden zijn neutraal.
+Interne quantity: eindige binary64-waarde, dimensie-exponenten voor lengte en hoek, en physical/abstract-eenheidsruimte. Fysieke basis is meter/radiaal. Abstracte u kan zonder kalibratie niet bij fysieke lengte worden opgeteld. Dimensieloze waarden zijn neutraal.
 
 - Geometrieadapter leest ruwe waarden, past documentschaal één keer toe en zet naar SI om; oppervlakte gebruikt schaal². Huidige hoekwaarden in graden worden één keer naar radiaal omgezet. Nooit geformatteerde strings terugparsen.
 - Optellen/aftrekken vereist gelijke dimensies en compatibele eenheidsruimte. Product/quotiënt telt exponenten op/af; gelijke lengtes delen levert dimensieloos.
@@ -179,7 +180,7 @@ Nieuwe regressies dekken schema/malformed input, legacyv1–5 en v6, groepen/lag
 
 Edge: echte fragmentselectie, sneltoetsen, IME/plakken, caret rond atomen, fullscreen/Escape, modal focus, responsive 390/760/1159/1446 px, late async-resultaten en ingetrokken rechten. Visueel: alle fontfaces, 12/16/32 pt-equivalent, Grieks, super/sub, lege regels, breuken/wortels, rotatie, zoom en veranderende dynamische breedte. Zelfstandige SVG/PNG testen met netwerk geblokkeerd. Belastingsmetingen met 10/100/500 objecten en 1/10/100 velden; thresholds pas na baseline vastleggen.
 
-Belangrijkste risico's: fontshaping en exportgelijkheid; libraryomvang; async races; bronlekken via caches/fallbacks; onjuiste dubbele schaal/hoekconversie; v6-compatibiliteit met oude readers; IME/selectiecomplexiteit. Securityfixtures omvatten HTML/SVG/TeX-injectie, diepe AST, prototype-invoer en veranderende permissies.
+Belangrijkste risico's: fontshaping en exportgelijkheid; libraryomvang; async races; bronlekken via caches/fallbacks; onjuiste dubbele schaal/hoekconversie; v7-compatibiliteit met oude readers; IME/selectiecomplexiteit. Securityfixtures omvatten HTML/SVG/TeX-injectie, diepe AST, prototype-invoer en veranderende permissies.
 
 Besluitstatus en goedkeuringspoorten staan in sectie 18. ProseMirror, fonttechniek en formulebibliotheek zijn geen definitieve keuzes. Het verfijnde rekencontract moet vóór T5a afzonderlijk definitief worden goedgekeurd.
 
@@ -189,44 +190,35 @@ Op de ongewijzigde runtimebaseline uitgevoerd: `node --test tests/*.test.cjs`: *
 
 Geen T1–T5-featuretests uitgevoerd: de features zijn nog niet geïmplementeerd. Fase 0 wijzigt uitsluitend documentatie. Rapporten T1-REPORT t/m T5d-REPORT worden pas na uitvoering van het betreffende checkpoint aangemaakt.
 
-## 11. B1 — Formele compatibiliteits- en migratiematrix
+## 11. B1 - Compatibiliteits- en migratiematrix
 
-De huidige constante MODEL_VERSION is 2, geen maximum-reader-versie. `model.version` blijft intern 2; de writer kiest 2–5 op features. Deze twee begrippen worden in T1 expliciet gescheiden: legacy basisversie 2, reader maximum 6 en minimale schrijfversie per feature. Het verhogen van MODEL_VERSION alleen zou v3–5-validatie omzeilen en is verboden.
+Het goedgekeurde voorstel v1.1.0 wees versie 6 toe aan rijke tekst. Die versie was al in gebruik voor verdeling van cirkelpunten. Daarom gebruikt T1 documentversie 7 voor rijke tekst en blijft v6 ongewijzigd. Deze correctie vervangt eerdere verwijzingen die rich text aan v6 koppelen.
 
-| Invoer | Huidige toelating/interpretatie | Nieuwe reader en migratie | Schrijven zonder rich text / met rich text |
-|---|---|---|---|
-| v1 of ontbrekende versie | Legacy objecten; distinct label herstelt name wanneer name leeg/ID is | Zelfde eenmalige labelmigratie; geen textContent bij alleen openen | Minimaal v2 / v6 na expliciet bevestigd omzetten |
-| v2 | Basisobjecten; historische onbekende rootextensions blijven opaque | Zelfde gedrag; bekende rich-textsleutels mogen niet als opaque doorglippen | v2, of 3/4/5 door bestaande features / v6 |
-| v3 | constructionSchema 1–4 vereist voor v3-toelating | Bestaande recept-/asschema's valideren; geen nieuwe tekstmigratie bij openen | v3 zolang constructies aanwezig zijn / v6 |
-| v4 | groupSchema 1 en groups-array vereist; constructies vragen geldig schema | Groepen, leden en constructies blijven intact | v4 zolang groepen aanwezig zijn, anders minimumfeatures / v6 |
-| v5 | layerSchema 1 en layers-array vereist; groups indien aanwezig vragen schema 1 | Lagen/groepen volledig valideren en behouden | v5 zolang lagen aanwezig zijn / v6 |
-| v6 | Wordt nu afgewezen | Vereist root textSchema 1–4 én ten minste één textContent; arrays/schemaversies voor aanwezige groups/layers; constructionSchema voor aanwezige recepten. Alle onderdelen vóór commit valideren | v6 zolang rich text aanwezig is; zonder rich text alleen door expliciete normalisatie naar minimale featureversie |
+De interne MODEL_VERSION blijft 2 en is niet de maximale reader-versie. De writer kiest de minimale featureversie: v2 basis, v3 constructies, v4 groepen, v5 lagen, v6 cirkelpuntenverdelingen, v7 rijke tekst. Rijke tekst krijgt voorrang, met behoud van alle aanwezige featureschema's.
 
-v6 root `textSchema` is de hoogste vereiste inhoudsversie van aanwezige tekstobjecten. Iedere textContent houdt zijn eigen schema; een fragment mag alleen in zijn minimale/latere ondersteunde schema voorkomen. T1 accepteert root/object 1, T2 tot 2, T3 tot 3, T5c tot 4. Root lager dan een object, onbekende hogere versie of textContent in v1–5: atomair afwijzen. Geen stil fallback-renderen van onbekende rijke inhoud.
-
-Een bestaande opaque root `layers`/`groups`-extension in oudere documenten mag bij v6-upgrade niet overschreven of stil als organisatie geïnterpreteerd worden. Detecteer gereserveerde-sleutelconflict vóór bevestiging en weiger migratie met duidelijke melding; bestaande legacy opslag blijft intact. Deze randgevallen zijn al bekend in tests/layers.test.cjs. Een oudere reader wijst v6 expliciet af. Er is geen automatische v6→v5-afvlakexport.
-
-### Volledige inventaris van productie-documentversiecontroles
-
-Repositoryzoekactie over alle eigen JavaScriptbestanden, exclusief node_modules/vendor. Onderstaande locaties bevatten de gevonden documentversievertakkingen; regelnummers verwijzen naar runtimebaseline 64ba1a2 (documentatiecommit cc23585 wijzigt ze niet).
-
-| Locatie | Huidige controle | Vereiste T1-wijziging en regressie |
+| Invoer | Lezen en valideren | Schrijven zonder/met rijke tekst |
 |---|---|---|
-| model.js:11,164,256,262 | MODEL_VERSION=2, interne versie en publieke constante | Readermaximum apart introduceren; alle oude invalid-schemafixtures blijven afwijzen |
-| model.js:219 | Writer kiest lagen 5, groepen 4, constructies 3, anders 2 | Rich text heeft prioriteit 6; overige schemas onafhankelijk; mixed rich+groups+layers+axis-arm recepten roundtrip |
-| model.js:222–223 | Ontbrekend→1, numeric/integer/range; exacte uitzonderingen 3/4/5 | Expliciete dispatch per v1–6, geen open `>=6`; v0, fractioneel, v7, verkeerd/missend schema atomair afwijzen |
-| model.js:231 | Root exclusions groups bij >=4; layers bij ===5 | v6 textSchema/organisatie uit opaque extras houden; legacy extensions en conflicten testen |
-| model.js:238 | ===1 label→name | Alleen v1; openen/herladen mag name niet opnieuw veranderen |
-| model.js:250 | >=4 constructieschema vereist | Voor v6 eveneens; schema 1–4 en vereisten voor axis/arm blijven exact |
-| model.js:251–253 | ===5 groepsschemacheck/lagen; >=4 groepsvalidatie | Featurevalidatie voor v6, ontbrekende members/schema afwijzen, bestaande v4/v5-regels bewaren |
-| permission-runtime.js:177 | Restricted JSON-lagen alleen doc.version===5 | Aanwezige lagen valideren/exporteren voor v5 én v6; textSchema berekenen uit geprojecteerde inhoud, niet alleen origineel overnemen |
-| editor.js:844 | Nieuw leeg document literal version:2 | Bewust v2 houden; eerste rich commit kiest v6 via writer |
+| v1 of ontbrekend | Legacy objectformaat; bestaande eenmalige label-naar-name-migratie. Geen tekstmigratie bij openen. | Bestaande minimale featureversie / v7 pas na expliciete rich-tekstbewerking. |
+| v2 | Basisgeometrie; onbekende root-extensies blijven opaque. | v2 of v3-v6 als bestaande features dat vereisen / v7. |
+| v3 | constructionSchema 1-4 valideren voor recepten en as-/hoekreferenties. | v3 wanneer constructies dat vereisen / v7. |
+| v4 | groupSchema 1 en groups valideren; recepten behouden. | v4 wanneer groepen dat vereisen / v7. |
+| v5 | layerSchema 1 en layers valideren; groepen indien aanwezig valideren. | v5 wanneer lagen dat vereisen / v7. |
+| v6 | circleDistributionSchema 1 en een geldige niet-lege verdeling vereisen; leden en constructies wederzijds controleren. Groepen/lagen blijven geldig. | v6 zolang verdelingen dat vereisen / v7. |
+| v7 | textSchema 1 en ten minste een geldig textContent-object vereisen; aanwezige constructies, verdelingen, groepen en lagen valideren voor commit. | v7 zodra rijke tekst aanwezig is. |
 
-Aanvullende paden zonder eigen documentversievergelijking: `index.js:185–199` Engine.load (stagingmodel; createDocumentRenderer:20–28 doet presentation/grid/axes-preflight, geen tekstpreflight); `editor.js:847–879` JSON/import; `editor-startup.js:13–15` DraftStore.restore via Engine.load en `editor-bootstrap.js:12–16` koppeling (geen draft in restricted); `editor-history.js:9,27–33` snapshots/restore; `permission-runtime.js:155–166` undo/reset/replace/meta changes via e.load; `persistent-groups.js` en `document-layers.js` valideren structuren maar kiezen geen documentversie; `semantic-sequence.js:13–18` baseline/candidates via Engine. Deze moeten v6-fixtures krijgen en mogen geen zelfstandig permissieverruimende decoder toevoegen. T1 voegt expliciet rich-schema/lay-outpreflight toe vóór documentvervanging; bestaande presentation-preflight is geen bewijs daarvan.
+T1 ondersteunt alleen root textSchema 1. textContent is verboden in v1-v6; onbekende hogere tekstschema's worden geweigerd. Onbekende rijke inhoud wordt nooit stil teruggebracht tot platte tekst. Readers ouder dan v7 moeten het document weigeren in plaats van opmaak weg te laten.
 
-`semantic-sequence.js:17–18` gebruikt **artifact version 1**, niet documentversie. Die blijft 1; voeg text.commit expliciet aan commandallowlist toe. Record bevat operation/payload/createdIds; live revisie/epoch worden tijdens replay opnieuw gebonden, niet als historische globale revisie meegesleept. Test v2-baseline→v6 via commit, v6-baseline met lagen, deterministische IDs en gedeeltelijke replay. Oude artefacten blijven hetzelfde resultaat opleveren. Runtime policy/command/schema-versies zijn eveneens aparte contracten.
+Een v7-document mag rijke tekst combineren met de v6-cirkelpuntenverdeling en de v3-v5 schema's voor constructies, groepen en lagen. Een conflict tussen een gereserveerde root-key en een opaque legacy-extensie blokkeert de upgrade voordat er iets verandert. Een mislukte load/import behoudt model, renderer, selectie en geschiedenis. Bestaande textBinding blijft exact gelijk; T1 migreert of opent zulke teksten niet automatisch in de rich editor.
 
-Regressiematrix: elk v1–v6-fixture via model, Engine, browserimport, lokale draft, history, author JSON/SVG, restricted JSON/SVG en replay waar toegestaan; geldige/ongeldige schema's, groepen/lagen, ontbrekende bron, provenance-onafhankelijke extensions. Bij geweigerde import blijft zowel document als selectie/history onaangeroerd. Voor alle exportuitvoer moet opnieuw importeren slagen of de route expliciet vooraf geweigerd zijn.
+### Versiecontroles en regressies
+
+- model.js houdt interne MODEL_VERSION apart; de writer kiest v7 voor textContent en importeert expliciet v1-v7. Test onbekende/fractionele versies, ontbrekend/verkeerd textSchema, rich text in v1-v6, gemengde v6-verdeling plus v7-tekst en atomaire fouten.
+- model.js behoudt afzonderlijke validatie van constructionSchema, groupSchema, layerSchema en circleDistributionSchema in v7. Test groepen, lagen en verdelingen samen met rijke tekst, plus conflicten met gereserveerde extensies.
+- Engine.load, JSON-import, lokale draft, geschiedenis en semantische replay gebruiken dezelfde loader en zijn atomair.
+- Restricted JSON-export bepaalt de versie opnieuw op basis van de geprojecteerde leesbare objecten. Een projectie met rijke tekst gebruikt v7/textSchema 1, neemt alleen geldige toegestane groepen/lagen/verdelingen mee en weigert onvolledige bronrelaties. Restricted SVG embedt lokale fonts alleen als rich text aanwezig is.
+- Policy- en commandoversies staan los van documentversies; semantische sequence blijft artifact version 1. text.commit wordt als een enkele bewerking opnieuw afgespeeld.
+
+Regressiepoort: v1-v7-fixtures door model, Engine, import, draft, geschiedenis, author/restricted JSON en SVG, replay en legacy statische/dynamische tekst. Iedere geweigerde import behoudt de bestaande status. Export moet opnieuw importeerbaar zijn of vooraf worden geweigerd.
 
 ## 12. B2 — Permissiematrix en text.commit
 
@@ -292,7 +284,7 @@ Geen clientclaim `changedCategories` vertrouwen. Canonical diff scheidt marks/fo
 5. Nieuwe rechte bron met read/display maar zonder textSourceProperties: geen inline binding. Bestaande legacy textBinding blijft volgens schema-1 readbeleid werken; geen automatische uitbreiding naar schema-2 grants.
 6. Bestaande verborgen auteurbron blijft uitleesbaar. Restricted nieuwe bron vereist effectieve display inclusief laag/objectbeschikbaarheid. Bron geometrisch ongeldig: beschikbaarheidsplaceholder, geen NaN; schema en ID mogen behouden blijven in author document.
 7. Restricted renderer/preview/projectie/JSON/SVG verwijdert niet-toegestane brongegevens en vervangt het hele verboden atom door plain "niet beschikbaar". Geen AST/ID/naam/resultaat in fallback, title/desc, errors of cached SVG. Rest van tekst blijft opgemaakt.
-8. Restricted JSON na redactie bepaalt opnieuw textSchema/documentversion en bewaart lagen/groepen volgens bestaande closureweigering. Geen origineel v6 met ontbrekend textSchema of onleesbare raw payload exporteren. PNG gebruikt uitsluitend geautoriseerde zelfstandige SVG.
+8. Restricted JSON na redactie bepaalt opnieuw textSchema/documentversion en bewaart lagen/groepen volgens bestaande closureweigering. Geen origineel v7 met ontbrekend textSchema of onleesbare raw payload exporteren. PNG gebruikt uitsluitend geautoriseerde zelfstandige SVG.
 9. Undo/redo via private vertrouwde geschiedenis; policywisseling wist geschiedenis zoals nu. Opnieuw huidige doelrechten/locks/bronrechten controleren vóór restore; een historische AST geeft geen huidige leesgrant. Author replay is geen restricted-authorisatiebewijs.
 
 Commit is atomair: normalize → expectedrevision/handleepoch → doelrechten/locks → diffgrants → bronnen → schema/type/dimension/quotas → candidate/renderpreflight → één geschiedenisactie. Async preview wordt op revisie+epoch+hash weggegooid. Volledige typed inhoud komt niet in de restricted UI als de projectie deze verbiedt. Backend/hostpolicy is de vertrouwensgrens; UI-disabled knoppen zijn alleen feedback.
@@ -327,7 +319,7 @@ Dit contract is een concreet voorstel en moet vóór T5a definitief worden goedg
 
 Interne dimensie wordt exact bijgehouden als gehele exponenten `(Lphysical, Labstract, A)`. Dit preciseert de eerdere physical/abstract-vlag: producten van fysieke en abstracte lengte worden geweigerd in deze eerste versie; delen van twee lengtes in dezelfde ruimte kan tot dimensieloos reduceren. Een dimensieloze factor kan beide schalen. Lengte en oppervlakte zijn L¹ en L², geen los type zonder exponent. Hoek is A¹, intern radiaal; hoek²/hoekverhoudingen zijn getypeerde samengestelde dimensies.
 
-Unitliteral ondersteunt mm, cm, m, km, deg, rad en abstract `unit` (zichtbare e); suffix cm² e.d. normaliseert naar exponent. `e` zonder unitcontext is de constante exp(1), nooit automatisch abstracte lengteeenheid. JSON bewaart finite numerieke literal plus getypeerde unit/exponent; evaluator converteert bij lezen precies eenmaal. Display maakt geen nieuwe AST.
+Unitliteral ondersteunt mm, cm, m, km, deg, rad en abstract `unit` (zichtbare u; geen wijziging aan oudere eenheidsmetadata); suffix cm² e.d. normaliseert naar exponent. `e` zonder unitcontext is de constante exp(1), nooit automatisch abstracte lengteeenheid. JSON bewaart finite numerieke literal plus getypeerde unit/exponent; evaluator converteert bij lezen precies eenmaal. Display maakt geen nieuwe AST.
 
 Voor dynamische lengte q: raw geometry × document scale × metersPerDocumentUnit; oppervlakte: raw × scale² × metersPerUnit²; x/y idem lengte. Legacy zonder meta.measurement: abstracte lengte met scale=1, niet stil cm. AngleMeasurements.value levert graden volgens huidige kleinste/gericht-modus; adapter maakt radiaal, geen herinterpretatie van getekende armen. Unitoverride verandert weergave, nooit hoekgeometrie.
 
@@ -392,7 +384,7 @@ Alle functionele/security/roundtripchecks zijn harde criteria. Elke case apart p
 
 | Stap | Openen/bewerken | OK/opslag | Annuleren |
 |---|---|---|---|
-| T1 | Binding als onveranderbare preview; bestaande broninspector blijft. Dialog kan objectbrede legacy styles aanpassen; fragmentopmaak op de binding is nog niet beschikbaar | legacyStylePatch verandert uitsluitend toegestane stylevelden; exact dezelfde textBinding en statische `.text`; geen textContent/v6 door alleen format | Geen inhoud/style/schema/historywijziging |
+| T1 | Binding als onveranderbare preview; bestaande broninspector blijft. Dialog kan objectbrede legacy styles aanpassen; fragmentopmaak op de binding is nog niet beschikbaar | legacyStylePatch verandert uitsluitend toegestane stylevelden; exact dezelfde textBinding en statische `.text`; geen textContent/v7 door alleen format | Geen inhoud/style/schema/historywijziging |
 | T2 | Zelfde beleid. Formule-invoegen in legacygebonden tekst wordt niet aangeboden; bestaande gewone/rich tekst ondersteunt math | Geen impliciet afvlakken om een formule toe te voegen. Alleen legacy styles of expliciet bestaande bindinginspector | Zelfde nulwijzigingsgarantie |
 | T3 | Expliciete actie "Omzetten naar inline dynamische tekst"; eerst rechten en bronstatus controleren, dan draft prefix/dynamic/suffix | Eén commit: prefix/suffix als text-runs; binding atom behoudt sourceId/property/precision; leeg prefix/suffix niet als lege run nodig; unitMode=document. Alle runs erven legacy font/fill en alinea anchor links/midden/rechts; positie/rotatie exact gelijk | Houd oorspronkelijke legacyrepresentatie intact |
 
@@ -411,7 +403,7 @@ Verplichte fixtures per T1/T2/T3: gebonden tekst met prefix/suffix, null/0/10 pr
 | T3 | dynamicValue | JSON behoudt IDs/formats, export actuele geautoriseerde snapshot, missing/denied bron redactie, PNG van gemengde tekst, source remap en unitupdates |
 | T4 | Wrap/layout en productie-PNG | Alle eerdere paden plus echte exportbediening, sizing/memory/readiness, accessibility en offline audit |
 | T5a | AST als rekenkernwaarde, nog geen documentfragment | AST encode/decode/print roundtrip, quotas/typefixtures; bestaande JSON/SVG/rasterregressies |
-| T5b | Private calculator draft | Draft serialize/restore voor proef indien aangeboden, Cancel nul documentwijzigingen; geen inline saveclaim; bestaande export ongewijzigd |
+| T5b | Eén calculator, twee private gebruiksmodi | Zelfstandig via hoofdwerkbalk en inline via ∑: gelijke quantities, nul object-/document-/historymutaties, Cancel nul wijzigingen; geen calculatedValue vóór T5c; bestaande exportregressie |
 | T5c | calculatedValue | AST+bronnen+3 modes JSON roundtrip, zelfstandige SVG/PNG-rastering, restricted redactie, actuele/ontbrekende bron, history/replay |
 | T5d | Audit | Volledige matrix; geen eerste ontdekplek voor exportondersteuning van een eerder type |
 
@@ -426,3 +418,199 @@ Uitgewerkte ontwerpbesluiten in dit voorstel (nog onder architectuurgoedkeuring)
 Nog open: SVG-text/glyph/hybride, concrete fonts/shapingdekking/licenties, editorbibliotheek en gepinde modules, formulebibliotheek, gemeten bundel-/performancebudgetten. Er zijn geen proefresultaten; bestaande Node/Edge-baseline bewijst geen van deze nieuwe keuzes.
 
 Voorgestelde volgende stap **P0-tech**, alleen na expliciete toestemming: geïsoleerde ProseMirror- en font/renderproeven onder `experiments/text-editor-preflight/`, met lokale tijdelijke/gepinde proefdependencies en fixtures. Geen productie-integratie, modelwijziging of T1-feature. Resultaat `TEXT-EDITOR-PREFLIGHT-REPORT.md` bevat meetdata, pass/fail/not executed per criterium en onderbouwde keuzes. Rapport eerst voorleggen; pas na acceptatie en expliciet T1-akkoord volledig integreren. Formulebibliotheekproef volgt apart vóór T2; rekencontractreview vóór T5a.
+
+
+## 19. T1-uitvoering en correctie (1.2.0)
+
+T1 voegt textContent schema 1 toe als applicatie-eigen structuur voor alinea's, tekstfragmenten, harde regeleinden en gevalideerde opmaak. ProseMirror is alleen de invoeradapter, geladen uit een lokaal gebundelde ESM-module. Formules, dynamische inlinewaarden, automatische tekstomloop en vaste breedte vallen buiten T1.
+
+Rijke tekst gebruikt documentformaat v7 en textSchema 1, omdat v6 al is toegewezen aan cirkelpuntenverdelingen. Bestaande v1-v6-documenten behouden hun betekenis. v7 bewaart aanwezige cirkelpuntenverdelingen, groepen, lagen en constructieschema's. De applicatie embedt lokale Source Sans 3- en Source Serif 4-fonts in SVG met rijke tekst; bestaande SVG-uitvoer blijft gelijk. Licenties staan bij de fontbestanden in experiments/text-editor-preflight/fonts.
+
+Het getypeerde text.commit-commando controleert revisie, doel, slot, permissiecategorieen en expliciete migratiebevoegdheid atomair. Legacy textBinding-objecten openen niet in de rich editor; het bestaande stijlpad behoudt hun binding. Zie TEXT-EDITOR-T1-REPORT.md voor resultaten en beperkingen.
+
+## 20. T2-contract en uitvoering (1.3.0)
+
+T2 is gestart op expliciete gebruikersopdracht. [T2-REPORT.md](T2-REPORT.md) bevat de formuleproef en testbewijzen. De historische keuzes uit sectie 18 zijn voor T1/T2 ingevuld: lokale ProseMirror-adapter, lokale tekstfonts en MathJax 3.2.2-glyphpaden. Dit is geen volledige IME/AT-goedkeuring. T3–T5 en het definitieve T5a-rekencontract blijven open.
+
+### Opslag en bronnotatie
+
+Document v7 accepteert `textSchema: 1 | 2`. Schema 1 blijft text/hardBreak; schema 2 voegt `{id,kind:"math",source,marks}` toe. De writer declareert het hoogste aanwezige schema, ook na restricted filtering. Schema 2 mag na formuleverwijdering behouden blijven. Schema 3/4 en dynamic/calculated-fragmenten worden nog geweigerd. JSON bevat bron en gevalideerde marks; geen HTML, SVG, glyphcache of bibliotheekdocument. De afgeleide `.text`-fallback bevat leesbare bronnotatie.
+
+`MathSource` is een presentatiegrammatica, geen rekenkern. De whitelist ondersteunt onder meer Griekse letters, operators, breuken, wortels, trigonometrie, scripts en gegroepeerde haakjes. HTML, URLs, externe assets, macrodefinities, uitbreidingsloaders, comments en onbekende opdrachten worden geweigerd. Quota: 2048 brontekens, 256 tokens, diepte 32, 128 formules per tekstobject, 512 per document en 8192 documenttokens. Import/add/update controleren het totale budget vóór mutatie. Dit is een beperkte TeX-subset, geen algemene LaTeX-import.
+
+### Modulegrenzen en assets
+
+| Module | Verantwoordelijkheid |
+|---|---|
+| `model.js`, `math-source.js` | Applicatieschema, bronvalidatie, documentversie en quota; geen editor-/MathJax-import |
+| `text-content-diff.js` | Pure semantische categorieverschillen; geen rechten of UI-state |
+| `permission-runtime.js` | Actuele grants/locks/revisie, getypeerde commit, history en restricted export |
+| `math-renderer.js` | Build-only MathJax-adapter; bron naar begrensde, gesanitiseerde SVG-box |
+| `math-fragments.js` | Lazy lokale assets, begrensde cache en gedeelde formule-SVG |
+| `text-metrics.js`, `rich-text-renderer.js` | Fontmetingen en mixed baseline-layout; T1-renderroute behouden voor tekst zonder formules |
+| `rich-text-editor.js` | ProseMirror-adapter, atomische nodeview, bookmarks en lokale history |
+| `text-insert-panel.js`, `editor.js` | Symbool-/formuledraft respectievelijk dialooglevenscyclus en commandodispatch |
+
+`npm run build:text` reproduceert bundles/fontmetingen uit gepinde experiment-lockfiles. Inputs en SHA-256 staan in `experiments/math-fragments-preflight/build-results.json`. MathJax gebruikt ingebouwde TeX-glyphpaden, `fontCache:none`, geen CDN/autoload. Output: gecontroleerde SVG-vormen/attributen, maximaal 4096 nodes/65536 bytes per box. Cache: 128 boxes/4 MiB. Gewone fontkeuze verandert het wiskundige TeX-font niet; bold/italic zijn formulevarianten.
+
+De synchrone SVG-API meldt ontbrekende formule-assets; hosts voeren eerst `await MI.MathFragments.load()` uit. De editor regelt readiness bij openen/renderherstel/export. Late callbacks gebruiken de actuele staat en mogen een geannuleerde draft niet terugbrengen. Kleuren gaan expliciet naar color/fill/stroke; ascent/descent bepalen baselines. Uitlijning blijft ten opzichte van het objectanker. Mixed tekst gebruikt fontadvances zonder kerning/ligaturen; wrapping en uitgebreide shaping blijven T4-werk.
+
+### Interactie en autorisatie
+
+Ω bewaart een bookmark en biedt tien categorieën plus zoeken. Ondersteunde fontglyphs worden tekst; ontbrekende glyphs gebruiken de veilige math-atomroute. ƒ(x) opent bron/preview en bevriest de editor. Bevestigen valideert dezelfde draftselectie. Dubbelklik of Enter op een geselecteerde atom opent de formule. Verplaatsen behoudt ID/bron/marks; delete/undo werken atomisch. Escape sluit eerst het kindpaneel, daarna de editor; fullscreen blijft behouden. Eén documentbevestiging levert één `text.commit`.
+
+| Bewerking | Vereiste categorieën naast normale target-/revisiegrants |
+|---|---|
+| Gewone inhoud of bestaande atom verplaatsen | `content`; `format` als opmaak wijzigt |
+| Marks/defaults/alineaopmaak | `format` |
+| Formule toevoegen/verwijderen/bron wijzigen | `content` + `math`; ook `format` als opmaak wijzigt |
+| Nieuw object/duplicaat | create/duplicate + created `content` + `format`; ook `math` wanneer formules aanwezig zijn |
+
+Bronnen verwisselen tussen behouden atom-IDs geldt als bronwijziging, ook bij dezelfde bronmultiset. Verschoven text-markgrenzen mogen format-rechten niet omzeilen. De diff is conservatief bij gemengde text-marks: een lengtewijziging die grenzen wijzigt kan `format` vereisen. Uniform opgemaakte tekst kan met inhoudsrechten van lengte veranderen. Execute hercontroleert policy-epoch/revisie; afwijzing is atomair. De dialoog bewaart de openingsrevisie en behoudt de draft bij conflict.
+
+### Legacy en acceptatie
+
+Geen T3-migratie: legacy `textBinding` blijft buiten de rich editor. Format/history en author-save/reload behouden de binding exact. Bestaande duplicatie bewaart `sourceId`, ook als de bron samen gekopieerd wordt; geen stilzwijgende remapping. Restricted export redigeert een ontbrekende/onleesbare bron volgens het bestaande contract en kan de binding verwijderen; trusted owner-inspect behoudt het origineel. Zie de 12-fixturematrix in het rapport.
+
+JSON/replay/restricted SVG, fullscreen en offline SVG→PNG zijn bij introductie getest. Echte OS-IME, schermlezer, handmatige visuele/externe-vieweracceptatie zijn niet uitgevoerd. T4 behoudt productie-PNG-bediening/wrapping. T3 start pas na afzonderlijke toestemming.
+
+## 21. T3 — dynamische inlinevelden (1.4.0)
+
+De gebruiker heeft T3 expliciet toegestaan. [T3-CONTRACT.md](T3-CONTRACT.md) legt het vooraf vastgelegde implementatiecontract vast; [T3-REPORT.md](T3-REPORT.md) bevat actuele testbewijzen en acceptatiegrenzen. De historische T3-stopregels hierboven zijn hierdoor opgevolgd. T4/T5 zijn niet gestart.
+
+`textContent.schema:3` en document v7/`textSchema:3` activeren `dynamicValue`. Het fragment bevat uitsluitend `{id,kind,binding:{sourceId,property},format:{precision,unitMode,angleMode,prefix,suffix},marks}`. Schema 1/2 blijven geldig en schema 4 blijft geweigerd. Ondersteunde eigenschappen zijn de bestaande naam/label, lengte, straal, omtrek, oppervlakte, hoek en punt-x/y; geen diameter, vectorcomponenten of asbindingen. Een coördinatenpaar bestaat uit twee velden met gewone interpunctie. Canonical format vult ontbrekende angleMode met document aan.
+
+`text-values.js` valideert en resolveert huidige bronwaarden. unitMode ondersteunt document, none (alleen suffix verbergen), u/dimensionless en mm/cm/m/km. Fysieke omzetting gebruikt MeasurementUnits precies eenmaal; fysieke/abstracte menging levert unavailable. angleMode=document respecteert bestaande bron-/documentinstellingen; deg/rad zijn veldspecifieke overrides. Statussen: ok, missing, invalid, unsupported en denied. Numerieke overflow, ongeldige legacy-eenheidsmetadata en waarden boven 4096 codepunten tonen een begrensde placeholder. 128 velden per tekstobject en 512 per document gelden naast bestaande rijke-tekstquota. Er worden geen uitkomsten gecachet of opgeslagen.
+
+`text-dependencies.js` bouwt een tijdelijke omgekeerde index op immutable objects-snapshots (sourceId→objectId/fragmentId); `Engine.getTextDependents` biedt deze aan. Renderer en editor-preview lezen actuele snapshots, inclusief bronwijziging, metadata, delete/undo en policyverandering. Gewijzigde veldbreedte wijzigt x/y/rotatie niet. De nieuwe nodeview bewaart binding/format/marks; interne previewmutaties worden niet teruggeparsed naar de inhoud. DOM-updates worden overgeslagen als de waarde gelijk blijft. Lokale undo, echte drag en bookmarkinvoeging zijn getest.
+
+In restricted mode vereist iedere actieve bron effectieve read+display (inclusief laag/objectbeschikbaarheid) en de eigenschap in textSourceProperties. Een source lock blokkeert lezen niet. Author leest hidden/locked bronnen en behoudt ontbrekende IDs voor herstel. Iedere geweigerde restricted atom wordt geheel plain “niet beschikbaar”; bron-ID/property/naam/notatie en eerdere waarde verdwijnen uit facade, JSON/SVG, previews en commandresultaten. Static backup wordt niet openbaar geprojecteerd. Het hoogste behouden schema wordt opnieuw gedeclareerd; een schema-3-tekst met alleen plain redactie blijft schema 3 mogen behouden.
+
+`text.commit` controleert content/references bij invoegen, verwijderen en rebinden; format bij marks/notatie. Bestaande onveranderde atomen verplaatsen vergt content; alle eerdere en voorgestelde actieve bronnen worden opnieuw gevalideerd. Restricted rich bewerken en statisch herstellen worden geweigerd zolang eerdere velden niet-toegestane of onbeschikbare bronnen hebben; een geredigeerde DTO mag private bindings niet impliciet afvlakken. Een trusted author kan deze wel herstellen. Nieuwe objecten/duplicaten controleren hun eigen created grants plus bronrechten. Het bestaande textSourceProperties-policyveld heeft een afzonderlijke eigenschapallowlist; het wordt niet meer als geometrieveld beoordeeld. Runtime-dialogen gebruiken een begin/commit-handle met revision/epoch; contextwijziging sluit de draft. De Author-dialog bewaart zijn openingsrevisie. Geen automatische rebase.
+
+Legacy omzetting is uitsluitend expliciet: `text.commit` met migrateLegacy:true, een schema-3-draft prefix/veld/suffix, overgenomen toegestane font/kleur/anchor en server-owned `legacyStaticText`. Positie/rotatie/organisatie blijven behouden; één OK is één geschiedenisactie, Cancel is nul. Unsupported font/color/size of collision met een opaque legacy-backupkey weigert de omzetting. Oude schema-1/2 en niet-rijke objectextensies met dezelfde key blijven inert; typed backup en herstel gelden pas vanaf schema 3. `text.restoreStatic` herstelt bewust het oorspronkelijke statische tekstveld; undo kan de gehele legacybinding terugbrengen. Duplicatie van inlinevelden remapt uitsluitend daadwerkelijk meegekopieerde bronnen. Bestaande legacy bindings blijven hun eerdere duplicatiepad gebruiken.
+
+Voor nieuwe builds schrijft `scripts/build-text-editor.cjs` naar `experiments/text-editor-build/build-results.json`; historische T2-proefbestanden blijven intact. T3 installeert geen nieuwe dependencies. T4-wrapping/PNG-bediening en T5-calculaties blijven buiten scope. Real OS-IME, schermlezer, handmatige externe viewers en fysieke visuele acceptatie zijn niet uitgevoerd.
+
+
+## 22. T5 — zelfstandige en inline wetenschappelijke rekenmachine (1.5.0)
+
+**Status:** functioneel goedgekeurde documentatie-uitbreiding, niet geïmplementeerd. T3 blijft de bestaande geleverde scope; deze opdracht start of herstart T3/T4/T5 niet. Documentformaat **v7**, onafhankelijke textSchema-versies, het gestructureerde tekstmodel en legacycompatibiliteit blijven gelden. Secties 7 en 14 blijven het mathematische contract; de afzonderlijke definitieve goedkeuring daarvan vóór T5a blijft vereist. Deze sectie preciseert de eerdere algemene calculatorbeschrijvingen zonder die eisen af te zwakken.
+
+### Laaggrenzen en hergebruik
+
+| Stap | Technisch contract | Afzonderlijke acceptatiepoort |
+|---|---|---|
+| T5a | Veilige, UI-onafhankelijke parser, typed/canonical AST, dimensie- en eenheidscontrole, evaluatie en formuleprinter; geen eval/Function | Mathematisch contract definitief goedgekeurd vóór start; kernproeven geaccepteerd vóór T5b |
+| T5b | Eén herbruikbare wetenschappelijke calculator-interface, bereikbaar zelfstandig vanuit de hoofdwerkbalk en inline via ∑; beide uitsluitend voorbereiden/evalueren | Beide modi apart getest, numerieke pariteit en nul documentmutaties bewezen; acceptatie vóór T5c |
+| T5c | Dezelfde component voegt calculatedValue/schema 4 in een private tekstdraft in en bewerkt bestaande velden; geen tweede calculator | Opslag, rechten, history en alle drie weergavemodi bewezen; acceptatie vóór T5d |
+| T5d | Audit van zelfstandige én inline integratie, veiligheid, toegankelijkheid, fullscreen en export | Expliciete finale acceptatie; niet-uitgevoerde handmatige controles blijven open |
+
+De kern mag niet afhankelijk zijn van ProseMirror, DOM, tekstobjecten, calculator-interface of het geometrische documentmodel. Hij accepteert gevalideerde AST, getypeerde quantities en expliciete evaluatieopties; levert quantity of begrensde foutcodes. Namen, bronselectie, documentcontext, autorisatie en levenscyclus worden buiten de kern afgehandeld. Geen TeX als evaluatorinvoer. Dezelfde AST-normalisatie, precedence, UI-adjacencyregels, quotas, binary64-beperkingen, SI/radiaalconversie en domeinfouten uit sectie 14 gelden in beide modi.
+
+Eén gedeelde **bronadapter** zet actuele, geautoriseerde geometrische waarden om naar immutable typed quantities. Hergebruik de bestaande geometrie-/DynamicText-applicability en bronrechten; parse nooit displaystrings. Lengte/x/y gebruiken documentschaal één keer, oppervlakte schaal² en fysieke basiseenheden; hoeken gebruiken de bestaande kleinste/gerichte waarde en worden één keer naar radiaal geconverteerd. Documenteenheden, precisie en graden/radialen zijn expliciete instellingen, inclusief legacydefaults en abstract u/dimensieloos. Getypeerde hoekliterals zoals `30 deg` behouden hun betekenis onafhankelijk van de documenthoekkeuze. Niet-ondersteunde eigenschappen worden geweigerd; geen automatische uitbreiding naar andere bronsoorten.
+
+De interface gebruikt twee dunne hostadapters voor openen/sluiten, focus en context; bronkiezer, wetenschappelijk toetsenbord, parser/evaluatie-aanroep, notatie, foutpresentatie en resultaatweergave zijn gedeeld. De calculator is een zelfstandige applicatiefunctie, geen zelfstandig tweede rekenproduct. Toekomstige functiegrafieken, parametrische constructies en oefeningen kunnen dezelfde kern via eigen gevalideerde adapters hergebruiken. Dit is uitsluitend een hergebruikgrens, geen geleverde toekomstige functionaliteit.
+
+### Zelfstandige modus
+
+Een herkenbare rekenmachineknop in de hoofdwerkbalk opent de gedeelde interface op een leeg document, zonder tekstobject of selectie te vereisen. De calculator werkt ook in canvasfullscreen; de toegang blijft bereikbaar. Ondersteun vaste numerieke waarden, constante/functionele wetenschappelijke invoer uit sectie 7, typed dynamische geometrische bronchips, automatische herberekening, precisie, eenheidskeuze, graden/radialen en duidelijke fouten.
+
+Alle invoer, lokale calculator-undo en opties blijven private sessiestaat. Openen, evalueren, bronwijzigingen, wisselen van opties, sluiten, Escape en annuleren creëren **geen documentobject**, voeren **geen documentmutatie** uit en voegen **geen document-undo-item** toe. Documentrevisie, selectie en bestaande historycursor blijven intact. Geen calculatordraft/resultaat in document-JSON, semantic replay of documentexport. Sessieherstel/opslag is niet standaard voorzien; eventuele latere private opslag vereist een afzonderlijk privacy-/autorisatiecontract.
+
+**Resultaat kopiëren** is uitsluitend een expliciete actie, nooit een automatische clipboardwrite. Kopieer alleen een op dat moment opnieuw gevalideerd toegestaan resultaat in de gekozen notatie. Blokkeer kopiëren bij unavailable/stale/fout; toon clipboardweigering zonder documentactie. Bewaar geen verboden IDs/namen in clipboard of foutdetails.
+
+### Inline modus en calculatedValue
+
+De knop **∑** opent dezelfde component vanuit de teksteditor en bewaart de selectiebookmark. T5b biedt alleen formulevoorbereiding en evaluatie; **Invoegen in tekst is nog niet beschikbaar**. Sluiten of annuleren herstelt focus/bookmark en laat zowel de tekstdraft als het document ongemoeid. Geen AST via een T2-math- of T3-dynamicValue-fragment opslaan.
+
+Vanaf T5c voegt **Invoegen in tekst** een getypeerd `calculatedValue`-fragment (textSchema 4 binnen v7) in de private tekstdraft in. Bewaar gevalideerde expression-schema/AST, typed bronreferenties, format en marks; geen evaluator-/bibliotheekdocument, HTML, gecachte bronwaarde of resultaat als waarheid. De drie modi blijven: **alleen resultaat**, **formule met resultaat**, **formule met ingevulde waarden en resultaat**. Alle drie komen uit dezelfde AST en geautoriseerde snapshot; haakjes, dimensies, escaped toegestane namen en `≈` volgen sectie 14.
+
+Een bestaand berekend veld opent via dezelfde calculator met AST/format en private wijzigingen. Annuleren behoudt het veld exact; bevestigen vervangt alleen dat fragment in de draft. Pas de buitenste teksteditor-OK doet één atomische `text.commit`/documenthistoryactie. Bronrechten, expression/content/reference/formatgrants, targetlock, revisie en permission epoch worden opnieuw gecontroleerd volgens sectie 12. Standalone evaluatie verleent nooit text.commit-rechten. Oude textBinding, schema 1–3, bronremapping en v7-import blijven compatibel; geen automatische legacyconversie.
+
+### Identieke bronbeveiliging en actuele resultaten
+
+Beide modi gebruiken dezelfde adapter en evaluatie-/autorisatieregels. In restricted gebruik vereist elke bron effectieve read **en** display, object-/laagbeschikbaarheid en de toepasselijke bestaande eigenschapgrant; verborgen/ongeldige of ontoegankelijke meetgegevens zijn niet leesbaar via standalone. Een source lock verleent geen extra rechten en blokkeert toegestaan lezen niet. Auteursregels voor hidden/locked bronnen blijven conform secties 6/21; een standalone ingang omzeilt geen hostpolicy. Tekstschrijfrechten zijn alleen aanvullend nodig bij T5c-commit, niet voor een toegestane zelfstandige berekening.
+
+Filter bronkiezer en veilige presentatienamen vóór UI-uitvoer. Geweigerde bron-ID, naam, meetwaarde of AST mag niet verschijnen in DOM, toegankelijkheidslabels, errors, diagnostics, kopieeruitvoer of restricted JSON/SVG. Bij een geweigerde bron wordt de **hele berekening** generiek unavailable/redacted, nooit deels gesubstitueerd of nul. Geen nieuwe tekst-naar-tekst of calculatedValue-naar-calculatedValue-bronnen en geen autorisatie via vrije bronnaamherkenning.
+
+Elke evaluatie bindt aan sessie-/documentidentiteit, documentrevisie, permission epoch, eenheids-/hoekinstellingen, AST/format en draftgeneratie. Autorisatiewijziging invalideert onmiddellijk bronchips/presentatienamen, previews en kopieerstatus; sluit of reset een draft volgens de bestaande runtimelevenscyclus zonder verboden inhoud vast te houden. Import/dispose/contextwissel annuleert lopend werk. Bronverwijdering/ongeldige geometrie toont unavailable; undo/herstel vraagt een nieuwe toegestane snapshot en herberekening. Oude async-uitkomsten worden verworpen; geen oud resultaat laten staan tijdens een ongeldige context. Cache is optioneel, uitsluitend ephemeral en contextgebonden; geen delen tussen actors/epochs/documenten, geen persistente waardecache en altijd rechtencontrole vóór preview/kopiëren/export/commit. Bestaande private bronvelden mogen niet impliciet door een geredigeerde draft worden afgevlakt (sectie 21).
+
+### Verplichte acceptatiematrix (nog niet uitgevoerd)
+
+| Scenario | Poort en objectief bewijs |
+|---|---|
+| Hoofdwerkbalk, leeg document: `2+3*4` | T5b: exact 14; vergelijk JSON, objectcount, documentrevisie, selectie en historycursor vóór/na openen/evalueren/sluiten: ongewijzigd, geen undo-item |
+| `sin(30 deg)` | T5a/T5b: 0,5 met absolute binary64-testtolerantie ≤1e-12; degree/radian documentwissel verandert de getypeerde literal niet; displayprecisie apart testen |
+| Bronchip cirkelstraal, `π * r^2` | T5b: r=2 cm geeft ≈12,57 cm²; wijzig naar 3 cm: automatisch ≈28,27 cm². De calculator wijzigt de bron niet; geometriecommando is de enige historyactie. Test afwijkende schaal, unitconversie, bronwissen/undo en invalidity |
+| Zelfde AST/snapshot in beide modi | T5b: identieke interne quantity/dimensie/eenheidsruimte binnen vastgelegde tolerance, plus identieke formatuitvoer bij gelijke opties; vaste en dynamische formules, rad/deg en foutenmatrix |
+| Restricted bronlekken | T5b/T5c: hidden/read-/display-/property-denial, laagvisibility en epochrevocation; geen verboden ID/naam/waarde in UI/AT/error/clipboard/export; kopiëren/commit geblokkeerd, geen cachehergebruik. Vergelijk beide modi |
+| Berekend veld invoegen en heropenen | T5c: dezelfde calculator, drie modi, Cancel exact gelijk, één buitenste OK/undo, redo, source remap, JSON save/import/reload, replay en actuele standalone SVG/offline SVG→PNG; geen cached result in JSON |
+| Focus, toetsenbord, Escape, fullscreen, annuleren | T5b/T5c: beide ingangen, toetsenbordbronselectie, foutcorrectie, focusreturn; Escape sluit eerst child paneel/calculator en inline daarna teksteditor, zonder fullscreenexit; private undo gescheiden van documentundo; annuleren nul mutaties |
+
+Voer Node-kern-/adaptertests en afzonderlijke Edge-tests per context uit; T5d herhaalt de gecombineerde matrix inclusief accessibility en offline export. Echte IME/AT, OS-clipboard en fysieke visuele controles alleen PASS bij daadwerkelijk bewijs; anders expliciet niet uitgevoerd. T5b doet bestaande opslag/exportregressie, maar claimt geen nieuwe inline-opslag. T5c moet nieuwe schema-4-opslag en export onmiddellijk bewijzen, niet uitstellen tot T5d.
+
+**Nog vast te leggen vóór de relevante poort:** definitieve toleranties/singulariteitsgrenzen en kern-API vóór T5a; precieze toolbarplaatsing/iconografie, responsive presentatie, focus-/Escape-detail en clipboardformaat vóór T5b; definitieve calculatedValue-payload en passende commandgrants vóór T5c. Het functionele één-kern/één-interfacecontract, beide ingangen, nul standalone-documentmutaties en drie inline-weergavemodi staan vast. Deze open technische keuzes zijn geen toestemming om een milestone te starten.
+
+
+## 23. T4 — wrapping, export en bediening (1.6.0)
+
+Uitgevoerd op expliciete opdracht. [T4-CONTRACT.md](T4-CONTRACT.md) en [T4-REPORT.md](T4-REPORT.md) bevatten scope, meetbewijs en beperkingen. Eerdere T4-stopregels zijn hiermee opgevolgd; T5 is niet gestart. Document v7/textSchema 1–3 en legacybeleid blijven ongewijzigd.
+
+`textContent.width` is null (automatisch) of een positieve vaste breedte in SVG-pixels, in hetzelfde stelsel als de fontgrootte. Width vereist formatrechten en heeft eigen lokale editor-undo; alleen buitenste OK commit naar het document. Ordinary tekst wrapt bij whitespace en lange woorden bij Unicode-graphemegrenzen. Formules en opgeloste dynamische waarden blijven ondeelbaar: een te brede atom loopt zichtbaar over, zonder clipping/verlies. Marks, hardBreaks, alineauitlijning, gemengde ascender/descender, scriptshift, anchor en rotatie blijven behouden. De renderer deelt de layout voor canvas/export en laat glyphbounds door de bestaande screen-space-selectie meten. Rich legacy zonder vaste breedte behoudt zijn compatibility renderer. De editoradapter gebruikt de opgeslagen defaultfont/kleur/grootte naast fragmentmarks.
+
+`export-service.js` verzorgt expliciete math/font-readiness, SVG en PNG. Engine.renderSVG blijft synchroon voor voorbereide assets. Zelfstandige SVG bevat lokale fonts voor rich én bestaande tekst/labels; geen nieuwe fonts of rendererbibliotheek. PNG is afgeleid van toegestane SVG-export en gebruikt dezelfde document.exportSVG-grant; er is geen zelfstandige PNG-permissiebypass. Hostguards binden delivery aan documentrevisie, permission epoch, exportrequest, viewport en actieve editor. Bron-/policywijzigingen of dispose tijdens wachten leveren een generieke fout, geen stale download. Export voegt geen metadata of documentactie toe; reeds bestaande edits worden vóór de exportsnapshot afgerond. Opslaan bewaart afwezige lege legacy-metadata.
+
+De eerdere Chromium SVG→Image-proef gebruikte fallbackfonts. Fontnamen met numerieke delen zijn nu expliciet gequote, zodat hun CSS geldig is. De PNG-route is bovendien onafhankelijk van webfontloading in Image-decoding en meet uitsluitend geautoriseerde native SVG-tekst met geladen lokale fonts en maakt per text-element een tijdelijke transparante bitmap op dezelfde glyphposities. In-place vervanging behoudt SVG-laagvolgorde, parentopacity en transformaties; de resterende geometrie/formulepaden worden vervolgens via SVG→Image→canvas gerasterd. PNG-schaal verhoogt ook de interne tekstrasterresolutie. Publieke SVG blijft font-embedded tekst; deze private bitmaps komen niet in JSON of opgeslagen fragmenten. Geen foreignObject, externe resources of nieuwe OpenType/glyphpadkeuze.
+
+Rastergate: maximaal 8192 pixels per zijde, 16777216 outputpixels, schaal >0 en ≤4; afzonderlijk maximaal 16777216 tijdelijke tekstpixels en 65536 graphemes. Afmetingen worden vóór allocatie gecontroleerd. Native-text-indexverlies, decode-timeout (30 s), canvas-/toBlob-fout en budgetoverschrijding worden expliciet geweigerd. Tijdelijke DOM en Blob-URLs worden altijd verwijderd. Kleuren/focus/keyboardlabels, dialogscrolling en Escape/fullscreen zijn geautomatiseerd gecontroleerd; echte IME/AT, externe viewers/clipboard en fysieke visuele acceptatie blijven niet uitgevoerd. Complexe wereldwijde shaping buiten de bestaande fontdekking is niet bewezen.
+
+T5's één-kern/één-interfacecontract uit sectie 22 blijft functioneel goedgekeurd ontwerp. T5a start pas na T4-acceptatie, definitieve rekencontractgoedkeuring en expliciete starttoestemming.
+
+## 24. T5-prep — teksteditor en gedeelde wiskundige invoer (1.8.0)
+
+T5-prep is de voorbereidende UI-modernisering tussen T4 en T5a; T5a–T5d blijven ongewijzigd gereserveerd voor de rekenengine en calculator. De normale roadmap-gate vraagt eerst T4-acceptatie; voor deze uitvoering gaf de gebruiker afzonderlijk toestemming na gerichte regressiecontrole. De open handmatige T4-acceptatie blijft hierdoor ongewijzigd. De prototypeproef en productie-integratie gelden niet als T4-acceptatie.
+
+De goedgekeurde UI-richting is een donkere, compacte editor met terughoudende gouden accenten, een Nederlandse interface, één zoekveld met categoriechips en een contextpaneel als desktopoverlay of begrensde mobiele sheet. De invoeradapter kiest expliciet tussen Unicode in tekst en gevalideerde LaTeX in formules. Formules behouden selectie-/cursorplaatsing; sjablonen selecteren aanvankelijk het eerste argument. Tab-navigatie tussen argumenten blijft afhankelijk van een afzonderlijke succesvolle gebruiksproef.
+
+Architectuurgrenzen voor latere implementatie: SymbolCatalog blijft UI- en documentonafhankelijk; MathInput beheert invoeging naar de juiste host; FormulaEditor bedient bestaande MathSource-validatie en MathFragments-preview; TextEditor blijft eigenaar van de ProseMirror-editor en private tekstdraft. Dynamische meetwaarden gebruiken uitsluitend bestaande geautoriseerde bronopties en resolver; het prototype gebruikt mocks en is geen bewijs van bronrechten. Geen berekende expressies of calculatorfunctionaliteit valt onder T5-prep.
+
+De productie-integratie is uitgevoerd na gerichte T4-regressiecontrole, terwijl de afzonderlijke T4-handmatige acceptatie open bleef. I1-I4 behouden document v7, textSchema 1-3, legacy textBinding, MathSource, MathFragments, geautoriseerde bronopties en de bestaande commit-/exportpaden. Er zijn geen modelvelden, parser/evaluator of dependencies toegevoegd. De volledige teststatus en open handmatige controles staan in [T5-PREP-INTEGRATION-REPORT.md](T5-PREP-INTEGRATION-REPORT.md); het prototypebewijs blijft in [T5-PREP-UI-PROTOTYPE-REPORT.md](T5-PREP-UI-PROTOTYPE-REPORT.md). De integratie wacht op afzonderlijke gebruikersacceptatie. T4 is hiermee niet geaccepteerd en T5a is niet gestart.
+
+## 25. Productie-integratie T5-prep — modulegrenzen en status (1.8.0)
+
+De productiedialoog gebruikt een vaste editorruimte met overliggende contextpanelen en onderbalkacties. I1 groepeert bestaande werkbalkfuncties en behoudt tekstcommando's. I2 voegt `TextSymbolCatalog` toe als pure data-/zoekmodule zonder DOM, documentmodel, ProseMirror of MathJax. I3 scheidt `TextMathInput` (host/cursorinvoeging) en `TextFormulaEditor` (veilige validatie, preview en stale-request-afhandeling); de ProseMirror-bookmark en de UTF-16 selectie in het formuleveld blijven aparte selecties. I4 scheidt `TextDynamicValueEditor` en gebruikt alleen `sourceOptions`, `resolveTextValue`, `TextValues` en de bestaande typed text.commit-draft.
+
+`TextInsertPanel` is de host/controller die de modi opent, bookmarks bewaart en annuleert. Het is geen eigenaar van formulegrammatica, symbolendata of meetwaardebeleid. Catalogusitems hebben stabiele ID's, categorie, Unicode, LaTeX/formulemapping of sjabloonbron en Nederlandstalige/Engelstalige zoektermen. Gewone tekst behoudt Unicode-invoeging; LaTeX-context gebruikt alleen `MathSource`-toegestane representaties. Sjablonen selecteren het eerste invulargument; Tab-navigatie is niet geïmplementeerd.
+
+De dynamische waardencontroller bewaart bestaande bronschema's en formattingvelden; hij berekent geen waarden zelf en maakt geen mockbronopties. Bij afwezige of ingetrokken rechten blijft de bestaande resolver de bron verbergen of als niet beschikbaar tonen en weigert de bestaande commit-/exportcontrole ongeoorloofde data. Compatibiliteits- en exporttests zijn onderdeel van de huidige regressie, niet uitgesteld naar T4/T5d.
+
+## 26. T5-prep UX-verfijning teksteditor (1.9.0)
+
+**Status:** UX-integratie technisch uitgevoerd op `chatgpt/editor-development`; wacht op handmatige gebruikersacceptatie. Dit wijzigt geen documentvelden, textSchema-versies, documentversie, transactiegrenzen, permissies of exportschema's. T4 handmatige acceptatie blijft open; T5a–T5d zijn niet gestart.
+
+De toolbar houdt bestaande textContent-waarden aan. Lettergroottes zijn centrale puntpresets in `TextEditorUX` en worden naar de bestaande SVG-/CSS-pixeleenheid geconverteerd met 96/72 px per punt: 12 pt→16 px, 16 pt→64/3 px, 20 pt→80/3 px en 28 pt→112/3 px. Alleen de nieuwe keuze is beperkt tot deze vier opties; bestaande waarden blijven exact en krijgen een aangepaste status. Gemengde selectie toont geen actief preset. `fontSize` blijft hetzelfde bestaande rich mark in dezelfde opslagstructuur.
+
+`EditorColor.palette` is de enige paletbron; `EditorColor.renderPalette` bouwt zowel de bestaande geometrische kleurkiezer als de rich-textkiezer uit dezelfde kleurenlijst. Een aangepaste documentkleur blijft ongewijzigd en krijgt een expliciete status totdat de gebruiker bewust een paletkleur kiest. De text-toolbar gebruikt geen vrije RGB-invoer; de geometrische kleurbediening behoudt haar bestaande werking.
+
+Tekstbreedte blijft `null` of een positieve breedte van 1–1.000.000 SVG-pixels zoals de bestaande modelvalidator voorschrijft. De nieuwe horizontale slider beeldt deze grenzen logaritmisch af op 100.000 stappen; bestaande exacte waarden worden bij openen en bij annuleren behouden. Tijdens muis-/toetsenbordinteractie wijzigt alleen een CSS-preview de beschikbare tekstbreedte, waarna de bestaande ProseMirror-layout direct opnieuw omloopt. Loslaten/beëindigen commit één lokale history-transactie; Escape herstelt de startwaarde zonder die geschiedenis te wijzigen. Buitenste Annuleren verwerpt nog steeds de gehele private tekst-draft.
+
+Uitlijning blijft op het bestaande ProseMirror-paragraafattribuut `align`; de drie iconen passen de betrokken paragrafen in één lokale geschiedenisactie aan. De toolbar publiceert actieve/mixed status op basis van de ProseMirror-selectie, inclusief formule- en dynamische waarde-atomen, en leest undo/redo diepte uit dezelfde ProseMirror-history. Expliciete kleur-/lettergrootte-/lettertypekeuzes vervangen alleen de betreffende mark, zodat andere marks behouden blijven. Undo/redo blijft gescheiden van de documentgeschiedenis.
+
+De desktopwerkbalk groepeert de breedteslider in een omkaderde bediening direct naast de tekstopmaak, zodat breedte niet als losstaand control oogt. Symbolen, formules en dynamische waarden zijn compacte icoonknoppen zonder zichtbare tekst; toegankelijke namen en tooltips blijven beschikbaar. Op smallere schermen mogen groepen omvallen of scrollen; desktop is het primaire verfijningsdoel en mobiele presentatie is geen acceptatieblokkade. De bestaande contextpanelen blijven overlays die de dialooghoogte niet veranderen. De symboolinvoeging heet overal “Symbolen & structuren” en blijft dezelfde `TextSymbolCatalog`, `TextMathInput`, `TextFormulaEditor` en bestaande formule-atomroute gebruiken.
+
+Normatief testrapport en afbeeldingen: [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-REFINEMENT-REPORT.md). Handmatige IME-/schermlezercontrole is niet uitgevoerd en blijft open; automatische browserresultaten gelden niet als gebruikersacceptatie. Deze UX-verfijning geeft geen toestemming om T5a te starten.
+
+## 27. T5-prep Deel A — permanente teksteditorwerkruimte (1.11.0)
+
+**Status:** technisch geïntegreerd op `chatgpt/editor-development`; wacht op handmatige acceptatie. Alleen de editorbediening verandert. T4-handmatige acceptatie blijft open, T5a–T5d zijn niet gestart en canvas-resizing uit Deel B is niet uitgevoerd.
+
+De invoegmogelijkheden vormen een permanent linker paneel met exact twee tabs: **Formule** en **Waarden**. De formulecatalogus (symbolen, operators en structuursjablonen) staat binnen Formule; er is geen afzonderlijk Symbooltabblad. Het ProseMirror-werkvlak blijft permanent daarnaast zichtbaar op een witte achtergrond met donkere tekst voor contrast. Tabwissels sluiten geen open formule- of waardeconceptdraft; het concept blijft lokaal totdat het wordt bevestigd of expliciet geannuleerd. Een open concept blokkeert de buitenste Toepassen/Toevoegen-actie totdat het is afgerond. Escape annuleert eerst het actieve invoegconcept; een volgende Escape kan de teksteditor sluiten. Focus, bestaande MathInput-/FormulaEditor-/TextDynamicValueEditor-routes, bookmarks, bronrechten en de bestaande `text.commit`-grens blijven leidend.
+
+Catalogusselectie schrijft uitsluitend LaTeX in het bronveld op de opgeslagen selectie/cursorpositie. Een gewone catalogusterm vervangt de selectie en laat de cursor erna; een structuur met invulvelden selecteert de eerste placeholder. De selectiebookmark blijft behouden wanneer focus naar zoeken of categorie wisselt. Catalogusinteractie creëert of vervangt nooit zelf een formule-atoom; alleen **Formule invoegen** bevestigt de draft en gebruikt de bestaande teksttransactie. De gewone Unicode-invoer en -plakactie in de ProseMirror-tekst blijven intact.
+
+De tijdelijke invoegoverlay, overlaysluiting en tekstbreedteslider zijn uit de actieve UI verwijderd. De bestaande optionele `textContent.width` blijft als document-/renderattribuut behouden: openen, toepassen, annuleren en export wijzigen haar niet. Alleen nieuwe invoer voor breedte is verwijderd; historische aangepaste breedtes worden niet genormaliseerd of gemigreerd. Er zijn geen documentversies, schema's, permissies, opslag- of exportcontracten gewijzigd. Symbolen-/formulecatalogus, presetgroottes, gedeeld kleurenpalet, uitlijningsiconen, actieve opmaak en ProseMirror undo/redo blijven bestaande infrastructuur gebruiken.
+
+De desktopdialoog heeft een vaste tweekolomsindeling met blijvende invoertabs, opmaakwerkbalk, wit editoroppervlak en vaste actiezone. Bij smallere breedtes stapelt de indeling; dit is een bedieningsfallback, geen primaire ontwerpdoelstelling. Historische sectie 26 beschrijft de vorige UX-checkpoint en is door deze sectie voor de definitieve Deel A-indeling vervangen waar ze conflicteert.
+
+Rapport en screenshotbewijs: [T5-PREP-FINAL-UX-DEEL-A-REPORT.md](T5-PREP-FINAL-UX-DEEL-A-REPORT.md). Geen Deel B-werk of calculatorimplementatie is door deze update geautoriseerd.

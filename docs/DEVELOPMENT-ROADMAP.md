@@ -1,8 +1,8 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.1.0
-Status: proposed sequencing; validate against repository
-Date: 2026-10-09
+Version: 2.0.0 (T5-prep Deel A formula/values workspace and white text canvas, 2026-10-12)
+Status: T5-prep I1-I4 and Deel A technically delivered; awaiting user acceptance. T4 hand acceptance remains open; T5a and Deel B not started.
+Date: 2026-10-12
 
 ## Baseline
 User-reported 0A–0D PASS on chatgpt/math-illustration-stabilization, 0D HEAD 297b4d7c834fe0cd9f9b01bc3a43a7d592ef2713, 60/60 Node tests and Edge tests. Verify repository and user's manual acceptance before proceeding. User reports development has advanced beyond phase 0 and already includes bisectors, parallels, perpendiculars, tangents, area and circumference. Do not assume 0E is still pending; inspect actual HEAD and current backlog.
@@ -167,9 +167,68 @@ Status: fase 0 onderzocht; architectuur en plan voorgesteld, gebruikersgoedkeuri
 - T2: inline symbolen en veilige formules, inclusief offline exportproeven.
 - T3: meerdere dynamische bronvelden en gecontroleerde afhankelijkheden.
 - T4: gemengde lay-out, zelfstandige SVG/PNG en toegankelijkheid.
-- T5a: veilige parser/AST, dimensies en numeriek contract.
-- T5b: wetenschappelijke rekenmachine.
-- T5c: dynamische berekende inlinevelden en drie weergavemodi.
-- T5d: volledige export-, security- en regressieaudit.
+- T5a: UI-onafhankelijke veilige parser/AST, dimensies, eenheden en numeriek contract; gedeelde geautoriseerde geometriebronadapter buiten de kern.
+- T5b: één herbruikbare wetenschappelijke calculator-interface; zelfstandig via hoofdwerkbalk en inline via ∑, uitsluitend voorbereiden/evalueren.
+- T5c: calculatedValue-inlinevelden invoegen/bewerken via dezelfde calculator; drie weergavemodi, v7/textSchema 4.
+- T5d: audit van beide calculatormodi, inclusief export, security, toegankelijkheid en fullscreen.
 
 Elke stap vereist afzonderlijke technische verificatie, rapport en expliciete gebruikersacceptatie. T1 is nog niet gestart. Werk uitsluitend op chatgpt/editor-development; geen automatische merge naar main. Zie de architectuur voor open ontwerpkeuzes en het plan voor concrete taken en handmatige acceptatie.
+
+
+## T2 checkpoint (2026-10-12)
+
+User explicitly authorized T2 after T1. Delivered: symbols/search/bookmarks, atomic inline math with safe source notation, textSchema 2 in v7, shared offline glyph renderer, bounded local assets, permission categories and reproducible builds. See [T2-REPORT.md](T2-REPORT.md) for the measured MathJax/KaTeX comparison and exact regression evidence. Real IME/AT and manual visual/external-viewer acceptance remain open; historical statements that T1 has not started are superseded by the T1/T2 reports. Await T2 acceptance; T3 not started. No main merge.
+
+
+## T3 checkpoint (2026-10-12)
+
+Explicit user authorization superseded the T2 stop gate. Delivered: schema-3 inline source values, source/property/notation chooser, current snapshot resolution and reverse dependency index, explicit legacy migration/static backup, category/source grants, redacted export, copied-source remapping and history/replay. See T3-CONTRACT.md and T3-REPORT.md for actual tests and remaining manual controls. No new dependencies; no T4 wrapping/PNG UI or T5 expression engine. Await T3 user acceptance before the next step; development branch only.
+
+
+## T5 shared calculator design checkpoint (2026-10-12)
+
+Functionally approved, **not implemented**. This documentation-only checkpoint starts/restarts no T3, T4 or T5 implementation. Normative contract and seven required acceptance scenarios: [architecture section 22](TEXT-EDITOR-ARCHITECTURE.md#22-t5--zelfstandige-en-inline-wetenschappelijke-rekenmachine-150); sequencing: [implementation plan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md). These clarify all earlier generic T5 calculator entries.
+
+The scientific calculator becomes a **standalone application feature** as well as a text-editor tool. Develop only **one UI-independent calculation engine and one reusable calculator interface**, with thin host adapters. Standalone opens from the main toolbar without a text object/selection, including on an empty document and in fullscreen. Inline opens through ∑. Both share scientific functions, authorized dynamic geometric quantities, automatic recalculation, units/scale, precision, degrees/radians, errors and explicit result copying. Standalone must create no document objects, mutations or undo items.
+
+| Checkpoint | Required scope / gate |
+|---|---|
+| T5a | Safe parser/AST, dimension/unit/evaluation contract without ProseMirror/DOM/text-object/UI dependencies; retain definitive mathematical contract approval before start |
+| T5b | Both entry points, shared component/source adapter, private drafts, identical numeric results and authorization; inline prepare/evaluate only, no insertion |
+| T5c | Enable insertion/editing of typed calculatedValue in the same component; result / formula+result / substituted formula+result; one outer text commit, JSON/history/SVG/PNG and legacy compatibility |
+| T5d | Audit standalone and inline, restricted leaks/revocation/stale caches, keyboard/focus/Escape/Cancel, fullscreen, accessibility and offline export |
+
+Each step retains its own technical report, tests, explicit acceptance and separately authorized start. The functional extension does not grant blanket implementation permission or waive the T5a mathematical gate. Test toolbar `2+3*4=14` without history/object changes; `sin(30 deg)=0.5`; changing a circle radius and its computed area; parity between contexts; restricted data denial; T5c editing/history/JSON/SVG/three modes; and focus/keyboard/Escape/fullscreen/cancellation in both contexts. These are future required tests, not current PASS claims.
+
+Future function graphs, parametric constructions and exercises may reuse this engine through their own validated adapters and permissions. They remain future backlog work, not delivered by T5 calculator design. Existing v7 structured text, legacy support, mathematical requirements and unrelated geometry milestones remain retained.
+
+
+## T4 implementation checkpoint (2026-10-12)
+
+Explicitly authorized and delivered for user acceptance: optional fixed text width with mixed wrapping, local width history/format grants, atomic math/source values, shared canvas/export layout and stable anchors; production SVG/PNG controls with local asset readiness, native-font PNG rastering, layer preservation, quotas and revision/epoch delivery guards. Legacy v7/schema 1–3 and metadata/binding compatibility retained. See [T4 contract](T4-CONTRACT.md) and [T4 report](T4-REPORT.md) for actual test/measurement evidence and remaining manual controls. No new dependencies. Await T4 acceptance; T5a additionally requires definitive mathematical contract approval and explicit start. The approved standalone/inline shared calculator design remains unimplemented.
+
+## T5-prep — Modernisering teksteditor en gedeelde wiskundige invoer (2026-10-12)
+
+I1-I4 zijn technisch geïntegreerd en gepusht naar chatgpt/editor-development na gerichte T4-regressiecontrole. Dit sluit de afzonderlijke handmatige T4-acceptatie niet af. De uitvoering wacht op T5-prep-acceptatie. De mijlpaal T5a–T5d blijft uitsluitend gereserveerd voor de wetenschappelijke rekenmachine.
+
+De geïntegreerde UI gebruikt een compacte responsieve teksteditor met contextuele overlay, stabiele actiezone, centrale symboolcatalogus met stabiele IDs en een gedeelde invoeglaag voor gewone tekst en formules. Formulecursorselecties blijven gescheiden van ProseMirror-bookmarks; sjablonen selecteren het eerste argument. Dynamische waarden gebruiken alleen bestaande geautoriseerde sourceOptions/resolveTextValue- en TextValues-paden. Document v7, textSchema 1-3, legacy textBinding en exportschema's zijn niet gewijzigd. Zie [T5-PREP-INTEGRATION-REPORT.md](T5-PREP-INTEGRATION-REPORT.md), [voorstel v1.2.0](T5-TEXT-EDITOR-MODERNIZATION-PROPOSAL.md) en [prototype-rapport](T5-PREP-UI-PROTOTYPE-REPORT.md).
+
+| Statuspoort | Huidige status |
+|---|---|
+| T4 handmatige acceptatie | Open; regressietests alleen sluiten deze poort niet. |
+| T5-prep I1-I4 | Technisch geleverd, automatische tests groen, wacht op handmatige gebruikersacceptatie. |
+| T5a | Niet gestart. Vereist T4-acceptatie, T5-prep-acceptatie, definitieve goedkeuring van het mathematische contract en expliciete starttoestemming. |
+
+Niet uitgevoerd: echte IME-/schermlezeracceptatie, finale handmatige visuele review en vergelijking op meerdere besturingssystemen. De prototype-mock is niet in productie gebruikt.
+
+### T5-prep UX-verfijning (2026-10-12)
+
+De editor gebruikt nu vier semantische lettergroottepresetknoppen binnen de bestaande SVG-pixelschaal, één gedeelde palettebron voor geometrie en tekst, een logaritmische breedteslider over de bestaande 1–1.000.000 px grenzen, drie alineauitlijningsiconen, actuele/mixed opmaakstatus en lokale undo/redo-bediening. “Symbolen & structuren” hergebruikt de centrale catalogus en bestaande formule-/invoegarchitectuur. Geen documentmodel-, schema-, permissie-, opslag- of exportcontract is aangepast.
+
+Status: code- en regressiewerk technisch geleverd; wacht op handmatige gebruikersacceptatie. Rapport: [T5-PREP-UX-REFINEMENT-REPORT.md](T5-PREP-UX-REFINEMENT-REPORT.md). De exacte geautomatiseerde Node-/Edge-resultaten en resterende handmatige punten staan daar. T4-acceptatie blijft apart open. T5a is niet gestart en houdt de bestaande voorwaarden: T4-acceptatie, T5-prep-acceptatie, definitieve mathematische-contractgoedkeuring en expliciete starttoestemming.
+
+### T5-prep Deel A — definitieve editorwerkruimte (2026-10-12, documentatie 2.0.0)
+
+Het permanente invoegpaneel heeft exact twee tabs: Formule en Waarden. De Formule-tab bevat de LaTeX-bron, zoek-/categoriegestuurde symbolen- en formulecatalogus, preview en expliciete invoeg-/bijwerkactie. Een catalogusklik schrijft LaTeX op de actieve bronselectie/cursorpositie; structuursjablonen selecteren het eerste invulveld. De catalogus maakt nooit op zichzelf een tekstformule-atoom aan. Waarden behoudt de bestaande dynamische-broneditor en rechten. Het ProseMirror-tekstvlak staat blijvend naast het paneel op wit met donkere tekst. De eerdere contextoverlay is verwijderd. De UI-breedteslider is verwijderd, terwijl bestaand `textContent.width` behouden blijft in opslag, rendering en export, zonder automatische wijziging. Deel A wijzigt geen documentversie, schema, permissies of exportcontract. De desktop tweekolomsindeling volgt de aangeleverde visuele referentie; small-screen fallback blijft ondersteund maar is geen primaire ontwerpdoelstelling.
+
+Status: technisch geleverd en gepusht na regressiecontrole; wacht op handmatige acceptatie. Rapport en screenshotset: [T5-PREP-FINAL-UX-DEEL-A-REPORT.md](T5-PREP-FINAL-UX-DEEL-A-REPORT.md). T4-acceptatie blijft afzonderlijk open. Deel B canvas-resizing vereist afzonderlijke toestemming. T5a blijft onder de bestaande acceptatie- en mathematische-gates.

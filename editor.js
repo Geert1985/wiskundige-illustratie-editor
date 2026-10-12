@@ -11,12 +11,15 @@
       this.runtime=services.runtime || null; if(this.runtime && (!MI.RuntimeSession.isSession(this.runtime) || engine!==this.runtime.engine))throw new MI.PermissionError("INVALID_POLICY"); this.commands=this.runtime || MI.AuthorCommands(engine);
       this.inspectorTarget="objects";this.navigationMode="select";this.sectionState=new Map();this.tool = "select"; this.selectedIds = []; this.interaction = null; this.feedback = null;
       this.hoverId=null; this.hoverHit=null; this.hoverFrame=null; this.hoverPointer=null; this.presentationKey=null;
-      this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;
+      this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;this.richTextEditor=null;this.textEditId=null;this.textEditorRequest=0;
       this.history = new (this.runtime ? MI.RuntimeHistory : services.history || MI.EditorHistory)(this); this.editBefore = null;
       this.linearTool='line';this.figureTool='triangle';this.angleTool='construct:anglePoints';this.splitMenuOpen=null;
       for(const [group,tools] of Object.entries(SPLIT_TOOLS))try{const saved=storage?.getItem('fzi-math-illustration-'+group+'-tool');if(group==='angle'&&saved==='construct:angleXAxis')this.angleTool='construct:angleDirections';else if(tools.includes(saved))this[group+'Tool']=saved;}catch(_){}
       this.nodes = {};
-      for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
+      for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "exportPngBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textCancel", "textEditorStatus", "richTextSurface", "richFont", "richFontSize", "richColor", "richColorMenu", "richUndo", "richRedo", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
+      MI.EditorColor.renderPalette(this.nodes.colorPalette, { groupLabel: "Kleuren" });
+      MI.EditorColor.renderPalette(this.nodes.richColorMenu, { buttonClass: "rich-color-swatch", groupLabel: "Tekstkleur kiezen" });
+      if (this.nodes.richFontSize?.options && !this.nodes.richFontSize.options.length) for (const preset of MI.TextEditorUX.fontSizes) { const option = document.createElement("option"); option.value = String(preset.pixels); option.textContent = preset.label; this.nodes.richFontSize.add(option); }
     }
     renderCanvasTools() {
       const menu=this.nodes.canvasToolsMenu;if(!menu||typeof menu.append!=='function')return;
@@ -86,12 +89,12 @@
     restrictControls() {
       if(!this.runtime){
         // Static controls survive a runtime re-mount; derive their state again.
-        for(const id of ['newBtn','saveBtn','loadBtn','exportJsonBtn','exportSvgBtn','titleInput','descriptionInput'])if(this.nodes[id])this.nodes[id].disabled=false;
+        for(const id of ['newBtn','saveBtn','loadBtn','exportJsonBtn','exportSvgBtn','exportPngBtn','titleInput','descriptionInput'])if(this.nodes[id])this.nodes[id].disabled=false;
         for(const button of this.document.querySelectorAll('[data-tool]'))button.disabled=false;
         return;
       }
       for(const button of this.document.querySelectorAll('[data-tool]'))button.disabled=!this.toolAllowed(button.dataset.tool);
-      for(const [id,operation] of [['newBtn','document.reset'],['saveBtn','document.draftSave'],['loadBtn','document.replace'],['exportJsonBtn','document.exportJSON'],['exportSvgBtn','document.exportSVG']])if(this.nodes[id])this.nodes[id].disabled=!this.allowed(operation,operation==='document.replace'?{document:{}}:{});
+      for(const [id,operation] of [['newBtn','document.reset'],['saveBtn','document.draftSave'],['loadBtn','document.replace'],['exportJsonBtn','document.exportJSON'],['exportSvgBtn','document.exportSVG'],['exportPngBtn','document.exportSVG']])if(this.nodes[id])this.nodes[id].disabled=!this.allowed(operation,operation==='document.replace'?{document:{}}:{});
       for(const [id,path] of [['titleInput','title'],['descriptionInput','description']])this.nodes[id].disabled=!this.allowed('document.setMeta',{fields:[{path,value:this.nodes[id].value}]});
       const object=this.engine.get(this.selectedId),caps=object&&this.capabilities(object.id);
       for(const control of this.nodes.selectionPanel.querySelectorAll('[data-edit], [data-style], [data-style-color], [data-fill-object]')) {
@@ -215,7 +218,7 @@
       if(this.selectedIds.includes(o.id) && this.moveSelectionPlan())return 'grab';
       return 'pointer';
     }
-     circleDistributionForPoint(id) { return this.engine.model.circleDistributions.find(d=>d.pointIds.includes(id))||null; }
+     circleDistributionForPoint(id) { return this.engine.model.circleDistributions?.find(d=>d.pointIds.includes(id))||null; }
     hoverAt(event) {
       if(this.navigationMode==='pan')return null;
       if(this.tool.startsWith('construct:') && (!this.interaction || this.interaction.mode==='construction')) {
@@ -292,7 +295,7 @@
     status(text) { this.nodes.status.textContent = text;this.instructionMessage=text;this.renderInstructions(); }
     renderInstructions() { MI.ToolInstructions.render(this); }
     hydrate() { this.nodes.titleInput.value = this.engine.model.meta.title || ""; this.nodes.descriptionInput.value = this.engine.model.meta.description || ""; }
-    updateMeta() {const fields=[{path:'title',value:this.nodes.titleInput.value.trim()},{path:'description',value:this.nodes.descriptionInput.value.trim()}].filter(f=>this.engine.model.meta[f.path]!==f.value);if(fields.length)this.execute('document.setMeta',{fields});}
+    updateMeta() {const fields=[{path:'title',value:this.nodes.titleInput.value.trim()},{path:'description',value:this.nodes.descriptionInput.value.trim()}].filter(f=>this.engine.model.meta[f.path]!==f.value&&(f.value!==''||f.path in this.engine.model.meta));if(fields.length)this.execute('document.setMeta',{fields});}
     flushEdits() { if (this.editBefore) { this.history.record(this.editBefore); this.editBefore = null; } }
     stylePatch(input) {
       let key=input.dataset.style,value=['number','range'].includes(input.type) ? input.valueAsNumber : input.value;
@@ -317,11 +320,18 @@
     snap(point, excludeId) { return this.services.snap.resolve(this.engine, point, { transform: this.transform(), excludeId }); }
     init() {
       if (this.initialized) return this;
-      this.initialized = true; this.hydrate();
+      this.initialized = true; MI.TextFonts?.install?.(this.document); this.hydrate();
       const n = this.nodes;
       this.on(n.textForm, "submit", e => { e.preventDefault(); this.submitText(); });
       this.on(n.textCancel, "click", () => this.closeText());
-      this.on(n.textDialog, "cancel", e => { e.preventDefault(); this.closeText(); });
+      this.on(n.textDialog, "cancel", e => { e.preventDefault(); this.closeText(); });this.on(n.textDialog.querySelector("#textDialogClose"),"click",()=>this.closeText());
+      this.on(n.textDialog,"click",e=>{const b=e.target.closest('[data-rich-mark]');if(b&&this.richTextEditor){e.preventDefault();this.richTextEditor.toggle(b.dataset.richMark,b.dataset.richScript);}});
+      this.on(n.richFont,'change',()=>this.richTextEditor?.setFont(n.richFont.value));this.on(n.richFontSize,'change',()=>{const value=Number(n.richFontSize.value);if(Number.isFinite(value)&&value>=6&&value<=120)this.richTextEditor?.setFontSize(value);});
+      this.on(n.richColor,'click',()=>{const open=n.richColorMenu.hidden;n.richColorMenu.hidden=!open;n.richColor.setAttribute('aria-expanded',String(open));if(open)n.richColorMenu.querySelector('[data-color]')?.focus();});
+      this.on(n.richColorMenu,'click',event=>{const swatch=event.target.closest('[data-color]');if(!swatch)return;this.richTextEditor?.setColor(swatch.dataset.color);n.richColorMenu.hidden=true;n.richColor.setAttribute('aria-expanded','false');this.richTextEditor?.focus();});
+      this.on(n.richColorMenu,'keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();n.richColorMenu.hidden=true;n.richColor.setAttribute('aria-expanded','false');n.richColor.focus();}});
+      this.on(n.textDialog,'click',event=>{const align=event.target.closest('[data-rich-align]');if(align)this.richTextEditor?.setAlign(align.dataset.richAlign);});
+      this.on(n.richUndo,'click',()=>this.richTextEditor?.undo());this.on(n.richRedo,'click',()=>this.richTextEditor?.redo());
       this.on(n.colorForm, "submit", e => { e.preventDefault(); if (this.validColor()) { this.setColor(this.colorId, this.colorInput.value); this.closeColor(); } });
       this.on(n.colorCancel, "click", () => this.closeColor(true));
       this.on(n.colorDialog, "cancel", e => { e.preventDefault(); this.closeColor(true); });
@@ -391,6 +401,8 @@
       });
       this.on(n.selectionPanel, "click", e => {
         const axisButton=e.target.closest('[data-axis-setting]');if(axisButton){this.setPresentationFlag(axisButton.dataset.axisSetting,!this.engine.renderer[axisButton.dataset.axisSetting]);return;}
+        if(e.target.closest('[data-text-migrate]')){this.openRichText(e.target.closest('[data-text-migrate]').dataset.textMigrate,true);return;}if(e.target.closest('[data-text-restore]')){this.changeDocument(()=>this.execute('text.restoreStatic',{id:e.target.closest('[data-text-restore]').dataset.textRestore}));return;}
+        if(e.target.closest('[data-rich-text-edit]')){this.openRichText(e.target.closest('[data-rich-text-edit]').dataset.richTextEdit);return;}
         if(e.target.closest('[data-label-selection]')){this.setCommonProperty('showLabel',!this.selectedObjects().every(o=>o.showLabel));return;}
         const dashButton=e.target.closest('[data-style-dash]');if(dashButton){this.changeDocument(()=>this.updateObject(this.selectedId,{style:{dash:dashButton.value}}));return;}
         const source=e.target.closest('[data-construction-source]');if(source){this.selectObject(source.dataset.constructionSource);return;}
@@ -421,7 +433,8 @@
       this.on(n.loadBtn, "click", () => {if(this.runtime)throw new MI.PermissionError("MODE_DENIED");n.fileInput.click();});
       this.on(n.fileInput, "change", e => this.importFile(e));
       this.on(n.exportJsonBtn, "click", () => {if(this.runtime && !this.allowed("document.exportJSON"))throw new MI.PermissionError("PERMISSION_DENIED"); this.cancel(); this.flushEdits(); if(!this.runtime)this.updateMeta(); this.download("illustratie.json", this.engine.toJSONString(true), "application/json;charset=utf-8"); });
-      this.on(n.exportSvgBtn, "click", () => {if(this.runtime && !this.allowed("document.exportSVG"))throw new MI.PermissionError("PERMISSION_DENIED"); this.cancel(); this.flushEdits(); if(!this.runtime)this.updateMeta(); this.download("illustratie.svg", this.engine.renderSVG(), "image/svg+xml;charset=utf-8"); });
+      this.on(n.exportSvgBtn,'click',()=>this.exportImage('svg'));
+      this.on(n.exportPngBtn,'click',()=>this.exportImage('png'));
       if (this.document.createElement && this.document.body) {
         this.colorInput = this.document.createElement("input"); this.colorInput.type = "text"; this.colorInput.dataset.editorColor = "true";
         this.colorInput.id = "colorValue"; this.colorInput.required = true; this.colorInput.pattern = "#[0-9a-fA-F]{6}"; this.colorInput.maxLength = 7;
@@ -441,11 +454,20 @@
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
       this.engine.renderer.preview = null; this.feedback = null;
     }
-    closeText() { this.pendingText = null; if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close(); this.renderInstructions(); }
-    submitText() {
-      const text = this.nodes.textValue.value.trim(), pending = this.pendingText;
-      if (!pending || !text) return;
-      this.closeText(); this.changeDocument(() => { this.selectedId = this.createObject({ type: "text", x: pending.point.x, y: pending.point.y, text },"text").id; });
+    syncRichToolbar(state){if(!state)return;const syncSelect=(select,entry,values,labelFor)=>{select.querySelectorAll('[data-rich-state-option]').forEach(option=>option.remove());if(entry.mixed){const mixed=this.document.createElement('option');mixed.value='__mixed';mixed.textContent='Gemengde selectie';mixed.dataset.richStateOption='true';select.add(mixed);select.value='__mixed';return;}const value=String(entry.value??'');let option=[...select.options].find(item=>item.value===value);if(!option){option=this.document.createElement('option');option.value=value;option.textContent=`Aangepast (${labelFor(entry.value)})`;option.dataset.richStateOption='true';select.add(option);}select.value=value;};
+      syncSelect(this.nodes.richFont,state.fontId,value=>value==='serif'?'Serif':'Sans',value=>value==='serif'?'Serif':'Sans');
+      const sizeEntry=state.fontSize;syncSelect(this.nodes.richFontSize,sizeEntry,value=>value, value=>MI.TextEditorUX.pointLabel(value));
+      for(const button of this.nodes.textDialog.querySelectorAll('[data-rich-mark]')){const key=button.dataset.richMark==='script'?'script':button.dataset.richMark,entry=state[key],pressed=key==='script'?entry.value===button.dataset.richScript:entry.value===true;button.setAttribute('aria-pressed',entry.mixed?'mixed':String(pressed));button.classList.toggle('is-mixed',entry.mixed);}
+      for(const button of this.nodes.textDialog.querySelectorAll('[data-rich-align]')){const entry=state.align,pressed=entry.value===button.dataset.richAlign;button.setAttribute('aria-pressed',entry.mixed?'mixed':String(pressed));button.classList.toggle('is-mixed',entry.mixed);}
+      const color=state.color,button=this.nodes.richColor,hex=typeof color.value==='string'?color.value:'#888888',known=MI.EditorColor.palette.some(item=>item.value.toLowerCase()===hex.toLowerCase());button.style.setProperty('--rich-text-color',hex);button.classList.toggle('is-mixed',color.mixed);button.classList.toggle('is-custom',!color.mixed&&!known);button.title=color.mixed?'Tekstkleur: gemengde selectie':!known?`Tekstkleur: Aangepast (${hex})`:`Tekstkleur: ${MI.EditorColor.palette.find(item=>item.value.toLowerCase()===hex.toLowerCase())?.label||hex}`;button.setAttribute('aria-label',button.title);for(const swatch of this.nodes.richColorMenu.querySelectorAll('[data-color]')){const active=!color.mixed&&swatch.dataset.color.toLowerCase()===hex.toLowerCase();swatch.setAttribute('aria-pressed',String(active));swatch.classList.toggle('active',active);}this.nodes.richUndo.disabled=!state.canUndo;this.nodes.richRedo.disabled=!state.canRedo;
+    }
+    async openRichText(id=null,migrateLegacy=false){const request=++this.textEditorRequest,object=id?this.engine.get(id):null;if(id&&(!object||object.type!=='text'||object.textBinding&&!migrateLegacy||object.construction))return;this.flushEdits();this.textExpectedRevision=this.command('text.commit',{}).expectedDocumentRevision;this.textReturnFocus=this.document.activeElement;this.textEditId=id;this.textMigrateLegacy=migrateLegacy;this.textPermissionEpoch=this.runtime?.permissionEpoch;let initial;try{initial=(migrateLegacy?MI.TextValues.migrate(object):null)||object?.textContent||{schema:1,defaults:{fontId:object?.style?.fontFamily?.includes('Serif')?'serif':'sans',fontSize:object?.style?.fontSize||16,color:object?.style?.fill&&/^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(object.style.fill)?object.style.fill:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:object?.text?[{id:'r1',kind:'text',text:object.text,marks:{}}]:[]}]};}catch(error){this.closeText();this.status(error.message);return;}try{const adapter=await MI.RichTextEditor.load();if(MI.MathFragments.has([{textContent:initial}]))await MI.MathFragments.load();if(request!==this.textEditorRequest)return;this.nodes.richColorMenu.hidden=true;this.nodes.richColor?.setAttribute?.('aria-expanded','false');this.textInsertPanel?.destroy();this.richTextEditor?.destroy();this.richTextEditor=adapter.mount(this.nodes.richTextSurface,initial,content=>{if(content){const surface=this.nodes.richTextSurface.querySelector('.ProseMirror');if(surface)surface.style.maxWidth=content.width==null?'none':content.width+'px';}},{resolveValue:run=>this.resolveTextValue(run),onStateChange:state=>this.syncRichToolbar(state)});this.syncRichToolbar(this.richTextEditor.toolbarState?.());this.textInsertPanel=MI.TextInsertPanel.mount(this.nodes.textDialog,this.richTextEditor,{sourceOptions:()=>this.textSourceOptions(),resolveValue:run=>this.resolveTextValue(run)});if(this.runtime){const target=id?{kind:'existing',id}:{kind:'new',position:{...this.pendingText.point}},payload={target,content:initial,...(migrateLegacy?{migrateLegacy:true}:{})};this.textTransaction=this.runtime.begin(this.command('text.commit',payload));}this.document.getElementById("textSubmit").textContent=id?"Toepassen":"Toevoegen";this.nodes.textDialog.showModal();const surface=this.nodes.richTextSurface.querySelector?.('.ProseMirror');if(surface)surface.style.maxWidth=initial.width==null?'none':initial.width+'px';this.richTextEditor.focus();}catch(error){if(request===this.textEditorRequest){this.closeText();this.status(error.code==='MISSING_SOURCE_PERMISSION'?'Deze tekst bevat momenteel niet-toegestane bronvelden.':'Teksteditor kon niet worden geladen.');}}}
+    resolveTextValue(run){return MI.TextValues.resolve(run,new Map(this.engine.model.objects.map(o=>[o.id,o])),this.engine.model.meta,(id,property)=>!this.runtime||this.engine.textSourceAllowed(id,property));}
+    textSourceOptions(){return this.engine.model.objects.filter(o=>MI.DynamicText.propertiesFor(o).length).map(o=>({id:o.id,name:o.name||o.id,properties:MI.DynamicText.propertiesFor(o).filter(property=>!this.runtime||this.engine.textSourceAllowed(o.id,property))})).filter(o=>o.properties.length);}
+    closeText() { if(this.textTransaction){this.runtime?.cancel(this.textTransaction);this.textTransaction=null;}this.nodes.richColorMenu&&(this.nodes.richColorMenu.hidden=true);this.nodes.richColor?.setAttribute?.('aria-expanded','false');this.textMigrateLegacy=false;this.textEditorRequest++;this.pendingText = null;this.textInsertPanel?.destroy();this.textInsertPanel=null;this.richTextEditor?.destroy();this.richTextEditor=null;this.textEditId=null;if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close();const focus=this.textReturnFocus;this.textReturnFocus=null;if(focus?.isConnected)focus.focus(); this.renderInstructions(); }
+    async submitText() {
+      if(this.textInsertPanel?.isOpen()){this.textInsertPanel.announcePending();this.nodes.textEditorStatus.textContent='Bevestig of annuleer eerst de openstaande formule of dynamische waarde.';return;}if(this.runtime&&this.textPermissionEpoch!==this.runtime.permissionEpoch){this.status('De toegangsrechten zijn gewijzigd. Open de tekst opnieuw.');return;}
+      const pending=this.pendingText,id=this.textEditId;let content;try{content=this.richTextEditor?.get();}catch(error){this.status(error.message);return;}if(!content&&this.nodes.textValue.value.trim()){content={schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:this.nodes.textValue.value.trim(),marks:{}}]}]};}if(!content)return;const text=MI.TextContent.plain(content);if(!text.trim())return;const request=this.textEditorRequest;try{if(MI.MathFragments.has([{textContent:content}])){await MI.MathFragments.load();for(const p of content.paragraphs)for(const r of p.runs)if(r.kind==='math')MI.MathFragments.box(r.source);}}catch(error){this.status(error.message);return;}if(request!==this.textEditorRequest)return;const target=id?{kind:'existing',id}:{kind:'new',position:{x:pending.point.x,y:pending.point.y}},command={schema:1,operation:'text.commit',expectedDocumentRevision:this.textExpectedRevision,payload:{target,content,...(this.textMigrateLegacy?{migrateLegacy:true}:{})}},decision=this.commands.canExecute(command);if(!decision.allowed){this.status(decision.code==='STALE_TRANSACTION'?'De illustratie is intussen gewijzigd. Sluit de teksteditor en open hem opnieuw.':'Tekstwijziging niet toegestaan: '+decision.code);return;}const handle=this.textTransaction;this.textTransaction=null;this.closeText();this.changeDocument(()=>{const result=handle?this.runtime.commit(handle,command.payload):this.commands.execute(command);this.selectedId=result.result.id;});
     }
     validColor() { return this.colorInput && /^#[0-9a-f]{6}$/i.test(this.colorInput.value); }
     closeColor(cancel = false) {
@@ -531,7 +553,7 @@
       for(const o of this.engine.model.objects) {
         if(o.type!=='text' && !o.measurementLabelOnly)continue;
         const group=groups.get(o.id);
-        const text=group?.querySelector(o.type==='text'?'text':'[data-measurement-label] text');
+        const text=o.textContent?group?.querySelector('[data-rich-text]'):group?.querySelector(o.type==='text'?'text':'[data-measurement-label] text');
         if(!text?.getBBox)continue;
         const box=text.getBBox(),matrix=text.getScreenCTM();if(!matrix || !box.width || !box.height)continue;
         result[o.id]=[[box.x,box.y],[box.x+box.width,box.y],[box.x+box.width,box.y+box.height],[box.x,box.y+box.height]].map(([x,y])=>({x:matrix.a*x+matrix.c*y+matrix.e,y:matrix.b*x+matrix.d*y+matrix.f}));
@@ -642,8 +664,7 @@
       if (this.tool === "point" || this.tool === "text") {
         const result = this.snap(point); const object = { type: this.tool, x: result.point.x, y: result.point.y };
         if (this.tool === "text") {
-          this.flushEdits(); this.pendingText = result; this.renderInstructions();this.nodes.textValue.value = "";
-          this.nodes.textDialog.showModal(); this.nodes.textValue.focus(); return;
+          this.flushEdits(); this.pendingText = result; this.renderInstructions();this.nodes.textValue.value = "";this.openRichText();return;
         }
         this.changeDocument(() => { this.selectedId = this.createObject(object).id; }); this.feedback = result; this.invalidate(); return;
       }
@@ -780,6 +801,7 @@
       if (this.initialized) this.invalidate();
     }
     keyDown(event) {
+      if(event.key==='Escape'&&this.nodes.textDialog?.open){event.preventDefault();this.closeText();return;}
       if(event.key==='Escape' && this.nodes.canvasToolsMenu && this.nodes.canvasToolsMenu.hidden===false){event.preventDefault();this.closeCanvasTools(true);return;}
       if(event.key==='Escape' && this.canvasFullscreen && this.document.body?.classList.contains('properties-open')){event.preventDefault();this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.navigationTools?.querySelector?.('[data-view-select=axes]')?.focus?.();return;}
       if(event.key==='Escape' && this.splitMenuOpen){event.preventDefault();this.closeSplitMenu(true);return;}
@@ -914,7 +936,12 @@
     }
     renderCanvasPreview(){this.renderCanvas();}
     renderCanvas(){
+      this.richTextEditor?.refreshValues?.();this.textInsertPanel?.refresh?.();
       const e=this.engine,r=e.renderer,n=this.nodes,objects=e.model.all().filter(o=>!this.runtime||this.capabilities(o.id).display).map(object=>this.viewObject(object.id)),viewport=n.canvas.getBoundingClientRect?.(),viewportTransform=MI.CoordinateTransform.forViewport(r,viewport),clipBounds=viewportTransform?.visibleBounds(viewport);
+      if(MI.MathFragments.has(objects)&&!MI.MathFragments.ready()){
+        if(!this.mathLoading){this.mathLoading=true;MI.MathFragments.load().then(()=>{this.mathLoading=false;if(this.initialized)this.invalidate();}).catch(()=>{this.mathLoading=false;this.status('Formule-assets konden niet worden geladen.');});}
+        n.canvas.textContent='Formules laden…';return {objects,svg:null,object:null};
+      }
       n.canvas.innerHTML=r.render({meta:e.model.meta,layers:e.model.layers,all:()=>objects},{editorCanvas:true,clipBounds});const svg=n.canvas.querySelector('svg'),object=this.selectedId&&this.viewObject(this.selectedId);if(svg)MI.SvgRenderer.fitCanvasAxes(svg,r,this.transform(),n.canvas.getBoundingClientRect?.());if(svg?.querySelectorAll)Array.from(svg.querySelectorAll('[data-object-id]')).filter(node=>this.selectedIds.includes(node.getAttribute('data-object-id'))).forEach(node=>node.classList.add('selected'));if(this.document.createElementNS){this.renderRectangle(svg,r);if(this.services.overlays)this.services.overlays.render(svg,r,this.selectedIds.length===1&&this.engine.isDisplayed(object?.id)&&(!this.runtime||this.capabilities(object?.id).geometryFields.length)?object:null,this.navigationMode==='pan'?'pan':this.tool,this.document);if(this.services.feedback)this.services.feedback.render(svg,r,this.feedback,this.document);}if(this.runtime&&svg)for(const handle of svg.querySelectorAll('.fzi-line-endpoint, .fzi-polygon-vertex')){const id=handle.getAttribute('data-line-id')||handle.getAttribute('data-polygon-id'),caps=this.capabilities(id),part=handle.getAttribute('data-endpoint'),fields=part?[part==='start'?'x1':'x2',part==='start'?'y1':'y2']:['x','y'].map(k=>'vertices['+handle.getAttribute('data-vertex')+'].'+k);if(!fields.every(k=>caps.geometryFields.includes(k)))handle.remove();}return {objects,svg,object};
     }
     render() {
@@ -962,12 +989,12 @@
       if(host){const section=this.nodes.layersSection,available=section?.getBoundingClientRect().height-(section?.querySelector('summary')?.getBoundingClientRect().height||40)-8;if(Number.isFinite(available) && available>0)host.style.maxHeight=Math.max(0,available)+'px';host.scrollTop=previousScroll;const key=JSON.stringify(this.selectedIds);if(key!==this.layerScrollSelectionKey){this.layerScrollSelectionKey=key;const selected=Array.from(this.nodes.viewList.querySelectorAll('[data-select-object]')).find(node=>node.dataset.selectObject===this.selectedId);if(selected){const row=selected.getBoundingClientRect(),bounds=host.getBoundingClientRect();if(row.bottom>bounds.bottom)host.scrollTop+=row.bottom-bounds.bottom+4;else if(row.top<bounds.top)host.scrollTop-=bounds.top-row.top+4;}}}
     }
     dynamicTextInspector(object){
-      if(object.type!=='text'||object.construction||this.selectedIds.length!==1)return '';
+      if(object.type!=='text'||object.construction||object.textContent||this.selectedIds.length!==1)return '';
       const esc=MI.escapeXml,b=object.textBinding,source=this.engine.get(b?.sourceId),sources=this.engine.model.objects.filter(o=>MI.DynamicText.propertiesFor(o).length),labels={name:'Naam',label:'Label',length:'Lengte',radius:'Straal',perimeter:'Omtrek',area:'Oppervlakte',angle:'Hoek',x:'x-coordinaat',y:'y-coordinaat'},disabled=object.locked||!this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'textBinding',value:null}]})?' disabled':'';
       const options='<option value="">Statische tekst</option>'+(!source&&b?'<option selected value="'+esc(b.sourceId)+'">Bron niet beschikbaar</option>':'')+sources.map(o=>'<option value="'+esc(o.id)+'"'+(b?.sourceId===o.id?' selected':'')+'>'+esc(o.name)+'</option>').join('');
       let html='<details data-property-section="dynamic-text" open><summary>Dynamische tekst</summary><label>Bronobject<select data-text-binding="sourceId"'+disabled+'>'+options+'</select></label>';
       if(b){html+='<label>Bronwaarde<select data-text-binding="property"'+disabled+'>'+MI.DynamicText.propertiesFor(source).map(k=>'<option value="'+k+'"'+(b.property===k?' selected':'')+'>'+labels[k]+'</option>').join('')+'</select></label><label>Decimalen<input type="number" min="0" max="10" step="1" placeholder="Documentstandaard" data-text-binding="precision" value="'+(b.precision??'')+'"'+disabled+'></label>';for(const [key,label] of [['prefix','Voorvoegsel'],['suffix','Achtervoegsel']])html+='<label>'+label+'<input type="text" maxlength="2000" data-text-binding="'+key+'" value="'+esc(b[key])+'"'+disabled+'></label>';html+='<p data-dynamic-text-value>'+esc(MI.DynamicText.value(object,new Map(this.engine.model.objects.map(o=>[o.id,o])),this.engine.model.meta))+'</p><p class="help-text">De waarde volgt de bron en documenteenheid. Een ontbrekende of ongeldige bron toont niet beschikbaar.</p>';}
-      return html+'</details>';
+      if(b){let candidate;try{candidate={target:{kind:'existing',id:object.id},content:MI.TextValues.migrate(object),migrateLegacy:true};}catch{}const enable=candidate&&this.allowed('text.commit',candidate);html+='<button type="button" data-text-migrate="'+esc(object.id)+'"'+(enable?'':' disabled')+'>Omzetten naar inline dynamische tekst</button>';}return html+'</details>';
     }
     angleInspector(object){
       if(object.type!=='angle'||this.selectedIds.length!==1)return '';const config=object.angleSettings||MI.AngleMeasurements.defaults,disabled=object.locked||!this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'angleSettings',value:{...config}}]})?' disabled':'',select=(key,label,options,extra='')=>'<label>'+label+'<select data-angle-setting="'+key+'" aria-label="'+label+'"'+disabled+extra+'>'+options.map(([value,text])=>'<option value="'+value+'"'+(config[key]===value?' selected':'')+'>'+text+'</option>').join('')+'</select></label>';
@@ -996,7 +1023,9 @@
       const info=this.selectedIds.length===1?this.constructionPanel(object):'';
       const actionIcon=(attribute,label,path,disabled=false)=>'<button type="button" class="secondary" '+attribute+' title="'+label+'" aria-label="'+label+'"'+(disabled?' disabled':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+path+'</svg></button>';
       const labelVisible=this.selectedObjects().every(o=>o.showLabel),labelButton='<button type="button" class="secondary" data-label-selection aria-label="Label tonen/verbergen" title="Label tonen/verbergen" aria-pressed="'+labelVisible+'"'+(this.selectedObjects().some(o=>o.locked)||!this.allowed('object.setProperties',{ids:this.selectedIds,fields:[{path:'showLabel',value:!labelVisible}]})?' disabled':'')+'><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M12 5v15M8 20h8"/></svg></button>';
-      const toolbar='<div class="object-actions">'+labelButton+(!this.runtime?actionIcon('data-group-selection','Groeperen','<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',this.selectedIds.length<2)+actionIcon('data-ungroup-selection','Groep opheffen','<path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5M7 7h5v5H7zM12 12h5v5h-5z"/>',!this.selectedGroups().length):'')+actionIcon('data-visibility-selection',this.selectedObjects().every(o=>o.visible!==false)?'Selectie verbergen':'Selectie tonen',eyeIcon(this.selectedObjects().every(o=>o.visible!==false)),!this.allowed('object.setVisibility',{ids:this.selectedIds,value:true}))+actionIcon('data-duplicate-selection','Dupliceren','<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/>')+actionIcon('data-lock-selection',this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen','<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>')+actionIcon('data-delete-selected','Verwijder object','<path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/>',!this.editableSelection())+'</div>';
+      const restore=object.textContent?.schema>=3&&typeof object.legacyStaticText==='string'?'<button type="button" data-text-restore="'+MI.escapeXml(object.id)+'"'+(this.allowed('text.restoreStatic',{id:object.id})?'':' disabled')+'>Oorspronkelijke statische tekst herstellen</button>':'';
+      const richEdit=object.type==='text'&&!object.textBinding&&!object.construction?'<button type="button" class="secondary" data-rich-text-edit="'+MI.escapeXml(object.id)+'"'+(object.locked?' disabled':'')+'>Tekst bewerken</button>':'';
+      const toolbar='<div class="object-toolbar">'+(richEdit?'<div class="object-edit-row">'+richEdit+'</div>':'')+'<div class="object-actions">'+restore+labelButton+(!this.runtime?actionIcon('data-group-selection','Groeperen','<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',this.selectedIds.length<2)+actionIcon('data-ungroup-selection','Groep opheffen','<path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5M7 7h5v5H7zM12 12h5v5h-5z"/>',!this.selectedGroups().length):'')+actionIcon('data-visibility-selection',this.selectedObjects().every(o=>o.visible!==false)?'Selectie verbergen':'Selectie tonen',eyeIcon(this.selectedObjects().every(o=>o.visible!==false)),!this.allowed('object.setVisibility',{ids:this.selectedIds,value:true}))+actionIcon('data-duplicate-selection','Dupliceren','<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/>')+actionIcon('data-lock-selection',this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen','<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>')+actionIcon('data-delete-selected','Verwijder object','<path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/>',!this.editableSelection())+'</div></div>';
       const pathParameter=!this.runtime&&MI.ConstructionService.pathKind(object.construction?.kind)?'<label>Positie op pad<input data-path-parameter type="range" min="0" max="'+(object.construction.kind==='pointOnCircle'?'.999':'1')+'" step=".001" value="'+object.construction.parameter+'"'+(object.locked?' disabled':'')+' aria-label="Positie op pad"><output>'+Number((object.construction.parameter*100).toFixed(1))+'%</output></label>':'';
       const distribution=this.distributionInspector(object);
       const actions=info+this.constructionInputs(object)+pathParameter+distribution+detach+assignment;
@@ -1008,7 +1037,7 @@
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
       for (const key of object.construction?[]:keys || []) html += '<label>' + key + '<input data-edit="' + key + '" type="number" step="0.01" value="' + displayNumber(object[key]) + '"></label>';
       if(!object.construction&&(object.type==='polygon' || object.type==='angle')) object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.01" value="'+displayNumber(p[key])+'"></label>'; });
-      if (object.type === "text" && !object.construction && !object.textBinding) html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
+      if (object.type === "text" && !object.construction && !object.textBinding && !object.textContent) html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
       html+='<details data-property-section="labels" open><summary>Label en meting</summary>';
       if(MI.LinearGeometry.isLinear(object)||['circle','angle'].includes(object.type)) {
         if(['dimension','angle'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-edit="measurementLabelOnly"'+(object.measurementLabelOnly?' checked':'')+'>Alleen meetlabel tonen</label>';
@@ -1028,9 +1057,23 @@
       }
       html+='<label>Dekking<span class="stroke-slider"><input aria-label="Dekking" data-style="opacity" type="range" min="0" max="100" step="1" value="'+esc(style.opacity*100)+'"><output>'+esc(Math.round(style.opacity*100))+'%</output></span></label><p class="help-text">0% is onzichtbaar, 100% is volledig zichtbaar.</p></fieldset>';
       const split=html.indexOf('<details data-property-section="labels"'),appearance=html.indexOf('<fieldset');
-      html='<details data-property-section="appearance" open><summary>Uiterlijk</summary>'+html.slice(appearance)+'</details><details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
+      if(object.type==='text')html='<details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
+      else html='<details data-property-section="appearance" open><summary>Uiterlijk</summary>'+html.slice(appearance)+'</details><details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       html=html.replace('<details data-property-section="labels" open><summary>Label en meting</summary></details>','');
       panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+html;
+    }
+    async exportImage(kind){
+      try{
+        if(!this.allowed('document.exportSVG'))throw Error('Export niet toegestaan.');
+        this.cancel();this.flushEdits();
+        const serial=this.exportSerial=(this.exportSerial||0)+1,revision=this.command('document.exportSVG',{}).expectedDocumentRevision,epoch=this.runtime?.permissionEpoch;
+        const view=()=>JSON.stringify([this.engine.renderer.width,this.engine.renderer.height,this.engine.renderer.bounds]);const initialView=view();
+        const guard=()=>this.initialized&&serial===this.exportSerial&&epoch===this.runtime?.permissionEpoch&&revision===this.command('document.exportSVG',{}).expectedDocumentRevision&&view()===initialView&&this.allowed('document.exportSVG');
+        const svg=await MI.ExportService.svg(this.engine,{guard,document:this.document});
+        const output=kind==='png'?await MI.ExportService.png(svg,{width:this.engine.renderer.width,height:this.engine.renderer.height,guard,document:this.document}):svg;
+        if(!guard())throw Error('Exportcontext gewijzigd; exporteer opnieuw.');
+        this.download('illustratie.'+kind,output,kind==='png'?'image/png':'image/svg+xml;charset=utf-8');this.status(kind.toUpperCase()+' geexporteerd.');
+      }catch(error){if(this.initialized)this.status('Export mislukt: '+error.message);}
     }
     download(name, content, type) { const blob = new this.window.Blob([content], { type }), url = this.window.URL.createObjectURL(blob), link = this.document.createElement("a"); link.href = url; link.download = name; link.click(); this.window.setTimeout(() => this.window.URL.revokeObjectURL(url), 500); }
   }
