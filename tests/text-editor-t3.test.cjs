@@ -40,6 +40,16 @@ test('T3 references grant and kept source rights revalidate, denied commits are 
 test('T3 moving a marked atom only needs content; notation and rebinding use distinct grants',()=>{
  const MI=setup(),c=content([field(),{id:'t',kind:'text',text:' rest',marks:{}}]),{session}=MI.RuntimeSession.create(options(doc(c),{content:true,format:false,references:false}));c.paragraphs[0].runs.reverse();commit(session,c);const before=plain(session.engine.toJSON()),notation=plain(c);notation.paragraphs[0].runs[1].format.precision=0;assert.throws(()=>commit(session,notation),x=>x.code==='PERMISSION_DENIED');const rebind=plain(c);rebind.paragraphs[0].runs[1].binding={sourceId:'P',property:'x'};assert.throws(()=>commit(session,rebind),x=>x.code==='PERMISSION_DENIED');assert.deepEqual(plain(session.engine.toJSON()),before);
 });
+test('T3 redacted drafts and static restore cannot flatten denied private fields',()=>{
+ const MI=setup();for(const source of [{read:false},{display:false},{textSourceProperties:[]}]){
+  const d=doc();d.objects[2].legacyStaticText='private backup';const {session,owner}=MI.RuntimeSession.create(options(d,undefined,source)),before=plain(owner.inspect());
+  const projected=session.engine.get('T').textContent;assert.equal(projected.paragraphs[0].runs[0].kind,'text');
+  assert.throws(()=>commit(session,projected),e=>e.code==='MISSING_SOURCE_PERMISSION');
+  assert.throws(()=>session.begin(session.createCommand('text.commit',{target:{kind:'existing',id:'T'},content:projected})),e=>e.code==='MISSING_SOURCE_PERMISSION');
+  assert.throws(()=>session.execute(session.createCommand('text.restoreStatic',{id:'T'})),e=>e.code==='MISSING_SOURCE_PERMISSION');assert.deepEqual(plain(owner.inspect()),before);
+  owner.replacePolicy(options(d).policy);commit(session,content());session.execute(session.createCommand('text.restoreStatic',{id:'T'}));assert.equal(session.engine.get('T').text,'private backup');
+ }
+});
 test('T3 restricted projection, SVG, JSON, capability and policy revocation never leak denied binding',()=>{
  const MI=setup(),{session,owner}=MI.RuntimeSession.create(options(doc()));assert.match(session.engine.renderSVG(),/4,00 cm/);const next=options(doc()).policy;next.initialObjectRules.C={read:false,display:false,textSourceProperties:[]};owner.replacePolicy(next);for(const output of [JSON.stringify(session.engine.model),JSON.stringify(session.engine.get('T')),JSON.stringify(session.engine.toJSON()),session.engine.renderSVG()]){assert.doesNotMatch(output,/Secret circle|sourceId|"property":"radius"|4,00/);assert.match(output,/niet beschikbaar/);}assert.equal(owner.inspect().document.objects.at(-1).textContent.paragraphs[0].runs[0].binding.sourceId,'C');const publicDoc=session.engine.toJSON();assert.deepEqual(plain(new MI.Engine(publicDoc).toJSON()),plain(publicDoc));assert.equal(session.getObjectCapabilities('C').textSourceProperties.length,0);
 });

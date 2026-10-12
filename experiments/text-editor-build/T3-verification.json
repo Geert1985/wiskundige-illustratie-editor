@@ -10,13 +10,13 @@
   "node": {
     "command": "npm test",
     "exitCode": 0,
-    "tests": 436,
-    "pass": 436,
+    "tests": 437,
+    "pass": 437,
     "fail": 0,
     "cancelled": 0,
     "skipped": 0,
     "todo": 0,
-    "durationMs": 9445.8524
+    "durationMs": 11598.9712
   },
   "edge": {
     "command": "npm run test:edge",
@@ -122,23 +122,23 @@
       "performance": [
         {
           "count": 10,
-          "coldMs": 0.3999999761581421,
+          "coldMs": 0.5,
           "warmMedianMs": 0,
-          "streamWorkMs": 1.0999999046325684,
+          "streamWorkMs": 1.100000023841858,
           "rendersPerBurst": 1
         },
         {
           "count": 100,
-          "coldMs": 4.799999952316284,
+          "coldMs": 4.900000095367432,
           "warmMedianMs": 0.5,
-          "streamWorkMs": 8.200000047683716,
+          "streamWorkMs": 8.899999976158142,
           "rendersPerBurst": 1
         },
         {
           "count": 500,
-          "coldMs": 43,
-          "warmMedianMs": 8.200000047683716,
-          "streamWorkMs": 156.30000007152557,
+          "coldMs": 50.39999997615814,
+          "warmMedianMs": 8.199999928474426,
+          "streamWorkMs": 161.29999995231628,
           "rendersPerBurst": 1
         }
       ],
@@ -306,6 +306,7 @@
         "restrictedChooser": "passed",
         "staleRevision": "passed",
         "epochRevocationRedaction": "passed",
+        "redactedDraftPreservesBinding": "passed",
         "raster": {
           "png": true,
           "ink": 2504,
@@ -1044,6 +1045,39 @@
       "restrictedChooser": "passed",
       "staleRevision": "passed",
       "epochRevocationRedaction": "passed",
+      "raster": {
+        "png": true,
+        "ink": 2504,
+        "currentValue": true,
+        "standalone": true
+      }
+    },
+    "pageErrors": []
+  },
+  "focusedAfterSourceRightsCorrection": {
+    "browser": "155.0.4283.45",
+    "module": "browser-rich-values.cjs",
+    "result": {
+      "threeFieldsTwoSources": "passed",
+      "sourceChooser": "passed",
+      "notation": "passed",
+      "atomicStyleDeleteUndo": "passed",
+      "atomDrag": "passed",
+      "mathMixed": "passed",
+      "documentHistory": "passed",
+      "pointDrag": "passed",
+      "deleteRecovery": "passed",
+      "scale": "passed",
+      "cancel": "passed",
+      "saveReload": "passed",
+      "offlineSvgPng": "passed",
+      "fullscreenEscape": "passed",
+      "legacyMigration": "passed",
+      "legacyStaticRestore": "passed",
+      "restrictedChooser": "passed",
+      "staleRevision": "passed",
+      "epochRevocationRedaction": "passed",
+      "redactedDraftPreservesBinding": "passed",
       "raster": {
         "png": true,
         "ink": 2504,

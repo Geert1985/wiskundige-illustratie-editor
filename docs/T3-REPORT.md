@@ -1,6 +1,6 @@
 # T3 — Meerdere dynamische inlinevelden
 
-Versie 1.0.0, 2026-10-12. Repository `Geert1985/wiskundige-illustratie-editor`, branch `chatgpt/editor-development`. Baseline: `b006b1fce018af0e1366dd6990af0f24462ac4f2`.
+Versie 1.0.1, 2026-10-12. Repository `Geert1985/wiskundige-illustratie-editor`, branch `chatgpt/editor-development`. Baseline: `b006b1fce018af0e1366dd6990af0f24462ac4f2`.
 
 Uitgevoerd na expliciete toestemming “T3 mag je starten”. Het implementatiecontract is vooraf vastgelegd in [T3-CONTRACT.md](T3-CONTRACT.md). T3 is opgeleverd voor gebruikersacceptatie; **T4 is niet gestart**. Eerdere handmatige IME/AT-controles zijn niet als geslaagd aangemerkt.
 
@@ -28,7 +28,7 @@ unitMode: document; none (suffix verbergen, schaal behouden); u/dimensionless; m
 
 In restricted mode vereist elk actief veld effectieve bron-read/display inclusief laag/objectbeschikbaarheid en een eigenschapgrant in textSourceProperties. Locks van bronnen blokkeren lezen niet; een targetlock blokkeert wijziging. Author mag hidden/locked bronnen lezen en missing IDs bewaren voor herstel.
 
-Content+references is vereist voor invoegen/verwijderen/rebinden; format voor gewijzigde marks/notatie. Een onveranderde opgemaakte atom verplaatsen vergt content. Nieuwe objecten en duplicaten controleren created grants afzonderlijk. Kept references worden bij text.commit opnieuw gevalideerd. Geweigerde operaties zijn atomair. Source-propertyallowlists worden niet meer door de oude geometrieveldvalidator afgewezen.
+Content+references is vereist voor invoegen/verwijderen/rebinden; format voor gewijzigde marks/notatie. Een onveranderde opgemaakte atom verplaatsen vergt content. Nieuwe objecten en duplicaten controleren created grants afzonderlijk. Eerdere en voorgestelde references worden bij text.commit opnieuw gevalideerd. Restricted rich bewerken en statisch herstellen worden geweigerd zolang eerdere velden niet-toegestane of onbeschikbare bronnen hebben; dit voorkomt dat een geredigeerde DTO private bindings stil verwijdert. Een trusted author kan deze wel herstellen. Geweigerde operaties zijn atomair. Source-propertyallowlists worden niet meer door de oude geometrieveldvalidator afgewezen.
 
 Geweigerde restricted waarden worden als hele atom vervangen door plain “niet beschikbaar”, zonder binding-ID/property/naam/format/eerdere uitkomst. Dit geldt voor facade, JSON/SVG, preview en commandresultaten. De bestaande legacybinding-readpolicy blijft ongewijzigd.
 
@@ -58,23 +58,23 @@ Omgeving: Windows, Node 22.18.0, npm 10.9.3, headless Microsoft Edge 155.0.4283.
 
 | Run | Definitief resultaat |
 |---|---|
-| Volledige `npm test` | **436/436 PASS**, exit 0; 0 fail/cancelled/skipped/todo; duur 9445,8524 ms |
+| Volledige `npm test` | **437/437 PASS**, exit 0; 0 fail/cancelled/skipped/todo; duur 11598,9712 ms |
 | Volledige `npm run test:edge` | **PASS**, exit 0; 49 testmodules naast de hoofdproef; pageErrors leeg |
-| Nieuwe Node-module | 18 tests, opgenomen in de volledige suite |
-| Gerichte T3-Edge-module na controlestijlcorrectie | 19 benoemde controles PASS; exit 0; pageErrors leeg |
+| Nieuwe Node-module | 19 tests, opgenomen in de volledige suite |
+| Gerichte T3-Edge-module na bronrechtencorrectie | 20 benoemde controles PASS; exit 0; pageErrors leeg |
 | Bestaande gerichte T2-Edge-module | 16 controles PASS; 4 offline rasterfixtures; pageErrors leeg |
 | `npm run build:text` | Exit 0; identieke bundlehashes bij laatste herbouw |
 | `git diff --check` | Geen whitespacefouten |
 
-De 18 Node-tests dekken schema/source-only opslag, formattering/schaal/oppervlakte/conversie/hoeken, live rendering en stabiele anchors, dependencies/source-remap, de 12-fixture legacy-migratiematrix, implicit-migration denial en typography, category/sourcegrants, gemarkeerde atomverplaatsing, volledige redactie/revocation, create/duplicate grants, hidden lagen/locked bronnen, restricted migratie/undo/redo/statisch herstel, replay/revision/epoch/targetlock, quotas/self-reference/type, linked invalidity/recovery, overflow/metadata/naamlimiet en opaque extensioncollisions.
+De 19 Node-tests dekken schema/source-only opslag, formattering/schaal/oppervlakte/conversie/hoeken, live rendering en stabiele anchors, dependencies/source-remap, de 12-fixture legacy-migratiematrix, implicit-migration denial en typography, category/sourcegrants, gemarkeerde atomverplaatsing, volledige redactie/revocation, create/duplicate grants, hidden lagen/locked bronnen, restricted migratie/undo/redo/statisch herstel, replay/revision/epoch/targetlock, quotas/self-reference/type, linked invalidity/recovery, overflow/metadata/naamlimiet, opaque extensioncollisions en geweigerde commits/herstelacties vanuit geredigeerde DTOs.
 
-De 19 browsercontroles zijn: threeFieldsTwoSources, sourceChooser, notation, atomicStyleDeleteUndo, atomDrag, mathMixed, documentHistory, pointDrag, deleteRecovery, scale, cancel, saveReload, offlineSvgPng, fullscreenEscape, legacyMigration, legacyStaticRestore, restrictedChooser, staleRevision en epochRevocationRedaction.
+De 20 browsercontroles zijn: threeFieldsTwoSources, sourceChooser, notation, atomicStyleDeleteUndo, atomDrag, mathMixed, documentHistory, pointDrag, deleteRecovery, scale, cancel, saveReload, offlineSvgPng, fullscreenEscape, legacyMigration, legacyStaticRestore, restrictedChooser, staleRevision, epochRevocationRedaction en redactedDraftPreservesBinding.
 
 Browserbewijs omvat drie velden uit twee bronnen, plus een radiaalhoek en formule; actual stepped mouse drag van een atom met behoud van ID/binding/format/marks; echte bronpuntversleping; source delete/undo; schaalwijziging zonder geometrywijziging; Cancel; JSON/draft herladen met koude formule-assets; fullscreen Escape kindpaneel→editor zonder exit; bewuste legacyomzetting met private Cancel/één OK/exacte undo; en een echte restricted host met bronallowlist/revisionconflict/epochrevocation.
 
 Offline mixed export gebruikt embedded fonts en formulepaden: SVG decodeert naar Image/canvas/PNG terwijl de browsercontext offline staat. PNG, ink-pixels, actuele dynamische waarde en zelfstandige SVG zijn geverifieerd. Dit is een rastergate, geen geleverde productie-PNG-bediening. De laatste volledige suite telde 2504 ink-pixels; alle vier rasterchecks zijn true in T3-verification.json.
 
-Tijdens uitvoering werden echte codecorrecties aangebracht: sourceallowlists kregen hun eigen validatorpad; dynamic-reference/notationgrants en commandresultredactie werden toegevoegd; drafts kregen begin/commit-context; preview-DOM blijft stabiel bij dezelfde waarde; backup-extensioncollisions blijven compatibel; en de inactieve inspector-fallbackinput voor rich text werd verborgen. Testfixtures zijn gecorrigeerd voor een TeX-backslash, SVG-tekst verspreid over meerdere runs en keyboardcursorpositie na atomselectie. De dragcheck gebruikt een volledige muisbeweging en controleert daadwerkelijk gewijzigde volgorde, niet een gesimuleerde statewijziging. Functionaliteit is niet verwijderd om een test te laten slagen.
+Tijdens uitvoering werden echte codecorrecties aangebracht: sourceallowlists kregen hun eigen validatorpad; dynamic-reference/notationgrants en commandresultredactie werden toegevoegd; drafts kregen begin/commit-context; preview-DOM blijft stabiel bij dezelfde waarde; backup-extensioncollisions blijven compatibel; geredigeerde drafts kunnen eerdere private velden niet meer impliciet afvlakken bij bevestigen of statisch herstellen; en de inactieve inspector-fallbackinput voor rich text werd verborgen. Testfixtures zijn gecorrigeerd voor een TeX-backslash, SVG-tekst verspreid over meerdere runs en keyboardcursorpositie na atomselectie. De dragcheck gebruikt een volledige muisbeweging en controleert daadwerkelijk gewijzigde volgorde, niet een gesimuleerde statewijziging. Functionaliteit is niet verwijderd om een test te laten slagen.
 
 ## Resterende controles en grenzen
 
