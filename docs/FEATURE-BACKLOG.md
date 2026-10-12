@@ -1,8 +1,8 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.1.0
+Version: 1.2.0
 Status: proposed; reconcile with repository before implementation
-Date: 2026-10-09
+Date: 2026-10-12
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
 
@@ -139,3 +139,18 @@ One typed value reference per free text object implemented with source/value/pre
 User angle-feedback revision implements Cartesian axis constants as angleDirections sources, not document objects. Fixed positive orientation and origin for parallel axis combinations; supporting intersection otherwise. Dedicated menu entry superseded, saved angleXAxis retained. Axis selection is gated per tool, axis visibility and explicit course/assessment grant. ConstructionSchema 3 and graph/export/replay adaptations documented in AXIS-REFERENCES-CONTRACT.md. Other axis-based constructions, skew/multiple frames and wider measurement work remain separate. Manual acceptance pending.
 
 - 2026-10-11 sidebar refinement: vertically stacked, equally wide tool buttons in a 220px sidebar; long names and split-menu bounds verified at desktop, tablet and mobile widths.
+
+
+## F11 — Scientific calculator: standalone and inline (amendment 1.2.0)
+
+Status: **functionally approved; not implemented**. Documentation-only scope; no T3/T4/T5 milestone is started or restarted. Normative technical contract: [TEXT-EDITOR-ARCHITECTURE.md, section 22](TEXT-EDITOR-ARCHITECTURE.md#22-t5--zelfstandige-en-inline-wetenschappelijke-rekenmachine-150); separate acceptance gates and tasks: [TEXT-EDITOR-IMPLEMENTATION-PLAN.md](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
+
+- A standalone application feature opens from the main toolbar without creating/selecting text; inline opens through ∑ in the text editor. Build **one UI-independent safe calculation engine and one reusable interface**, not separate calculators. The engine has no ProseMirror, DOM, text-object or calculator-UI dependency.
+- Both contexts share scientific functions, fixed numeric values, a single authorized geometry-source adapter, automatic recalculation, precision, units/document scale, degrees/radians, clear errors and explicitly requested result copying. Respect read/display/property/visibility grants, legacy units, policy changes, deleted/invalid sources and stale results; no forbidden IDs/names/values through UI, errors, clipboard, caches or export.
+- Standalone has private session state and must create no document objects, document mutations or undo items. T5b inline only prepares/evaluates formulas; insertion is unavailable.
+- T5c enables insertion/editing of typed calculatedValue/schema 4 within v7 through the same component. Keep result-only, formula+result and substituted-values+result modes. Private draft changes commit only with outer text-editor OK; preserve content/format/reference/expression permissions, locks/revision/epoch, undo/redo, JSON/replay, SVG/PNG and existing legacy/schema compatibility.
+- T5a: retain safe parser/AST, dimensions/units/evaluation and definitive mathematical approval. T5b: both hosts and result parity. T5c: inline integration with immediate storage/export gate. T5d: audit both modes, permissions, accessibility, fullscreen and export. Separate acceptance/start gates remain mandatory.
+
+Required future acceptance evidence: empty-document toolbar `2+3*4=14` with unchanged objects/revision/history; `sin(30 deg)=0.5`; circle radius→area live update with scale applied once; identical quantities/results in both modes; restricted non-disclosure including revocation; T5c insertion/edit/undo/redo/JSON/SVG/all three modes; focus/keyboard/Escape/fullscreen/Cancel in both contexts. Test explicit clipboard success/denial and offline SVG→PNG; manual IME/AT/OS-clipboard checks are not PASS until performed.
+
+**Future reuse, not implementation:** F05 function graphs, F06 parametric constructions and F07/F08 exercises may consume the same engine via independently validated adapters. No plotting, parametric feature or exercise evaluation is marked implemented by this amendment. Toolbar/icon/responsive details and clipboard notation remain decisions before T5b; exact calculatedValue payload/grants before T5c. The T5a mathematical contract remains an independent definitive approval requirement.

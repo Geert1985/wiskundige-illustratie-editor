@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.4.0 - 2026-10-12 - T1-T3 geimplementeerd op de ontwikkelbranch; T3-gebruikersacceptatie en handmatige controles staan open.
+Versie 1.5.0 - 2026-10-12 - T1-T3 geimplementeerd op de ontwikkelbranch; T3-gebruikersacceptatie en handmatige controles staan open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -87,15 +87,16 @@ Voorgestelde modules:
 | text-layout.js | Advances, ascent/descent, regels, baseline, totale bounds |
 | text-svg.js | Gedeelde SVG-uitvoer voor preview, canvas en export |
 | math-fragments.js | Begrensde formuleadapter, assetreadiness, cache |
-| expression-engine.js | Pure parser, typecontrole en evaluator |
-| text-calculator.js | Rekenmachine en bronkiezer |
+| expression-engine.js | UI-onafhankelijke parser, AST, dimensies, eenheden en evaluator (T5a) |
+| calculator-source-adapter.js (voorgesteld) | Gedeelde geautoriseerde geometrie-quantitysnapshot voor beide calculatormodi en calculatedValue |
+| text-calculator.js (voorgesteld) | Eén herbruikbare interface met zelfstandige en inline hostadapter (T5b/T5c); geen eigen evaluator |
 | export-service.js | Expliciete assetvoorbereiding, zelfstandige SVG en PNG |
 
 Pipeline: geautoriseerde snapshot → waarden oplossen → lay-out → SVG. De bestaande synchrone Engine.renderSVG blijft beschikbaar voor legacy en voorbereide assets. Een expliciete asynchrone voorbereidings-/exportlaag wacht op fonts/formules; geen impliciete wijziging naar Promise. Resultaten van oude async-taken worden verworpen op documentrevisie, inhoudshash en permission epoch.
 
 Voorstel één getypeerde `text.commit`-actie voor maken/bewerken. Payload bevat doel (nieuw/bestaand), inhoud en verwachte revisie. AuthorCommands, restricted runtime en semantic replay valideren deze centraal. Autorisatie vergelijkt wijzigingen per categorie: inhoud, opmaak en bronnen. Geen algemene vrijbrief voor een complete AST via bestaande stijlgrants.
 
-De dialog bewerkt uitsluitend een private draft. Lokale undo/redo tijdens typen verandert documentgeschiedenis niet. OK levert één atomaire documentactie; Annuleren nul. Controleer bij OK opnieuw bronrechten, locks, bestaan en revisie. Bij conflict niet stil overschrijven. Native Escape sluit eerst een kindpaneel, dan de dialog; fullscreen blijft actief. Import/dispose en gewijzigde selectie mogen geen stale draft bevestigen.
+De teksteditor- en inline-dialog bewerken uitsluitend een private draft. De zelfstandige calculator heeft uitsluitend sessiestaat zonder documentcommit (sectie 22). Lokale undo/redo tijdens typen verandert documentgeschiedenis niet. OK levert één atomaire documentactie; Annuleren nul. Controleer bij OK opnieuw bronrechten, locks, bestaan en revisie. Bij conflict niet stil overschrijven. Native Escape sluit eerst een kindpaneel, dan de dialog; fullscreen blijft actief. Import/dispose en gewijzigde selectie mogen geen stale draft bevestigen.
 
 Toolbaracties bewaren tekstselectie via editorbookmarks. Formule- en waardeatomen zijn met toetsenbord selecteerbaar, verplaatsbaar en opnieuw te openen. Test IME, Unicode, plakken en cursorposities naast atomen. Het dialoogontwerp volgt de bestaande donkere UI en gele accenten; een afzonderlijke eerder besproken mockup was niet beschikbaar voor deze analyse.
 
@@ -142,7 +143,7 @@ Machten zijn rechtsassociatief; -2^2 = -4 en 2^-2 is geldig. UI normaliseert dec
 
 Functies: sqrt, abs, sin/cos/tan, asin/acos/atan, ln, log10, exp, floor, ceil, trunc en round met gecontroleerd aantal decimalen. Voorstel limieten: 2048 invoertekens, 512 tokens, 256 AST-nodes, diepte 32, 1024 evaluatiestappen, 64 bronverwijzingen; aanvullend documentwerkbudget. Geen CAS of complexe getallen.
 
-Interne quantity: eindige binary64-waarde, dimensie-exponenten voor lengte en hoek, en physical/abstract-eenheidsruimte. Fysieke basis is meter/radiaal. Abstracte e kan zonder kalibratie niet bij fysieke lengte worden opgeteld. Dimensieloze waarden zijn neutraal.
+Interne quantity: eindige binary64-waarde, dimensie-exponenten voor lengte en hoek, en physical/abstract-eenheidsruimte. Fysieke basis is meter/radiaal. Abstracte u kan zonder kalibratie niet bij fysieke lengte worden opgeteld. Dimensieloze waarden zijn neutraal.
 
 - Geometrieadapter leest ruwe waarden, past documentschaal één keer toe en zet naar SI om; oppervlakte gebruikt schaal². Huidige hoekwaarden in graden worden één keer naar radiaal omgezet. Nooit geformatteerde strings terugparsen.
 - Optellen/aftrekken vereist gelijke dimensies en compatibele eenheidsruimte. Product/quotiënt telt exponenten op/af; gelijke lengtes delen levert dimensieloos.
@@ -318,7 +319,7 @@ Dit contract is een concreet voorstel en moet vóór T5a definitief worden goedg
 
 Interne dimensie wordt exact bijgehouden als gehele exponenten `(Lphysical, Labstract, A)`. Dit preciseert de eerdere physical/abstract-vlag: producten van fysieke en abstracte lengte worden geweigerd in deze eerste versie; delen van twee lengtes in dezelfde ruimte kan tot dimensieloos reduceren. Een dimensieloze factor kan beide schalen. Lengte en oppervlakte zijn L¹ en L², geen los type zonder exponent. Hoek is A¹, intern radiaal; hoek²/hoekverhoudingen zijn getypeerde samengestelde dimensies.
 
-Unitliteral ondersteunt mm, cm, m, km, deg, rad en abstract `unit` (zichtbare e); suffix cm² e.d. normaliseert naar exponent. `e` zonder unitcontext is de constante exp(1), nooit automatisch abstracte lengteeenheid. JSON bewaart finite numerieke literal plus getypeerde unit/exponent; evaluator converteert bij lezen precies eenmaal. Display maakt geen nieuwe AST.
+Unitliteral ondersteunt mm, cm, m, km, deg, rad en abstract `unit` (zichtbare u; geen wijziging aan oudere eenheidsmetadata); suffix cm² e.d. normaliseert naar exponent. `e` zonder unitcontext is de constante exp(1), nooit automatisch abstracte lengteeenheid. JSON bewaart finite numerieke literal plus getypeerde unit/exponent; evaluator converteert bij lezen precies eenmaal. Display maakt geen nieuwe AST.
 
 Voor dynamische lengte q: raw geometry × document scale × metersPerDocumentUnit; oppervlakte: raw × scale² × metersPerUnit²; x/y idem lengte. Legacy zonder meta.measurement: abstracte lengte met scale=1, niet stil cm. AngleMeasurements.value levert graden volgens huidige kleinste/gericht-modus; adapter maakt radiaal, geen herinterpretatie van getekende armen. Unitoverride verandert weergave, nooit hoekgeometrie.
 
@@ -402,7 +403,7 @@ Verplichte fixtures per T1/T2/T3: gebonden tekst met prefix/suffix, null/0/10 pr
 | T3 | dynamicValue | JSON behoudt IDs/formats, export actuele geautoriseerde snapshot, missing/denied bron redactie, PNG van gemengde tekst, source remap en unitupdates |
 | T4 | Wrap/layout en productie-PNG | Alle eerdere paden plus echte exportbediening, sizing/memory/readiness, accessibility en offline audit |
 | T5a | AST als rekenkernwaarde, nog geen documentfragment | AST encode/decode/print roundtrip, quotas/typefixtures; bestaande JSON/SVG/rasterregressies |
-| T5b | Private calculator draft | Draft serialize/restore voor proef indien aangeboden, Cancel nul documentwijzigingen; geen inline saveclaim; bestaande export ongewijzigd |
+| T5b | Eén calculator, twee private gebruiksmodi | Zelfstandig via hoofdwerkbalk en inline via ∑: gelijke quantities, nul object-/document-/historymutaties, Cancel nul wijzigingen; geen calculatedValue vóór T5c; bestaande exportregressie |
 | T5c | calculatedValue | AST+bronnen+3 modes JSON roundtrip, zelfstandige SVG/PNG-rastering, restricted redactie, actuele/ontbrekende bron, history/replay |
 | T5d | Audit | Volledige matrix; geen eerste ontdekplek voor exportondersteuning van een eerder type |
 
@@ -490,3 +491,63 @@ In restricted mode vereist iedere actieve bron effectieve read+display (inclusie
 Legacy omzetting is uitsluitend expliciet: `text.commit` met migrateLegacy:true, een schema-3-draft prefix/veld/suffix, overgenomen toegestane font/kleur/anchor en server-owned `legacyStaticText`. Positie/rotatie/organisatie blijven behouden; één OK is één geschiedenisactie, Cancel is nul. Unsupported font/color/size of collision met een opaque legacy-backupkey weigert de omzetting. Oude schema-1/2 en niet-rijke objectextensies met dezelfde key blijven inert; typed backup en herstel gelden pas vanaf schema 3. `text.restoreStatic` herstelt bewust het oorspronkelijke statische tekstveld; undo kan de gehele legacybinding terugbrengen. Duplicatie van inlinevelden remapt uitsluitend daadwerkelijk meegekopieerde bronnen. Bestaande legacy bindings blijven hun eerdere duplicatiepad gebruiken.
 
 Voor nieuwe builds schrijft `scripts/build-text-editor.cjs` naar `experiments/text-editor-build/build-results.json`; historische T2-proefbestanden blijven intact. T3 installeert geen nieuwe dependencies. T4-wrapping/PNG-bediening en T5-calculaties blijven buiten scope. Real OS-IME, schermlezer, handmatige externe viewers en fysieke visuele acceptatie zijn niet uitgevoerd.
+
+
+## 22. T5 — zelfstandige en inline wetenschappelijke rekenmachine (1.5.0)
+
+**Status:** functioneel goedgekeurde documentatie-uitbreiding, niet geïmplementeerd. T3 blijft de bestaande geleverde scope; deze opdracht start of herstart T3/T4/T5 niet. Documentformaat **v7**, onafhankelijke textSchema-versies, het gestructureerde tekstmodel en legacycompatibiliteit blijven gelden. Secties 7 en 14 blijven het mathematische contract; de afzonderlijke definitieve goedkeuring daarvan vóór T5a blijft vereist. Deze sectie preciseert de eerdere algemene calculatorbeschrijvingen zonder die eisen af te zwakken.
+
+### Laaggrenzen en hergebruik
+
+| Stap | Technisch contract | Afzonderlijke acceptatiepoort |
+|---|---|---|
+| T5a | Veilige, UI-onafhankelijke parser, typed/canonical AST, dimensie- en eenheidscontrole, evaluatie en formuleprinter; geen eval/Function | Mathematisch contract definitief goedgekeurd vóór start; kernproeven geaccepteerd vóór T5b |
+| T5b | Eén herbruikbare wetenschappelijke calculator-interface, bereikbaar zelfstandig vanuit de hoofdwerkbalk en inline via ∑; beide uitsluitend voorbereiden/evalueren | Beide modi apart getest, numerieke pariteit en nul documentmutaties bewezen; acceptatie vóór T5c |
+| T5c | Dezelfde component voegt calculatedValue/schema 4 in een private tekstdraft in en bewerkt bestaande velden; geen tweede calculator | Opslag, rechten, history en alle drie weergavemodi bewezen; acceptatie vóór T5d |
+| T5d | Audit van zelfstandige én inline integratie, veiligheid, toegankelijkheid, fullscreen en export | Expliciete finale acceptatie; niet-uitgevoerde handmatige controles blijven open |
+
+De kern mag niet afhankelijk zijn van ProseMirror, DOM, tekstobjecten, calculator-interface of het geometrische documentmodel. Hij accepteert gevalideerde AST, getypeerde quantities en expliciete evaluatieopties; levert quantity of begrensde foutcodes. Namen, bronselectie, documentcontext, autorisatie en levenscyclus worden buiten de kern afgehandeld. Geen TeX als evaluatorinvoer. Dezelfde AST-normalisatie, precedence, UI-adjacencyregels, quotas, binary64-beperkingen, SI/radiaalconversie en domeinfouten uit sectie 14 gelden in beide modi.
+
+Eén gedeelde **bronadapter** zet actuele, geautoriseerde geometrische waarden om naar immutable typed quantities. Hergebruik de bestaande geometrie-/DynamicText-applicability en bronrechten; parse nooit displaystrings. Lengte/x/y gebruiken documentschaal één keer, oppervlakte schaal² en fysieke basiseenheden; hoeken gebruiken de bestaande kleinste/gerichte waarde en worden één keer naar radiaal geconverteerd. Documenteenheden, precisie en graden/radialen zijn expliciete instellingen, inclusief legacydefaults en abstract u/dimensieloos. Getypeerde hoekliterals zoals `30 deg` behouden hun betekenis onafhankelijk van de documenthoekkeuze. Niet-ondersteunde eigenschappen worden geweigerd; geen automatische uitbreiding naar andere bronsoorten.
+
+De interface gebruikt twee dunne hostadapters voor openen/sluiten, focus en context; bronkiezer, wetenschappelijk toetsenbord, parser/evaluatie-aanroep, notatie, foutpresentatie en resultaatweergave zijn gedeeld. De calculator is een zelfstandige applicatiefunctie, geen zelfstandig tweede rekenproduct. Toekomstige functiegrafieken, parametrische constructies en oefeningen kunnen dezelfde kern via eigen gevalideerde adapters hergebruiken. Dit is uitsluitend een hergebruikgrens, geen geleverde toekomstige functionaliteit.
+
+### Zelfstandige modus
+
+Een herkenbare rekenmachineknop in de hoofdwerkbalk opent de gedeelde interface op een leeg document, zonder tekstobject of selectie te vereisen. De calculator werkt ook in canvasfullscreen; de toegang blijft bereikbaar. Ondersteun vaste numerieke waarden, constante/functionele wetenschappelijke invoer uit sectie 7, typed dynamische geometrische bronchips, automatische herberekening, precisie, eenheidskeuze, graden/radialen en duidelijke fouten.
+
+Alle invoer, lokale calculator-undo en opties blijven private sessiestaat. Openen, evalueren, bronwijzigingen, wisselen van opties, sluiten, Escape en annuleren creëren **geen documentobject**, voeren **geen documentmutatie** uit en voegen **geen document-undo-item** toe. Documentrevisie, selectie en bestaande historycursor blijven intact. Geen calculatordraft/resultaat in document-JSON, semantic replay of documentexport. Sessieherstel/opslag is niet standaard voorzien; eventuele latere private opslag vereist een afzonderlijk privacy-/autorisatiecontract.
+
+**Resultaat kopiëren** is uitsluitend een expliciete actie, nooit een automatische clipboardwrite. Kopieer alleen een op dat moment opnieuw gevalideerd toegestaan resultaat in de gekozen notatie. Blokkeer kopiëren bij unavailable/stale/fout; toon clipboardweigering zonder documentactie. Bewaar geen verboden IDs/namen in clipboard of foutdetails.
+
+### Inline modus en calculatedValue
+
+De knop **∑** opent dezelfde component vanuit de teksteditor en bewaart de selectiebookmark. T5b biedt alleen formulevoorbereiding en evaluatie; **Invoegen in tekst is nog niet beschikbaar**. Sluiten of annuleren herstelt focus/bookmark en laat zowel de tekstdraft als het document ongemoeid. Geen AST via een T2-math- of T3-dynamicValue-fragment opslaan.
+
+Vanaf T5c voegt **Invoegen in tekst** een getypeerd `calculatedValue`-fragment (textSchema 4 binnen v7) in de private tekstdraft in. Bewaar gevalideerde expression-schema/AST, typed bronreferenties, format en marks; geen evaluator-/bibliotheekdocument, HTML, gecachte bronwaarde of resultaat als waarheid. De drie modi blijven: **alleen resultaat**, **formule met resultaat**, **formule met ingevulde waarden en resultaat**. Alle drie komen uit dezelfde AST en geautoriseerde snapshot; haakjes, dimensies, escaped toegestane namen en `≈` volgen sectie 14.
+
+Een bestaand berekend veld opent via dezelfde calculator met AST/format en private wijzigingen. Annuleren behoudt het veld exact; bevestigen vervangt alleen dat fragment in de draft. Pas de buitenste teksteditor-OK doet één atomische `text.commit`/documenthistoryactie. Bronrechten, expression/content/reference/formatgrants, targetlock, revisie en permission epoch worden opnieuw gecontroleerd volgens sectie 12. Standalone evaluatie verleent nooit text.commit-rechten. Oude textBinding, schema 1–3, bronremapping en v7-import blijven compatibel; geen automatische legacyconversie.
+
+### Identieke bronbeveiliging en actuele resultaten
+
+Beide modi gebruiken dezelfde adapter en evaluatie-/autorisatieregels. In restricted gebruik vereist elke bron effectieve read **en** display, object-/laagbeschikbaarheid en de toepasselijke bestaande eigenschapgrant; verborgen/ongeldige of ontoegankelijke meetgegevens zijn niet leesbaar via standalone. Een source lock verleent geen extra rechten en blokkeert toegestaan lezen niet. Auteursregels voor hidden/locked bronnen blijven conform secties 6/21; een standalone ingang omzeilt geen hostpolicy. Tekstschrijfrechten zijn alleen aanvullend nodig bij T5c-commit, niet voor een toegestane zelfstandige berekening.
+
+Filter bronkiezer en veilige presentatienamen vóór UI-uitvoer. Geweigerde bron-ID, naam, meetwaarde of AST mag niet verschijnen in DOM, toegankelijkheidslabels, errors, diagnostics, kopieeruitvoer of restricted JSON/SVG. Bij een geweigerde bron wordt de **hele berekening** generiek unavailable/redacted, nooit deels gesubstitueerd of nul. Geen nieuwe tekst-naar-tekst of calculatedValue-naar-calculatedValue-bronnen en geen autorisatie via vrije bronnaamherkenning.
+
+Elke evaluatie bindt aan sessie-/documentidentiteit, documentrevisie, permission epoch, eenheids-/hoekinstellingen, AST/format en draftgeneratie. Autorisatiewijziging invalideert onmiddellijk bronchips/presentatienamen, previews en kopieerstatus; sluit of reset een draft volgens de bestaande runtimelevenscyclus zonder verboden inhoud vast te houden. Import/dispose/contextwissel annuleert lopend werk. Bronverwijdering/ongeldige geometrie toont unavailable; undo/herstel vraagt een nieuwe toegestane snapshot en herberekening. Oude async-uitkomsten worden verworpen; geen oud resultaat laten staan tijdens een ongeldige context. Cache is optioneel, uitsluitend ephemeral en contextgebonden; geen delen tussen actors/epochs/documenten, geen persistente waardecache en altijd rechtencontrole vóór preview/kopiëren/export/commit. Bestaande private bronvelden mogen niet impliciet door een geredigeerde draft worden afgevlakt (sectie 21).
+
+### Verplichte acceptatiematrix (nog niet uitgevoerd)
+
+| Scenario | Poort en objectief bewijs |
+|---|---|
+| Hoofdwerkbalk, leeg document: `2+3*4` | T5b: exact 14; vergelijk JSON, objectcount, documentrevisie, selectie en historycursor vóór/na openen/evalueren/sluiten: ongewijzigd, geen undo-item |
+| `sin(30 deg)` | T5a/T5b: 0,5 met absolute binary64-testtolerantie ≤1e-12; degree/radian documentwissel verandert de getypeerde literal niet; displayprecisie apart testen |
+| Bronchip cirkelstraal, `π * r^2` | T5b: r=2 cm geeft ≈12,57 cm²; wijzig naar 3 cm: automatisch ≈28,27 cm². De calculator wijzigt de bron niet; geometriecommando is de enige historyactie. Test afwijkende schaal, unitconversie, bronwissen/undo en invalidity |
+| Zelfde AST/snapshot in beide modi | T5b: identieke interne quantity/dimensie/eenheidsruimte binnen vastgelegde tolerance, plus identieke formatuitvoer bij gelijke opties; vaste en dynamische formules, rad/deg en foutenmatrix |
+| Restricted bronlekken | T5b/T5c: hidden/read-/display-/property-denial, laagvisibility en epochrevocation; geen verboden ID/naam/waarde in UI/AT/error/clipboard/export; kopiëren/commit geblokkeerd, geen cachehergebruik. Vergelijk beide modi |
+| Berekend veld invoegen en heropenen | T5c: dezelfde calculator, drie modi, Cancel exact gelijk, één buitenste OK/undo, redo, source remap, JSON save/import/reload, replay en actuele standalone SVG/offline SVG→PNG; geen cached result in JSON |
+| Focus, toetsenbord, Escape, fullscreen, annuleren | T5b/T5c: beide ingangen, toetsenbordbronselectie, foutcorrectie, focusreturn; Escape sluit eerst child paneel/calculator en inline daarna teksteditor, zonder fullscreenexit; private undo gescheiden van documentundo; annuleren nul mutaties |
+
+Voer Node-kern-/adaptertests en afzonderlijke Edge-tests per context uit; T5d herhaalt de gecombineerde matrix inclusief accessibility en offline export. Echte IME/AT, OS-clipboard en fysieke visuele controles alleen PASS bij daadwerkelijk bewijs; anders expliciet niet uitgevoerd. T5b doet bestaande opslag/exportregressie, maar claimt geen nieuwe inline-opslag. T5c moet nieuwe schema-4-opslag en export onmiddellijk bewijzen, niet uitstellen tot T5d.
+
+**Nog vast te leggen vóór de relevante poort:** definitieve toleranties/singulariteitsgrenzen en kern-API vóór T5a; precieze toolbarplaatsing/iconografie, responsive presentatie, focus-/Escape-detail en clipboardformaat vóór T5b; definitieve calculatedValue-payload en passende commandgrants vóór T5c. Het functionele één-kern/één-interfacecontract, beide ingangen, nul standalone-documentmutaties en drie inline-weergavemodi staan vast. Deze open technische keuzes zijn geen toestemming om een milestone te starten.

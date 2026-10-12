@@ -1,8 +1,8 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.3.0 (T3 checkpoint, 2026-10-12)
+Version: 1.4.0 (shared standalone/inline calculator design, 2026-10-12)
 Status: proposed sequencing; validate against repository
-Date: 2026-10-09
+Date: 2026-10-12
 
 ## Baseline
 User-reported 0A–0D PASS on chatgpt/math-illustration-stabilization, 0D HEAD 297b4d7c834fe0cd9f9b01bc3a43a7d592ef2713, 60/60 Node tests and Edge tests. Verify repository and user's manual acceptance before proceeding. User reports development has advanced beyond phase 0 and already includes bisectors, parallels, perpendiculars, tangents, area and circumference. Do not assume 0E is still pending; inspect actual HEAD and current backlog.
@@ -167,10 +167,10 @@ Status: fase 0 onderzocht; architectuur en plan voorgesteld, gebruikersgoedkeuri
 - T2: inline symbolen en veilige formules, inclusief offline exportproeven.
 - T3: meerdere dynamische bronvelden en gecontroleerde afhankelijkheden.
 - T4: gemengde lay-out, zelfstandige SVG/PNG en toegankelijkheid.
-- T5a: veilige parser/AST, dimensies en numeriek contract.
-- T5b: wetenschappelijke rekenmachine.
-- T5c: dynamische berekende inlinevelden en drie weergavemodi.
-- T5d: volledige export-, security- en regressieaudit.
+- T5a: UI-onafhankelijke veilige parser/AST, dimensies, eenheden en numeriek contract; gedeelde geautoriseerde geometriebronadapter buiten de kern.
+- T5b: één herbruikbare wetenschappelijke calculator-interface; zelfstandig via hoofdwerkbalk en inline via ∑, uitsluitend voorbereiden/evalueren.
+- T5c: calculatedValue-inlinevelden invoegen/bewerken via dezelfde calculator; drie weergavemodi, v7/textSchema 4.
+- T5d: audit van beide calculatormodi, inclusief export, security, toegankelijkheid en fullscreen.
 
 Elke stap vereist afzonderlijke technische verificatie, rapport en expliciete gebruikersacceptatie. T1 is nog niet gestart. Werk uitsluitend op chatgpt/editor-development; geen automatische merge naar main. Zie de architectuur voor open ontwerpkeuzes en het plan voor concrete taken en handmatige acceptatie.
 
@@ -183,3 +183,21 @@ User explicitly authorized T2 after T1. Delivered: symbols/search/bookmarks, ato
 ## T3 checkpoint (2026-10-12)
 
 Explicit user authorization superseded the T2 stop gate. Delivered: schema-3 inline source values, source/property/notation chooser, current snapshot resolution and reverse dependency index, explicit legacy migration/static backup, category/source grants, redacted export, copied-source remapping and history/replay. See T3-CONTRACT.md and T3-REPORT.md for actual tests and remaining manual controls. No new dependencies; no T4 wrapping/PNG UI or T5 expression engine. Await T3 user acceptance before the next step; development branch only.
+
+
+## T5 shared calculator design checkpoint (2026-10-12)
+
+Functionally approved, **not implemented**. This documentation-only checkpoint starts/restarts no T3, T4 or T5 implementation. Normative contract and seven required acceptance scenarios: [architecture section 22](TEXT-EDITOR-ARCHITECTURE.md#22-t5--zelfstandige-en-inline-wetenschappelijke-rekenmachine-150); sequencing: [implementation plan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md). These clarify all earlier generic T5 calculator entries.
+
+The scientific calculator becomes a **standalone application feature** as well as a text-editor tool. Develop only **one UI-independent calculation engine and one reusable calculator interface**, with thin host adapters. Standalone opens from the main toolbar without a text object/selection, including on an empty document and in fullscreen. Inline opens through ∑. Both share scientific functions, authorized dynamic geometric quantities, automatic recalculation, units/scale, precision, degrees/radians, errors and explicit result copying. Standalone must create no document objects, mutations or undo items.
+
+| Checkpoint | Required scope / gate |
+|---|---|
+| T5a | Safe parser/AST, dimension/unit/evaluation contract without ProseMirror/DOM/text-object/UI dependencies; retain definitive mathematical contract approval before start |
+| T5b | Both entry points, shared component/source adapter, private drafts, identical numeric results and authorization; inline prepare/evaluate only, no insertion |
+| T5c | Enable insertion/editing of typed calculatedValue in the same component; result / formula+result / substituted formula+result; one outer text commit, JSON/history/SVG/PNG and legacy compatibility |
+| T5d | Audit standalone and inline, restricted leaks/revocation/stale caches, keyboard/focus/Escape/Cancel, fullscreen, accessibility and offline export |
+
+Each step retains its own technical report, tests, explicit acceptance and separately authorized start. The functional extension does not grant blanket implementation permission or waive the T5a mathematical gate. Test toolbar `2+3*4=14` without history/object changes; `sin(30 deg)=0.5`; changing a circle radius and its computed area; parity between contexts; restricted data denial; T5c editing/history/JSON/SVG/three modes; and focus/keyboard/Escape/fullscreen/cancellation in both contexts. These are future required tests, not current PASS claims.
+
+Future function graphs, parametric constructions and exercises may reuse this engine through their own validated adapters and permissions. They remain future backlog work, not delivered by T5 calculator design. Existing v7 structured text, legacy support, mathematical requirements and unrelated geometry milestones remain retained.

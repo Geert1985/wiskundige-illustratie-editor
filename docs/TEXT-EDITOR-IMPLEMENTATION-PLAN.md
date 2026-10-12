@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.4.0 - 2026-10-12. Status: T3 geimplementeerd; wacht op T3-gebruikersacceptatie. T4 niet gestart.
+Versie 1.5.0 - 2026-10-12. Status: T3 geimplementeerd; wacht op T3-gebruikersacceptatie. T4 niet gestart.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
@@ -57,26 +57,34 @@ Status: uitgevoerd na expliciet T3-akkoord. [T3-CONTRACT.md](T3-CONTRACT.md) en 
 1. Eerst afzonderlijke definitieve goedkeuring van architectuur sectie 14 (dimensies, eenheden, hoekwaarden, UI-adjacency, normalisatie, printer en grensgevallen); geen T5a start zolang dit open is. Daarna grammatica, typed AST, parser/printer en quotas zonder eval/Function.
 2. Pure quantity-engine met lengte-/hoekexponenten en physical/abstract-ruimte; ruwe geometrieadapter zet schaal/SI/rad één keer om.
 3. Functies, domeinfouten, expliciete numerieke toleranties en afrondingsbeleid. Tests voor precedence, omgekeerde eenheden, samengestelde dimensies, powers/roots en graden/radialen.
-4. Herbruikbare API los van UI; AST serialize/deserialize en parse(print(AST))-gelijkheid, security-/wiskundige regressie inclusief alle voorbeeldrijen. Bestaande document/exportregressie. T5a-REPORT.md en acceptatie vóór calculator-UI.
+4. Herbruikbare API zonder afhankelijkheid van ProseMirror, DOM, tekstobjecten, geometrisch documentmodel of calculator-interface; quantities en opties worden expliciet aangeleverd. Eén gedeelde geautoriseerde bronadapter buiten de kern converteert geometrie/schaal/SI/rad voor beide modi. Tests voor adapterrechten en legacyunits. AST serialize/deserialize en parse(print(AST))-gelijkheid, security-/wiskundige regressie inclusief alle voorbeeldrijen. Bestaande document/exportregressie. T5a-REPORT.md en acceptatie vóór calculator-UI.
 
-## T5b — Rekenmachine
+## T5b — Eén calculator-interface, twee contexten
 
-1. ∑-dialog met invoer, wetenschappelijk toetsenbord, typed bronchips, live resultaat, precisie en hoek-/eenheidskeuze.
-2. Private draft, duidelijke domeinfouten, bronrechten en async/revisiegedrag. De latere invoegactie wordt pas met T5c geactiveerd; geen nog niet ondersteunde inhoud opslaan.
-3. Handmatig vaste en dynamische formules, expliciete weergave van UI-genormaliseerde operators, foutcorrectie, annuleren en fullscreen. Alleen eventuele private draftopslag testen; geen documentfragment vóór T5c. Bestaande exportregressie. T5b-REPORT.md en acceptatie.
+Functioneel goedgekeurd ontwerp, nog niet geïmplementeerd. Eerst T5a-acceptatie en afzonderlijke T5b-starttoestemming. Normatief contract en volledige verplichte scenariomatrix: architectuur sectie 22; mathematische eisen blijven secties 7/14.
 
-## T5c — Berekende inlinevelden
+1. Bouw één gedeelde component met wetenschappelijk toetsenbord, invoernormalisatie, typed bronchips, live resultaat, precisie, eenheden en graden/radialen. Zelfstandig openen via rekenmachineknop in hoofdwerkbalk, ook op leeg document en in fullscreen; inline openen via ∑ met selectiebookmark. Twee dunne hostadapters, geen tweede evaluator/UI of ProseMirror-afhankelijkheid in de kern.
+2. Gebruik dezelfde geautoriseerde bronadapter en options/snapshotcontext in beide modi. Bronkiezer, read/display/property/laagrechten, foutcodes, policywijzigingen, bronwissen/invalidity, stale async-resultaten en ephemeral caches delen dezelfde regels. Expliciet Resultaat kopiëren met actuele rechtencheck; geen automatische clipboardactie of verboden namen/IDs.
+3. Alle calculatorstaat is private sessie-/draftstaat. Standalone mag geen object, documentmutatie, documentrevisie of historyactie creëren. Inline T5b bereidt alleen voor en evalueert; Invoegen in tekst is niet beschikbaar en sluiten/Cancel wijzigen zelfs de tekstdraft niet. Geen nieuwe inline-opslag/exportclaim of calculatordraft in document-JSON.
+4. Node/Edge testen beide contexten afzonderlijk: `2+3*4=14` op leeg document met exacte vóór/na-invarianten; `sin(30 deg)=0,5`; dynamische cirkelstraal/oppervlakte en schaal; dezelfde AST geeft dezelfde quantity en notatie. Test beperkte bronrechten/revocation/clipboard, lokale undo, focus, keyboard, Escape, Cancel en fullscreen. Handmatige clipboard/AT/IME expliciet niet uitgevoerd zolang niet bewezen.
+5. Bestaande JSON/SVG/offline PNG-regressie; T5b-REPORT.md met werkelijke resultaten per modus, numerieke pariteit, nul-documentmutatiebewijs en open controles. Stop voor afzonderlijke acceptatie; geen T5c zonder nieuwe toestemming.
 
-1. Activeer calculatedValue/schema 4 en Invoegen in tekst. Bewaar AST en getypeerde bronreferenties; heropen bestaande velden.
-2. Drie weergavemodi uit dezelfde AST; meerdere bronnen, veilige presentatienamen, bronremapping en dependency-updates.
-3. Verifieer πr² bij 2 en 3 cm (12,57 en 28,27 cm²), afwijkende schaal, units en dynamische hoeken zonder dubbele conversie. Positie/opmaak blijven gelijk.
-4. Import/export/undo/replay, restricted redactie, AST-bronnen en alle drie modi in JSON/SVG/PNG-rastering. Elke uitkomstafronding gebruikt ≈ waar nodig. T5c-REPORT.md en acceptatie.
+## T5c — Berekende inlinevelden via dezelfde calculator
 
-## T5d — Kwaliteitsaudit
+1. Na T5b-acceptatie en starttoestemming activeer calculatedValue/textSchema 4 binnen document v7 en Invoegen in tekst in de bestaande gedeelde component. Bouw geen tweede calculator. Bewaar validated AST en typed bronreferenties, format en marks; geen waardecache. Heropen/bewerk bestaande velden via dezelfde interface.
+2. Invoegen/bewerken wijzigt alleen de private tekstdraft; child Cancel behoudt deze exact. De buitenste teksteditor-OK levert één getypeerde commit/undoactie met hercontrole van bronnen, expressions/content/references/format, locks, revisie en permission epoch. Standalone blijft nul documentmutaties en krijgt geen tekstinvoegactie.
+3. Drie weergavemodi uit dezelfde AST: alleen resultaat; formule met resultaat; formule met ingevulde waarden en resultaat. Meerdere bronnen, veilige namen, remapping en dependency-updates. Verifieer πr² bij 2 en 3 cm (≈12,57 en ≈28,27 cm²), afwijkende schaal, units en dynamische hoeken zonder dubbele conversie; positie/opmaak blijven gelijk. Vergelijk interne evaluatie met standalone.
+4. Verplichte opslag/exportgate meteen bij schema 4: bewerken/Cancel, undo/redo, JSON save/import/reload, replay, SVG en offline PNG van alle drie modi, actuele/ontbrekende/denied bronnen en restricted redactie. Behoud v7, schema 1–3, oudere documenten en legacybindings; geen automatische migratie. Uitkomstafronding gebruikt ≈ waar nodig.
+5. T5c-REPORT.md en afzonderlijke acceptatie vóór T5d.
 
-1. Volledige Node/Edge, netwerkloze SVG/PNG, oude documenten, permissions/locks, fuzz-/quotafixtures, accessibility en prestatievergelijking.
-2. Visuele matrix met gemengde tekst, symbolen, formules, meerdere waarden/berekeningen, zoom en rotatie.
-3. Documentformaat, technische contracten, gebruikersinstructies en roadmap actualiseren. T5d-REPORT.md met exacte aantallen, commit, risico's en nog nodige handmatige controles. Expliciete finale gebruikersacceptatie.
+## T5d — Audit van beide gebruiksmodi
+
+1. Volledige Node/Edge- en wiskundige security-/quotaregressies. Herhaal alle zeven scenariogroepen uit architectuur sectie 22: zelfstandige bediening zonder documentactie, contextpariteit, bronupdates, restricted isolatie en inline invoegen/bewerken/history/opslag/export.
+2. Audit accessibility, keyboard/focus, Escape, annuleren en fullscreen voor beide ingangen en gedeelde component; expliciete clipboardactie inclusief weigering. Echte IME/AT/OS-clipboard/fysieke visuele controles alleen met bewijs als PASS.
+3. Offline SVG/PNG, oude documenten/legacy, drie calculatedValue-weergavemodi, gemengde tekst, symbolen, formules, bronwaarden, zoom/rotatie en prestatievergelijking. Geen eerste exportimplementatie voor eerdere fragmenten uitstellen tot deze audit.
+4. Documentformaat, technische contracten, gebruikersinstructies en roadmap actualiseren. T5d-REPORT.md met exacte aantallen per context, commit, risico's en resterende handmatige controles. Expliciete finale gebruikersacceptatie.
+
+Deze documentatieopdracht start of herstart T3, T4 of T5 niet. Toekomstige grafieken, parametrische constructies en oefeningen mogen de UI-onafhankelijke kern later hergebruiken; ze worden hier niet geïmplementeerd of als geleverd gemarkeerd. De afzonderlijke acceptatiepoorten T5a → T5b → T5c → T5d blijven verplicht.
 
 ## Rapportage en fase 0
 
