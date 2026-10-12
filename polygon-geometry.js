@@ -8,7 +8,7 @@
     for(let i=0,j=points.length-1;i<points.length;j=i++) { const a=points[i],b=points[j]; if((a.y>p.y)!==(b.y>p.y) && p.x<(b.x-a.x)*(p.y-a.y)/(b.y-a.y)+a.x) inside=!inside; }
     return inside;
   }
-  function validate(input) {
+  function validate(input, options={}) {
     if(!Array.isArray(input)||input.length<3||input.length>256) throw Error('Een veelhoek vereist 3 tot 256 hoekpunten.');
     const points=input.map(p=>{
       if(!p || ['x','y'].some(k=>!['number','string'].includes(typeof p[k]) || String(p[k]).trim()==='' || !Number.isFinite(Number(p[k])) || Math.abs(Number(p[k]))>1e12)) throw Error('Ongeldig hoekpunt.');
@@ -20,11 +20,11 @@
     let area=0;
     for(let i=0;i<points.length;i++) {
       const a=normalized[i], b=normalized[(i+1)%points.length]; area+=a.x*b.y-a.y*b.x;
-      for(let j=i+1;j<points.length;j++) if(Math.hypot(points[i].x-points[j].x,points[i].y-points[j].y)<1e-9) throw Error('Hoekpunten moeten verschillend zijn.');
+      for(let j=i+1;j<points.length;j++) if(Math.hypot(points[i].x-points[j].x,points[i].y-points[j].y)<(options.allowDegenerateTriangle?Number.MIN_VALUE:1e-9)) throw Error('Hoekpunten moeten verschillend zijn.');
       const c=normalized[(i+2)%points.length];
-      if(Math.abs(cross(a,b,c))<1e-12 && (a.x-b.x)*(c.x-b.x)+(a.y-b.y)*(c.y-b.y)>0) throw Error('Zijden mogen niet teruglopen.');
+      if(!options.allowDegenerateTriangle&&Math.abs(cross(a,b,c))<1e-12 && (a.x-b.x)*(c.x-b.x)+(a.y-b.y)*(c.y-b.y)>0) throw Error('Zijden mogen niet teruglopen.');
     }
-    if(Math.abs(area)<1e-12) throw Error('Een veelhoek moet een oppervlakte hebben.');
+    if(!options.allowDegenerateTriangle&&Math.abs(area)<1e-12) throw Error('Een veelhoek moet een oppervlakte hebben.');
     const on=(a,b,p)=>Math.abs(cross(a,b,p))<1e-12 && p.x>=Math.min(a.x,b.x)-1e-12 && p.x<=Math.max(a.x,b.x)+1e-12 && p.y>=Math.min(a.y,b.y)-1e-12 && p.y<=Math.max(a.y,b.y)+1e-12;
     for(let i=0;i<points.length;i++) for(let j=i+1;j<points.length;j++) {
       if(j===i+1 || (i===0&&j===points.length-1)) continue;

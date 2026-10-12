@@ -20,6 +20,7 @@ module.exports = async page => {
     await page.locator('#undoBtn').click(); assert.equal(await page.locator(`[data-object-id="${object.id}"]`).count(), 0);
     await page.locator('#redoBtn').click(); assert.equal(await page.locator(`[data-object-id="${object.id}"]`).count(), 1);
     await page.mouse.click(p.x, p.y); await page.locator('#richTextSurface .ProseMirror').fill('Niet toevoegen'); await page.locator('#richTextSurface .ProseMirror').press('Escape');
+    await page.locator('#textDialog').waitFor({ state: 'hidden' });
     assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.model.objects.length), 2);
     for (const id of ['p']) {
       const before = await page.evaluate(id => FZI.MathIllustration.editor.engine.get(id).style, id);

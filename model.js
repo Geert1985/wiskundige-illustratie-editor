@@ -102,11 +102,11 @@
     return b.prefix+result+b.suffix;
   }
   MI.DynamicText=Object.freeze({settings:textBinding,propertiesFor:textPropertiesFor,value:dynamicText});
-  function validateImportedObject(input) {
+  function validateImportedObject(input, options={}) {
     if (!record(input) || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
     if (!((typeof input.id === "string" && input.id.trim() !== "") || (typeof input.id === "number" && Number.isFinite(input.id)))) throw new Error("Elk illustratie-object heeft een geldige id nodig.");
     const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
-    if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices);
+    if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices, options);
     if (input.type === "angle") MI.MeasurementGeometry.validateAngle(input.vertices,input.angleMark || "arc");
     if('textBinding' in input){if(input.type!=='text'||input.construction||input.textContent)throw Error('Dynamische tekst vereist een vrij tekstobject zonder rich text.');textBinding(input.textBinding);if(input.textBinding?.sourceId===String(input.id))throw Error('Tekst kan niet naar zichzelf verwijzen.');}
     if('textContent' in input){if(input.type!=='text'||input.construction||'textBinding' in input)throw Error('Gestructureerde tekst vereist een vrij, niet-gebonden tekstobject.');validateTextContent(input.textContent);}
@@ -149,8 +149,8 @@
     return result;
   }
 
-  function normaliseObject(input) {
-    validateImportedObject(input);
+  function normaliseObject(input, options={}) {
+    validateImportedObject(input, options);
     if (!input || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
     const type = input.type;
     if(input.construction) MI.ConstructionService.validate(input.construction);
@@ -178,7 +178,7 @@
     if ((type === 'straight' || type === 'ray') && Math.hypot(object.x2 - object.x1, object.y2 - object.y1) === 0) throw new Error('Een rechte of halfrechte vereist twee verschillende punten.');
     if (type === "circle") { object.cx = finite(input.cx, 0); object.cy = finite(input.cy, 0); object.r = Math.max(0, finite(input.r, 1)); if (input.label != null) object.label = String(input.label); }
     if (type === "text") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); object.text = String(input.text == null ? "" : input.text); object.rotation = finite(input.rotation, 0); if(input.textContent){object.textContent=validateTextContent(input.textContent);object.text=MI.TextContent.plain(object.textContent);} }
-    if (type === 'polygon') object.vertices = MI.PolygonGeometry.validate(object.vertices);
+    if (type === 'polygon') object.vertices = MI.PolygonGeometry.validate(object.vertices, options);
     if (type === 'angle') { object.angleMark = input.angleMark || 'arc'; object.vertices = MI.MeasurementGeometry.validateAngle(object.vertices, object.angleMark); }
     return object;
   }
@@ -218,7 +218,9 @@
       MI.ConstructionService.validateUpdate(this.#objects,current,patch);
       if (('id' in patch && patch.id !== id) || ('type' in patch && patch.type !== current.type)) throw new Error('ID en objecttype kunnen niet worden gewijzigd.');
       if ('style' in patch && !record(patch.style)) throw new Error('Ongeldige objectstijl.');
-      const next = freeze(normaliseObject({ ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style }));
+      const triangleCenterSource = this.#objects.some(object => MI.ConstructionService.triangleCenterKinds.includes(object.construction?.kind) && object.construction.sources.some(ref => ref.objectId === current.id && ref.part == null && ref.index == null));
+      const nextData = { ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style };
+      const next = freeze(normaliseObject(nextData, triangleCenterSource && nextData.type === 'polygon' && nextData.vertices?.length === 3 ? {allowDegenerateTriangle:true} : {}));
       const objects = this.#objects.slice(); objects[index] = next;MI.MathSource.checkDocument(objects);MI.TextValues.checkDocument(objects); this.#objects = freeze(MI.ConstructionService.resolve(objects,this.#circleDistributions)); return this.get(id);
     }
     commitText(id,content,migrateLegacy=false){
@@ -302,13 +304,16 @@
       });
       const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version>=5?["layers","layerSchema"]:[]), ...(version>=6?["circleDistributionSchema","circleDistributions"]:[]), ...(version>=7?["textSchema"]:[])].includes(key))));
       const seen = new Set();
+      const triangleSourceIds = new Set(data.objects.filter(input => MI.ConstructionService.triangleCenterKinds.includes(input?.construction?.kind)).flatMap(input => Array.isArray(input?.construction?.sources) ? input.construction.sources.filter(ref => ref && ref.part == null && ref.index == null && typeof ref.objectId === 'string').map(ref => ref.objectId) : []));
       let nextId = 1;
       const objects = data.objects.map(input => {
-        validateImportedObject(input);
+        const allowDegenerateTriangle = input?.type === 'polygon' && input.vertices?.length === 3 && triangleSourceIds.has(String(input.id));
+        const objectOptions = allowDegenerateTriangle ? {allowDegenerateTriangle:true} : {};
+        validateImportedObject(input, objectOptions);
         const migrated = { ...input };
         // v1 automatically filled name with id; recover a distinct legacy label once.
         if (version === 1 && input.label != null && input.label !== "" && (input.name == null || input.name === "" || String(input.name) === String(input.id))) migrated.name = input.label;
-        const object = normaliseObject(migrated);
+        const object = normaliseObject(migrated, objectOptions);
         if (seen.has(object.id)) throw new Error("Object-id bestaat al: " + object.id);
         seen.add(object.id);
         const match = object.id.match(/-(\d+)$/), suffix = match ? Number(match[1]) : 0;

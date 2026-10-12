@@ -1,0 +1,38 @@
+const assert=require('node:assert/strict'),path=require('node:path');
+const {choose}=require('./browser-tool-menu.cjs');
+module.exports=async page=>{
+ const originalViewport=page.viewportSize();await page.setViewportSize({width:1280,height:900});await page.reload();
+ const ids=await page.locator('#toolGrid [data-tool]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tool));
+ assert.equal(ids.length,32);assert.equal(new Set(ids).size,32);
+ const snapshot=()=>page.evaluate(()=>{const a=FZI.MathIllustration.editor;return {document:a.engine.toJSON(),tool:a.tool,selected:a.selectedIds,interaction:a.interaction,history:a.history.entries,cursor:a.history.cursor,status:a.nodes.status.textContent,storage:Object.entries(localStorage)};});
+ await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[]}));
+ const documentBefore=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
+ for(const id of ids){await choose(page,'#toolGrid [data-tool="'+id+'"]');assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.tool),id);assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON()),documentBefore);}
+ await page.keyboard.press('Escape');
+ const categories=page.locator('#toolGrid > [data-tool-category]');assert.equal(await categories.count(),8);
+ for(let i=0;i<8;i++){const category=categories.nth(i),wasOpen=await category.evaluate(n=>n.open),others=await categories.evaluateAll(ns=>ns.map(n=>n.open));await category.locator(':scope > summary').focus();await page.keyboard.press('Enter');assert.equal(await category.evaluate(n=>n.open),!wasOpen);const after=await categories.evaluateAll(ns=>ns.map(n=>n.open));for(let j=0;j<8;j++)if(i!==j)assert.equal(after[j],others[j]);if(wasOpen)await category.locator(':scope > summary').click();}
+ const placeholders=page.locator('#toolGrid .tool-placeholder'),before=await snapshot();
+ for(let i=0;i<await placeholders.count();i++){await placeholders.nth(i).click();assert.deepEqual(await snapshot(),before);}
+ assert.equal(await placeholders.locator('button,a,input,select,[tabindex],[data-tool]').count(),0);
+ await page.locator('#canvasFullscreenBtn').click();await page.locator('#canvasToolsBtn').click();
+ assert.equal(await page.locator('#canvasToolsMenu > section').count(),8);
+ assert.deepEqual((await page.locator('#canvasToolsMenu [data-canvas-tool]').evaluateAll(ns=>ns.map(n=>n.dataset.canvasTool))).sort(),ids.slice().sort());
+ const fullscreenBefore=await snapshot(),fullscreenPlans=page.locator('#canvasToolsMenu .tool-placeholder');
+ assert.equal(await fullscreenPlans.count(),await placeholders.count());
+ for(let i=0;i<await fullscreenPlans.count();i++){await fullscreenPlans.nth(i).click();assert.deepEqual(await snapshot(),fullscreenBefore);}
+ await page.keyboard.press('Escape');assert.equal(await page.locator('#canvasToolsMenu').isVisible(),false);await page.locator('#canvasFullscreenBtn').click();
+ // The existing preference key is reused for static angles; no new preference storage is introduced.
+ await page.evaluate(()=>localStorage.setItem('fzi-math-illustration-linear-tool','rightAngle'));await page.reload();
+ assert.equal(await page.locator('#angleShapeToolMain').getAttribute('data-choice'),'rightAngle');
+ assert.equal(await page.locator('#linearToolMain').getAttribute('data-choice'),'line');
+ await page.evaluate(()=>localStorage.removeItem('fzi-math-illustration-linear-tool'));
+ for(const [name,width,height] of [['desktop',1280,900],['tablet',768,900],['mobile',390,844]]){
+  await page.setViewportSize({width,height});await page.reload();if(await page.locator('#toolsToggle').isVisible())await page.locator('#toolsToggle').click();
+  await page.locator('[data-tool-category="constructies"] > summary').click();
+  const bounds=await page.evaluate(()=>{const s=document.querySelector('.sidebar'),b=s.getBoundingClientRect();return {sidebar:b.toJSON(),overflow:document.documentElement.scrollWidth>innerWidth,rows:[...document.querySelectorAll('#toolGrid .tool-subgroup > .tool-grid > .tool')].map(n=>n.getBoundingClientRect().toJSON())};});
+  assert.equal(bounds.overflow,false);for(const row of bounds.rows){assert.ok(row.x>=bounds.sidebar.x);assert.ok(row.right<=bounds.sidebar.right+1);}
+  await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-'+name+'.png')});
+ }
+ await page.setViewportSize(originalViewport);await page.reload();await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-overview.png')});
+ return {allTools:32,categories:8,plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
+};
