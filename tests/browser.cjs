@@ -25,6 +25,7 @@ const server = http.createServer((req, res) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}/editor.html`);
+    if (process.env.M6A_ONLY === '1') { const triangleCenters = await require('./browser-triangle-centers.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', triangleCenters, pageErrors: errors })); return; }
     const before = await page.evaluate(() => FZI.MathIllustration.activeEngine.renderer.scale());
     const rect = await page.locator('#canvasWrap').boundingBox();
     await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2);
@@ -112,6 +113,7 @@ const server = http.createServer((req, res) => {
     const styles = await require('./browser-styles.cjs')(page);
     const measurementsGroups = await require('./browser-measurements-groups.cjs')(page);
     const constructions = await require('./browser-constructions.cjs')(page);
+    const triangleCenters = await require('./browser-triangle-centers.cjs')(page);
     const areaMenu=await require('./browser-area-menu.cjs')(page);
     const rectangleSelection=await require('./browser-rectangle-selection.cjs')(page);
     const selectionPresentation=await require('./browser-selection-presentation.cjs')(page);
@@ -147,6 +149,6 @@ const server = http.createServer((req, res) => {
     const stackedTools=await require('./browser-stacked-tools.cjs')(page);
     const expressionEngine=await require('./browser-expression-engine.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', expressionEngine, ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, richText, richMath, richValues, richLayout, richUx, textEditorModernization, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, splitTools, bisectorClip, minimalObjectList,canvasFullscreen,semanticSequence,linkedPaths, postM5aUX, lineIntersection, lineCircle, circleCircle, derivedCircle, linkedTangent, unitsScale, pointProjections, dynamicAngles, dynamicText, axisReferences, stackedTools, angleArms, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', expressionEngine, ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, richText, richMath, richValues, richLayout, richUx, textEditorModernization, polygon, styles, measurementsGroups, constructions, triangleCenters, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, splitTools, bisectorClip, minimalObjectList,canvasFullscreen,semanticSequence,linkedPaths, postM5aUX, lineIntersection, lineCircle, circleCircle, derivedCircle, linkedTangent, unitsScale, pointProjections, dynamicAngles, dynamicText, axisReferences, stackedTools, angleArms, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
