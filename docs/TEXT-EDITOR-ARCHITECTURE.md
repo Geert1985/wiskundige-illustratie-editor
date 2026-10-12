@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.11.0 - 2026-10-12 - T5-prep Deel A tweedelig formule-/waardenpaneel en wit tekstcanvas; handmatige acceptatie staat open.
+Versie 1.12.0 - 2026-10-12 - Verduidelijking rekencontract: hoekdimensies, afronding en underflow. Voorstel wacht op definitieve goedkeuring; T5a niet gestart.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -313,11 +313,11 @@ De thresholds zijn voorgestelde beoordelingsnormen, geen metingen. Registreer ma
 
 ## 14. B4 — Verfijnd rekencontract, goedkeuringspoort vóór T5a
 
-Dit contract is een concreet voorstel en moet vóór T5a definitief worden goedgekeurd. Presentatieformules (T2) en berekenbare expressies (T5) zijn verschillende talen; TeX is geen evaluatorinvoer.
+Dit contract is inhoudelijk voorwaardelijk goedgekeurd. De drie verduidelijkingen hieronder en de [aanvullende acceptatiespecificatie](T5A-NUMERIC-ACCEPTANCE.md) zijn voorstellen die nog definitieve gebruikersgoedkeuring vragen. Deze documentatie op `chatgpt/t5-calculator` start T5a niet en wijzigt geen overige roadmapvoorwaarden. Presentatieformules (T2) en berekenbare expressies (T5) zijn verschillende talen; TeX is geen evaluatorinvoer.
 
 ### Hoeveelheden en eenheden
 
-Interne dimensie wordt exact bijgehouden als gehele exponenten `(Lphysical, Labstract, A)`. Dit preciseert de eerdere physical/abstract-vlag: producten van fysieke en abstracte lengte worden geweigerd in deze eerste versie; delen van twee lengtes in dezelfde ruimte kan tot dimensieloos reduceren. Een dimensieloze factor kan beide schalen. Lengte en oppervlakte zijn L¹ en L², geen los type zonder exponent. Hoek is A¹, intern radiaal; hoek²/hoekverhoudingen zijn getypeerde samengestelde dimensies.
+Interne dimensie wordt exact bijgehouden als gehele exponenten `(Lphysical, Labstract, A)`. Dit preciseert de eerdere physical/abstract-vlag: producten van fysieke en abstracte lengte worden geweigerd in deze eerste versie; delen van twee lengtes in dezelfde ruimte kan tot dimensieloos reduceren. Een dimensieloze factor kan beide schalen. Lengte en oppervlakte zijn L¹ en L², geen los type zonder exponent. Een zuivere hoek heeft dimensie `(0,0,1)` = A¹, intern radiaal. Hoekproducten hebben opgetelde exponenten; een verhouding van twee zuivere hoeken heeft A⁰ en is dimensieloos, geen samengestelde hoekdimensie.
 
 Unitliteral ondersteunt mm, cm, m, km, deg, rad en abstract `unit` (zichtbare u; geen wijziging aan oudere eenheidsmetadata); suffix cm² e.d. normaliseert naar exponent. `e` zonder unitcontext is de constante exp(1), nooit automatisch abstracte lengteeenheid. JSON bewaart finite numerieke literal plus getypeerde unit/exponent; evaluator converteert bij lezen precies eenmaal. Display maakt geen nieuwe AST.
 
@@ -328,6 +328,40 @@ Optellen vereist gelijke exponenten. Dimensionele exponent moet een compile-time
 Expliciet `round(q;digits;unit)` voor dimensionele q: unit moet dezelfde dimensie hebben. `floor/ceil/trunc(q;unit)` idem. Zonder unit alleen dimensieloos; standaard functie telt argumenten exact. Gewone displayprecisie staat buiten AST. Zo geeft round(1,234 cm;1;cm) 1,2 cm, zonder onverwacht naar hele meters af te ronden.
 
 Trigonometrie: sin/cos/tan accepteert A¹ of dimensieloos; A¹ altijd intern rad, dimensieloos gebruikt angleMode/documentkeuze op evaluatietijdstip. asin/acos/atan vereist dimensieloos en levert A¹. `sin(30 deg)` blijft 0,5 bij elke documenthoekkeuze; `sin(30)` verandert bij wissel van graden naar rad. ln/log10/exp vereisen dimensieloos; abs houdt dimensie. Samengestelde output drukt exponenten expliciet uit (`cm⁻¹`, `cm·rad`, `rad²`), geen oppervlakte-eenheid voor een dimensieloze verhouding.
+
+### 14.1 Hoekdimensie, graden en verhoudingen — verduidelijkingsvoorstel
+
+`A` is een semantische dimensie van deze engine: radiaal wordt hier niet stil met dimensieloos vereenzelvigd. `rad` en `deg` zijn eenheden van hetzelfde A¹-type; `1 deg` wordt eenmaal omgerekend met de binary64-factor `π/180`, `1 rad` met factor 1. De constante `pi`/`π` blijft dimensieloos; `π * 1 rad` is een hoek. Dat onderscheid beschermt dimensiecontrole en de bestaande documenthoekkeuze. Geen nieuwe hoeksoort of wijziging van de geometrische hoekmeting.
+
+Alleen dimensies `(0,0,0)` en `(0,0,1)` zijn geldig als invoer voor sin/cos/tan. Lengte, A², A⁻¹ en lengte·hoek worden geweigerd met `DIMENSION_MISMATCH`. A¹ wordt direct als radiaal geëvalueerd; dimensieloos volgt de expliciete evaluatoroptie `angleMode` (graden/radialen), door de host uit de documentkeuze resolved. Die optie verandert geen quantity/AST en voegt geen blijvende hoekdimensie toe. Een ratio bewaart geen verborgen graden-/radialenlabel. `sin((90 deg)/(1 deg))` betekent daarom sin(90) en volgt angleMode; `sin((90 deg)/(1 rad))` betekent sin(ongeveer π/2) en volgt eveneens angleMode. Voor een expliciet getypeerde radiaalhoek gebruik `(ratio) * 1 rad`.
+
+Optellen van hoek en dimensieloos, ook nul, is ongeldig; hoek + hoek converteert naar dezelfde radiaalbasis. Vermenigvuldigen/delen gebruikt de gewone exponentregels: hoek/hoek → dimensieloos; hoek/getal → A¹; getal/hoek → A⁻¹; hoek*hoek → A². Uitvoer kiest graden/radialen uitsluitend voor het hoekdeel, met de juiste macht van de conversiefactor: rad² → deg² gebruikt `(180/π)^2`, rad⁻¹ → deg⁻¹ gebruikt `(180/π)^-1`. Dimensieloze ratios krijgen geen hoekeenheid en accepteren geen graden-/radialen-unitoverride; een dergelijke override geeft `DIMENSION_MISMATCH`. Documentschaal voor lengte beïnvloedt hoeken nooit.
+
+Geen impliciete modulo 2π, omzetting naar kleinste hoek, herstel van teken of snapping naar speciale hoeken. Bestaande kleinste/gerichte geometriewaarden behouden hun betekenis. Inverse functies leveren hoofdwaarden A¹: asin in [-π/2,π/2], acos in [0,π], atan in (-π/2,π/2); een displaykeuze converteert die waarde alleen. `sin(π rad)` en `cos(90 deg)` mogen een kleine binary64-rest opleveren; een nabijheidstest is geen toestemming om de engine-uitkomst tot nul te wijzigen. De bestaande tan-singulariteitsregel blijft gelden.
+
+### 14.2 Exacte regel voor round — verduidelijkingsvoorstel
+
+Handtekeningen: `round(q;digits)` uitsluitend voor dimensieloos; `round(q;digits;unit)` uitsluitend voor dimensionele q met exact overeenkomende dimensie/eenheidsruimte. `digits` moet evalueren naar een eindige dimensieloze gehele waarde 0–10; ontbrekende/extra argumenten en andere digits zijn fouten (`INVALID_ARGUMENT`). Dit voegt geen compile-time-constantbeperking toe aan dit functieargument: een geldige expressie is toegestaan onder de bestaande bronrechten en quotas. De unit is een getypeerde, eindige positieve conversiefactor in de canonical basis en dezelfde dimensie als q, ook voor samengestelde dimensies. Geen impliciete documenteenheid of extra functie-argumenten.
+
+De decimalen worden afgerond naar de dichtstbijzijnde stap `10^-digits`; bij een **exact half** wordt van nul af afgerond (half-away-from-zero). Dit geldt symmetrisch voor negatieve getallen. Afzonderlijk daarvan gebruikt terugconversie naar binary64 round-to-nearest, ties-to-even. Het gebruik van deze twee regels moet expliciet gescheiden blijven.
+
+Normatieve definitie: neem de exacte rationale waarde van de al geëvalueerde finite binary64-q, dus haar bitwaarde, niet de oorspronkelijke invoertekst of een korte decimalerepresentatie. Laat v die waarde zijn, f de exacte rationale waarde van de binary64-unitfactor (f=1 voor dimensieloos), d=digits en z=(v/f)*10^d. Bereken de integer `n = sign(z) * floor(abs(z)+1/2)` exact; bij z=0 is n=0. Het resultaat is de dichtstbijzijnde binary64 bij de rationale waarde `(n/10^d)*f`, met ties-to-even. Het behoudt de dimensie van q. Exacte rationale tussenstappen zijn uitsluitend een begrensde technische afrondingsmethode; de quantity-engine blijft binary64 en wordt geen CAS of algemene arbitrary-precision-engine. Een implementatie mag een gelijkwaardige methode kiezen als alle grensfixtures hetzelfde resultaat bewijzen.
+
+Geen tussentijdse binary64-vermenigvuldiging met 10^d die een halfgrens verschuift of onnodig overflow veroorzaakt; geen generieke epsiloncorrectie, `Math.round` of `toFixed` als normatieve definitie. `Math.round` kiest in JavaScript bij een half richting +∞ en wijkt voor negatieve halves af van dit voorstel. Het gekozen round-contract levert bijvoorbeeld round(2,5;0)=3 en round(-2,5;0)=-3. De binary64-literal 1,005 ligt onder de echte decimale halfgrens: round(1,005;2)=1,00; round(-1,005;2)=-1,00. Een eerdere evaluatie of unitconversie kan een halfgrens ook verschuiven: er wordt geen oorspronkelijke decimalebedoeling gereconstrueerd. Canonical output bewaart de daadwerkelijke binary64-resultaatwaarde; `≈` en displayprecisie blijven presentatie.
+
+`round` mag bewust naar nul kwantiseren; canonical nul en zichtbare afgeronde nul zijn positief 0. Als de exact gekwantiseerde rationale uitkomst niet nul is maar de uiteindelijke binary64-conversie naar nul onderloopt, geldt 14.3. Overflow blijft `NON_FINITE_RESULT`. `floor/ceil/trunc` behouden hun bestaande richtingsregel en unitvereiste; hun bedoelde nuluitkomsten zijn evenmin underflow. Alle overige domein-, dimensie-, unit-, quota- en machtregels blijven van kracht.
+
+### 14.3 Underflow, subnormale waarden en nul — verduidelijkingsvoorstel
+
+Definieer N=`2^-1022` (kleinste positieve normale binary64) en S=`2^-1074` (kleinste positieve subnormale binary64). Een finite resultaat met 0<abs(q)<N is geldig: behoud zijn waarde, teken en dimensie, inclusief ±S; geen flush-to-zero, minimale positieve clamp of epsilon-normalisatie. Een actuele evaluatie mag een niet-persistente `SUBNORMAL_RESULT`-waarschuwing geven wegens verminderde relatieve precisie. Deze diagnostiek bevat geen verboden brongegevens en wordt geen AST-/documentwaarde. Controleer alle tussenresultaten; een later normaal resultaat wist eerdere rangefouten niet.
+
+**Onbedoelde underflow naar nul is een fout `NUMERIC_UNDERFLOW`, geen geldig resultaat 0.** Dit geldt wanneer de exacte bewerking op de aangeleverde binary64-operanden een niet-nulwaarde heeft, maar binary64 +0/-0 oplevert. Ook bij unit-/schaalconversie, degree→rad, parsing van een lexicaal niet-nulgetal en terugconversie uit round. Detecteer dit vóór -0-normalisatie. Een niet-nulresultaat kleiner dan S mag op ±S afronden en blijft geldig; bij absolute exacte waarde S/2 rondt ties-to-even naar nul en treedt de fout op. Zolang een resultaat nog niet nul is, is gewone gradual underflow toegestaan, ook als het resultaat inexact is.
+
+Nul is geldig bij exacte algebraïsche cancellation, een werkelijk aangeleverde nul en expliciete quantisatie door round/floor/ceil/trunc. Voor de bestaande functies zijn exacte nulgevallen: abs/sqrt/sin/tan/asin/atan bij invoer 0, acos bij 1, ln/log10 bij 1; exp heeft voor finite invoer geen exacte nul. Een geldige macht met nulbasis en positieve exponent is nul; 0^0/negatieve exponent blijft een domeinfout. Geen algemene test `result===0` zonder onderscheid tussen deze gevallen en rangeverlies. Guards gebruiken de operatie en oorspronkelijke operands; voor benaderde functies moet de gekozen numerieke route onderloop en echte nul aantoonbaar onderscheiden. Wanneer een library dat niet kan bewijzen, voldoet die route niet aan dit contract; dat is een implementatierisico voor T5a, geen nu gemaakte bibliotheekkeuze.
+
+Alle unitconversies/adapterstappen vallen onder hetzelfde rangebeleid. Een bron die al 0 aanlevert geldt als supplied zero; de adapter claimt geen detectie van historisch rekenverlies binnen bestaande geometriecode. Underflow in zijn eigen conversies wordt wel geweigerd. Ontbrekende/verboden bronnen blijven unavailable en worden nooit numeric zero. Numerieke fouten zijn generiek en geven geen bron-ID/naam/waarde prijs. Een subnormaal resultaat dat alleen door displayprecisie als 0 verschijnt behoudt de niet-nulwaarde voor vervolgcalculaties en toont `≈` plus een veilige indicatie dat een niet-nulwaarde is afgerond; canonical/scientific notatie blijft beschikbaar. Print/AST-roundtrip mag subnormale waarden niet verliezen.
+
+ECMAScript ondersteunt gradual underflow; transcendentale Math-functies zijn implementation-approximated en garanderen geen engine-onafhankelijke laatste bit. Acceptatietests voor exacte reken-/roundgrenzen gebruiken exacte bitvergelijking en onafhankelijke rationale fixtures; transcendentalen gebruiken afzonderlijk vastgelegde toleranties en moeten bij nul-/underflowgrenzen de juiste classificatie bewijzen. Geen absolute tolerantie van 1e-12 gebruiken om S en 0 als gelijk te accepteren. Bronnen voor de platformbeperking: [ECMA-262 Number-type](https://tc39.es/ecma262/#sec-ecmascript-language-types-number-type), [Math.round](https://tc39.es/ecma262/#sec-math.round), [Math.exp](https://tc39.es/ecma262/#sec-math.exp). Deze projectregels zijn een voorstel, geen claim dat JavaScript de engineguards al levert.
 
 ### UI-invoer, AST en weergave
 
@@ -350,7 +384,7 @@ Formuleprinter gebruikt precedentie en noodzakelijke haakjes. Symbolische source
 | sqrt(-1); ln(0); asin(1,01); 1/0; 0^0 | Afzonderlijke domein-/deling-/machtfout, geen NaN/Infinity |
 | 1/(1e-14) | Finite 1e14; kleine noemer niet stil als nul behandelen |
 | exp(1000) | NON_FINITE_RESULT |
-| tan(90 deg) | SINGULARITY bij expliciete |cos|≤1e-12; nabijgrens testen |
+| tan(90 deg) | SINGULARITY bij expliciete \|cos\|≤1e-12; nabijgrens testen |
 | asin(1) | π/2 rad of 90°; input >1 niet ruim clampen |
 | sin(30 deg); asin(0,5) | 0,5; π/6 rad of 30° |
 | Dynamic angle met value 90° en display rad | Adapter π/2; sin(bron)=1, geen tweede conversie |
@@ -360,7 +394,7 @@ Formuleprinter gebruikt precedentie en noodzakelijke haakjes. Symbolische source
 | 2π; 2(3+4); 2 3 | UI toont 2*π; 2*(3+4); laatste geweigerd |
 | Bron verwijderd of read ingetrokken | unavailable/redactie; geen gecachte formulewaarde |
 
-Precision 0–10; format van negatieve afgeronde nul als 0. Numerieke nabijheidsvergelijkingen alleen in tests/singulariteitsbeleid, geen generieke epsilon die alle inputs wijzigt. T5a-acceptatie moet tolerantiegrenzen, overflow/underflow en platformdeterminisme binnen binary64 expliciet bewijzen. Exacte algemene algebra/equivalentie is buiten scope.
+Precision 0–10; format van negatieve afgeronde nul als 0, na de rangecontrole in 14.3. Numerieke nabijheidsvergelijkingen alleen in tests/singulariteitsbeleid, geen generieke epsilon die alle inputs wijzigt. T5a-acceptatie moet tolerantiegrenzen, overflow/underflow en platformverschillen binnen binary64 expliciet bewijzen; exacte bitgelijkheid voor transcendentale functies op ieder platform wordt niet verondersteld. De bestaande voorbeeldmatrix blijft verplicht en wordt aangevuld door [T5A-NUMERIC-ACCEPTANCE.md](T5A-NUMERIC-ACCEPTANCE.md). Exacte algemene algebra/equivalentie is buiten scope.
 
 ## 15. B5 — Afgebakende ProseMirror-proef
 
