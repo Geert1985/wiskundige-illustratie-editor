@@ -4,6 +4,8 @@ Versie 1.0.1, 2026-10-12. Repository `Geert1985/wiskundige-illustratie-editor`, 
 
 Uitgevoerd na expliciete toestemming “T3 mag je starten”. Het implementatiecontract is vooraf vastgelegd in [T3-CONTRACT.md](T3-CONTRACT.md). T3 is opgeleverd voor gebruikersacceptatie; **T4 is niet gestart**. Eerdere handmatige IME/AT-controles zijn niet als geslaagd aangemerkt.
 
+Implementatiecommit: `08b192ed8bf49baa00e494f053d68c66da8c86b5`. Laatste geteste codecorrectie: `7c07e80a8586b75037ec9117cc4313da3284e657`. De volledige Node- en Edge-runs hierboven zijn opnieuw uitgevoerd na deze bronrechtencorrectie; de afrondende rapportcommit wijzigt alleen documentatie en bewijsmetadata.
+
 ## Geleverde functies
 
 - `{}` opent een bron-/eigenschap-/notatiepaneel. Meerdere velden in dezelfde tekst behouden hun eigen bron, precisie, eenheid, prefix/suffix en marks. Een coördinatenpaar is twee velden met gewone interpunctie.
