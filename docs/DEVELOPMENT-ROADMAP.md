@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.2.0 (T2 checkpoint, 2026-10-12)
+Version: 1.3.0 (T3 checkpoint, 2026-10-12)
 Status: proposed sequencing; validate against repository
 Date: 2026-10-09
 
@@ -178,3 +178,8 @@ Elke stap vereist afzonderlijke technische verificatie, rapport en expliciete ge
 ## T2 checkpoint (2026-10-12)
 
 User explicitly authorized T2 after T1. Delivered: symbols/search/bookmarks, atomic inline math with safe source notation, textSchema 2 in v7, shared offline glyph renderer, bounded local assets, permission categories and reproducible builds. See [T2-REPORT.md](T2-REPORT.md) for the measured MathJax/KaTeX comparison and exact regression evidence. Real IME/AT and manual visual/external-viewer acceptance remain open; historical statements that T1 has not started are superseded by the T1/T2 reports. Await T2 acceptance; T3 not started. No main merge.
+
+
+## T3 checkpoint (2026-10-12)
+
+Explicit user authorization superseded the T2 stop gate. Delivered: schema-3 inline source values, source/property/notation chooser, current snapshot resolution and reverse dependency index, explicit legacy migration/static backup, category/source grants, redacted export, copied-source remapping and history/replay. See T3-CONTRACT.md and T3-REPORT.md for actual tests and remaining manual controls. No new dependencies; no T4 wrapping/PNG UI or T5 expression engine. Await T3 user acceptance before the next step; development branch only.

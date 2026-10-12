@@ -1,10 +1,10 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.3.0 - 2026-10-12 - T1 en T2 geimplementeerd op de ontwikkelbranch; T2-gebruikersacceptatie en handmatige controles staan open.
+Versie 1.4.0 - 2026-10-12 - T1-T3 geimplementeerd op de ontwikkelbranch; T3-gebruikersacceptatie en handmatige controles staan open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
-Sectie 1 bewaart de historische inventaris van fase 0. Secties 19 en 20 beschrijven de geleverde T1/T2-implementatie en zijn leidend voor hun actuele status. T3-T5 blijven ontwerp. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
+Sectie 1 bewaart de historische inventaris van fase 0. Secties 19-21 beschrijven de geleverde T1-T3-implementatie en zijn leidend voor hun actuele status. T4-T5 blijven ontwerp. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
 
 Audit B1–B7 is verwerkt in secties 11–18 en [audit resolution](TEXT-EDITOR-ARCHITECTURE-AUDIT-RESOLUTION.md). Die secties preciseren het eerdere voorstel en zijn leidend bij verschil. Bibliotheek- en fontkeuzes blijven open tot afzonderlijk goedgekeurde technische proeven resultaat leveren.
 
@@ -472,3 +472,21 @@ Bronnen verwisselen tussen behouden atom-IDs geldt als bronwijziging, ook bij de
 Geen T3-migratie: legacy `textBinding` blijft buiten de rich editor. Format/history en author-save/reload behouden de binding exact. Bestaande duplicatie bewaart `sourceId`, ook als de bron samen gekopieerd wordt; geen stilzwijgende remapping. Restricted export redigeert een ontbrekende/onleesbare bron volgens het bestaande contract en kan de binding verwijderen; trusted owner-inspect behoudt het origineel. Zie de 12-fixturematrix in het rapport.
 
 JSON/replay/restricted SVG, fullscreen en offline SVG→PNG zijn bij introductie getest. Echte OS-IME, schermlezer, handmatige visuele/externe-vieweracceptatie zijn niet uitgevoerd. T4 behoudt productie-PNG-bediening/wrapping. T3 start pas na afzonderlijke toestemming.
+
+## 21. T3 — dynamische inlinevelden (1.4.0)
+
+De gebruiker heeft T3 expliciet toegestaan. [T3-CONTRACT.md](T3-CONTRACT.md) legt het vooraf vastgelegde implementatiecontract vast; [T3-REPORT.md](T3-REPORT.md) bevat actuele testbewijzen en acceptatiegrenzen. De historische T3-stopregels hierboven zijn hierdoor opgevolgd. T4/T5 zijn niet gestart.
+
+`textContent.schema:3` en document v7/`textSchema:3` activeren `dynamicValue`. Het fragment bevat uitsluitend `{id,kind,binding:{sourceId,property},format:{precision,unitMode,angleMode,prefix,suffix},marks}`. Schema 1/2 blijven geldig en schema 4 blijft geweigerd. Ondersteunde eigenschappen zijn de bestaande naam/label, lengte, straal, omtrek, oppervlakte, hoek en punt-x/y; geen diameter, vectorcomponenten of asbindingen. Een coördinatenpaar bestaat uit twee velden met gewone interpunctie. Canonical format vult ontbrekende angleMode met document aan.
+
+`text-values.js` valideert en resolveert huidige bronwaarden. unitMode ondersteunt document, none (alleen suffix verbergen), u/dimensionless en mm/cm/m/km. Fysieke omzetting gebruikt MeasurementUnits precies eenmaal; fysieke/abstracte menging levert unavailable. angleMode=document respecteert bestaande bron-/documentinstellingen; deg/rad zijn veldspecifieke overrides. Statussen: ok, missing, invalid, unsupported en denied. Numerieke overflow, ongeldige legacy-eenheidsmetadata en waarden boven 4096 codepunten tonen een begrensde placeholder. 128 velden per tekstobject en 512 per document gelden naast bestaande rijke-tekstquota. Er worden geen uitkomsten gecachet of opgeslagen.
+
+`text-dependencies.js` bouwt een tijdelijke omgekeerde index op immutable objects-snapshots (sourceId→objectId/fragmentId); `Engine.getTextDependents` biedt deze aan. Renderer en editor-preview lezen actuele snapshots, inclusief bronwijziging, metadata, delete/undo en policyverandering. Gewijzigde veldbreedte wijzigt x/y/rotatie niet. De nieuwe nodeview bewaart binding/format/marks; interne previewmutaties worden niet teruggeparsed naar de inhoud. DOM-updates worden overgeslagen als de waarde gelijk blijft. Lokale undo, echte drag en bookmarkinvoeging zijn getest.
+
+In restricted mode vereist iedere actieve bron effectieve read+display (inclusief laag/objectbeschikbaarheid) en de eigenschap in textSourceProperties. Een source lock blokkeert lezen niet. Author leest hidden/locked bronnen en behoudt ontbrekende IDs voor herstel. Iedere geweigerde restricted atom wordt geheel plain “niet beschikbaar”; bron-ID/property/naam/notatie en eerdere waarde verdwijnen uit facade, JSON/SVG, previews en commandresultaten. Static backup wordt niet openbaar geprojecteerd. Het hoogste behouden schema wordt opnieuw gedeclareerd; een schema-3-tekst met alleen plain redactie blijft schema 3 mogen behouden.
+
+`text.commit` controleert content/references bij invoegen, verwijderen en rebinden; format bij marks/notatie. Bestaande onveranderde atomen verplaatsen vergt content; alle behouden actieve bronnen worden opnieuw gevalideerd. Nieuwe objecten/duplicaten controleren hun eigen created grants plus bronrechten. Het bestaande textSourceProperties-policyveld heeft een afzonderlijke eigenschapallowlist; het wordt niet meer als geometrieveld beoordeeld. Runtime-dialogen gebruiken een begin/commit-handle met revision/epoch; contextwijziging sluit de draft. De Author-dialog bewaart zijn openingsrevisie. Geen automatische rebase.
+
+Legacy omzetting is uitsluitend expliciet: `text.commit` met migrateLegacy:true, een schema-3-draft prefix/veld/suffix, overgenomen toegestane font/kleur/anchor en server-owned `legacyStaticText`. Positie/rotatie/organisatie blijven behouden; één OK is één geschiedenisactie, Cancel is nul. Unsupported font/color/size of collision met een opaque legacy-backupkey weigert de omzetting. Oude schema-1/2 en niet-rijke objectextensies met dezelfde key blijven inert; typed backup en herstel gelden pas vanaf schema 3. `text.restoreStatic` herstelt bewust het oorspronkelijke statische tekstveld; undo kan de gehele legacybinding terugbrengen. Duplicatie van inlinevelden remapt uitsluitend daadwerkelijk meegekopieerde bronnen. Bestaande legacy bindings blijven hun eerdere duplicatiepad gebruiken.
+
+Voor nieuwe builds schrijft `scripts/build-text-editor.cjs` naar `experiments/text-editor-build/build-results.json`; historische T2-proefbestanden blijven intact. T3 installeert geen nieuwe dependencies. T4-wrapping/PNG-bediening en T5-calculaties blijven buiten scope. Real OS-IME, schermlezer, handmatige externe viewers en fysieke visuele acceptatie zijn niet uitgevoerd.

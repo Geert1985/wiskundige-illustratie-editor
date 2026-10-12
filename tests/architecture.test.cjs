@@ -11,7 +11,9 @@ const root = path.join(__dirname, '..');
 const modules = [
   { file: 'regular-geometry.js', provides: ['RegularGeometry'], after: [] },
   { file: 'math-source.js', provides: ['MathSource'], after: [] },
-  { file: 'model.js', provides: ['PointProjections', 'DynamicText', 'TextContent', 'MODEL_VERSION', 'OBJECT_TYPES', 'LINEAR_OBJECT_TYPES', 'IllustrationModel', 'normaliseObject', 'PRESENTATION_FLAGS'], after: ['regular-geometry.js','math-source.js'] },
+  { file: 'text-values.js', provides: ['TextValues'], after: [] },
+  { file: 'text-dependencies.js', provides: ['TextDependencies'], after: ['text-values.js'] },
+  { file: 'model.js', provides: ['PointProjections', 'DynamicText', 'TextContent', 'MODEL_VERSION', 'OBJECT_TYPES', 'LINEAR_OBJECT_TYPES', 'IllustrationModel', 'normaliseObject', 'PRESENTATION_FLAGS'], after: ['regular-geometry.js','math-source.js','text-values.js'] },
   { file: 'rich-text-editor-loader.js', provides: ['RichTextEditor'], after: ['model.js'] },
   { file: 'font-assets.js', provides: ['TextFontData'], after: ['model.js'] },
   { file: 'text-fonts.js', provides: ['TextFonts'], after: ['font-assets.js'] },
@@ -48,7 +50,7 @@ const modules = [
 
 function modulesBeforeEditor() {
   return [
-    'math-source.js', 'math-fragments.js', 'text-metrics.js', 'rich-text-renderer.js', 'text-insert-panel.js', 'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
+    'math-source.js', 'text-values.js', 'text-dependencies.js', 'math-fragments.js', 'text-metrics.js', 'rich-text-renderer.js', 'text-insert-panel.js', 'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
     'linear-geometry.js', 'measurement-geometry.js', 'construction-service.js',
     'renderer.js', 'index.js', 'semantic-sequence.js', 'coordinate-transform.js',
     'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js',

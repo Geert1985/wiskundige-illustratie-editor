@@ -280,6 +280,7 @@
       return svg;
     }
     renderRichText(object) {
+      if(MI.TextValues.runs(object.textContent).length)object={...object,textContent:MI.TextValues.renderContent(object.textContent,this.measurementSources,{measurement:this.measurement,angleMeasurement:this.angleMeasurement},this.textSourceAllowed)};
       return object.textContent.paragraphs.some(p=>p.runs.some(r=>r.kind==='math'))
         ? MI.RichTextRenderer.render(object,this.mapX(object.x),this.mapY(object.y))
         : MI.RichTextRenderer.legacy.call(this,object);

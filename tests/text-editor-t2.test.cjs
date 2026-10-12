@@ -12,7 +12,7 @@ test('T2 source language rejects macros, URLs, HTML, malformed groups and quota 
 test('T2 schema 2 stores source only, retains schema 1 and rejects unknown fields/fragments',()=>{
  const MI=setup(),c=formula();assert.equal(MI.TextContent.validate(c).schema,2);assert.match(MI.TextContent.plain(c),/x\^2/);
  for(const patch of [{svg:'<path/>'},{html:'x'},{source:'\\href{x}{x}'},{source:'x^2^3'},{source:'\\left(x'},{kind:'dynamicValue'},{text:'cached'}]){const bad=plain(c);Object.assign(bad.paragraphs[0].runs[1],patch);assert.throws(()=>MI.TextContent.validate(bad));}
- const bad=plain(c);bad.schema=1;assert.throws(()=>MI.TextContent.validate(bad));bad.schema=3;assert.throws(()=>MI.TextContent.validate(bad));
+ const bad=plain(c);bad.schema=1;assert.throws(()=>MI.TextContent.validate(bad));bad.schema=4;assert.throws(()=>MI.TextContent.validate(bad));
  const many=plain(c);many.paragraphs[0].runs=Array.from({length:129},(_,i)=>({id:'m'+i,kind:'math',source:'x',marks:{}}));assert.throws(()=>MI.TextContent.validate(many));
 });
 test('T2 MathJax glyph output is bounded, sanitized, deterministic and self-contained',()=>{

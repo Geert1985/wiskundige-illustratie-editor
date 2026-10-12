@@ -59,25 +59,25 @@
     return (typeof value === "number" || (typeof value === "string" && value.trim() !== "")) && Number.isFinite(Number(value));
   }
   function validateTextContent(input) {
-    if(!record(input) || Object.keys(input).some(k=>!['schema','defaults','width','paragraphs'].includes(k)) || ![1,2].includes(input.schema) || !record(input.defaults) || Object.keys(input.defaults).some(k=>!['fontId','fontSize','color'].includes(k)) || !Array.isArray(input.paragraphs) || !input.paragraphs.length || input.paragraphs.length>TEXT_LIMITS.paragraphs) throw Error('Ongeldige gestructureerde tekst.');
+    if(!record(input) || Object.keys(input).some(k=>!['schema','defaults','width','paragraphs'].includes(k)) || ![1,2,3].includes(input.schema) || !record(input.defaults) || Object.keys(input.defaults).some(k=>!['fontId','fontSize','color'].includes(k)) || !Array.isArray(input.paragraphs) || !input.paragraphs.length || input.paragraphs.length>TEXT_LIMITS.paragraphs) throw Error('Ongeldige gestructureerde tekst.');
     const defaults={fontId:input.defaults.fontId,fontSize:input.defaults.fontSize,color:typeof input.defaults.color==='string'&&TEXT_COLORS.test(input.defaults.color)?textColor(input.defaults.color):input.defaults.color};
     if(!TEXT_FONTS.has(defaults.fontId)||!Number.isFinite(defaults.fontSize)||defaults.fontSize<6||defaults.fontSize>120||!TEXT_COLORS.test(defaults.color))throw Error('Ongeldige standaardopmaak voor tekst.');
     if(input.width!==null&&(!Number.isFinite(input.width)||input.width<=0||input.width>1e6))throw Error('Ongeldige tekstbreedte.');
     let chars=0,runs=0,maths=0;const ids=new Set();
     const paragraphs=input.paragraphs.map(p=>{
       if(!record(p)||Object.keys(p).some(k=>!['id','align','lineHeight','runs'].includes(k))||typeof p.id!=='string'||!p.id.trim()||ids.has(p.id)||!['left','center','right'].includes(p.align)||!Number.isFinite(p.lineHeight)||p.lineHeight<0.75||p.lineHeight>3||!Array.isArray(p.runs))throw Error('Ongeldige tekstalinea.');ids.add(p.id);
-      const out=[];for(const r of p.runs){if(!record(r)||Object.keys(r).some(k=>!(r.kind==='math'?['id','kind','source','marks']:['id','kind','text','marks']).includes(k))||typeof r.id!=='string'||!r.id.trim()||ids.has(r.id)||!['text','hardBreak',...(input.schema===2?['math']:[])].includes(r.kind)||(r.kind!=='hardBreak'&&!record(r.marks))||(r.kind==='hardBreak'&&r.marks!=null)||Object.keys(r.marks||{}).some(k=>!TEXT_MARKS.has(k)))throw Error('Ongeldig tekstfragment.');ids.add(r.id);if(++runs>TEXT_LIMITS.runs)throw Error('Tekst bevat te veel fragmenten.');
+      const out=[];for(const r of p.runs){if(!record(r)||Object.keys(r).some(k=>!(r.kind==='math'?['id','kind','source','marks']:r.kind==='dynamicValue'?['id','kind','binding','format','marks']:['id','kind','text','marks']).includes(k))||typeof r.id!=='string'||!r.id.trim()||ids.has(r.id)||!['text','hardBreak',...(input.schema>=2?['math']:[]),...(input.schema>=3?['dynamicValue']:[])].includes(r.kind)||(r.kind!=='hardBreak'&&!record(r.marks))||(r.kind==='hardBreak'&&r.marks!=null)||Object.keys(r.marks||{}).some(k=>!TEXT_MARKS.has(k)))throw Error('Ongeldig tekstfragment.');ids.add(r.id);if(++runs>TEXT_LIMITS.runs)throw Error('Tekst bevat te veel fragmenten.');
         if(r.kind==='hardBreak'){if('text'in r)throw Error('Ongeldige regeleinde.');out.push({id:r.id,kind:'hardBreak'});continue;}
-        const source=r.kind==='math'?MI.MathSource.validate(r.source):null;
+        const source=r.kind==='math'?MI.MathSource.validate(r.source):null,value=r.kind==='dynamicValue'?MI.TextValues.validate(r.binding,r.format):null;
         if(r.kind==='math'&&++maths>MI.MathSource.limits.fragments)throw Error('Tekst bevat te veel formules.');
-        if(r.kind==='text'&&typeof r.text!=='string')throw Error('Ongeldige tekstinhoud.');chars+=Array.from(source||r.text).length;if(chars>TEXT_LIMITS.codePoints)throw Error('Tekst is te lang.');
+        if(r.kind==='text'&&typeof r.text!=='string')throw Error('Ongeldige tekstinhoud.');chars+=Array.from(value?value.format.prefix+value.format.suffix:source||r.text).length;if(chars>TEXT_LIMITS.codePoints)throw Error('Tekst is te lang.');
         const marks={};for(const [k,v] of Object.entries(r.marks)){if(k==='bold'||k==='italic'||k==='underline'||k==='strike'){if(typeof v!=='boolean')throw Error('Ongeldige tekstopmaak.');if(v)marks[k]=true;}else if(k==='script'){if(!['super','sub'].includes(v))throw Error('Ongeldig superscript of subscript.');marks[k]=v;}else if(k==='fontId'){if(!TEXT_FONTS.has(v))throw Error('Ongeldig lettertype.');marks[k]=v;}else if(k==='fontSize'){if(!Number.isFinite(v)||v<6||v>120)throw Error('Ongeldige lettergrootte.');marks[k]=v;}else if(k==='color'){if(typeof v!=='string'||!TEXT_COLORS.test(v))throw Error('Ongeldige tekstkleur.');marks[k]=textColor(v);}}
-        out.push({id:r.id,kind:r.kind,...(r.kind==='math'?{source}:{text:r.text}),marks});
+        out.push({id:r.id,kind:r.kind,...(value?value:r.kind==='math'?{source}:{text:r.text}),marks});
       }return {id:p.id,align:p.align,lineHeight:p.lineHeight,runs:out};
     });
     const canonical={schema:input.schema,defaults,width:input.width,paragraphs};if(utf8Length(JSON.stringify(canonical))>TEXT_LIMITS.bytes)throw Error('Gestructureerde tekst overschrijdt de opslaglimiet.');return canonical;
   }
-  MI.TextContent=Object.freeze({validate:validateTextContent,limits:TEXT_LIMITS,plain:content=>content.paragraphs.map(p=>p.runs.map(r=>r.kind==='text'?r.text:r.kind==='math'?r.source:'\n').join('')).join('\n')});
+  MI.TextContent=Object.freeze({validate:validateTextContent,limits:TEXT_LIMITS,plain:content=>content.paragraphs.map(p=>p.runs.map(r=>r.kind==='text'?r.text:r.kind==='math'?r.source:r.kind==='dynamicValue'?'niet beschikbaar':'\n').join('')).join('\n')});
   const projectionDefaults=Object.freeze({schema:1,frame:'cartesian',mode:'none',showValues:true});
   function projectionSettings(value) {
     if(!record(value)||Object.keys(value).some(k=>!['schema','frame','mode','showValues'].includes(k))||value.schema!==1||value.frame!=='cartesian'||!['none','x','y','both'].includes(value.mode)||typeof value.showValues!=='boolean')throw Error('Ongeldige co'+String.fromCharCode(246)+'rdinatenprojecties.');
@@ -110,6 +110,7 @@
     if (input.type === "angle") MI.MeasurementGeometry.validateAngle(input.vertices,input.angleMark || "arc");
     if('textBinding' in input){if(input.type!=='text'||input.construction||input.textContent)throw Error('Dynamische tekst vereist een vrij tekstobject zonder rich text.');textBinding(input.textBinding);if(input.textBinding?.sourceId===String(input.id))throw Error('Tekst kan niet naar zichzelf verwijzen.');}
     if('textContent' in input){if(input.type!=='text'||input.construction||'textBinding' in input)throw Error('Gestructureerde tekst vereist een vrij, niet-gebonden tekstobject.');validateTextContent(input.textContent);}
+    if(input.textContent?.schema>=3&&'legacyStaticText' in input&&(input.type!=='text'||typeof input.legacyStaticText!=='string'||Array.from(input.legacyStaticText).length>TEXT_LIMITS.codePoints))throw Error('Ongeldige legacy-tekstbackup.');
     if('angleSettings' in input){if(input.type!=='angle')throw Error('Hoekinstellingen zijn alleen voor hoeken.');MI.AngleMeasurements.settings(input.angleSettings);if(input.angleMark==='right'&&input.angleSettings.mode==='directed')throw Error('Een rechtehoekmarkering gebruikt de kleinste hoek.');}
     if('coordinateProjections' in input){if(input.type!=='point')throw Error('Projecties zijn alleen beschikbaar voor punten.');projectionSettings(input.coordinateProjections);}
     if(input.measurementMode!=null && !["computed","text"].includes(input.measurementMode)) throw Error("Ongeldige meetmodus.");
@@ -201,7 +202,7 @@
       try {
         const data = { ...input }; if (data.id == null || data.id === '') data.id = this._generateId(data.type);
         const object = freeze(normaliseObject(data)); if ((this.#objects.some(o => o.id === object.id) || this.#groups.some(g=>g.id===object.id) || this.#layers.some(l=>l.id===object.id)||this.#circleDistributions.some(d=>d.id===object.id))) throw new Error('Object-id bestaat al: ' + object.id);
-        MI.MathSource.checkDocument([...this.#objects,object]);
+        MI.MathSource.checkDocument([...this.#objects,object]);MI.TextValues.checkDocument([...this.#objects,object]);
         const resolved=freeze(MI.ConstructionService.resolve([...this.#objects, object],this.#circleDistributions));
         let layers=this.#layers;if(layers.length){const target=layers.slice().reverse().find(l=>l.visible);if(!target)throw Error('Maak eerst een laag zichtbaar.');layers=freeze(MI.DocumentLayers.validate(layers.map(l=>l.id===target.id?{...l,members:[...l.members,object.id]}:l),resolved,this.#groups));}
         this.#objects=resolved;this.#layers=layers;return this.get(object.id);
@@ -211,13 +212,26 @@
       const index = this.#objects.findIndex(o => o.id === id); if (index === -1) throw new Error('Object niet gevonden: ' + id);
       if (patch != null && !record(patch)) throw new Error('Ongeldige objectupdate.'); patch = patch || {};
       const current = this.#objects[index];
+      if(patch.textContent?.schema>=3&&!(current.textContent?.schema>=3)&&'legacyStaticText'in current)throw Error('Legacy objectvelden botsen met de tekstbackup.');
       if(patch.textContent&&!current.textContent&&richUpgradeConflict(this._extra))throw Error('Rijke tekst kan niet worden toegevoegd zolang legacy documentvelden botsen met het tekstformaat.');
       if(patch.construction?.kind==='distributedPointOnCircle'||current.construction?.kind==='distributedPointOnCircle'&&'construction' in patch)throw Error('Distributiepunten worden uitsluitend via de centrale puntenverdeling beheerd.');
       MI.ConstructionService.validateUpdate(this.#objects,current,patch);
       if (('id' in patch && patch.id !== id) || ('type' in patch && patch.type !== current.type)) throw new Error('ID en objecttype kunnen niet worden gewijzigd.');
       if ('style' in patch && !record(patch.style)) throw new Error('Ongeldige objectstijl.');
       const next = freeze(normaliseObject({ ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style }));
-      const objects = this.#objects.slice(); objects[index] = next;MI.MathSource.checkDocument(objects); this.#objects = freeze(MI.ConstructionService.resolve(objects,this.#circleDistributions)); return this.get(id);
+      const objects = this.#objects.slice(); objects[index] = next;MI.MathSource.checkDocument(objects);MI.TextValues.checkDocument(objects); this.#objects = freeze(MI.ConstructionService.resolve(objects,this.#circleDistributions)); return this.get(id);
+    }
+    commitText(id,content,migrateLegacy=false){
+      const current=this.get(id);if(!current||current.type!=='text'||current.construction||current.textBinding&&!migrateLegacy||migrateLegacy&&!current.textBinding)throw Error('Ongeldig doel voor tekstcommit.');
+      if(content.schema>=3&&!(current.textContent?.schema>=3)&&'legacyStaticText'in current)throw Error('Legacy objectvelden botsen met de tekstbackup.');
+      if(migrateLegacy&&content.schema!==3)throw Error('Omzetting vereist tekstschema 3.');
+      if(!current.textContent&&richUpgradeConflict(this._extra))throw Error('Legacy documentvelden botsen met het tekstformaat.');
+      const {textBinding,...data}=current,next=freeze(normaliseObject({...data,textContent:content,...(migrateLegacy?{legacyStaticText:current.text}:{}),text:MI.TextContent.plain(content)}));
+      const objects=this.#objects.map(o=>o.id===id?next:o);MI.MathSource.checkDocument(objects);MI.TextValues.checkDocument(objects);this.#objects=freeze(MI.ConstructionService.resolve(objects,this.#circleDistributions));return this.get(id);
+    }
+    restoreStaticText(id){
+      const current=this.get(id);if(!current||typeof current.legacyStaticText!=='string'||!(current.textContent?.schema>=3))throw Error('Geen oorspronkelijke statische tekst beschikbaar.');
+      const {textContent,legacyStaticText,...data}=current,next=freeze(normaliseObject({...data,text:legacyStaticText}));this.#objects=freeze(MI.ConstructionService.resolve(this.#objects.map(o=>o.id===id?next:o),this.#circleDistributions));return this.get(id);
     }
     detachConstructions(ids){
       if(!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length)throw Error('Ongeldige selectie van constructies.');
@@ -278,7 +292,7 @@
     load(data) {
       if (!record(data) || !Array.isArray(data.objects)) throw new Error("Ongeldig illustratiemodel: objects-array vereist.");
       const version = data.version == null ? 1 : Number(data.version);
-      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || version>7 || (version===6&&(data.circleDistributionSchema!==1||!Array.isArray(data.circleDistributions))) || (version===7&&![1,2].includes(data.textSchema))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
+      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || version>7 || (version===6&&(data.circleDistributionSchema!==1||!Array.isArray(data.circleDistributions))) || (version===7&&![1,2,3].includes(data.textSchema))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
       if (data.type != null && data.type !== "geometry") throw new Error("Niet-ondersteund documenttype.");
       if (data.meta != null && !record(data.meta)) throw new Error("Ongeldige documentmetadata.");
       const meta = clone(data.meta || {}), presentation = normalisePresentation(data.presentation);
@@ -306,7 +320,7 @@
       if(objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))&&![2,3,4].includes(data.constructionSchema))throw Error('Deze gekoppelde geometrie vereist constructieschema 2.');
       const distributions=[],distIds=new Set();if(version===6||data.circleDistributionSchema!=null||data.circleDistributions!=null){if(!Array.isArray(data.circleDistributions)||data.circleDistributionSchema!==1||(version===6&&!data.circleDistributions.length))throw Error('Ongeldige cirkelpuntenverdeling.');const pointIds=new Set();for(const d of data.circleDistributions){if(!record(d)||Object.keys(d).some(k=>!['id','circleId','count','startAngle','pointIds'].includes(k))||typeof d.id!=='string'||!d.id.trim()||typeof d.circleId!=='string'||!d.circleId.trim()||!Number.isSafeInteger(d.count)||d.count<1||d.count>MI.RegularGeometry.MAX_COUNT||!Number.isFinite(d.startAngle)||d.startAngle<0||d.startAngle>=2*Math.PI||!Array.isArray(d.pointIds)||d.pointIds.length!==d.count||new Set(d.pointIds).size!==d.count||distIds.has(d.id)||seen.has(d.id))throw Error('Ongeldige cirkelpuntenverdeling.');distIds.add(d.id);seen.add(d.id);const dsuffix=Number(d.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(dsuffix)&&dsuffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,dsuffix+1);const circle=objects.find(o=>o.id===d.circleId);if(!circle||circle.type!=='circle')throw Error('Puntenverdeling verwijst naar een ongeldige cirkel.');d.pointIds.forEach((id,index)=>{const p=objects.find(o=>o.id===id),c=p?.construction;if(!p||p.type!=='point'||!c||c.kind!=='distributedPointOnCircle'||c.distributionId!==d.id||c.index!==index||Object.keys(c).some(k=>!['kind','sources','distributionId','index'].includes(k))||c.sources.length!==1||Object.keys(c.sources[0]).some(k=>k!=='objectId')||c.sources[0].objectId!==d.circleId||pointIds.has(id))throw Error('Puntenverdeling en puntconstructie komen niet overeen.');pointIds.add(id);});distributions.push(clone(d));}if(objects.some(o=>o.construction?.kind==='distributedPointOnCircle'&&!pointIds.has(o.id)))throw Error('Los distributiepunt zonder register gevonden.');}
       else if(objects.some(o=>o.construction?.kind==='distributedPointOnCircle'))throw Error('Distributiepunten vereisen documentschema 6.');
-      MI.MathSource.checkDocument(objects);
+      MI.MathSource.checkDocument(objects);MI.TextValues.checkDocument(objects);
       const resolved = MI.ConstructionService.resolve(objects,distributions);
       if(version>=4 && objects.some(o=>o.construction) && ![1,2,3,4].includes(data.constructionSchema))throw Error("Constructieschema vereist.");
       if(version>=4 && data.groups!=null && data.groupSchema!==1)throw Error("Groepsschema vereist.");

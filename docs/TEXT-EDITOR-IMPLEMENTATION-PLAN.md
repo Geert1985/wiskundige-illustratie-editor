@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.3.0 - 2026-10-12. Status: T2 geimplementeerd; wacht op T2-gebruikersacceptatie. T3 niet gestart.
+Versie 1.4.0 - 2026-10-12. Status: T3 geimplementeerd; wacht op T3-gebruikersacceptatie. T4 niet gestart.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
@@ -20,7 +20,7 @@ Status: geimplementeerd op chatgpt/editor-development; wacht op handmatige test 
 
 - Opgeleverd: veilig textContent-model, alinea's, hardBreaks en marks, begrensde ProseMirror-adapter, editor voor nieuwe en statische bestaande teksten, typed text.commit, revisie-, lock- en categoriespecifieke permission checks, lokale editor undo, document undo/redo, JSON/replay en offline SVG-fontembedding.
 - Legacy dynamische tekst behoudt textBinding. Bestaande bindingen worden niet automatisch gemigreerd of geopend in de rich editor. Toegestane legacy stijlwijziging blijft via het bestaande stijlpad en verandert de binding niet.
-- Tests: historische T1-cijfers staan in het T1-rapport; actuele volledige T2-regressie: 418/418 Node-tests. Restricted JSON/SVG en v7 met v6-distributies, groepen en lagen vallen onder regressiecriteria.
+- Tests: historische T1-cijfers staan in het T1-rapport; historische volledige T2-regressie: 418/418 Node-tests; actuele T3-uitslag staat in het T3-rapport. Restricted JSON/SVG en v7 met v6-distributies, groepen en lagen vallen onder regressiecriteria.
 - De expliciete opdracht "Begin met T2" autoriseerde T2; resterende handmatige T1-controles blijven open. T3-meerdere bronnen, T4-wrapping/exportvoltooiing en T5-rekenengine vallen buiten deze stap.
 
 Handmatige acceptatiechecklist: meerdere alinea's; Shift+Enter; fragmentopmaak; editor undo/redo; annuleren versus bevestigen; statische bestaande tekst via inspector; undo/redo van commit; JSON opslaan/herladen; offline SVG en rastering; fullscreen; oude dynamische tekstbinding; echte IME en schermlezer. IME en schermlezer blijven expliciet niet uitgevoerd tot er bewijs uit een echte input-/AT-omgeving is. Zie TEXT-EDITOR-T1-REPORT.md.
@@ -36,6 +36,8 @@ Status: uitgevoerd na expliciete starttoestemming. [T2-REPORT.md](T2-REPORT.md) 
 5. Opslag/exportgate voor math: source roundtrip/heropenen, mixed SVG/PNG, redactie en legacybinding-stylematrix. T2-REPORT.md en acceptatie.
 
 ## T3 — Meerdere dynamische velden
+
+Status: uitgevoerd na expliciet T3-akkoord. [T3-CONTRACT.md](T3-CONTRACT.md) en [T3-REPORT.md](T3-REPORT.md) leggen schema, bronnen, migratie, actuele tests en beperkingen vast. Geen T4 zonder afzonderlijke toestemming.
 
 1. Text-values en reverse dependency-index; expliciete bronstatussen en restricted redactie. Hergebruik bestaande formattering en ondersteunde eigenschappen.
 2. Activeer dynamicValue/schema 3; uitsluitend expliciete T3-migratie volgens sectie 16: prefix/atom/suffix, geërfde styles, legacyStaticText, grants en één historyactie. Test identieke formatering/binding, source remap en herstel; geen automatische conversie bij openen.

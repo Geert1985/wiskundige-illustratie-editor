@@ -80,3 +80,8 @@ Two additional Node lifecycle tests (67 total) cover dragging the painted circle
 ## Drawing-tool asset compatibility follow-up
 
 82 Node cases include recognition when a cached model omits the optional linear-family export and prevention of unsupported drawing-tool fallback into pan. `browser-asset-compat.cjs` intercepts model.js with that missing-export variant, then checks all four linear drawing tools create the correct type without changing bounds. All editor script URLs have one release cache token; bump it together when scripts change. This supplements the fresh-profile Edge suite with a mixed-version regression. Actual in-app pointer drawing of line/straight/ray/vector was also verified.
+
+
+## T3 rich source values
+
+Node: tests/text-editor-t3.test.cjs. Edge: tests/browser-rich-values.cjs (part of the full suite). Focused debugging: node scripts/run-browser-module.cjs browser-rich-values.cjs. Full commands remain npm test and npm run test:edge. Source values are resolved at render; do not update golden storage snapshots with calculated values. Build source/editor changes with npm run build:text; current bundle metadata is in experiments/text-editor-build/build-results.json. Historical T2 comparison/bundle evidence is preserved. Real IME/AT and external-viewer checks require separate manual evidence.

@@ -6,6 +6,8 @@ De gebruiker gaf expliciet opdracht **Begin met T2**. T2 is uitgevoerd; gebruike
 
 Implementatie- en bewijscommit: `b99217fae7bad97f19aab54c408fb95a4109a09c`. Een aansluitende documentatiecommit voegt deze verwijzing toe; productiecode en testbewijzen blijven gelijk aan de geteste implementatiecommit.
 
+Statusupdate: de gebruiker gaf vervolgens expliciet T3-starttoestemming. Zie [T3-REPORT.md](T3-REPORT.md); deze T2-cijfers blijven historische testbewijzen en de handmatige controles blijven open.
+
 ## Opgeleverd
 
 - Ω-paneel met zoeken en tien categorieën: Grieks, rekenen, gelijkheden/ongelijkheden, verzamelingen, geometrie, pijlen, logica, machten/wortels, breuken en functies. Cursorbookmarks blijven behouden. Glyphs uit de lokale tekstfonts worden tekst; ontbrekende glyphs, zoals ∈ en ℝ, gebruiken veilige formuleatomen.
