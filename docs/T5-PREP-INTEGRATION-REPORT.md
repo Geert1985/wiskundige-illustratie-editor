@@ -1,8 +1,8 @@
 # T5-prep — Integratierapport teksteditor (I1-I4)
 
-Versie 1.0.0 — 2026-10-12  
-Repository: `Geert1985/wiskundige-illustratie-editor`  
-Branch: `chatgpt/editor-development`  
+Versie 1.0.0 — 2026-10-12
+Repository: `Geert1985/wiskundige-illustratie-editor`
+Branch: `chatgpt/editor-development`
 Status: technisch geleverd; wacht op handmatige T5-prep-acceptatie. T4-handmatige acceptatie blijft afzonderlijk open. T5a is niet gestart.
 
 ## Samenvatting
