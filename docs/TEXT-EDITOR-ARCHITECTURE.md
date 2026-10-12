@@ -1,6 +1,6 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.17.0 - 2026-10-12 - T5a en volledige tekstwerkruimte geaccepteerd en geïntegreerd in main; T5b-productafbakening vastgesteld, UI-details nog te ontwerpen; T5b/T5c niet gestart.
+Versie 1.18.0 - 2026-10-12 - T5a en volledige tekstwerkruimte geaccepteerd en geïntegreerd in main; T5b-productafbakening vastgesteld, UI-details nog te ontwerpen; T5b/T5c niet gestart.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Huidige geïntegreerde basis: `main` (na merge van `chatgpt/text-editor-full-workspace`); historische T5a-branch: `chatgpt/t5-calculator`; historische fase-0-branch: `chatgpt/editor-development`. Historisch onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
@@ -696,3 +696,20 @@ T5a is inhoudelijk aanvaard door de gebruiker. Expliciete syntaxnestingcontrole 
 **Huidige kwaliteits- en integratiestatus:** T5a is inhoudelijk geaccepteerd; de statische audit en de twee technische opvolgpunten zijn afgewerkt. De vernieuwde tekstwerkruimte is door de gebruiker handmatig goedgekeurd. De gebruiker rapporteerde voor de gecombineerde branch na herstel van vier Node-regressies **573 geslaagd, 0 mislukt, 0 overgeslagen**. De gecombineerde versie is naar `main` gemerged. De volledige Edge-suite is **niet opnieuw uitgevoerd op deze laatste gecombineerde versie**; eerdere T5a-Edge-resultaten mogen niet worden voorgesteld als een nieuwe run. Oudere vermeldingen 'wacht op acceptatie', 'niet gemerged' of 'geen tests' in historische secties/rapporten beschrijven hun toenmalige checkpoint en zijn geen actuele status.
 
 **Volgende poort:** eerst T5b-layout, interacties, bereikbaarheid en fout-/clipboardpresentatie laten goedkeuren; daarna pas een afzonderlijke Codex-implementatieopdracht op een branch vanaf de actuele `main`. Deze documentatie-update geeft **geen starttoestemming voor T5b-code**. Node-, Edge-, privacy-, clipboard-, fullscreen- en regressiebewijs uit sectie 22/implementatieplan blijven de acceptatiecriteria voor de daadwerkelijke uitvoering.
+
+
+## 31. TI-36X Pro-productplanning en gedeelde kern (2026-10-12, 1.18.0)
+
+De aangeleverde roadmap-export v2.1.0 is als documentatieaanvulling verwerkt; de volledige planning, K-checklists en oorspronkelijke taakstatussen staan in [roadmap v2.4.0](DEVELOPMENT-ROADMAP.md#ti-36x-pro-roadmap-amendment-2026-10-12-v240). Deze sectie is leidend voor gewijzigde timing/paneelkeuze boven sectie 30, maar verandert geen bestaande wiskundige of beveiligingsregels.
+
+**Volgorde:** M6a en M6b behouden voorrang als volgende illustratormijlpalen. Daarna volgen apart ontworpen en geautoriseerde T5b, T5c en T5d met afzonderlijke acceptatie. Geen verplichting om eerst alle M1–M20 te voltooien. Dit document geeft voor geen van deze stappen een implementatie-GO. T5a en de huidige tekstwerkruimte blijven de geïntegreerde basis.
+
+**Paneelkeuze:** T5b plant één zwevend en versleepbaar wetenschappelijk paneel, bereikbaar vanuit hoofdwerkbalk en inline ∑. Beide dunne hosts delen component, evaluatie, typed bronadapter en formattering. Het paneel heeft geen grafiekcanvas en verandert geen illustratie-JSON/revisie/selectie/historycursor of private tekstdraft. Viewportbegrenzing, responsieve afmetingen, focus-/Escape-volgorde, IME/ARIA en clipboardnotatie blijven eerst goed te keuren UX-contracten. Verplaatsen is nu een geplande eis in plaats van een open voorkeur; geen gerealiseerde functionaliteit.
+
+**Fase-1-invoer:** natuurlijke templates, meerregelig display, SHIFT/ALPHA en navigatietoetsen zijn ontwerpdoelen. Alleen de bestaande T5a-functies/operators/constants/units zijn in T5b uitvoerbaar; geen niet-werkende toetsen voor toekomstige pakketten. De UI normaliseert gevalideerde inputtokens naar de bestaande AST; LaTeX/MathPrint is geen uitvoerbare evaluator-taal. Private DEG/RAD moet als expliciete hostoverride worden ontworpen met behoud van bronrevision/epoch, document-/legacydefaults en nul documentmutaties. De huidige adapter wordt door deze documentatie niet gewijzigd.
+
+**Latere K-contracten:** K1 voegt eventueel exacte getallen/rationaal/wortel/π-presentatie toe; K2 typed variabelen, Ans, geheugen en veilige functies; K3 statistiek/regressie/verdelingen; K4 matrices/vectoren; K5 numerieke calculus/solvers; K6 complexe waarden; K7 getallenstelsels/extra dimensies/constanten/conversies; K8 functionele pariteitsaudit. Elk pakket is nog niet gestart en vereist voorafgaande wiskundige/type-/schema-/securitygoedkeuring en onafhankelijke referentietests. De begrensde BigInt-tussenstappen van de bestaande round-helper zijn geen geleverd exact getallenmodel. Geen stille aanpassing van sectie 14, operatorprioriteit, hoekdimensie, round, underflow, v7 of legacycompatibiliteit.
+
+**Gedeelde diensten:** K2-functiedefinities/evaluatie voor M11-plots en TI-tabellen; K5-numerieke routines voor M12; K4-numerieke vectoren afstemmen op M7-geometrie. Numerieke waarden en tekenobjecten blijven gescheiden. Domein/sampling/discontinuïteiten, plotobjecten en rendering behoren tot de illustrator, zonder tweede evaluator. Nieuwe diensten worden bovenop/naast de goedgekeurde kern getypeerd ontworpen, nooit als vrije JavaScript-evaluatie.
+
+**Bewijsgrens:** TI-36X Pro-pariteit is een toekomstig productdoel. De in de export genoemde 105 inventarispunten zijn geen officiële functietelling; de inventaris en officiële-handleidingverificatie zijn niet meegeleverd/uitgevoerd. K8 houdt TI-norm, afwijkingen, uitzonderingen, FZI-extra en buiten-scope apart met werkelijk bewijs. Huidige gecombineerde Node-status blijft 573/0/0; geen nieuwe tests uitgevoerd in deze ronde. Laatste gecombineerde Edge-run en eerder open handmatige controles worden niet als PASS gemarkeerd.

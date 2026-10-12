@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.14.0 - 2026-10-12. Status: T5a en vernieuwde tekstwerkruimte geaccepteerd, statische auditopvolging voltooid en 573/573 Node-tests volgens gebruikersrapport; geïntegreerd in main. T5b-productafbakening overeengekomen, UI-ontwerp en implementatiestart nog open. T5c–T5d en Deel B niet gestart. Eerdere handmatige T4/T5-prep-controles blijven afzonderlijk open.
+Versie 1.15.0 - 2026-10-12. Status: T5a en vernieuwde tekstwerkruimte geaccepteerd, statische auditopvolging voltooid en 573/573 Node-tests volgens gebruikersrapport; geïntegreerd in main. T5b-productafbakening overeengekomen, M6a/M6b eerst; daarna afzonderlijk goedgekeurd TI-geïnspireerd T5b-ontwerp en implementatiestart. K1–K8 zijn latere uitbreidingen, niet gestart. T5c–T5d en Deel B niet gestart. Eerdere handmatige T4/T5-prep-controles blijven afzonderlijk open.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). T5a is historisch op `chatgpt/t5-calculator` ontwikkeld en met de volledige tekstwerkruimte via `chatgpt/text-editor-full-workspace` naar `main` geïntegreerd. Nieuwe implementatiemijlpalen vertrekken vanaf de actuele `main` en krijgen een eigen werkbranch; er is nog geen T5b-startopdracht. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
@@ -160,3 +160,14 @@ Voor de aparte Codex-startopdracht moet het T5b-ontwerp eerst concreet zijn goed
 **Actuele voorafgaande gate:** T5a-code en tekstwerkruimte zijn geaccepteerd en gemerged in `main`; de gebruiker rapporteerde voor de gecombineerde versie 573 Node PASS, 0 FAIL, 0 SKIP. De volledige Edge-regressies zijn niet opnieuw gedraaid op die gecombineerde laatste versie. Dit is een statusregistratie, geen nieuwe testuitvoering of bewijs van niet-uitgevoerde browserchecks. Historische werkplantekst over onafgewerkte T5a-acceptatie/een eerdere branch beschrijft de oude situatie.
 
 **Stop:** deze documentatieaanpassing autoriseert uitsluitend ontwerpwerk. Geen T5b-implementatie, calculatedValue-schema, grafiekfunctionaliteit of nieuwe documentenmutaties zonder aparte opdracht en ontwerpgoedkeuring.
+
+
+## Actuele volgorde en TI-fase-1-poort (2026-10-12, 1.15.0)
+
+Deze aanvulling volgt de aangeleverde roadmap-export v2.1.0 en is leidend voor de verdere volgorde: geaccepteerde T5a/tekstwerkruimte → M6a-contract/GO/implementatie/acceptatie → M6b-contract/GO/implementatie/acceptatie → T5b-UX-contractgoedkeuring en aparte GO → T5b-acceptatie → aparte T5c-GO/acceptatie → aparte T5d-GO/acceptatie. De historische T1–T5-volgorde hierboven blijft geschiedenis; vroegere handmatige gates worden niet stilzwijgend afgevinkt.
+
+T5b plant één zwevend versleepbaar paneel in twee hosts, zonder plotter of documentmutatie. Ontwerp eerst een TI-36X Pro-geïnspireerd multiline toetsenbord/display, natuurlijke templates, SHIFT/ALPHA/navigatie, typed geautoriseerde bronnen, viewport/zoom/fullscreen/focus/Escape, private DEG/RAD en expliciet kopieercontract. Knoppen beperken tot de huidige T5a-taal. Bestaande invarianten, 56 aanvullende numerieke scenario’s en oorspronkelijke matrix blijven verplicht; regressies worden niet tot T5d uitgesteld. Geen nieuw textSchema vóór T5c.
+
+K1–K8 worden apart gecontracteerd en in kleine geaccepteerde pakketten uitgevoerd, met onafhankelijke oracles, Node/Edge, privacy/legacy/export en werkelijk handmatig bewijs. Afstemming: K2 ↔ M11-functies/tabellen; K4 ↔ M7-vectoren; K5 ↔ M12-calculus, met K2 als basis en K4 voor stelsels; K6 waar complexe solverresultaten nodig zijn. Een pakketacceptatie voltooit niet automatisch de corresponderende M-mijlpaal. K8 sluit pas na bewezen inventaris-/handleidingpariteit.
+
+De volledige scope, checklist en bronstatussen staan in [roadmap v2.4.0](DEVELOPMENT-ROADMAP.md). Modelkeuzes daarin zijn advies, geen vervanging van contract-/test-/reviewpoorten. Alleen documentatie gewijzigd; geen tests, project-managerimport of implementatiemilestone gestart.

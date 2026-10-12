@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.3.0 (T5b calculator/product boundary checkpoint, 2026-10-12)
-Status: T5a and full text workspace accepted, audit follow-ups completed, user-reported 573/573 Node tests passed, combined work merged to main. T5b product scope approved for design only; implementation not started. T5c–T5d and Deel B not started. Earlier manual T4/T5-prep and latest combined Edge checks remain unverified.
+Version: 2.4.0 (TI-36X Pro long-term planning, 2026-10-12)
+Status: T5a and full text workspace accepted, audit follow-ups completed, user-reported 573/573 Node tests passed, combined work merged to main. Next planned geometry gates: M6a/M6b, then separately approved T5b/T5c/T5d. TI-36X Pro parity is a future K1–K8 objective, not delivered; no implementation authorized. T5c–T5d and Deel B not started. Earlier manual T4/T5-prep and latest combined Edge checks remain unverified.
 Date: 2026-10-12
 
 ## Baseline
@@ -254,3 +254,548 @@ Implemented on `chatgpt/text-editor-full-workspace`, based on the user-selected 
 **Milestone gates unchanged:** T5b = calculate/preview only in both hosts, no graphing and no document/inline-draft mutations; T5c = `calculatedValue` with textSchema 4 and three result displays only after separate acceptance; T5d = independent integration/security/accessibility/export audit. Keep document v7, old text schemas and the mathematical contract intact. Existing acceptance scenarios in [architecture section 22](TEXT-EDITOR-ARCHITECTURE.md#22-t5--zelfstandige-en-inline-wetenschappelijke-rekenmachine-150) remain mandatory when implementing T5b. This update is documentation-only, **not an instruction to start T5b code**.
 
 **Latest project status:** T5a audited and accepted, two audit corrections resolved, full text workspace manually accepted, Node suite user-reported **573 PASS / 0 FAIL / 0 SKIP**, all merged into `main`. The latest combined Edge suite has **not** been rerun; historical Edge PASS figures belong to earlier T5a checkpoints. Earlier unaccepted/unmerged status notes above are preserved as history and superseded by this checkpoint. Next decision: approve the detailed calculator interface, then authorize a dedicated implementation branch from `main`.
+
+
+## TI-36X Pro roadmap amendment (2026-10-12, v2.4.0)
+
+Source: user-provided `From_Zero_2_Infinity_Wiskunde_Illustrator_Roadmap_TI36X_Pro_v2.1.0.json` (My Project Manager checklist v2.1.0, formatVersion 1, exported 2026-10-12T18:03:21.598Z). This is a planning export, not a unified-diff patch. Its reference to DEVELOPMENT-ROADMAP_TI36X_v2.4.0.patch names a separate file that was not supplied. This amendment incorporates the available planning content; it does not claim to have applied that missing patch or imported/synchronized any project-manager account.
+
+### Order, scope and acceptance
+
+1. Retain accepted T5a and the integrated text workspace on main. The latest combined Node result is 573 PASS / 0 FAIL / 0 SKIP; no new execution in this documentation update. Latest combined Edge execution and historical manual T4/T5-prep gates remain open.
+2. Next geometry milestones: **M6a** centroid/circumcenter/orthocenter and **M6b** incenter/incircle/Euler line/nine-point circle, with dynamic dependencies, degeneracy handling, test evidence and separate acceptance. No M6 implementation is started here.
+3. After the M6 geometry checkpoints, separately design and approve **T5b**, then accept it before **T5c**, and accept T5c before **T5d**. A sufficiently stable illustration basis is required, not completion of every M1–M20 feature.
+4. T5b is one **floating draggable scientific calculator** in two hosts (toolbar and inline `∑`), with no graph canvas, no document/selection/history/text-draft mutations and no second evaluator. Detailed dimensions, focus/Escape, viewport containment and clipboard contract remain design gates. This updates the earlier optional-dragging preference: dragging is now a planned requirement, not implemented behavior.
+5. T5b phase 1 exposes only the existing T5a language: abs/sqrt/sin/cos/tan/asin/acos/atan/ln/log10/exp/round/floor/ceil/trunc, approved operators, π/e, units and typed geometry sources. Natural templates, multiline input, SHIFT/ALPHA and navigation are design directions; no nonfunctional future-function keys may be presented as working. Private DEG/RAD overrides require a reviewed adapter contract; do not mutate document angle settings.
+6. Functional TI-36X Pro parity is a long-term objective in **K1–K8**. Exact numbers, complex values, variables, matrices and extra dimensions require new separately approved typed contracts. They do not silently expand or change accepted T5a binary64 semantics.
+7. M7 geometry/vector services, M11 plots and M12 calculus coordinate with K2/K4/K5. One shared safe function/evaluation service; graph document objects, domain/sampling/discontinuities and rendering remain in the illustrator. Tables may have different hosts but share evaluation, quota and authorization rules.
+
+All M1–M20, sets, vector, viewer/course/assessment and publishing requirements remain retained. The 105-point inventory mentioned in the export is a **concept work register including FZI requirements and out-of-scope items**, not an official TI function count and not attached here. Verification against the official TI manual remains open; this update makes no hardware parity claim.
+
+### Future calculator packages (all not started)
+
+| Package | Planned scope | Dependencies/contract gate |
+|---|---|---|
+| K1 — Exacte getallen, reële functies en TI-notaties | Breuken, algebraïsche wortel-/π-notatie en nieuwe getypeerde exacte waarden. Gaat verder dan huidige binary64-engine. | Separate exact-value/AST/codec/format contract; preserve binary64 compatibility |
+| K2 — Gebonden variabelen, geheugen en functies | Ans, calculatorgeheugen en een veilige gedeelde f(x)-dienst voor TI-tabellen en M11-plots. | Typed binding/scope, private memory/history, bounded functions shared with M11 |
+| K3 — Statistiek, regressie en verdelingen | TI-lijsten L1–L3, 1-/2-variabelestatistiek, regressiemodellen en kansverdelingen. | Typed lists, statistical definitions and independent numerical oracles |
+| K4 — Matrices en vectoren | Rekenservices voor numerieke matrix-/vectorobjecten; hergebruik waar mogelijk geometrische M7-vectorwiskunde. | Typed matrix/vector dimensions, units, conditioning; coordinate with M7 |
+| K5 — Numerieke analyse en vergelijkingoplossers | nDeriv, bepaalde integraal, numerieke solve, veeltermgraad 2/3, lineaire 2×2/3×3; afhankelijk K2 en voor stelsels K4. | K2; K4 for linear systems; K6 for complex outputs; shared M12 routines |
+| K6 — Complexe getallen | Complex a+bi, polar/rect en complexe berekeningen als apart getypeerd waardemodel. | Separate complex type and branch-cut/domain rules; no implicit coercion |
+| K7 — Getallenstelsels, constanten en conversies | TI-DEC/BIN/OCT/HEX, bitlogica, natuurkundige constanten, bredere SI/US-conversies. | Integer widths and additional SI dimensions; versioned constants/conversions |
+| K8 — Definitieve TI-36X Pro functionele pariteitsaudit | Inventaris en officiële handleiding systematisch vergelijken; alle niet-ondersteunde cases zichtbaar openhouden. | Evidence and official-manual reconciliation after relevant package acceptances |
+
+Every K package requires contract approval, independent mathematical/technical cases, Node/Edge and security/compatibility evidence, documentation/review and explicit user acceptance. K8 must classify each inventory point as supported, deviation, exception, FZI-only or outside scope; absence remains visible. No release can be marked parity-complete by checklist status alone.
+
+### Detailed new package checklist
+
+#### T5b — TI-geïnspireerde wetenschappelijke rekenmachine (fase 1) — `not_started`
+
+Een gedeelde standalone/inline calculatorcomponent op basis van de bestaande T5a-API; uitsluitend bestaande functies, GEEN tweede grafiekcanvas en GEEN documentmutatie. Zwevend en versleepbaar venster gekozen. Niet gestart; eerst apart ontwerp- en startakkoord. Afhankelijkheid: illustratorbasis voldoende stabiel, maar niet volledige M1–M20.
+
+- **Nieuw definitief UX-contract ontwerpen en goedkeuren** (`not_started`): Vervang het eerdere compacte T5b v1.0.0-ontwerp: TI-36X Pro-achtige invoer, natuurlijke templates, meerregelige weergave, SHIFT/ALPHA en navigatietoetsen; geen niet-werkende functietoetsen.
+- **Toetsen-/functie-inventaris koppelen aan T5a-AST** (`not_started`): Toegestane knoppen abs/sqrt/sin/cos/tan/asin/acos/atan/ln/log10/exp/round/floor/ceil/trunc, bewerkingen, π/e en units; toekomstige functies pas tonen zodra ze werken.
+- **Floating draggable calculator en responsief gedrag** (`not_started`): Blijft binnen viewport, werkt bij zoom/browserfullscreen, kan versleept en gesloten worden; sluit zonder canvasselectie te veranderen.
+- **Fysiek toetsenbord, toegankelijkheid en focus/Escape-contract** (`not_started`): Cursor, selectie, undo/redo privaat, toetsenmapping, SR/ARIA, IME, Escape-kindpaneel eerst en focusherstel in twee hosts.
+- **Typed geometrische bronkiezer ontwikkelen** (`not_started`): Bronselectie via geautoriseerde IDs/properties, nooit vrij objectnaamzoeken; bronlabels pas na read/display autorisatie.
+- **Private DEG/RAD-instelling zonder documentmutatie** (`not_started`): Adapter gebruikt nu documenthoekinstelling; expliciete calculatoroverride met volledige revisie/epoch-autorisatie en legacydefaults ontwerpen.
+- **Natuurlijke invoer en lineaire AST-normalisatie laten samenwerken** (`not_started`): Eerst gevalideerde inputtokens en roundtrip; geen TeX als uitvoerbare evaluator-taal. Geef geldige parsefouten en quota.
+- **Resultaatpaneel, unit/precisie, foutcode en copy-contract** (`not_started`): Zichtbare ≈/afgeronde nul; kopieer uitsluitend bij expliciete klik na actuele autorisatie en zonder verboden labels.
+- **Twee hostadapters en private berekeningsgeschiedenis** (`not_started`): Hoofdwerkbalk/standalone plus ∑ binnen tekst; calculator-undo los van document undo; zonder eigen berekeningsmotor.
+- **Security- en invarianttests in Node/Edge** (`not_started`): Geen document-JSON/revision/selectie/history/TextDraft-mutaties; bewijs hostpariteit, bronintrekking, permissiies, quota, clipboard en fullscreen.
+- **Afzonderlijke T5b-rapportage en gebruikersacceptatie** (`not_started`): Meet echte testresultaten, registreer browsertests vs handmatige nog open controles, ontvang GO voor T5c.
+
+#### T5c — Berekende velden in tekst (bestaande milestone) — `not_started`
+
+Na afzonderlijke T5b-acceptatie; calculatedValue onder textSchema 4 binnen document v7; één gedeelde calculatorcomponent, geen tweede implementatie.
+
+- **Schema-4 calculatedValue payload en permissies definitief ontwerpen** (`not_started`): Versionering, typed bronnen, AST/format/marks, geen cached truth of illegale writes.
+- **Invoegen vanuit ∑ alleen na expliciete T5c-GO** (`not_started`): Resultaat/formule+resultaat/substitutie+resultaat als getypeerd fragment in private tekstdraft.
+- **Bestaand berekend tekstveld heropenen en bewerken** (`not_started`): Annuleren exact ongewijzigd; commit is één teksttransactie met correct undo/redo.
+- **Live bronupdate en autorisatieregressie** (`not_started`): Onbeschikbare en revoked bron geeft redactie; geen data in clipboard/DOM/offline export.
+- **JSON v7, history, remap, offline SVG/PNG en legacy** (`not_started`): Volledig roundtripbewijs voor oud/nieuw document en drie weergavemodi.
+- **T5c rapport en afzonderlijke acceptatie** (`not_started`): Stop voor T5d tot gebruiker akkoord geeft.
+
+#### T5d — Calculatorintegratie en beveiligingsaudit (bestaande milestone) — `not_started`
+
+Integratieaudit na T5c. Niet gebruiken als uitstel van tests die al bij T5b/T5c verplicht zijn.
+
+- **Node/Edge-matrix in beide calculatorhosts** (`not_started`): Exacte bron-, unit-, hoek- en binary64-pariteit plus volledige regressies.
+- **Restricted privacy, bronintrekking en session epoch** (`not_started`): Geen verboden ID/naam/waarde via clipboard, DOM, foutmelding, diagnostics of export.
+- **Accessible keyboard, focus, IME en Escape bij fullscreen** (`not_started`): Browsers, schermgroottes en keyboardroutes aantoonbaar testen, handmatige bevindingen expliciet.
+- **Opslag/export, documenthistory en legacy regressie** (`not_started`): Geen ongeautoriseerde mutaties, duplicate evaluator of verborgen documentdata.
+- **Rapport, resterende risico’s en finale gebruikersacceptatie** (`not_started`): T5d-REPORT met exacte resultaten, beperkingen en expliciete finale GO.
+
+#### Gedeelde functieservice — M11/M12 en K2/K5 — `not_started`
+
+De calculator heeft geen grafiekcanvas; functiedefinities en numerieke analysemethoden mogen gedeeld worden met de illustrator. Coördineer vooral met de bestaande M11- en M12-taken.
+
+- **Eén veilig functiedefinitie- en variabelencontract** (`not_started`): K2 definieert getypeerde f(x), variabelen en begrensde evaluatie; M11 kan dit hergebruiken zonder nieuwe evaluator.
+- **Documentobject voor functiegrafiek uitsluitend in illustrator** (`not_started`): M11 beheert sampling, domein, discontinuïteiten, rendering, assen en export; calculator beheert geen canvas.
+- **TI-functietabel hergebruikt dezelfde K2-service** (`not_started`): Calculator en editor kunnen tabellen presenteren, maar delen evaluatielogica en numerieke quota.
+- **Afgeleiden, integralen en nulpuntberekeningen delen K5-services** (`not_started`): Beveiligde algemene numerieke routine; verschil tussen numerieke benadering en exact wiskundig bewijs tonen.
+- **Matrix/vector-lagen afstemmen op M7 geometrie** (`not_started`): Geen tweede onafhankelijke vectorformuleketen; scheid numerieke objecten van tekenobjecten.
+
+#### K1 — Exacte getallen, reële functies en TI-notaties — `not_started`
+
+Breuken, algebraïsche wortel-/π-notatie en nieuwe getypeerde exacte waarden. Gaat verder dan huidige binary64-engine. Voor productie: afzonderlijk goedgekeurd contract, onafhankelijke mathematische/technische testcases, Node/Edge-testresultaten, security/regressie, documentatie, review en expliciete acceptatie; niets stilzwijgend als voltooid markeren.
+
+- **Contract voor getypeerde exacte reële resultaten ontwerpen** (`not_started`): Rationaal, wortel/π, afronding, vereenvoudiging, grenzen, negatief nul, mixed physical/abstract dimensions.
+- **AST/schema/serialisatie en veilige exacte conversie ontwerpen** (`not_started`): Versioneer parser en printers; scheid getoond exact van binary64; compatibel met T5a-invariant en T5c.
+- **Reële extra functies en getaltheorie implementeren** (`not_started`): n-de wortel, factorial, nPr/nCr, gcd/lcm, min/max, iPart/fPart, modulo; quotas.
+- **Notaties MathPrint/CLASSIC, fraction/decimal, FIX/FLOAT/SCI/ENG** (`not_started`): Verschil tussen TI-classic en huidige operatorprioriteit expliciet; geen stille parserbreuk.
+- **Node/Edge + onafhankelijke exacte oracles** (`not_started`): Exactheid bij half-way, grote getallen, dimensiemismatch, onderloop en nooit floats als exacte wortels verkopen.
+- **K1-acceptatie en documentatie** (`not_started`): Eerst vrijgave poort na contract-, review- en testresultaten.
+
+#### K2 — Gebonden variabelen, geheugen en functies — `not_started`
+
+Ans, calculatorgeheugen en een veilige gedeelde f(x)-dienst voor TI-tabellen en M11-plots. Voor productie: afzonderlijk goedgekeurd contract, onafhankelijke mathematische/technische testcases, Node/Edge-testresultaten, security/regressie, documentatie, review en expliciete acceptatie; niets stilzwijgend als voltooid markeren.
+
+- **Typed locals, Ans en naam-/scopebeleid ontwerpen** (`not_started`): Scheid functies/variabelen van geometrische ID-bronnen; geen vrij source name lookup.
+- **Geheugen, herhaalde operatie en private historie implementeren** (`not_started`): Session-only tenzij latere privacytoestemming; veilige evaluatie/undo zonder document mutatie.
+- **Functies f(x), evaluatie en bounded iteratie Σ/Π** (`not_started`): Geen eval/new Function; limieten voor diepte, stappen, iteraties en parameterwaarden.
+- **Functietabellen en evaluatiedienst voor M11** (`not_started`): Delen van kern met illustrator, onafhankelijke hostadapter en veilige formatting.
+- **Tests variabelenbinding/kwota/pariteit/revocation** (`not_started`): Floating calc ↔ tekst ↔ grafiek; geen actor-/documentlekkage.
+- **K2-acceptatie** (`not_started`): Een release die niet stilzwijgend M11 als voltooid markeert.
+
+#### K3 — Statistiek, regressie en verdelingen — `not_started`
+
+TI-lijsten L1–L3, 1-/2-variabelestatistiek, regressiemodellen en kansverdelingen. Voor productie: afzonderlijk goedgekeurd contract, onafhankelijke mathematische/technische testcases, Node/Edge-testresultaten, security/regressie, documentatie, review en expliciete acceptatie; niets stilzwijgend als voltooid markeren.
+
+- **Getypeerde lijsten en datastructuurcontract** (`not_started`): List memory, toegelaten grootte en missing/invalid behavior.
+- **1D- en 2D-statistiek implementeren** (`not_started`): Populatie-/steekproef SD, quartielen, frequenties en correlaties.
+- **Lineair, kwadratisch, kubisch, log, macht en exponentieel regressie** (`not_started`): Numerieke conditionering, domeinen en residudiagnostiek.
+- **Normal-, binomiale en Poisson-pdf/cdf/inverse** (`not_started`): TI-getrouwe parameter- en foutsemantiek, tails en integergrenzen.
+- **Datapresentatie, tabellen en modebediening** (`not_started`): Alleen de goedgekeurde statistiekfuncties zichtbaar als werkend.
+- **Onafhankelijke referentietests en acceptatie** (`not_started`): Vergelijk betrouwbaar orakel plus handmatige scenario’s.
+
+#### K4 — Matrices en vectoren — `not_started`
+
+Rekenservices voor numerieke matrix-/vectorobjecten; hergebruik waar mogelijk geometrische M7-vectorwiskunde. Voor productie: afzonderlijk goedgekeurd contract, onafhankelijke mathematische/technische testcases, Node/Edge-testresultaten, security/regressie, documentatie, review en expliciete acceptatie; niets stilzwijgend als voltooid markeren.
+
+- **Matrix- en vectortypecontracten vastleggen** (`not_started`): Toelaatbare dimensies, numerieke grenzen, unit-regels, serialisatie/formatter.
+- **Basisalgebra: plus/min/scalair, matrixproduct en matrix × vector** (`not_started`): Valideer maten, associativiteit en geconditioneerde gevallen.
+- **Determinant, inverse, transpose, REF/RREF** (`not_started`): Pivoting, rank, tolerantie en singulariteit expliciet.
+- **Vector dot/cross/norm en coördinaatvormen** (`not_started`): M7 geometrie behouden, geen mutatie via calculatorwaarde.
+- **Aparte matrix-/vectoreditor en resultatenpaneel** (`not_started`): A11y keyboard; geen dubbele wiskundekern.
+- **Nummerieke grensgevallen en acceptatie** (`not_started`): Onafhankelijke matrixoracles en compatibiliteit.
+
+#### K5 — Numerieke analyse en vergelijkingoplossers — `not_started`
+
+nDeriv, bepaalde integraal, numerieke solve, veeltermgraad 2/3, lineaire 2×2/3×3; afhankelijk K2 en voor stelsels K4. Voor productie: afzonderlijk goedgekeurd contract, onafhankelijke mathematische/technische testcases, Node/Edge-testresultaten, security/regressie, documentatie, review en expliciete acceptatie; niets stilzwijgend als voltooid markeren.
+
+- **Convergentie-/domein- en foutcontract ontwerpen** (`not_started`): Root finding, integrator, derivative; budgetten, singulariteit, status/residual, geen schijnexactheid.
+- **Numerieke afgeleiden en integralen implementeren** (`not_started`): Gezamenlijke diensten met illustrator M12 zonder tweede evaluator.
+- **Numerieke nulpunten en iteratieve solvers** (`not_started`): Bisection/newton-bracket veilige fallbacks; detectie van niet-convergentie.
+- **Kwadraatische en kubische oplossingen incl complex beleid** (`not_started`): Roots, degenerate coefficients, multipliciteit, stabiele formules; afhankelijk K6 waar complex nodig.
+- **Lineaire stelsels 2×2 en 3×3 via K4 matrixdiensten** (`not_started`): Unieke, onmogelijke en oneindige oplossingen onderscheiden.
+- **Crosschecks M11 grafieken/M12 calculus en tests** (`not_started`): Eén algoritmisch contract; tests met onafhankelijke referenties en units.
+- **K5-acceptatie** (`not_started`): Per solver bewijs residu; gebruiker accepteert expliciet.
+
+#### K6 — Complexe getallen — `not_started`
+
+Complex a+bi, polar/rect en complexe berekeningen als apart getypeerd waardemodel. Voor productie: afzonderlijk goedgekeurd contract, onafhankelijke mathematische/technische testcases, Node/Edge-testresultaten, security/regressie, documentatie, review en expliciete acceptatie; niets stilzwijgend als voltooid markeren.
+
+- **Complex type, eenheden, ronding en foutregels ontwerpen** (`not_started`): T5a blijft een reële kern; geen stille coercie van complexe waarden.
+- **Complexe rekenoperatoren en machten implementeren** (`not_started`): Re/im/magnitude/conjugate/arg met onafhankelijke oracles.
+- **RECT/POLAR en complexe numerieke formatkeuzes** (`not_started`): Betrouwbare conversies, branch cuts en hoekmodus.
+- **Koppelen aan geheugen, vergelijkingen en matrixdiensten** (`not_started`): Expliciete feature gates per typecombinatie.
+- **K6-test- en acceptatiematrix** (`not_started`): Near-zero, branch cuts, overflow/underflow en foutsemantiek.
+
+#### K7 — Getallenstelsels, constanten en conversies — `not_started`
+
+TI-DEC/BIN/OCT/HEX, bitlogica, natuurkundige constanten, bredere SI/US-conversies. Voor productie: afzonderlijk goedgekeurd contract, onafhankelijke mathematische/technische testcases, Node/Edge-testresultaten, security/regressie, documentatie, review en expliciete acceptatie; niets stilzwijgend als voltooid markeren.
+
+- **Getypte gehele getallen en bitbreedtecontract** (`not_started`): TI-gedrag, signed/unsigned en 2-complement; geen onbedoelde JavaScript bitwise 32-bit.
+- **DEC/BIN/OCT/HEX, AND/OR/XOR/NOT en verdere bitfuncties** (`not_started`): UI-modi, veilig parserpad en testbare grenzen.
+- **Extra fysieke dimensies massa/tijd/temperatuur enz.** (`not_started`): SI-dimensiemodel buiten (Lphysical,Labstract,A); schema versie en compatibiliteit bepalen.
+- **Temperatuur en samengestelde/US-eenheden** (`not_started`): Affine conversies, snelheid, energie, druk en volume zonder dimensiefouten.
+- **Versioneerde natuurkundige constantencatalogus** (`not_started`): Kies expliciet historische TI-pariteit vs actuele CODATA-waarden; bron en datum vastleggen.
+- **UI-menu en onafhankelijke referentietests** (`not_started`): Alleen geïmplementeerde modi activeren, grensconversies controleren.
+- **K7-acceptatie** (`not_started`): Bevestig dat bestaande geometry scale unit en T5a parser niet regressief veranderd zijn.
+
+#### K8 — Definitieve TI-36X Pro functionele pariteitsaudit — `not_started`
+
+Inventaris en officiële handleiding systematisch vergelijken; alle niet-ondersteunde cases zichtbaar openhouden. Voor productie: afzonderlijk goedgekeurd contract, onafhankelijke mathematische/technische testcases, Node/Edge-testresultaten, security/regressie, documentatie, review en expliciete acceptatie; niets stilzwijgend als voltooid markeren.
+
+- **Elk inventarispunt classificeren met implementatie- en testbewijs** (`not_started`): 105 items zijn werkregister incl projectrequirements; markeer TI-norm, afwijking, uitzondering, buiten-scope.
+- **TI-handleiding voorbeeldmatrix en onafhankelijke oracles** (`not_started`): Pariteit testen voor invoer/resultaat/domeinen/modes; ontbrekende functies blijven open.
+- **Restricted security, clipboard, session, lifecycle, privacy** (`not_started`): Objectrechten, revocation en caching overal uniform; geen bronlekken.
+- **Node- en Edge-regressies per pakket plus volledig geïntegreerd** (`not_started`): Leg exacte aantallen, platforms, regressies, visueel/hardwarematig bewijs vast.
+- **Toegankelijkheid, keyboard, MathPrint, fullscreen en offline export** (`not_started`): Realistische manual IME/AT/OS clipboard, geen verzonnen PASS.
+- **Eindrapport en gebruikersacceptatie** (`not_started`): TI-doel alleen voltooid als functionele pariteit aantoonbaar is.
+
+### Codex model advice in the supplied plan
+
+The export recommends GPT-6 Hoog for mathematics, architecture, security and critical tests; GPT-6.1 Sol Medium for bounded UI work; GPT-6.1 Sol Licht only for simple documentation/styling. These are user-supplied planning recommendations, not a guarantee of availability/quality and not evidence of which model performed historical work. Actual model choice does not bypass review, tests or milestone authorization.
+
+### Source-status ledger (not a new verification)
+
+Statuses below reproduce the supplied export and preserve stable task references, including duplicate names with different references. They do not overwrite the individual evidence in existing reports. In particular parent completed status may coexist with an open manual-acceptance child; historical test totals are historical, not current-suite results. The export's not-started publication task describes the situation before this commit; successful publication of this documentation will be reported by commit SHA, without editing the external export or claiming project-manager synchronization.
+
+<details>
+<summary>Task references, names and original statuses</summary>
+
+| Ref | Task | Export status |
+|---|---|---|
+| `tasks-1` | Geverifieerde huidige basis — 9 oktober 2026 | `completed` |
+| `tasks-2` | ↳ Gap-analyse M1–M20 afgerond | `completed` |
+| `tasks-3` | ↳ 133 Node-tests PASS | `completed` |
+| `tasks-4` | ↳ Edge-suite PASS | `completed` |
+| `tasks-5` | ↳ Basisconstructies en metingen aanwezig | `completed` |
+| `tasks-6` | M1 — Rechthoekselectie (marquee) | `completed` |
+| `tasks-7` | ↳ Regels en falende tests | `completed` |
+| `tasks-8` | ↳ Selectieresolver en overlay | `completed` |
+| `tasks-9` | ↳ Pointer- en toetsenbordbediening | `completed` |
+| `tasks-10` | ↳ M1 en M1.1 — handmatig aanvaard | `completed` |
+| `tasks-11` | ↳ M1 en M1.1 — handmatig aanvaard | `completed` |
+| `tasks-12` | M2a — Permissiecontract | `completed` |
+| `tasks-13` | ↳ Rollen en capabilities definiëren | `completed` |
+| `tasks-14` | ↳ Negatieve contracttests | `completed` |
+| `tasks-15` | ↳ Technische verificatie PASS; handmatige acceptatie waar nodig bevestigen | `not_started` |
+| `tasks-16` | M2b — Permissiehandhaving | `completed` |
+| `tasks-17` | ↳ Centrale command-/capabilitygrens | `completed` |
+| `tasks-18` | ↳ API-bypass en UI-tests | `completed` |
+| `tasks-19` | ↳ Technische verificatie PASS; handmatige acceptatie waar nodig bevestigen | `not_started` |
+| `tasks-20` | M2c — Editor UI/UX modernisering | `completed` |
+| `tasks-21` | ↳ M2c.1 — Header, gereedschapscategorieën, lagen | `completed` |
+| `tasks-22` | ↳ M2c.2 — Contextuele eigenschappen en assenstelsel | `completed` |
+| `tasks-23` | ↳ M2c.3 — Navigatie, zoom, responsieve panelen | `completed` |
+| `tasks-24` | ↳ M2c.4 — Browser-, visuele en toegankelijkheidstests | `completed` |
+| `tasks-25` | ↳ Documenteer expliciete gebruikersacceptatie per M2c-checkpoint | `not_started` |
+| `tasks-26` | M3a — History- en importbeleid | `completed` |
+| `tasks-27` | ↳ Beslis undo/redo voor import/Nieuw | `completed` |
+| `tasks-28` | ↳ Compatibiliteits- en historytests | `completed` |
+| `tasks-29` | ↳ Technische verificatie PASS; handmatige acceptatie waar nodig bevestigen | `not_started` |
+| `tasks-30` | M3b — Blijvende groepen | `completed` |
+| `tasks-31` | ↳ Groepsmodel en schema-ADR | `completed` |
+| `tasks-32` | ↳ Groepsselectie en rigid move | `completed` |
+| `tasks-33` | ↳ Roundtrip, undo/redo en Edge | `completed` |
+| `tasks-34` | ↳ Technische verificatie PASS; handmatige acceptatie waar nodig bevestigen | `not_started` |
+| `tasks-35` | M3c — Lagen | `completed` |
+| `tasks-36` | ↳ Laagmodel en beheer | `completed` |
+| `tasks-37` | ↳ Rendering/hit/export controleren | `completed` |
+| `tasks-38` | ↳ Technische verificatie PASS; handmatige acceptatie waar nodig bevestigen | `not_started` |
+| `tasks-39` | M4a — Constructiecontract | `completed` |
+| `tasks-40` | ↳ Schema/capabilities/stabiele referenties | `completed` |
+| `tasks-41` | ↳ Foutdiagnostiek en graphstress | `completed` |
+| `tasks-42` | ↳ Dependencyboom en relationeditor | `completed` |
+| `tasks-43` | ↳ Technische verificatie PASS; handmatige acceptatie waar nodig bevestigen | `not_started` |
+| `tasks-44` | M4b — Semantische commando’s | `completed` |
+| `tasks-45` | ↳ Versioned create/update/operator events | `completed` |
+| `tasks-46` | ↳ Methodebewijs versus undo scheiden | `completed` |
+| `tasks-47` | ↳ Replay- en permissietests | `completed` |
+| `tasks-48` | ↳ Technische verificatie PASS; handmatige acceptatie waar nodig bevestigen | `not_started` |
+| `tasks-49` | M5a — Gekoppelde geometrie en paden | `completed` |
+| `tasks-50` | ↳ Lijn tussen gekoppelde punten | `completed` |
+| `tasks-51` | ↳ Punt op segment/cirkel | `completed` |
+| `tasks-52` | ↳ Roundtrip, cycles en rechten | `completed` |
+| `tasks-53` | ↳ Technische verificatie PASS; handmatige acceptatie waar nodig bevestigen | `not_started` |
+| `tasks-54` | Post-M5a UX — Raster, constructiekleuren en instructies | `completed` |
+| `tasks-55` | ↳ Raster standaard aan bij nieuw document | `completed` |
+| `tasks-56` | ↳ Constructieobjecten standaard rood; stijloverrides bewaren | `completed` |
+| `tasks-57` | ↳ Stapsgewijze instructies in eigenschappenpaneel voor alle tools | `completed` |
+| `tasks-58` | ↳ Node 302/302 en Edge 34 modules PASS | `completed` |
+| `tasks-59` | ↳ Handmatige acceptatie: raster, kleuren, instructies, Escape, fullscreen | `completed` |
+| `tasks-60` | M5b — Dynamische snijpunten en cirkels | `completed` |
+| `tasks-61` | ↳ Lijn-lijn snijpunten | `completed` |
+| `tasks-62` | ↳ Lijn-cirkel en cirkel-cirkel | `completed` |
+| `tasks-63` | ↳ Afgeleide cirkels | `completed` |
+| `tasks-64` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `completed` |
+| `tasks-65` | M5b uitbreiding — Raaklijn op gekoppeld cirkelpunt | `completed` |
+| `tasks-66` | ↳ Technisch en wiskundig contract voor raaklijngevallen | `completed` |
+| `tasks-67` | ↳ Implementatie tangent op gekoppeld cirkelpunt | `completed` |
+| `tasks-68` | ↳ Node/Edge-regressies en gebruikersacceptatie | `completed` |
+| `tasks-69` | Eenheden, schaal en meetnotatie | `completed` |
+| `tasks-70` | ↳ Legacy-documenten en schema/migratiebeleid bepalen | `completed` |
+| `tasks-71` | ↳ Instellingen eenheid, schaal, decimalen in assenstelseleigenschappen | `completed` |
+| `tasks-72` | ↳ ↳ Abstracte eenheid veranderen van e naar u | `completed` |
+| `tasks-73` | ↳ ↳ Demensiloze eenheid invoeren | `completed` |
+| `tasks-74` | ↳ Lengte, omtrek, oppervlakte, hoeken en labels correct formatteren | `completed` |
+| `tasks-75` | ↳ Zoom onafhankelijk van schaal; regressies en acceptatie | `completed` |
+| `tasks-76` | Architectuuraudit en consolidatie | `completed` |
+| `tasks-77` | ↳ Stap 1 — ChatGPT Online voert architectuuraudit uit. | `completed` |
+| `tasks-78` | ↳ Stap 2 — Codex voert de goedgekeurde refactoring uit. | `completed` |
+| `tasks-79` | ↳ ↳ R1 — Verwijderen van overbodige bestanden | `completed` |
+| `tasks-80` | ↳ ↳ R2 — Consolidatie van kleine helpermodules | `completed` |
+| `tasks-81` | ↳ ↳ R3 — Modularisering van editor.js | `completed` |
+| `tasks-82` | ↳ ↳ R4 — Afhankelijkheden en scriptlaadvolgorde | `completed` |
+| `tasks-83` | ↳ Stap 3 — Ik controleer onafhankelijk het resultaat. | `completed` |
+| `tasks-84` | Gelijkmatige puntenverdeling op cirkel en herbruikbare geometrische kern | `completed` |
+| `tasks-85` | ↳ 1 - Architectuurcontrole | `completed` |
+| `tasks-86` | ↳ 2 - Implementatie | `completed` |
+| `tasks-87` | ↳ 3 - Controle | `completed` |
+| `tasks-88` | X-as en Y-as als universele geometrische referenties | `completed` |
+| `tasks-89` | Dynamische tekstobjecten | `in_progress` |
+| `tasks-90` | ↳ T0: Verplichte architectuuranalyse | `completed` |
+| `tasks-91` | ↳ T1 — Rich-texteditor en gestructureerd tekstmodel | `completed` |
+| `tasks-92` | ↳ T2 — Inline wiskundige symbolen en formules | `completed` |
+| `tasks-93` | ↳ T3 — Inline dynamische waarden | `completed` |
+| `tasks-94` | ↳ T4 — Live preview, export en editorafwerking | `not_started` |
+| `tasks-95` | ↳ Modernisering teksteditor en herbruikbare wiskundige invoerarchitectuur | `not_started` |
+| `tasks-96` | ↳ T5 — Wetenschappelijke rekenmachine en dynamische berekeningen | `not_started` |
+| `ti26-4004` | T5a en tekstwerkruimte — actuele basis (12 oktober 2026) | `completed` |
+| `ti26-4001` | ↳ T5a — Veilige rekenmotor en bronadapter geaccepteerd | `completed` |
+| `ti26-4002` | ↳ Volledige driekoloms tekstwerkruimte goedgekeurd en gemerged | `completed` |
+| `ti26-4003` | ↳ Laatste Node-regressie: 573 PASS volgens gebruikersrapport | `completed` |
+| `ti26-4010` | TI-36X Pro — Productplanning en roadmappublicatie (v2.4.0) | `in_progress` |
+| `ti26-4005` | ↳ Conceptfunctie-inventaris v1.0.0 opgesteld | `completed` |
+| `ti26-4006` | ↳ Roadmaptoevoeging v2.4.0 inhoudelijk uitgewerkt | `completed` |
+| `ti26-4007` | ↳ Documentatiepatch laten toepassen op GitHub main | `not_started` |
+| `ti26-4008` | ↳ TI-handleiding per controlegroep verifiëren | `not_started` |
+| `ti26-4009` | ↳ Synchroniseer roadmappaden en My Project Manager zonder doublures | `not_started` |
+| `ti26-4013` | Nog open kwaliteits- en acceptatiecontroles | `not_started` |
+| `ti26-4011` | ↳ Gecombineerde Edge-regressies op actuele main uitvoeren | `not_started` |
+| `ti26-4012` | ↳ Handmatige T4/T5-prep en tekst/focus/exportpunten nalopen | `not_started` |
+| `tasks-97` | M6a — Driehoekcentra | `not_started` |
+| `tasks-98` | ↳ Zwaartepunt | `not_started` |
+| `tasks-99` | ↳ Middelpunt omgeschreven cirkel | `not_started` |
+| `tasks-100` | ↳ Hoogtepunt | `not_started` |
+| `tasks-101` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-102` | M6b — Uitgebreide driehoekconstructies | `not_started` |
+| `tasks-103` | ↳ Incenter en ingeschreven cirkel | `not_started` |
+| `tasks-104` | ↳ Eulerrechte | `not_started` |
+| `tasks-105` | ↳ Negenpuntscirkel | `not_started` |
+| `tasks-106` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `ti26-4025` | T5b — TI-geïnspireerde wetenschappelijke rekenmachine (fase 1) | `not_started` |
+| `ti26-4014` | ↳ Nieuw definitief UX-contract ontwerpen en goedkeuren | `not_started` |
+| `ti26-4015` | ↳ Toetsen-/functie-inventaris koppelen aan T5a-AST | `not_started` |
+| `ti26-4016` | ↳ Floating draggable calculator en responsief gedrag | `not_started` |
+| `ti26-4017` | ↳ Fysiek toetsenbord, toegankelijkheid en focus/Escape-contract | `not_started` |
+| `ti26-4018` | ↳ Typed geometrische bronkiezer ontwikkelen | `not_started` |
+| `ti26-4019` | ↳ Private DEG/RAD-instelling zonder documentmutatie | `not_started` |
+| `ti26-4020` | ↳ Natuurlijke invoer en lineaire AST-normalisatie laten samenwerken | `not_started` |
+| `ti26-4021` | ↳ Resultaatpaneel, unit/precisie, foutcode en copy-contract | `not_started` |
+| `ti26-4022` | ↳ Twee hostadapters en private berekeningsgeschiedenis | `not_started` |
+| `ti26-4023` | ↳ Security- en invarianttests in Node/Edge | `not_started` |
+| `ti26-4024` | ↳ Afzonderlijke T5b-rapportage en gebruikersacceptatie | `not_started` |
+| `ti26-4032` | T5c — Berekende velden in tekst (bestaande milestone) | `not_started` |
+| `ti26-4026` | ↳ Schema-4 calculatedValue payload en permissies definitief ontwerpen | `not_started` |
+| `ti26-4027` | ↳ Invoegen vanuit ∑ alleen na expliciete T5c-GO | `not_started` |
+| `ti26-4028` | ↳ Bestaand berekend tekstveld heropenen en bewerken | `not_started` |
+| `ti26-4029` | ↳ Live bronupdate en autorisatieregressie | `not_started` |
+| `ti26-4030` | ↳ JSON v7, history, remap, offline SVG/PNG en legacy | `not_started` |
+| `ti26-4031` | ↳ T5c rapport en afzonderlijke acceptatie | `not_started` |
+| `ti26-4038` | T5d — Calculatorintegratie en beveiligingsaudit (bestaande milestone) | `not_started` |
+| `ti26-4033` | ↳ Node/Edge-matrix in beide calculatorhosts | `not_started` |
+| `ti26-4034` | ↳ Restricted privacy, bronintrekking en session epoch | `not_started` |
+| `ti26-4035` | ↳ Accessible keyboard, focus, IME en Escape bij fullscreen | `not_started` |
+| `ti26-4036` | ↳ Opslag/export, documenthistory en legacy regressie | `not_started` |
+| `ti26-4037` | ↳ Rapport, resterende risico’s en finale gebruikersacceptatie | `not_started` |
+| `tasks-107` | Verzamelingen — semantische kern en Venn/Euler | `not_started` |
+| `tasks-108` | ↳ Getypeerd semantisch verzamelingenmodel | `not_started` |
+| `tasks-109` | ↳ Venn-diagrammen met 2–3 verzamelingen | `not_started` |
+| `tasks-110` | ↳ Euler-diagrammen voor inclusie en disjunctie | `not_started` |
+| `tasks-111` | ↳ Correcte gebiedsinkleuring en elementplaatsing | `not_started` |
+| `tasks-112` | ↳ Toegankelijkheid, toetsen, opslag en acceptatie | `not_started` |
+| `tasks-113` | Verzamelingen — getallenlijn | `not_started` |
+| `tasks-114` | ↳ Intervalmodel en grenssemantiek | `not_started` |
+| `tasks-115` | ↳ Getallenlijnweergave met eindpuntmarkeringen | `not_started` |
+| `tasks-116` | ↳ Unie, doorsnede, verschil en losse componenten | `not_started` |
+| `tasks-117` | ↳ Interacties, zoom, tests en acceptatie | `not_started` |
+| `tasks-118` | M7a–c — Starre transformaties | `not_started` |
+| `tasks-119` | ↳ Verschuiven via vector of dx/dy | `not_started` |
+| `tasks-120` | ↳ Spiegelen in lijn(stuk) | `not_started` |
+| `tasks-121` | ↳ Draaien om gekozen centrum | `not_started` |
+| `tasks-122` | ↳ Transformatietests | `not_started` |
+| `tasks-123` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-124` | M8a — Ellipsen | `not_started` |
+| `tasks-125` | ↳ Brandpunten en afstandsom | `not_started` |
+| `tasks-126` | ↳ Punt-op-ellips en brandpuntbewerking | `not_started` |
+| `tasks-127` | ↳ Hit, snap, render, import/export | `not_started` |
+| `tasks-128` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-129` | M8b — Parallellogram | `not_started` |
+| `tasks-130` | ↳ Twee zijden en ingesloten hoek | `not_started` |
+| `tasks-131` | ↳ Live lengte-/hoekaanduiding | `not_started` |
+| `tasks-132` | ↳ Degeneraties en roundtrip | `not_started` |
+| `tasks-133` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-134` | Regelmatige veelhoeken | `not_started` |
+| `tasks-135` | ↳ Contract n>=3, degeneratie, bronkoppelingen | `not_started` |
+| `tasks-136` | ↳ Constructietool en inspector voor n, straal en rotatie | `not_started` |
+| `tasks-137` | ↳ Zijden, hoeken, omtrek en oppervlakte verifiëren | `not_started` |
+| `tasks-138` | ↳ Node/Edge, undo/redo, import/export en acceptatie | `not_started` |
+| `tasks-139` | M7d–g — Algemene transformaties en vectoren | `not_started` |
+| `tasks-140` | ↳ Uniform en niet-uniform schalen | `not_started` |
+| `tasks-141` | ↳ Compositie, inverse en geschiedenis | `not_started` |
+| `tasks-142` | ↳ Vectorbewerkingen | `not_started` |
+| `tasks-143` | ↳ Matrixtransformaties | `not_started` |
+| `tasks-144` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-145` | Vectoren — gekoppelde vectoren en vectoralgebra | `not_started` |
+| `tasks-146` | ↳ M7a: vrije versus gebonden vector en componentencontract | `not_started` |
+| `tasks-147` | ↳ M7a: dynamische vector AB en componentweergave | `not_started` |
+| `tasks-148` | ↳ M7f: som, verschil en scalair vermenigvuldigen | `not_started` |
+| `tasks-149` | ↳ M7f: inproduct, hoek en projectie; nulvectorgevallen | `not_started` |
+| `tasks-150` | ↳ Kop-staart, parallellogramregel en projectievisualisatie | `not_started` |
+| `tasks-151` | ↳ Node/Edge, permissies, replay en acceptatie | `not_started` |
+| `tasks-152` | M9 — Meetkundige plaatsen | `not_started` |
+| `tasks-153` | ↳ Padparameter en trace | `not_started` |
+| `tasks-154` | ↳ Locus van afhankelijk punt | `not_started` |
+| `tasks-155` | ↳ Numerieke en prestatietests | `not_started` |
+| `tasks-156` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-157` | M10a–b — Meerdere assenstelsels | `not_started` |
+| `tasks-158` | ↳ Meerdere coördinatenframes | `not_started` |
+| `tasks-159` | ↳ Vrije basisvectoren e1/e2 | `not_started` |
+| `tasks-160` | ↳ Interactieve basis-editor | `not_started` |
+| `tasks-161` | ↳ Numerieke validatie | `not_started` |
+| `tasks-162` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-163` | M11a — Veilige functiegrafieken | `not_started` |
+| `tasks-164` | ↳ Veilige formuleparser | `not_started` |
+| `tasks-165` | ↳ Cartesiaanse grafiek y=f(x) | `not_started` |
+| `tasks-166` | ↳ Functies als gedeeld object | `not_started` |
+| `tasks-167` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `ti26-4044` | Gedeelde functieservice — M11/M12 en K2/K5 | `not_started` |
+| `ti26-4039` | ↳ Eén veilig functiedefinitie- en variabelencontract | `not_started` |
+| `ti26-4040` | ↳ Documentobject voor functiegrafiek uitsluitend in illustrator | `not_started` |
+| `ti26-4041` | ↳ TI-functietabel hergebruikt dezelfde K2-service | `not_started` |
+| `ti26-4042` | ↳ Afgeleiden, integralen en nulpuntberekeningen delen K5-services | `not_started` |
+| `ti26-4043` | ↳ Matrix/vector-lagen afstemmen op M7 geometrie | `not_started` |
+| `tasks-168` | M11b — Parametrische functies | `not_started` |
+| `tasks-169` | ↳ x(t), y(t) met domein | `not_started` |
+| `tasks-170` | ↳ Dynamisch grafiekpunt | `not_started` |
+| `tasks-171` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-172` | M11c — Impliciete krommen | `not_started` |
+| `tasks-173` | ↳ F(x,y)=0 solvercontract | `not_started` |
+| `tasks-174` | ↳ Impliciete contouren | `not_started` |
+| `tasks-175` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-176` | Verzamelingen — coördinatenvlak | `not_started` |
+| `tasks-177` | ↳ Veilige expressies en gebiedscontract na M11 | `not_started` |
+| `tasks-178` | ↳ Open/gesloten grenzen en arcering | `not_started` |
+| `tasks-179` | ↳ Unie, doorsnede, verschil in vlak | `not_started` |
+| `tasks-180` | ↳ Numerieke randgevallen, browser-tests en acceptatie | `not_started` |
+| `tasks-181` | M12a–c — Analyse en calculus | `not_started` |
+| `tasks-182` | ↳ Nulpunten, snijpunten en extrema | `not_started` |
+| `tasks-183` | ↳ Secant, raaklijn en afgeleide | `not_started` |
+| `tasks-184` | ↳ Integralen en Riemannsommen | `not_started` |
+| `tasks-185` | ↳ Wiskundige grensgevallen testen | `not_started` |
+| `tasks-186` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `ti26-4051` | K1 — Exacte getallen, reële functies en TI-notaties | `not_started` |
+| `ti26-4045` | ↳ Contract voor getypeerde exacte reële resultaten ontwerpen | `not_started` |
+| `ti26-4046` | ↳ AST/schema/serialisatie en veilige exacte conversie ontwerpen | `not_started` |
+| `ti26-4047` | ↳ Reële extra functies en getaltheorie implementeren | `not_started` |
+| `ti26-4048` | ↳ Notaties MathPrint/CLASSIC, fraction/decimal, FIX/FLOAT/SCI/ENG | `not_started` |
+| `ti26-4049` | ↳ Node/Edge + onafhankelijke exacte oracles | `not_started` |
+| `ti26-4050` | ↳ K1-acceptatie en documentatie | `not_started` |
+| `ti26-4058` | K2 — Gebonden variabelen, geheugen en functies | `not_started` |
+| `ti26-4052` | ↳ Typed locals, Ans en naam-/scopebeleid ontwerpen | `not_started` |
+| `ti26-4053` | ↳ Geheugen, herhaalde operatie en private historie implementeren | `not_started` |
+| `ti26-4054` | ↳ Functies f(x), evaluatie en bounded iteratie Σ/Π | `not_started` |
+| `ti26-4055` | ↳ Functietabellen en evaluatiedienst voor M11 | `not_started` |
+| `ti26-4056` | ↳ Tests variabelenbinding/kwota/pariteit/revocation | `not_started` |
+| `ti26-4057` | ↳ K2-acceptatie | `not_started` |
+| `ti26-4065` | K3 — Statistiek, regressie en verdelingen | `not_started` |
+| `ti26-4059` | ↳ Getypeerde lijsten en datastructuurcontract | `not_started` |
+| `ti26-4060` | ↳ 1D- en 2D-statistiek implementeren | `not_started` |
+| `ti26-4061` | ↳ Lineair, kwadratisch, kubisch, log, macht en exponentieel regressie | `not_started` |
+| `ti26-4062` | ↳ Normal-, binomiale en Poisson-pdf/cdf/inverse | `not_started` |
+| `ti26-4063` | ↳ Datapresentatie, tabellen en modebediening | `not_started` |
+| `ti26-4064` | ↳ Onafhankelijke referentietests en acceptatie | `not_started` |
+| `ti26-4072` | K4 — Matrices en vectoren | `not_started` |
+| `ti26-4066` | ↳ Matrix- en vectortypecontracten vastleggen | `not_started` |
+| `ti26-4067` | ↳ Basisalgebra: plus/min/scalair, matrixproduct en matrix × vector | `not_started` |
+| `ti26-4068` | ↳ Determinant, inverse, transpose, REF/RREF | `not_started` |
+| `ti26-4069` | ↳ Vector dot/cross/norm en coördinaatvormen | `not_started` |
+| `ti26-4070` | ↳ Aparte matrix-/vectoreditor en resultatenpaneel | `not_started` |
+| `ti26-4071` | ↳ Nummerieke grensgevallen en acceptatie | `not_started` |
+| `ti26-4080` | K5 — Numerieke analyse en vergelijkingoplossers | `not_started` |
+| `ti26-4073` | ↳ Convergentie-/domein- en foutcontract ontwerpen | `not_started` |
+| `ti26-4074` | ↳ Numerieke afgeleiden en integralen implementeren | `not_started` |
+| `ti26-4075` | ↳ Numerieke nulpunten en iteratieve solvers | `not_started` |
+| `ti26-4076` | ↳ Kwadraatische en kubische oplossingen incl complex beleid | `not_started` |
+| `ti26-4077` | ↳ Lineaire stelsels 2×2 en 3×3 via K4 matrixdiensten | `not_started` |
+| `ti26-4078` | ↳ Crosschecks M11 grafieken/M12 calculus en tests | `not_started` |
+| `ti26-4079` | ↳ K5-acceptatie | `not_started` |
+| `ti26-4086` | K6 — Complexe getallen | `not_started` |
+| `ti26-4081` | ↳ Complex type, eenheden, ronding en foutregels ontwerpen | `not_started` |
+| `ti26-4082` | ↳ Complexe rekenoperatoren en machten implementeren | `not_started` |
+| `ti26-4083` | ↳ RECT/POLAR en complexe numerieke formatkeuzes | `not_started` |
+| `ti26-4084` | ↳ Koppelen aan geheugen, vergelijkingen en matrixdiensten | `not_started` |
+| `ti26-4085` | ↳ K6-test- en acceptatiematrix | `not_started` |
+| `ti26-4094` | K7 — Getallenstelsels, constanten en conversies | `not_started` |
+| `ti26-4087` | ↳ Getypte gehele getallen en bitbreedtecontract | `not_started` |
+| `ti26-4088` | ↳ DEC/BIN/OCT/HEX, AND/OR/XOR/NOT en verdere bitfuncties | `not_started` |
+| `ti26-4089` | ↳ Extra fysieke dimensies massa/tijd/temperatuur enz. | `not_started` |
+| `ti26-4090` | ↳ Temperatuur en samengestelde/US-eenheden | `not_started` |
+| `ti26-4091` | ↳ Versioneerde natuurkundige constantencatalogus | `not_started` |
+| `ti26-4092` | ↳ UI-menu en onafhankelijke referentietests | `not_started` |
+| `ti26-4093` | ↳ K7-acceptatie | `not_started` |
+| `ti26-4101` | K8 — Definitieve TI-36X Pro functionele pariteitsaudit | `not_started` |
+| `ti26-4095` | ↳ Elk inventarispunt classificeren met implementatie- en testbewijs | `not_started` |
+| `ti26-4096` | ↳ TI-handleiding voorbeeldmatrix en onafhankelijke oracles | `not_started` |
+| `ti26-4097` | ↳ Restricted security, clipboard, session, lifecycle, privacy | `not_started` |
+| `ti26-4098` | ↳ Node- en Edge-regressies per pakket plus volledig geïntegreerd | `not_started` |
+| `ti26-4099` | ↳ Toegankelijkheid, keyboard, MathPrint, fullscreen en offline export | `not_started` |
+| `ti26-4100` | ↳ Eindrapport en gebruikersacceptatie | `not_started` |
+| `tasks-187` | M13a — Herbruikbare viewer | `not_started` |
+| `tasks-188` | ↳ Scoped runtime | `not_started` |
+| `tasks-189` | ↳ Cursus-/toetsweergavemodus | `not_started` |
+| `tasks-190` | ↳ Multi-instance Edge-tests | `not_started` |
+| `tasks-191` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-192` | M13b — Parameters en cursusintegratie | `not_started` |
+| `tasks-193` | ↳ Author-defined sliders | `not_started` |
+| `tasks-194` | ↳ Embed in cursushost | `not_started` |
+| `tasks-195` | ↳ Cursusacceptatie | `not_started` |
+| `tasks-196` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-197` | M14 — Constructieafspelen en animatie | `not_started` |
+| `tasks-198` | ↳ Constructiestappen afspelen | `not_started` |
+| `tasks-199` | ↳ Keyframes en tijdlijn | `not_started` |
+| `tasks-200` | ↳ Animatietests | `not_started` |
+| `tasks-201` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-202` | M15 — Onderzoek en demonstraties | `not_started` |
+| `tasks-203` | ↳ Hints en overlays | `not_started` |
+| `tasks-204` | ↳ Pythagoras-demonstratie | `not_started` |
+| `tasks-205` | ↳ Omtrekshoek en driehoeksinvarianten | `not_started` |
+| `tasks-206` | ↳ Analyse-demonstraties | `not_started` |
+| `tasks-207` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-208` | M16a — Toetsopgave-artifact | `not_started` |
+| `tasks-209` | ↳ Versieerbaar opgaveschema | `not_started` |
+| `tasks-210` | ↳ Auteurpreview en frozen release | `not_started` |
+| `tasks-211` | ↳ Resultaat- versus methodecriteria | `not_started` |
+| `tasks-212` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-213` | M16b — Geometrische validator | `not_started` |
+| `tasks-214` | ↳ Middelpunt, evenwijdig en loodrecht | `not_started` |
+| `tasks-215` | ↳ Equivalente oplossingen en toleranties | `not_started` |
+| `tasks-216` | ↳ Verdere constructiecriteria | `not_started` |
+| `tasks-217` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-218` | M17a — Pogingen en hostadapter | `not_started` |
+| `tasks-219` | ↳ Attempt/evidence protocol | `not_started` |
+| `tasks-220` | ↳ Voortgang naar spel/toetshost | `not_started` |
+| `tasks-221` | ↳ Core evaluator adapter | `not_started` |
+| `tasks-222` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-223` | M17b — Vertrouwde toetsbeoordeling | `not_started` |
+| `tasks-224` | ↳ Backend-/auth-keuze vastleggen | `not_started` |
+| `tasks-225` | ↳ Server-side validatie en opslag | `not_started` |
+| `tasks-226` | ↳ Tamper- en replaytests | `not_started` |
+| `tasks-227` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-228` | M18a–c — Auteursworkflow en publiceren | `not_started` |
+| `tasks-229` | ↳ Templates en herbruikbare subgraphs | `not_started` |
+| `tasks-230` | ↳ LaTeX-labels en toegankelijkheid | `not_started` |
+| `tasks-231` | ↳ SVG/PNG exportpresets | `not_started` |
+| `tasks-232` | ↳ Review en publicatie | `not_started` |
+| `tasks-233` | ↳ Embed en assets | `not_started` |
+| `tasks-234` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-235` | M19 — Visuele en formele bewijzen | `not_started` |
+| `tasks-236` | ↳ Visuele bewijssequenties | `not_started` |
+| `tasks-237` | ↳ Stellingen en aannames | `not_started` |
+| `tasks-238` | ↳ Formele bewijsstappen | `not_started` |
+| `tasks-239` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-240` | M20 — Platformkwaliteit en toegankelijkheid | `not_started` |
+| `tasks-241` | ↳ Toetsenbord en screenreader | `not_started` |
+| `tasks-242` | ↳ Touch en mobiele interactie | `not_started` |
+| `tasks-243` | ↳ Cross-browser en performancematrix | `not_started` |
+| `tasks-244` | ↳ Releaseacceptatie | `not_started` |
+| `tasks-245` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
+| `tasks-246` | Doorlopende kwaliteitsprocedure | `not_started` |
+| `tasks-247` | ↳ Wiskunde, UX, foutgevallen en permissiematrix vastleggen | `not_started` |
+| `tasks-248` | ↳ Eerst falende tests voor nieuwe functionaliteit | `not_started` |
+| `tasks-249` | ↳ Minimale implementatie zonder parallelle controllers | `not_started` |
+| `tasks-250` | ↳ Node- en Edge-regressies volledig groen | `not_started` |
+| `tasks-251` | ↳ Schema-/migratie- en exportcompatibiliteit beoordelen | `not_started` |
+| `tasks-252` | ↳ Commits, testbewijs, resterende risico’s en PASS/FAIL rapporteren | `not_started` |
+| `tasks-253` | ↳ Handmatige acceptatie en expliciete toestemming voor volgende milestone | `not_started` |
+| `tasks-254` | Productdoel en volledige backlog bewaken | `not_started` |
+| `tasks-255` | ↳ Controleer elke milestone tegen PRODUCT-VISION.md | `not_started` |
+| `tasks-256` | ↳ Controleer alle 54 eisen uit FEATURE-BACKLOG.md | `not_started` |
+| `tasks-257` | ↳ Werk roadmap bij na acceptatie zonder features stilzwijgend te schrappen | `not_started` |
+| `tasks-258` | ↳ Beslis backend voor summatieve toetsbeoordeling vóór M17b | `not_started` |
+
+</details>

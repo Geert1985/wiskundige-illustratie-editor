@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.5.0
-Status: proposed; reconcile with repository before implementation. T5-prep I1-I4 and Deel A are technically integrated and await user acceptance; calculator F11 remains unimplemented.
+Version: 1.6.0
+Status: proposed; reconcile with repository before implementation. T5a and the full text workspace are accepted and integrated; calculator F11 and future TI-36X Pro parity remain unimplemented. M6 geometry precedes the separately gated calculator milestones.
 Date: 2026-10-12
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
@@ -162,3 +162,16 @@ The rich-text editor has four point-based size presets mapped to its existing SV
 ### T5-prep Deel A — permanent editor workspace (2026-10-12, backlog 1.5.0)
 
 The active insertion UI is a permanent panel with exactly two tabs: **Formula** and **Values**. The Formula tab combines LaTeX source editing, catalog search/category, live preview and explicit insertion/update. Catalog items insert into the saved LaTeX cursor/selection; structure templates select their first placeholder; catalog clicks alone never create a formula atom. The Values tab retains the existing authorized dynamic-value flow. The text composition surface is white with dark text for readability. Overlay insertion panels and the text-width slider are removed. Existing `textContent.width` is preserved in the document model/render/export to keep older documents stable; it is not normalized by open, cancel or save. This is UI-only and changes no document schema, permission or export contract. Deel B canvas resizing is separate and not delivered. Manual acceptance remains open; see [T5-PREP-FINAL-UX-DEEL-A-REPORT.md](T5-PREP-FINAL-UX-DEEL-A-REPORT.md).
+
+
+## TI-36X Pro long-term extension (2026-10-12, v1.6.0)
+
+User-supplied checklist v2.1.0 extends F11 with future TI-36X Pro functional parity. It retains all original 54 backlog requirements and M1–M20: this is additional planning, not replacement or implementation. [Roadmap v2.4.0](DEVELOPMENT-ROADMAP.md) preserves the source task references/statuses and full new package checklists.
+
+- First M6a/M6b geometry; then separately approved T5b/T5c/T5d. T5b phase 1 uses only existing T5a functions and one shared floating draggable panel in toolbar/inline hosts. No graph canvas or document/selection/history/text-draft mutations.
+- K1: exact real types, fractions/radicals/π and future notation/function extensions. K2: typed variables, Ans, private memory and bounded function/table services. K3: statistics, lists, regression and probability distributions.
+- K4: typed matrix/vector services coordinated with M7. K5: numerical derivatives/integrals/solvers shared with M12; K2/K4/K6 dependencies explicitly reviewed. K6: separate complex-value semantics.
+- K7: integer bases/bit widths, added physical dimensions, affine/unit conversions and versioned constants. K8: evidence-based TI-manual/inventory reconciliation, including deviations and FZI-only cases.
+- F05/M11 graphing and F06 parametric visualization remain in the existing illustration canvas; reuse K2 evaluation and K5 analysis where valid, without a second interpreter. Tables can have multiple presentation hosts with one evaluation contract.
+
+No exact-value, complex, matrix, variable or dimension extension silently changes accepted T5a binary64/angle/round/underflow behavior. Each package requires its own typed mathematical/schema/security contract, independent reference tests and explicit acceptance. The cited 105-item concept inventory is not an official TI function count; manual reconciliation remains open. No new parity, implementation or test PASS claimed by this document-only update.
