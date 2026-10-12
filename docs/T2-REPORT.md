@@ -4,6 +4,8 @@ Versie 1.0.0 — 2026-10-12. Repository `Geert1985/wiskundige-illustratie-editor
 
 De gebruiker gaf expliciet opdracht **Begin met T2**. T2 is uitgevoerd; gebruikersacceptatie staat open. Resterende handmatige T1-controles zijn daarmee niet als geslaagd aangemerkt. **T3 is niet gestart.** Publicatie betreft uitsluitend de ontwikkelbranch.
 
+Implementatie- en bewijscommit: `b99217fae7bad97f19aab54c408fb95a4109a09c`. Een aansluitende documentatiecommit voegt deze verwijzing toe; productiecode en testbewijzen blijven gelijk aan de geteste implementatiecommit.
+
 ## Opgeleverd
 
 - Ω-paneel met zoeken en tien categorieën: Grieks, rekenen, gelijkheden/ongelijkheden, verzamelingen, geometrie, pijlen, logica, machten/wortels, breuken en functies. Cursorbookmarks blijven behouden. Glyphs uit de lokale tekstfonts worden tekst; ontbrekende glyphs, zoals ∈ en ℝ, gebruiken veilige formuleatomen.
@@ -66,7 +68,7 @@ Omgeving: Windows, Node 22.18.0, npm 10.9.3, headless Microsoft Edge 155.0.4283.
 
 De nieuwe browsercontroles zijn: symbolsAndCategories, missingGlyphPaths, keyboardFormulaApply, staleCommit, bookmarks, formulaInsertEdit, atomDeleteUndo, atomDrag, unsafeSource, history, sourceRoundtrip, cancel, fullscreenEscape, stalePreview, offlineSvgPng en zoom. Drag controleert werkelijk gewijzigde atomvolgorde; delete/undo controleert exact herstel. Fullscreen test eerst Escape van kindpaneel en daarna dialoog, met behoud van canvasfullscreen. De koude loader wordt vertraagd en daarna geannuleerd; een late preview mag niet terugkomen.
 
-Offline rastercorpus: `x^2+y^2=r^2`, `\sin^2(\theta)+\cos^2(\theta)=1`, `\frac{1}{2}` en `\sqrt{x^2+y^2}`. Tijdens rastering staat de browsercontext offline; zelfstandige SVG decodeert naar Image/canvas en PNG. Iedere fixture bevat rode formulepixels, eindige geometrie en geen externe SVG-referenties. De gerichte run telde respectievelijk 93/252/22/112 rode pixels; de volledige suite heeft eigen gemeten waarden in `verification.json` (viewport/historie kunnen pixels beïnvloeden). Drie echte toolbarzoomstanden behouden formulebreedte en exact dezelfde documentobjecten. Baseline/lineheight/alignment/rotatie/color/readiness zijn tevens in Node getest.
+Offline rastercorpus: `x^2+y^2=r^2`, `\sin^2(\theta)+\cos^2(\theta)=1`, `\frac{1}{2}` en `\sqrt{x^2+y^2}`. Tijdens rastering staat de browsercontext offline; zelfstandige SVG decodeert naar Image/canvas en PNG. Iedere fixture bevat rode formulepixels, eindige geometrie en geen externe SVG-referenties. De gerichte run telde respectievelijk 93/252/22/112 rode pixels; de definitieve volledige suite telde **88/242/23/109**, zoals vastgelegd in `verification.json` (viewport/historie kunnen pixels beïnvloeden). Drie echte toolbarzoomstanden behouden formulebreedte en exact dezelfde documentobjecten. Baseline/lineheight/alignment/rotatie/color/readiness zijn tevens in Node getest.
 
 Node dekt veilige bron/syntax/quotas, exact schema, bounded output, v7 roundtrip/duplicatie/failed import, typed replay/history, content/format/math-grants, gemarkeerde atomverplaatsing, verboden opmaakgrens-/bronwissels, locks/stale revisions, restricted export/redactie, policy-intrekking, created duplicate grants en legacybindingen. De bestaande volledige suite blijft geometrie, assen, lagen/groepen, constructies, permissies, fullscreen en oudere bestanden testen.
 
