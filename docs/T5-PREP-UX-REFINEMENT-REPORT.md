@@ -1,6 +1,6 @@
 # T5-prep — UX-verfijning teksteditor
 
-Versie 1.2.0 — 2026-10-12
+Versie 1.3.0 — 2026-10-12
 
 Repository: `Geert1985/wiskundige-illustratie-editor`
 
@@ -90,3 +90,9 @@ Na de eerdere test- en rapportageronde is het tabblad **Waarden** opnieuw ingede
 Een bestaande precisiewaarde buiten 0–3 blijft ongewijzigd zolang de slider niet wordt bediend. De bestaande aparte `unitMode`- en `angleMode`-velden blijven in het documentmodel behouden; de enkele gebruikerskeuze wordt naar die velden vertaald. Voor tekstobjecten is de sectie **Uiterlijk** uit het eigenschappenpaneel verwijderd, omdat **Tekst bewerken** de opmaakbediening overneemt. Die knop staat nu op de eerste actierij; de overige objecticonen staan op een tweede rij.
 
 Voor deze vervolgwijziging zijn op verzoek geen Node- of Edge-tests uitgevoerd. De bestaande resultaten hierboven dateren van vóór deze vervolgwijziging en gelden dus niet als validatie ervan. De bijgewerkte browserstappen staan in `tests/browser-rich-values.cjs`; handmatige/browserverificatie en regressietests blijven door de gebruiker uit te voeren.
+
+## Vervolgverfijning kopbalk — 2026-10-12
+
+De teksteditor toont nu het vaste merkblok **From Zero 2 Infinity** met het infinitysymbool en de titel **Wiskundige Tekst Editor**. De kopknoppen gebruiken gelijke afmetingen; de zichtbare tekst voor undo is verkort tot **Ongedaan**. Er staan ook uitgeschakelde placeholders voor **JSON Importeren** en **JSON Exporteren** in de kop. Deze knoppen hebben bewust nog geen acties.
+
+Ook voor deze correctie zijn geen Node- of Edge-testsuites uitgevoerd. De browserasserties zijn aangepast; de daadwerkelijke validatie blijft open.

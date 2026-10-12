@@ -187,11 +187,15 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 .text-editor-dialog::backdrop{background:#071018bb;backdrop-filter:blur(3px)}
 .text-editor-form{height:100%;min-height:0;display:flex;flex-direction:column;gap:0}
 .text-editor-heading{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 22px;border-bottom:1px solid #31434c;background:#132630}
-.text-editor-heading h2{margin:2px 0 0;font-size:22px;font-weight:700;color:#edf1f2}
-#textDialogContext{margin:2px 0 0;color:#a8bac3;font-size:12px}
-.text-editor-header-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.text-editor-brand{display:flex;align-items:center;gap:14px;min-width:0}
+.text-editor-logo{width:50px;height:34px;flex:0 0 auto;color:#edf1f3}
+.text-editor-eyebrow{font-size:9px;font-weight:700;letter-spacing:.19em;color:#f2ca59}
+.text-editor-heading h2{margin:3px 0 0;font-size:20px;font-weight:700;color:#edf1f2;white-space:nowrap}
+.text-editor-header-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .text-editor-history{display:flex;align-items:center;gap:8px}
-.text-editor-history button.secondary{height:40px;padding:8px 15px}
+.text-editor-header-actions>button,.text-editor-history>button{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 112px;width:112px;height:38px;min-height:38px;padding:6px 7px;white-space:nowrap;font-size:12px}
+.text-editor-placeholder:disabled{cursor:default;opacity:.56}
+.text-editor-close{font-size:20px!important}
 .text-editor-dialog .rich-text-toolbar{flex:0 0 auto;display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;padding:10px 16px;border-bottom:1px solid #30434d;background:#12252e}
 .rich-toolbar-group{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding:2px 7px;border-right:1px solid #344850}
 .text-editor-dialog .rich-text-toolbar button,.text-editor-dialog .rich-text-toolbar select,.text-editor-dialog .rich-text-toolbar input{min-height:34px;border:1px solid #364c57;border-radius:7px;background:#192c35;color:#e9eef0;font-size:12px}
@@ -245,7 +249,6 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 @media(max-width:480px){
   .text-editor-dialog{width:calc(100vw - 10px);height:calc(100dvh - 10px);max-height:calc(100dvh - 10px);border-radius:11px}
   .text-editor-heading h2{font-size:18px}
-  #textDialogContext{font-size:10px}
   .text-editor-dialog .rich-text-toolbar{align-items:flex-start;max-height:140px;overflow:auto}
   .rich-toolbar-group{max-width:100%;flex-wrap:wrap}
   .text-editor-dialog .rich-text-toolbar select{max-width:78px}
