@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.4.0 (TI-36X Pro long-term planning, 2026-10-12)
-Status: T5a and full text workspace accepted, audit follow-ups completed, user-reported 573/573 Node tests passed, combined work merged to main. Next planned geometry gates: M6a/M6b, then separately approved T5b/T5c/T5d. TI-36X Pro parity is a future K1–K8 objective, not delivered; no implementation authorized. T5c–T5d and Deel B not started. Earlier manual T4/T5-prep and latest combined Edge checks remain unverified.
+Version: 2.4.0 (TI-36X Pro parity roadmap, 2026-10-12)
+Status: T5a and full text workspace accepted and integrated into main (user-reported 573 Node PASS). TI-36X Pro functionality accepted as a future product goal; first continue illustrator (next M6), later gated T5b/T5c/T5d and separate K1–K8 calculator packages. No new calculator implementation started; latest combined Edge and earlier manual checks still open.
 Date: 2026-10-12
 
 ## Baseline
@@ -258,7 +258,7 @@ Implemented on `chatgpt/text-editor-full-workspace`, based on the user-selected 
 
 ## TI-36X Pro roadmap amendment (2026-10-12, v2.4.0)
 
-Source: user-provided `From_Zero_2_Infinity_Wiskunde_Illustrator_Roadmap_TI36X_Pro_v2.1.0.json` (My Project Manager checklist v2.1.0, formatVersion 1, exported 2026-10-12T18:03:21.598Z). This is a planning export, not a unified-diff patch. Its reference to DEVELOPMENT-ROADMAP_TI36X_v2.4.0.patch names a separate file that was not supplied. This amendment incorporates the available planning content; it does not claim to have applied that missing patch or imported/synchronized any project-manager account.
+Source: user-provided `From_Zero_2_Infinity_Wiskunde_Illustrator_Roadmap_TI36X_Pro_v2.1.0.json` (My Project Manager checklist v2.1.0, formatVersion 1, exported 2026-10-12T18:03:21.598Z). This is a planning export, not a unified-diff patch. The subsequently supplied DEVELOPMENT-ROADMAP_TI36X_v2.4.0.patch is incorporated below, preserving the detailed JSON checklists and source status ledger. No project-manager account was imported or synchronized.
 
 ### Order, scope and acceptance
 
@@ -799,3 +799,29 @@ Statuses below reproduce the supplied export and preserve stable task references
 | `tasks-258` | ↳ Beslis backend voor summatieve toetsbeoordeling vóór M17b | `not_started` |
 
 </details>
+
+## TI-36X Pro scientific-calculator functional parity — approved roadmap direction (2026-10-12, v2.4.0)
+
+**Decision and sequence (planning only):** the long-term calculator target is full **functional coverage comparable to the Texas Instruments TI-36X Pro**, as an accessible, original FZI product rather than a literal branded/hardware emulator. This expands the *product roadmap*, **not** the already approved T5a mathematical contract or the authorized scope of T5b. The 105-item working inventory `T5b_TI36X_Pro_functieinventaris_v1.0.0.md` was prepared on 2026-10-12; it mixes TI function groups, FZI integration requirements and explicit out-of-scope markers, so 105 is **not** an official count of TI functions. Its individual claims and parities remain subject to guidebook and implementation acceptance. Official reference: [TI-36X Pro Guidebook (TI)](https://education.ti.com/html/eguides/scientifics/PDFs/EN/TI-36X-PRO-Guidebook_EN.pdf).
+
+**Immediate implementation priority:** resume the existing illustrator roadmap, starting from currently pending M6 triangle centers/circles after the relevant unfinished acceptance checks. Preserve M1–M20, transformations, linked vectors, coordinate systems, M11 graphing, M12 calculus/analysis, sets and all subsequent milestones. Do not block M6 or other illustrator work on completion of the advanced calculator. Reassess the earliest useful T5b start after the nearby illustrator milestones are stable; T5b need **not** wait for every M1–M20 milestone.
+
+**Integration gates:** T5a is accepted and on `main`. First finalize/approve the *revised* TI-inspired T5b UX with a **floating draggable scientific calculator** (not the earlier compact v1.0.0 mock), natural-entry-ready structure, accessible keyboard/SHIFT/ALPHA/navigation, private history and typed geometry sources. **T5b** implements one shared standalone/inline interface for **already supported T5a functions only** and remains read-only with respect to canvas/text/document state. Do not show unsupported keys or calculation modes as operational. After its separate tests and acceptance, **T5c** enables typed `calculatedValue` inline fields (document v7/textSchema 4), and **T5d** audits integration, authorization, focus, fullscreen, clipboard and exports. New TI-functionality is delivered in separate, versioned, gated packages; do not defer T5c/T5d until the entire TI target is finished.
+
+| Package / workstream | Planned scope | Dependencies and boundaries | Recommended Codex model |
+|---|---|---|---|
+| **T5b (existing)** | TI-inspired scientific keyboard and natural-input-ready UI; current reals, units, trig, sources, standalone/inline; floating/dragging; history; copy | New UX/design approval; no new mathematics, no document mutation, no graph canvas | **GPT-6 High** for architecture/security; **GPT-6.1 Sol Medium** for bounded UI components |
+| **T5c–T5d (existing)** | CalculatedValue text fields, then complete integration/security/export/accessibility audit | Separate GO for each; preserve existing T5a AST/quantity, T1–T4 invariants | **GPT-6 High** |
+| **K1 — Exact real values** | Fractions, radicals/π exact display, rational/exact types, additional real functions, factorial/nPr/nCr, SCI/ENG and TI-compatible presentation | First design versioned AST/value semantics; never infer exactness from binary64 strings; preserve T5a numeric contract | **GPT-6 High** |
+| **K2 — Variables and function definitions** | Typed local variables, Ans, memory, bound `f(x)`, controlled sequences/Σ/Π, function evaluation | Validated variable scope/quotas; never treat geometry object names as untyped variables | **GPT-6 High** |
+| **K3 — Lists, statistics, distributions** | List editor, one-/two-variable statistics, regression, normal/binomial/Poisson distributions | Typed lists; independent numeric oracles and boundary proofs | **GPT-6 High** |
+| **K4 — Matrix and vector arithmetic** | Typed matrices/vectors, determinant, inverse, RREF, dot/cross and norms | Coordinate with M7 vector work; share tested algebra without mutating geometry objects | **GPT-6 High** |
+| **K5 — Calculus and solvers** | Numeric derivative/integral, numerical equations, polynomial 2/3 and linear 2×2/3×3 solvers | Depends on K2; use K4 for linear algebra; coordinate with M11 graphing and M12 analysis; explicit convergence/error contract | **GPT-6 High** |
+| **K6 — Complex values** | Complex Cartesian/polar forms, arithmetic, components and solver compatibility | New typed complex model; no silent coercion into T5a reals | **GPT-6 High** |
+| **K7 — Other TI modes** | Base-N and bit operations, physical constants, extra units/conversions, SI extensions | Explicit integer width, unit dimensions and affine temperature conversion; versioned constant catalog | **GPT-6 High** |
+| **K8 — Final TI-parity audit** | Compare function inventory and guidebook examples; recheck integration, restricted sources, Node/Edge, accessibility and offline export | All intended K deliverables accepted; no unexecuted checks marked PASS | **GPT-6 High** |
+| **Documentation/UX-only follow-ups** | Normalize docs, labels, menu organization, checklist sync | Content-only, no mathematical rules changed | **GPT-6.1 Sol Light** (review with GPT-6 High for contracts) |
+
+**Shared mathematics, no duplicate systems:** the calculator has **no graph plotter**. Functiegrafieken, sliders and visual analysis remain in the existing illustrator canvas (M11/M12); the TI-style function table can reuse the shared K2 function service. Matrix/vector and solver services should be reused where their mathematical contracts coincide, with independent presentation/authorization adapters. Never introduce a second independent evaluator or bypass `expression-sources.js` authorization. Numerical parity, exactness, permissions, stale-value invalidation, result-copy semantics and binary64 restrictions require explicit acceptance per package.
+
+**Codex selection guideline:** GPT-6 **High** for architectural design, mathematics, security, schema or high-risk tests; GPT-6.1 **Sol Medium** for ordinary bounded UI integration after design approval; GPT-6.1 **Sol Light** only for low-risk styling/documentation changes. These are task recommendations subject to the models available in Codex, **not** evidence of implementation quality: Node/Edge/manual tests and independent review remain obligatory. No T5b/K-package implementation or tests were started by this documentation update. The original illustrator milestones and their current recorded status remain unchanged.
