@@ -181,3 +181,5 @@ button.secondary,.tool{background:#1b2933;border-color:var(--border);color:#edf1
 
 .text-insert-panel:not([data-mode="value"]) .value-controls,.text-insert-panel[data-mode="value"] .symbol-controls,.text-insert-panel[data-mode="value"] .formula-controls{display:none}.rich-value-atom{display:inline-block;padding:0 2px;border-bottom:1px dotted #888;cursor:pointer}.rich-value-atom.ProseMirror-selectednode{outline:2px solid var(--accent)}#valuePreview{display:block;margin:10px 0;padding:8px;border:1px solid var(--border);white-space:pre-wrap}
 .value-controls input,.value-controls select{background:var(--panel-2);color:inherit;border:1px solid var(--border);border-radius:5px;min-height:32px;padding:6px 8px}
+
+.rich-width-label{display:flex;align-items:center;gap:5px;font-size:12px}.rich-text-surface .ProseMirror{outline:none;overflow-wrap:anywhere;min-height:140px}.editor-dialog{max-height:calc(100dvh - 32px);overflow:auto}.rich-text-surface .ProseMirror p{white-space:pre-wrap}

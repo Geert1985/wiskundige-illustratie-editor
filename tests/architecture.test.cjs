@@ -44,13 +44,14 @@ const modules = [
   { file: 'editor-axis-settings.js', provides: ['AxisSettings'], after: ['renderer.js'] },
   { file: 'editor-history.js', provides: ['EditorHistory', 'RuntimeHistory'], after: ['index.js', 'permission-runtime.js'] },
   { file: 'editor-tool-instructions.js', provides: ['ToolInstructions'], after: ['renderer.js'] },
+  { file: 'export-service.js', provides: ['ExportService'], after: ['index.js','math-fragments.js'] },
   { file: 'editor.js', provides: ['EditorApp'], after: modulesBeforeEditor() },
   { file: 'editor-bootstrap.js', provides: ['bootstrapEditor', 'editor', 'activeEngine', 'bootstrapRestrictedEditor'], after: ['editor.js'] },
 ];
 
 function modulesBeforeEditor() {
   return [
-    'math-source.js', 'text-values.js', 'text-dependencies.js', 'math-fragments.js', 'text-metrics.js', 'rich-text-renderer.js', 'text-insert-panel.js', 'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
+    'math-source.js', 'text-values.js', 'text-dependencies.js', 'math-fragments.js', 'text-metrics.js', 'rich-text-renderer.js', 'text-insert-panel.js', 'export-service.js', 'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
     'linear-geometry.js', 'measurement-geometry.js', 'construction-service.js',
     'renderer.js', 'index.js', 'semantic-sequence.js', 'coordinate-transform.js',
     'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js',

@@ -1,10 +1,10 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.5.0 - 2026-10-12 - T1-T3 geimplementeerd op de ontwikkelbranch; T3-gebruikersacceptatie en handmatige controles staan open.
+Versie 1.6.0 - 2026-10-12 - T1-T4 geimplementeerd op de ontwikkelbranch; T4-gebruikersacceptatie en handmatige controles staan open.
 
 Repository: Geert1985/wiskundige-illustratie-editor. Branch: `chatgpt/editor-development`. Onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
 
-Sectie 1 bewaart de historische inventaris van fase 0. Secties 19-21 beschrijven de geleverde T1-T3-implementatie en zijn leidend voor hun actuele status. T4-T5 blijven ontwerp. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
+Sectie 1 bewaart de historische inventaris van fase 0. Secties 19-21 beschrijven de geleverde T1-T3-implementatie en zijn leidend voor hun actuele status. Sectie 23 beschrijft T4; T5 blijft ontwerp. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
 
 Audit B1–B7 is verwerkt in secties 11–18 en [audit resolution](TEXT-EDITOR-ARCHITECTURE-AUDIT-RESOLUTION.md). Die secties preciseren het eerdere voorstel en zijn leidend bij verschil. Bibliotheek- en fontkeuzes blijven open tot afzonderlijk goedgekeurde technische proeven resultaat leveren.
 
@@ -551,3 +551,18 @@ Elke evaluatie bindt aan sessie-/documentidentiteit, documentrevisie, permission
 Voer Node-kern-/adaptertests en afzonderlijke Edge-tests per context uit; T5d herhaalt de gecombineerde matrix inclusief accessibility en offline export. Echte IME/AT, OS-clipboard en fysieke visuele controles alleen PASS bij daadwerkelijk bewijs; anders expliciet niet uitgevoerd. T5b doet bestaande opslag/exportregressie, maar claimt geen nieuwe inline-opslag. T5c moet nieuwe schema-4-opslag en export onmiddellijk bewijzen, niet uitstellen tot T5d.
 
 **Nog vast te leggen vóór de relevante poort:** definitieve toleranties/singulariteitsgrenzen en kern-API vóór T5a; precieze toolbarplaatsing/iconografie, responsive presentatie, focus-/Escape-detail en clipboardformaat vóór T5b; definitieve calculatedValue-payload en passende commandgrants vóór T5c. Het functionele één-kern/één-interfacecontract, beide ingangen, nul standalone-documentmutaties en drie inline-weergavemodi staan vast. Deze open technische keuzes zijn geen toestemming om een milestone te starten.
+
+
+## 23. T4 — wrapping, export en bediening (1.6.0)
+
+Uitgevoerd op expliciete opdracht. [T4-CONTRACT.md](T4-CONTRACT.md) en [T4-REPORT.md](T4-REPORT.md) bevatten scope, meetbewijs en beperkingen. Eerdere T4-stopregels zijn hiermee opgevolgd; T5 is niet gestart. Document v7/textSchema 1–3 en legacybeleid blijven ongewijzigd.
+
+`textContent.width` is null (automatisch) of een positieve vaste breedte in SVG-pixels, in hetzelfde stelsel als de fontgrootte. Width vereist formatrechten en heeft eigen lokale editor-undo; alleen buitenste OK commit naar het document. Ordinary tekst wrapt bij whitespace en lange woorden bij Unicode-graphemegrenzen. Formules en opgeloste dynamische waarden blijven ondeelbaar: een te brede atom loopt zichtbaar over, zonder clipping/verlies. Marks, hardBreaks, alineauitlijning, gemengde ascender/descender, scriptshift, anchor en rotatie blijven behouden. De renderer deelt de layout voor canvas/export en laat glyphbounds door de bestaande screen-space-selectie meten. Rich legacy zonder vaste breedte behoudt zijn compatibility renderer. De editoradapter gebruikt de opgeslagen defaultfont/kleur/grootte naast fragmentmarks.
+
+`export-service.js` verzorgt expliciete math/font-readiness, SVG en PNG. Engine.renderSVG blijft synchroon voor voorbereide assets. Zelfstandige SVG bevat lokale fonts voor rich én bestaande tekst/labels; geen nieuwe fonts of rendererbibliotheek. PNG is afgeleid van toegestane SVG-export en gebruikt dezelfde document.exportSVG-grant; er is geen zelfstandige PNG-permissiebypass. Hostguards binden delivery aan documentrevisie, permission epoch, exportrequest, viewport en actieve editor. Bron-/policywijzigingen of dispose tijdens wachten leveren een generieke fout, geen stale download. Export voegt geen metadata of documentactie toe; reeds bestaande edits worden vóór de exportsnapshot afgerond. Opslaan bewaart afwezige lege legacy-metadata.
+
+De eerdere Chromium SVG→Image-proef gebruikte fallbackfonts. Fontnamen met numerieke delen zijn nu expliciet gequote, zodat hun CSS geldig is. De PNG-route is bovendien onafhankelijk van webfontloading in Image-decoding en meet uitsluitend geautoriseerde native SVG-tekst met geladen lokale fonts en maakt per text-element een tijdelijke transparante bitmap op dezelfde glyphposities. In-place vervanging behoudt SVG-laagvolgorde, parentopacity en transformaties; de resterende geometrie/formulepaden worden vervolgens via SVG→Image→canvas gerasterd. PNG-schaal verhoogt ook de interne tekstrasterresolutie. Publieke SVG blijft font-embedded tekst; deze private bitmaps komen niet in JSON of opgeslagen fragmenten. Geen foreignObject, externe resources of nieuwe OpenType/glyphpadkeuze.
+
+Rastergate: maximaal 8192 pixels per zijde, 16777216 outputpixels, schaal >0 en ≤4; afzonderlijk maximaal 16777216 tijdelijke tekstpixels en 65536 graphemes. Afmetingen worden vóór allocatie gecontroleerd. Native-text-indexverlies, decode-timeout (30 s), canvas-/toBlob-fout en budgetoverschrijding worden expliciet geweigerd. Tijdelijke DOM en Blob-URLs worden altijd verwijderd. Kleuren/focus/keyboardlabels, dialogscrolling en Escape/fullscreen zijn geautomatiseerd gecontroleerd; echte IME/AT, externe viewers/clipboard en fysieke visuele acceptatie blijven niet uitgevoerd. Complexe wereldwijde shaping buiten de bestaande fontdekking is niet bewezen.
+
+T5's één-kern/één-interfacecontract uit sectie 22 blijft functioneel goedgekeurd ontwerp. T5a start pas na T4-acceptatie, definitieve rekencontractgoedkeuring en expliciete starttoestemming.

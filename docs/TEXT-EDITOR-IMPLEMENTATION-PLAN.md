@@ -1,6 +1,6 @@
 # Teksteditor — uitvoeringsplan
 
-Versie 1.5.0 - 2026-10-12. Status: T3 geimplementeerd; wacht op T3-gebruikersacceptatie. T4 niet gestart.
+Versie 1.6.0 - 2026-10-12. Status: T4 geimplementeerd; wacht op T4-gebruikersacceptatie. T5 niet gestart.
 
 Normatief ontwerp: [TEXT-EDITOR-ARCHITECTURE.md](TEXT-EDITOR-ARCHITECTURE.md). Alle werkzaamheden uitsluitend op `chatgpt/editor-development`; geen merge naar main. Bestaande wijzigingen buiten scope blijven onaangeroerd.
 
@@ -46,6 +46,8 @@ Status: uitgevoerd na expliciet T3-akkoord. [T3-CONTRACT.md](T3-CONTRACT.md) en 
 5. Opslag/exportgate voor dynamicValue: IDs/formats roundtrip, actuele geautoriseerde SVG/PNG-snapshot en ontbrekende/denied bronnen. T3-REPORT.md en acceptatie. Handmatig twee bronnen en drie velden gebruiken, daarna één bron wissen en herstellen.
 
 ## T4 — Afwerking en export
+
+Status: uitgevoerd na expliciete opdracht. Zie [T4-CONTRACT.md](T4-CONTRACT.md) en [T4-REPORT.md](T4-REPORT.md) voor daadwerkelijke tests, native-font-PNG-route, rasterbudgetten en resterende handmatige controles. Geen T5-start: afzonderlijke acceptatie en definitief rekencontract blijven vereist.
 
 1. Gemengde lay-out, optionele vaste breedte/wrapping, dynamische bounds en stabiele positie afronden.
 2. Productie-SVG/PNG-export met assetreadiness, zelfstandige fonts/glyphs, rasterlimieten en foutafhandeling.

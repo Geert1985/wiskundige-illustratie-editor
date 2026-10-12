@@ -8,9 +8,9 @@ import {keymap} from 'prosemirror-keymap';
 const marks={};
 for(const [name,tag] of Object.entries({bold:'strong',italic:'em',underline:'u',strike:'s'}))marks[name]={parseDOM:[{tag}],toDOM:()=>[tag,0]};
 marks.script={attrs:{value:{}},parseDOM:[{tag:'sup',getAttrs:()=>({value:'super'})},{tag:'sub',getAttrs:()=>({value:'sub'})}],toDOM:m=>[m.attrs.value==='super'?'sup':'sub',0]};
-for(const [name,css] of [['color','color'],['fontSize','font-size'],['fontId','font-family']])marks[name]={attrs:{value:{}},toDOM:m=>['span',{'data-rich-mark':name,style:`${css}:${name==='fontId'?(m.attrs.value==='serif'?'Source Serif 4':'Source Sans 3'):m.attrs.value}${name==='fontSize'?'px':''}`},0]};
+for(const [name,css] of [['color','color'],['fontSize','font-size'],['fontId','font-family']])marks[name]={attrs:{value:{}},toDOM:m=>['span',{'data-rich-mark':name,style:`${css}:${name==='fontId'?(m.attrs.value==='serif'?'"Source Serif 4"':'"Source Sans 3"'):m.attrs.value}${name==='fontSize'?'px':''}`},0]};
 const schema=new Schema({nodes:{
- doc:{content:'paragraph+'},
+ doc:{content:'paragraph+',attrs:{width:{default:null}}},
  paragraph:{content:'inline*',group:'block',attrs:{align:{default:'left'},lineHeight:{default:1.25}},parseDOM:[{tag:'p'}],toDOM:n=>['p',{style:`text-align:${n.attrs.align};line-height:${n.attrs.lineHeight}`},0]},
  text:{group:'inline'},
  hardBreak:{inline:true,group:'inline',selectable:false,parseDOM:[{tag:'br'}],toDOM:()=>['br']},
@@ -18,7 +18,7 @@ const schema=new Schema({nodes:{
  math:{inline:true,group:'inline',atom:true,draggable:true,attrs:{source:{},runId:{default:null}},parseDOM:[{tag:'span[data-math-source]',getAttrs:n=>({source:window.FZI.MathIllustration.MathSource.validate(n.getAttribute('data-math-source'))})}],toDOM:n=>['span',{'data-math-source':n.attrs.source,'aria-label':`Formule: ${n.attrs.source}`},n.attrs.source]}
 },marks});
 const marksFor=value=>Object.entries(value||{}).map(([k,v])=>schema.marks[k]?.create(['bold','italic','underline','strike'].includes(k)?null:{value:v})).filter(Boolean);
-function toDoc(content){return schema.node('doc',null,content.paragraphs.map(p=>schema.node('paragraph',{align:p.align,lineHeight:p.lineHeight},p.runs.map(r=>r.kind==='hardBreak'?schema.node('hardBreak'):r.kind==='dynamicValue'?schema.node('dynamicValue',{binding:r.binding,format:r.format,runId:r.id},null,marksFor(r.marks)):r.kind==='math'?schema.node('math',{source:r.source,runId:r.id},null,marksFor(r.marks)):schema.text(r.text,marksFor(r.marks))))));}
+function toDoc(content){return schema.node('doc',{width:content.width},content.paragraphs.map(p=>schema.node('paragraph',{align:p.align,lineHeight:p.lineHeight},p.runs.map(r=>r.kind==='hardBreak'?schema.node('hardBreak'):r.kind==='dynamicValue'?schema.node('dynamicValue',{binding:r.binding,format:r.format,runId:r.id},null,marksFor(r.marks)):r.kind==='math'?schema.node('math',{source:r.source,runId:r.id},null,marksFor(r.marks)):schema.text(r.text,marksFor(r.marks))))));}
 function fromDoc(doc,base){
  let pi=0,math=false,dynamic=false;const paragraphs=[],ids=new Set();
  doc.forEach(p=>{const runs=[];p.forEach(n=>{
@@ -28,18 +28,18 @@ function fromDoc(doc,base){
    else if(n.type.name==='math'){math=true;runs.push({id,kind:'math',source:n.attrs.source,marks:m});}
    else runs.push(n.isText?{id,kind:'text',text:n.text,marks:m}:{id,kind:'hardBreak'});
  });paragraphs.push({id:`p${++pi}`,align:p.attrs.align,lineHeight:p.attrs.lineHeight,runs});});
- return window.FZI.MathIllustration.TextContent.validate({...base,schema:Math.max(base.schema,dynamic?3:math?2:1),paragraphs});
+ return window.FZI.MathIllustration.TextContent.validate({...base,width:doc.attrs.width,schema:Math.max(base.schema,dynamic?3:math?2:1),paragraphs});
 }
 function mount(element,initial,onChange=()=>{},options={}){
  const MI=window.FZI.MathIllustration,base=MI.TextContent.validate(initial);let view,editMath=()=>{},editValue=()=>{},serial=0,destroyed=false;const painters=new Set();
  const state=EditorState.create({schema,doc:toDoc(base),plugins:[history(),keymap({'Mod-z':undo,'Mod-y':redo,'Mod-Shift-z':redo,'Mod-b':toggleMark(schema.marks.bold),'Mod-i':toggleMark(schema.marks.italic),'Shift-Enter':(state,dispatch)=>{dispatch(state.tr.replaceSelectionWith(schema.node('hardBreak')));return true;},...baseKeymap})]});
  view=new EditorView(element,{
-   attributes:{role:'textbox','aria-label':'Tekstinhoud','aria-multiline':'true',tabindex:'0'},state,
+   attributes:{style:`font-size:${base.defaults.fontSize}px;font-family:${base.defaults.fontId==='serif'?'"Source Serif 4"':'"Source Sans 3"'};color:${base.defaults.color};font-kerning:none;font-variant-ligatures:none`,role:'textbox','aria-label':'Tekstinhoud','aria-multiline':'true',tabindex:'0'},state,
    handleKeyDown(view,event){if(event.key==='Enter'&&view.state.selection instanceof NodeSelection&&['math','dynamicValue'].includes(view.state.selection.node.type.name)){(view.state.selection.node.type.name==='math'?editMath:editValue)(view.state.selection.from);return true;}return false;},
    dispatchTransaction(tr){const next=view.state.apply(tr);try{const canonical=fromDoc(next.doc,base);view.updateState(next);onChange(canonical);}catch(e){onChange(null,e);}},
    nodeViews:{dynamicValue(node,view,getPos){
      const dom=document.createElement('span');dom.className='rich-value-atom';dom.contentEditable='false';dom.draggable=true;dom.setAttribute('role','group');let lastPaint=null;
-     const paint=()=>{if(destroyed)return;const run={kind:'dynamicValue',binding:node.attrs.binding,format:node.attrs.format},value=options.resolveValue?.(run)||{status:'missing',text:'niet beschikbaar'},m=Object.fromEntries(node.marks.map(mark=>[mark.type.name,mark.attrs.value??true]));const signature=JSON.stringify([value.text,value.status,m]);if(signature===lastPaint)return;lastPaint=signature;dom.textContent=value.text;dom.dataset.valueStatus=value.status;dom.setAttribute('aria-label','Dynamische waarde: '+value.text);dom.style.fontSize=(m.fontSize||base.defaults.fontSize)+'px';dom.style.color=m.color||base.defaults.color;dom.style.fontFamily=(m.fontId||base.defaults.fontId)==='serif'?'Source Serif 4':'Source Sans 3';dom.style.fontWeight=m.bold?'700':'400';dom.style.fontStyle=m.italic?'italic':'normal';dom.style.textDecoration=[m.underline?'underline':'',m.strike?'line-through':''].filter(Boolean).join(' ');dom.style.verticalAlign=m.script==='super'?'super':m.script==='sub'?'sub':'baseline';if(m.script)dom.style.fontSize=((m.fontSize||base.defaults.fontSize)*.7)+'px';};
+     const paint=()=>{if(destroyed)return;const run={kind:'dynamicValue',binding:node.attrs.binding,format:node.attrs.format},value=options.resolveValue?.(run)||{status:'missing',text:'niet beschikbaar'},m=Object.fromEntries(node.marks.map(mark=>[mark.type.name,mark.attrs.value??true]));const signature=JSON.stringify([value.text,value.status,m]);if(signature===lastPaint)return;lastPaint=signature;dom.textContent=value.text;dom.dataset.valueStatus=value.status;dom.setAttribute('aria-label','Dynamische waarde: '+value.text);dom.style.fontSize=(m.fontSize||base.defaults.fontSize)+'px';dom.style.color=m.color||base.defaults.color;dom.style.fontFamily=(m.fontId||base.defaults.fontId)==='serif'?'"Source Serif 4"':'"Source Sans 3"';dom.style.fontWeight=m.bold?'700':'400';dom.style.fontStyle=m.italic?'italic':'normal';dom.style.textDecoration=[m.underline?'underline':'',m.strike?'line-through':''].filter(Boolean).join(' ');dom.style.verticalAlign=m.script==='super'?'super':m.script==='sub'?'sub':'baseline';if(m.script)dom.style.fontSize=((m.fontSize||base.defaults.fontSize)*.7)+'px';};
      paint();painters.add(paint);dom.addEventListener('dblclick',event=>{event.preventDefault();view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc,getPos())));editValue(getPos());});return {dom,ignoreMutation:mutation=>mutation.type!=='selection',destroy(){painters.delete(paint);}};
    },math(node,view,getPos){
      const dom=document.createElement('span');dom.className='rich-math-atom';dom.contentEditable='false';dom.draggable=true;dom.setAttribute('role','img');dom.setAttribute('aria-label',`Formule: ${node.attrs.source}`);let dead=false;
@@ -56,6 +56,7 @@ function mount(element,initial,onChange=()=>{},options={}){
  const bookmark=()=>({selection:view.state.selection.getBookmark(),doc:view.state.doc});
  const restore=b=>{if(!b||b.doc!==view.state.doc)throw Error('De tekstselectie is gewijzigd.');view.dispatch(view.state.tr.setSelection(b.selection.resolve(view.state.doc)));};
  return {
+   setWidth(value){MI.TextContent.validate({...fromDoc(view.state.doc,base),width:value});view.dispatch(closeHistory(view.state.tr).setDocAttribute('width',value));},
    view,get:()=>fromDoc(view.state.doc,base),focus:()=>view.focus(),bookmark,restore,
    setValueEditHandler:handler=>{editValue=handler;},refreshValues(){for(const paint of painters)paint();},
    setMathEditHandler:handler=>{editMath=handler;},setEditable:value=>view.setProps({editable:()=>value}),

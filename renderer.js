@@ -32,6 +32,7 @@
   function number(value, digits) { return Number(Number(value).toFixed(digits == null ? 6 : digits)); }
   function axisNumber(value) { const n = Number(Number(value).toFixed(1)); return Object.is(n, -0) ? 0 : n; }
   function dash(style) { return style.dash ? ' stroke-dasharray="' + esc(style.dash) + '"' : ""; }
+  function fontFamily(value){return String(value).replace(/(?<!["'\w])Source Sans 3(?=\s*(?:,|$))/g,'"Source Sans 3"').replace(/(?<!["'\w])Source Serif 4(?=\s*(?:,|$))/g,'"Source Serif 4"');}
   function strokeAttrs(style) { return ['stroke="' + esc(style.stroke) + '"','stroke-width="' + esc(number(style.strokeWidth)) + '"','stroke-linecap="round"','stroke-linejoin="round"','opacity="' + esc(number(style.opacity)) + '"',dash(style)].join(" "); }
 
   class SvgRenderer {
@@ -101,9 +102,9 @@
           if (Math.abs(x) < 1e-9) continue;
           const sx = this.mapX(x);
           parts.push('<line x1="' + sx + '" y1="' + (y0 - 4) + '" x2="' + sx + '" y2="' + (y0 + 4) + '" stroke="' + tickStroke + '" stroke-width="1"/>');
-          if (this.showAxisLabels) parts.push('<text x="' + sx + '" y="' + (y0 + 18) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">' + esc(axisNumber(x)) + '</text>');
+          if (this.showAxisLabels) parts.push('<text x="' + sx + '" y="' + (y0 + 18) + '" fill="' + labelFill + '" font-size="12" font-family="&quot;Source Sans 3&quot;, sans-serif" text-anchor="middle">' + esc(axisNumber(x)) + '</text>');
         }
-        if (this.showAxisLabels) parts.push('<text '+(editorCanvas?'data-canvas-axis-label="x" ':'')+'x="' + (this.mapX(b.xMax) - 8) + '" y="' + (y0 - 8) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif" text-anchor="end">x</text>');
+        if (this.showAxisLabels) parts.push('<text '+(editorCanvas?'data-canvas-axis-label="x" ':'')+'x="' + (this.mapX(b.xMax) - 8) + '" y="' + (y0 - 8) + '" fill="' + labelFill + '" font-size="13" font-family="&quot;Source Sans 3&quot;, sans-serif" text-anchor="end">x</text>');
       }
       if (canDrawY) {
         parts.push('<line '+(editorCanvas?'data-canvas-axis="y" ':'')+'x1="' + x0 + '" y1="' + this.mapY(b.yMin) + '" x2="' + x0 + '" y2="' + this.mapY(b.yMax) + '" stroke="' + axisStroke + '" stroke-width="1.4"/>');
@@ -111,12 +112,12 @@
           if (Math.abs(y) < 1e-9) continue;
           const sy = this.mapY(y);
           parts.push('<line x1="' + (x0 - 4) + '" y1="' + sy + '" x2="' + (x0 + 4) + '" y2="' + sy + '" stroke="' + tickStroke + '" stroke-width="1"/>');
-          if (this.showAxisLabels) parts.push('<text x="' + (x0 - 8) + '" y="' + (sy + 4) + '" fill="' + labelFill + '" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="end">' + esc(axisNumber(y)) + '</text>');
+          if (this.showAxisLabels) parts.push('<text x="' + (x0 - 8) + '" y="' + (sy + 4) + '" fill="' + labelFill + '" font-size="12" font-family="&quot;Source Sans 3&quot;, sans-serif" text-anchor="end">' + esc(axisNumber(y)) + '</text>');
         }
-        if (this.showAxisLabels) parts.push('<text '+(editorCanvas?'data-canvas-axis-label="y" ':'')+'x="' + (x0 + 8) + '" y="' + (this.mapY(b.yMax) + 12) + '" fill="' + labelFill + '" font-size="13" font-family="Source Sans 3, sans-serif">y</text>');
+        if (this.showAxisLabels) parts.push('<text '+(editorCanvas?'data-canvas-axis-label="y" ':'')+'x="' + (x0 + 8) + '" y="' + (this.mapY(b.yMax) + 12) + '" fill="' + labelFill + '" font-size="13" font-family="&quot;Source Sans 3&quot;, sans-serif">y</text>');
       }
       if (this.showOrigin && (canDrawX || canDrawY)) {
-        parts.push('<text x="' + (x0 + 7) + '" y="' + (y0 + 16) + '" fill="' + labelFill + '" font-size="11" font-family="Source Sans 3, sans-serif">0</text>');
+        parts.push('<text x="' + (x0 + 7) + '" y="' + (y0 + 16) + '" fill="' + labelFill + '" font-size="11" font-family="&quot;Source Sans 3&quot;, sans-serif">0</text>');
       }
       return '<g data-illustration-axes aria-hidden="true">' + parts.join("") + '</g>';
     }
@@ -158,8 +159,8 @@
       if (length < 1e-9) return "";
       const mx = (sx + ex) / 2, my = (sy + ey) / 2 - 10, label = esc(axisNumber(length));
       if (["straight", "ray", "vector"].includes(preview.type)) return '<g data-drawing-preview>' + this.renderDirected({ type: preview.type, x1: preview.start.x, y1: preview.start.y, x2: preview.end.x, y2: preview.end.y, style: { stroke: "#9a7a32", strokeWidth: 2, opacity: 1, dash: "7 5" } },clipBounds) + '<text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12">' + label + '</text></g>';
-      if (preview.type === "line") return '<g data-drawing-preview><line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/><circle cx="' + sx + '" cy="' + sy + '" r="3" fill="#9a7a32"/><circle cx="' + ex + '" cy="' + ey + '" r="3" fill="#9a7a32"/><text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">' + label + '</text></g>';
-      if (preview.type === "circle") return '<g data-drawing-preview><circle cx="' + sx + '" cy="' + sy + '" r="' + (length * this.scale()) + '" fill="none" stroke="#9a7a32" stroke-width="1.5" stroke-dasharray="7 5"/><line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="#9a7a32" stroke-width="2"/><circle cx="' + sx + '" cy="' + sy + '" r="3" fill="#9a7a32"/><circle cx="' + ex + '" cy="' + ey + '" r="3" fill="#9a7a32"/><text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12" font-family="Source Sans 3, sans-serif" text-anchor="middle">r = ' + label + '</text></g>';
+      if (preview.type === "line") return '<g data-drawing-preview><line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/><circle cx="' + sx + '" cy="' + sy + '" r="3" fill="#9a7a32"/><circle cx="' + ex + '" cy="' + ey + '" r="3" fill="#9a7a32"/><text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12" font-family="&quot;Source Sans 3&quot;, sans-serif" text-anchor="middle">' + label + '</text></g>';
+      if (preview.type === "circle") return '<g data-drawing-preview><circle cx="' + sx + '" cy="' + sy + '" r="' + (length * this.scale()) + '" fill="none" stroke="#9a7a32" stroke-width="1.5" stroke-dasharray="7 5"/><line x1="' + sx + '" y1="' + sy + '" x2="' + ex + '" y2="' + ey + '" stroke="#9a7a32" stroke-width="2"/><circle cx="' + sx + '" cy="' + sy + '" r="3" fill="#9a7a32"/><circle cx="' + ex + '" cy="' + ey + '" r="3" fill="#9a7a32"/><text x="' + mx + '" y="' + my + '" fill="#6f5925" font-size="12" font-family="&quot;Source Sans 3&quot;, sans-serif" text-anchor="middle">r = ' + label + '</text></g>';
       return "";
     }
 
@@ -168,7 +169,7 @@
       this.syncAspectRatio();
       const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object,clipBounds||this.bounds)).join("\n");
       const background = this.background === "transparent" ? "" : '<rect x="0" y="0" width="' + esc(this.width) + '" height="' + esc(this.height) + '" fill="' + esc(this.background) + '"/>';
-      const fontStyle=embedFonts&&model.all().some(o=>o.textContent)?MI.TextFonts?.svgStyle?.()||'':'';
+      const fontStyle=embedFonts?MI.TextFonts?.svgStyle?.()||'':'';
       return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">'+fontStyle,'<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(clipBounds||this.bounds),this.renderAxes(editorCanvas),body,this.renderPreview(clipBounds||this.bounds),'</svg>'].join("\n").replace(/<[^>]*>/g,tag=>tag.replace(/("[^"]*"|'[^']*')|(\sdata-[\w-]+)(?=\s|\/?>)(?!\s*=)/g,(match,quoted,attribute)=>quoted||attribute+'=""'));
     }
 
@@ -185,7 +186,7 @@
       const dx = object.labelOffsetX != null && Number.isFinite(Number(object.labelOffsetX)) ? Number(object.labelOffsetX) * scale : legacyDx;
       const dy = object.labelOffsetY != null && Number.isFinite(Number(object.labelOffsetY)) ? -Number(object.labelOffsetY) * scale : legacyDy;
       const fontSize=object.type==='text' && object.construction && ['area','perimeter'].includes(object.construction.kind)?style.fontSize||16:14;
-      return '<text class="object-label" data-label-id="' + esc(object.id) + '" x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="'+number(fontSize)+'" font-family="Source Sans 3, sans-serif">' + esc(label) + '</text>';
+      return '<text class="object-label" data-label-id="' + esc(object.id) + '" x="' + number(x + dx) + '" y="' + number(y + dy) + '" fill="' + esc(labelColor) + '" font-size="'+number(fontSize)+'" font-family="&quot;Source Sans 3&quot;, sans-serif">' + esc(label) + '</text>';
     }
 
     renderDirected(object,clipBounds=this.bounds) {
@@ -256,7 +257,7 @@
       if (object.type === "text") {
         const transform = object.rotation ? ' transform="rotate(' + number(object.rotation) + ' ' + number(this.mapX(object.x)) + ' ' + number(this.mapY(object.y)) + ')"' : "";
         if(object.textContent) svg=this.renderRichText(object);
-        else svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(style.fontFamily || "Source Sans 3, sans-serif") + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(MI.DynamicText.value(object,this.measurementSources,{measurement:this.measurement,angleMeasurement:this.angleMeasurement})) + '</text>';
+        else svg = '<text x="' + number(this.mapX(object.x)) + '" y="' + number(this.mapY(object.y)) + '" fill="' + esc(style.fill || style.stroke || "#222") + '" font-size="' + number(style.fontSize || 16) + '" font-family="' + esc(fontFamily(style.fontFamily || "Source Sans 3, sans-serif")) + '" text-anchor="' + esc(style.anchor || "start") + '"' + transform + '>' + esc(MI.DynamicText.value(object,this.measurementSources,{measurement:this.measurement,angleMeasurement:this.angleMeasurement})) + '</text>';
         if(object.construction && ['area','perimeter'].includes(object.construction.kind)) {
           const kind=object.construction.kind,source=this.measurementSources?.get(object.construction.sources[0].objectId),amount=source?MI.MeasurementUnits.figureValue(source,kind):(this.measurementValueFor?.(object)??Number(object.text.split('=').at(-1)));
           const label=this.measurement?(kind==='area'?'Oppervlakte = ':'Omtrek = ')+MI.MeasurementUnits.format(amount,kind==='area'?'area':'length',this.measurement):object.text;
@@ -281,7 +282,7 @@
     }
     renderRichText(object) {
       if(MI.TextValues.runs(object.textContent).length)object={...object,textContent:MI.TextValues.renderContent(object.textContent,this.measurementSources,{measurement:this.measurement,angleMeasurement:this.angleMeasurement},this.textSourceAllowed)};
-      return object.textContent.paragraphs.some(p=>p.runs.some(r=>r.kind==='math'))
+      return object.textContent.width!=null||object.textContent.paragraphs.some(p=>p.runs.some(r=>r.kind==='math'))
         ? MI.RichTextRenderer.render(object,this.mapX(object.x),this.mapY(object.y))
         : MI.RichTextRenderer.legacy.call(this,object);
     }

@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 1.4.0 (shared standalone/inline calculator design, 2026-10-12)
+Version: 1.5.0 (T4 checkpoint, 2026-10-12)
 Status: proposed sequencing; validate against repository
 Date: 2026-10-12
 
@@ -201,3 +201,8 @@ The scientific calculator becomes a **standalone application feature** as well a
 Each step retains its own technical report, tests, explicit acceptance and separately authorized start. The functional extension does not grant blanket implementation permission or waive the T5a mathematical gate. Test toolbar `2+3*4=14` without history/object changes; `sin(30 deg)=0.5`; changing a circle radius and its computed area; parity between contexts; restricted data denial; T5c editing/history/JSON/SVG/three modes; and focus/keyboard/Escape/fullscreen/cancellation in both contexts. These are future required tests, not current PASS claims.
 
 Future function graphs, parametric constructions and exercises may reuse this engine through their own validated adapters and permissions. They remain future backlog work, not delivered by T5 calculator design. Existing v7 structured text, legacy support, mathematical requirements and unrelated geometry milestones remain retained.
+
+
+## T4 implementation checkpoint (2026-10-12)
+
+Explicitly authorized and delivered for user acceptance: optional fixed text width with mixed wrapping, local width history/format grants, atomic math/source values, shared canvas/export layout and stable anchors; production SVG/PNG controls with local asset readiness, native-font PNG rastering, layer preservation, quotas and revision/epoch delivery guards. Legacy v7/schema 1–3 and metadata/binding compatibility retained. See [T4 contract](T4-CONTRACT.md) and [T4 report](T4-REPORT.md) for actual test/measurement evidence and remaining manual controls. No new dependencies. Await T4 acceptance; T5a additionally requires definitive mathematical contract approval and explicit start. The approved standalone/inline shared calculator design remains unimplemented.

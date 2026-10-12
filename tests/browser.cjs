@@ -40,7 +40,7 @@ const server = http.createServer((req, res) => {
       e.renderer.showGrid = true;
       for (let i = 0; i < 250; i++) wheel(100);
       const svg = e.renderSVG();
-      return { maxScale, step, blocked, outScale, finite: !/NaN|Infinity/.test(svg), lines: (svg.match(/<line /g) || []).length };
+      return { maxScale, step, blocked, outScale, finite: !/NaN|Infinity/.test(svg.replace(/data:font\/ttf;base64,[A-Za-z0-9+/=]+/g,'embedded-font')), lines: (svg.match(/<line /g) || []).length };
     });
     assert.ok(Math.abs(result.maxScale - 700) < 1e-8); assert.equal(result.step, .1);
     assert.ok(result.blocked); assert.ok(result.outScale < 700); assert.ok(result.finite); assert.ok(result.lines < 1000);
@@ -105,6 +105,7 @@ const server = http.createServer((req, res) => {
     const richText = await require('./browser-rich-text.cjs')(page);
     const richMath = await require('./browser-rich-math.cjs')(page);
     const richValues = await require('./browser-rich-values.cjs')(page);
+    const richLayout = await require('./browser-rich-layout.cjs')(page);
     const polygon = await require('./browser-polygon.cjs')(page);
     const styles = await require('./browser-styles.cjs')(page);
     const measurementsGroups = await require('./browser-measurements-groups.cjs')(page);
@@ -143,6 +144,6 @@ const server = http.createServer((req, res) => {
     const angleArms=await require('./browser-angle-arms.cjs')(page);
     const stackedTools=await require('./browser-stacked-tools.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, richText, richMath, richValues, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, splitTools, bisectorClip, minimalObjectList,canvasFullscreen,semanticSequence,linkedPaths, postM5aUX, lineIntersection, lineCircle, circleCircle, derivedCircle, linkedTangent, unitsScale, pointProjections, dynamicAngles, dynamicText, axisReferences, stackedTools, angleArms, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, richText, richMath, richValues, richLayout, polygon, styles, measurementsGroups, constructions, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, splitTools, bisectorClip, minimalObjectList,canvasFullscreen,semanticSequence,linkedPaths, postM5aUX, lineIntersection, lineCircle, circleCircle, derivedCircle, linkedTangent, unitsScale, pointProjections, dynamicAngles, dynamicText, axisReferences, stackedTools, angleArms, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

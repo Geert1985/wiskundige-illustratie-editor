@@ -85,3 +85,10 @@ Two additional Node lifecycle tests (67 total) cover dragging the painted circle
 ## T3 rich source values
 
 Node: tests/text-editor-t3.test.cjs. Edge: tests/browser-rich-values.cjs (part of the full suite). Focused debugging: node scripts/run-browser-module.cjs browser-rich-values.cjs. Full commands remain npm test and npm run test:edge. Source values are resolved at render; do not update golden storage snapshots with calculated values. Build source/editor changes with npm run build:text; current bundle metadata is in experiments/text-editor-build/build-results.json. Historical T2 comparison/bundle evidence is preserved. Real IME/AT and external-viewer checks require separate manual evidence.
+
+
+## T4 wrapping and production export
+
+Node: text-editor-t4.test.cjs. Edge: browser-rich-layout.cjs, included in the full suite; focused command: node scripts/run-browser-module.cjs browser-rich-layout.cjs. This checks real SVG/PNG downloads offline, fixed width/local undo/Cancel, pixel repeatability and native-SVG comparison, all five local font faces with Latin/Greek/combining characters and rotated scripts, scale 2, layer ordering, restricted redaction/grants/epoch rejection, fullscreen/keyboard and responsive screenshots. Existing numeric SVG checks exclude only base64 font payloads; malformed numeric coordinates are still detected.
+
+Build via npm run build:text. The existing experiments/text-editor-preflight pinned dependencies are needed for build and PNG screenshot decoding (pngjs); install them with npm ci --prefix experiments/text-editor-preflight as for T1/T2. No new dependency is introduced by T4. PNG internally uses native SVG positions/local canvas fonts and in-place temporary text bitmaps; do not mistake Image's font fallback raster for the production-font reference. Record machine/browser, dimensions, tolerances and anti-alias differences; actual IME/AT/physical-device/external-viewer checks require manual evidence.

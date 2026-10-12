@@ -29,7 +29,7 @@
     return {status,text:f.prefix+text+f.suffix};
     }catch{return {status:'invalid',text:f.prefix+'niet beschikbaar'+f.suffix};}
   }
-  function renderContent(content,sources,meta={},allowed){return {...content,paragraphs:content.paragraphs.map(p=>({...p,runs:p.runs.map(r=>r.kind==='dynamicValue'?{id:r.id,kind:'text',text:resolve(r,sources,meta,allowed).text,marks:r.marks}:r)}))};}
+  function renderContent(content,sources,meta={},allowed){return {...content,paragraphs:content.paragraphs.map(p=>({...p,runs:p.runs.map(r=>r.kind==='dynamicValue'?{id:r.id,kind:'text',text:resolve(r,sources,meta,allowed).text,marks:r.marks,atomic:true}:r)}))};}
   function redact(content,allowed){return {...content,paragraphs:content.paragraphs.map(p=>({...p,runs:p.runs.map(r=>r.kind==='dynamicValue'&&!allowed(r.binding.sourceId,r.binding.property)?{id:r.id,kind:'text',text:'niet beschikbaar',marks:r.marks}:r)}))};}
   function migrate(object){
     if('legacyStaticText'in object)throw Error('Een legacy objectveld botst met de tekstbackup.');
