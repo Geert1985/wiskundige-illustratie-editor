@@ -65,3 +65,7 @@ Oude tests zochten NaN/Infinity over het hele SVG-bestand en vonden toevallige l
 4. Open de teksteditor in fullscreen; Tab/focus en kindpaneel-Escape moeten werken. Escape sluit de teksteditor zonder fullscreenexit. Test op kleine viewport en met jouw IME/schermlezer indien van toepassing.
 
 Wacht op T4-gebruikersacceptatie. T5a vereist daarna nog definitieve rekencontractgoedkeuring en expliciete starttoestemming; de functioneel goedgekeurde zelfstandige/inline-calculator is uitsluitend ontwerp.
+
+## Commitregistratie
+
+De geteste T4-implementatie staat in commit `1f3c0854371cf5144bb547d3a4f93d8b087153ed`. Deze verslagcommit bevat uitsluitend de SHA-registratie en het bijgewerkte machineleesbare testbewijs. De volledige testsuite is uitgevoerd op de genoemde implementatiecommit.

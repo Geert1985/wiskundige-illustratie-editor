@@ -1066,5 +1066,6 @@
     "external clipboard / SVG viewers",
     "physical-device visual assessment",
     "complex shaping outside existing font coverage"
-  ]
+  ],
+  "testedImplementationCommit": "1f3c0854371cf5144bb547d3a4f93d8b087153ed"
 }
