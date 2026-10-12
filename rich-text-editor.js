@@ -1,6 +1,6 @@
 import {Schema} from 'prosemirror-model';
 import {EditorState,TextSelection,NodeSelection} from 'prosemirror-state';
-import {EditorView} from 'prosemirror-view';
+import {EditorView,Decoration,DecorationSet} from 'prosemirror-view';
 import {toggleMark,baseKeymap} from 'prosemirror-commands';
 import {history,undo,redo,undoDepth,redoDepth,closeHistory} from 'prosemirror-history';
 import {keymap} from 'prosemirror-keymap';
@@ -40,6 +40,16 @@ function mount(element,initial,onChange=()=>{},options={}){
  const state=EditorState.create({schema,doc:toDoc(base),plugins:[history(),keymap({'Mod-z':undo,'Mod-y':redo,'Mod-Shift-z':redo,'Mod-b':toggleMark(schema.marks.bold),'Mod-i':toggleMark(schema.marks.italic),'Shift-Enter':(state,dispatch)=>{dispatch(state.tr.replaceSelectionWith(schema.node('hardBreak')));return true;},...baseKeymap})]});
  view=new EditorView(element,{
    attributes:{style:`font-size:${base.defaults.fontSize}px;font-family:${base.defaults.fontId==='serif'?'"Source Serif 4"':'"Source Sans 3"'};color:${base.defaults.color};font-kerning:none;font-variant-ligatures:none`,role:'textbox','aria-label':'Tekstinhoud','aria-multiline':'true',tabindex:'0'},state,
+   decorations(state){
+     const selection=state.selection;
+     if(selection.empty||selection instanceof NodeSelection)return DecorationSet.empty;
+     const selected=[];
+     state.doc.nodesBetween(selection.from,selection.to,(node,pos)=>{
+       if(['math','dynamicValue'].includes(node.type.name)&&pos>=selection.from&&pos+node.nodeSize<=selection.to)
+         selected.push(Decoration.node(pos,pos+node.nodeSize,{class:'rich-atom-range-selected'}));
+     });
+     return DecorationSet.create(state.doc,selected);
+   },
    handleKeyDown(view,event){if(event.key==='Enter'&&view.state.selection instanceof NodeSelection&&['math','dynamicValue'].includes(view.state.selection.node.type.name)){(view.state.selection.node.type.name==='math'?editMath:editValue)(view.state.selection.from);return true;}return false;},
    dispatchTransaction(tr){const next=view.state.apply(tr);try{const canonical=fromDoc(next.doc,base);view.updateState(next);onChange(canonical);options.onStateChange?.(toolbarState());}catch(e){onChange(null,e);}},
    nodeViews:{dynamicValue(node,view,getPos){

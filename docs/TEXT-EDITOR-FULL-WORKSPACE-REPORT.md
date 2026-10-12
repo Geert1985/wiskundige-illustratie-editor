@@ -1,6 +1,6 @@
 # Wiskundige Tekst Editor — geïntegreerde werkruimte
 
-Versie 1.4.0 — 2026-10-12.
+Versie 1.5.0 — 2026-10-12.
 Status: volledige UI-implementatie geleverd; gebruikersacceptatie nog niet uitgevoerd.
 Branch: `chatgpt/text-editor-full-workspace`.
 Basis: `chatgpt/t5-calculator`, commit `ec750d3e793e40bdfac9acc683b24307600cc3d6`.
@@ -130,3 +130,9 @@ Geen tests uitgevoerd. Handmatig controleren: standaard 2 decimalen, andere docu
 ## 13. Zichtbare selectie van inlinevelden
 
 De bestaande ProseMirror NodeSelection-class krijgt voor formule- en waardeatomen een gouden omlijning en lichte achtergrond op het witte tekstcanvas. De indicator is niet afhankelijk van editorfocus en blijft daardoor zichtbaar bij bediening van invoerpanelen. Waardetekst krijgt ook een passende native tekstselectiekleur. Selectie blijft uitsluitend presentatiestatus en wordt niet opgeslagen of geëxporteerd. Geen wijziging aan editortransacties, atoomediting of documentmodel; geen tests uitgevoerd. Gebruiker controleert selectie via klik/toetsenbord, focusverplaatsing, dubbelklikbewerking, deselectie en donkere/gekleurde veldinhoud.
+
+## 14. Inlinevelden binnen een tekstselectie
+
+ProseMirror node-decorations markeren nu alle formule-/waardeatomen die volledig binnen een niet-lege tekstselectie vallen. Ze gebruiken dezelfde gouden omlijning en lichte achtergrond als een afzonderlijke NodeSelection. De decoraties volgen de actuele editorselectie, waaronder slepen, toetsenbordselectie en Selecteer alles, en verdwijnen als de selectie wijzigt. Geen hoverafhankelijkheid, documentmutatie, opgeslagen markering of extra historyactie.
+
+De bestaande editorbundle is opnieuw gegenereerd met de bestaande builddependencies en de cacheversie is verhoogd. Dit was uitsluitend een productiebuild, geen test- of verificatierun. Geen tests uitgevoerd. Handmatige controle blijft open voor selecties met één/meerdere atomen, meerdere alinea's, selectie in beide richtingen, Shift+pijlen, Selecteer alles, focuswisseling en deselectie.

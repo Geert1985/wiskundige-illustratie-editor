@@ -286,15 +286,15 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   .text-feedback-panel,.text-insert-panel{padding-top:6px;padding-bottom:6px}
 }
 /* Atomic field selection remains visible when focus moves to the input panels. */
-.text-editor-dialog .rich-text-surface .rich-value-atom.ProseMirror-selectednode,
-.text-editor-dialog .rich-text-surface .rich-math-atom.ProseMirror-selectednode{
+.text-editor-dialog .rich-text-surface .rich-value-atom:is(.ProseMirror-selectednode,.rich-atom-range-selected),
+.text-editor-dialog .rich-text-surface .rich-math-atom:is(.ProseMirror-selectednode,.rich-atom-range-selected){
   outline:2px solid #b88a12;
   outline-offset:2px;
   border-radius:3px;
   background-color:#fff0b3;
   box-shadow:0 0 0 3px #f2ca5940;
 }
-.text-editor-dialog .rich-text-surface .rich-math-atom.ProseMirror-selectednode{
+.text-editor-dialog .rich-text-surface .rich-math-atom:is(.ProseMirror-selectednode,.rich-atom-range-selected){
   background-image:none!important;
 }
 .text-editor-dialog .rich-text-surface .rich-value-atom::selection,
