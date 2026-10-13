@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.6.0
+Version: 1.6.1
 Status: proposed; reconcile with repository before implementation. T5a and the full text workspace are accepted and integrated; calculator F11 and future TI-36X Pro parity remain unimplemented. M6 geometry precedes the separately gated calculator milestones.
 Date: 2026-10-12
 
