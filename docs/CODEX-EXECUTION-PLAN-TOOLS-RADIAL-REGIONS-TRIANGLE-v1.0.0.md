@@ -1,19 +1,19 @@
 # Codex — uitvoeringsplan voor nieuwe geometrie-/UI-trajecten
-Versie: 1.0.0 · 2026-10-13 · status: geplande taken, geen implementatie-opdracht.
+Versie: 1.0.1 · 2026-10-13 · status: geplande taken, geen implementatie-opdracht.
 
 ## Bronnen (in deze volgorde)
 1. `docs/DEVELOPMENT-ROADMAP.md` v2.5.0: globale prioriteit en fasegrenzen.
 2. `docs/GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md`: normatief gedrags- en architectuurcontract voor alle vier uitbreidingen.
 3. `docs/FEATURE-BACKLOG.md` v1.7.0: functionele volledigheid.
-4. `docs/TOOL-PANEL-REORGANIZATION-REPORT.md` en `docs/M6A-TRIANGLE-CENTERS-CONTRACT.md`: referenties van afzonderlijke ontwikkelbranches, **niet** bewijs dat hun code op main staat.
+4. `docs/TOOL-PANEL-REORGANIZATION-REPORT.md` en `docs/M6A-TRIANGLE-CENTERS-CONTRACT.md`: historische specificaties/rapporten waarvan de corresponderende M6a- en toolpanelimplementatie inmiddels op `main` staat.
 5. Actuele code, tests en manifest zijn uiteindelijk de bron van waarheid voor wat werkelijk geïmplementeerd is.
 
 ## Werkwijze
-Begin met **SYNC-0** en lever een korte statusmatrix: `main` SHA, relevante featurebranches/SHAs, concrete merged/unmerged code, bestaande M6a-centra en categorieën, relevante grants/schema's, open kwaliteitspoorten, conflicts. Documenteer conflicten en hergebruik de recentste juiste branchbasis; merge geen losstaande ontwikkelingen zonder gebruikersakkoord.
+**SYNC-0 is uitgevoerd** door Codex op main SHA `54b2f55027b69c39875f7ea4a5ebe8b16f1d2bde`, zonder codewijzigingen of nieuwe tests. M6a-centra en de bestaande paneelimplementatie zijn geïntegreerd; UI-T1, G-TRI1, UI-R1/2, REG-1/2 zijn nog niet geïmplementeerd. Gebruik voortaan de actuele main als basis en respecteer open handmatige acceptatie. Historische rapporten noemen 585 Node PASS en 54 Edge-modules; herverifieer wanneer de volgende codewijziging dat vereist.
 
 Vervolgens in aparte opdrachten en branches:
 - **CORE-1 — ontwerp**: actualiseer de pure herbruikbare functies/API-interfaces na audit van bestaande services. Maak geen nieuwe algemene geometry engine of productcode voordat ontwerp-acceptatie er is. Model **GPT-6 High**.
-- **UI-T1 — implementatie**: Vrije objecten met cirkel/driehoek/veelhoek, daaronder Constructies; ontbrekende Gebieden & opvulling; exact 8 categorieën, geen gewijzigde `data-canvas-tool` IDs, werkende M6a-knoppen en inert placeholders. Begin op correcte toolpanelbranch. Model **GPT-6.1 Sol Medium**; eindcontrole **GPT-6 High**.
+- **UI-T1 — implementatie**: Vrije objecten met cirkel/driehoek/veelhoek, daaronder Constructies; ontbrekende Gebieden & opvulling; exact 8 categorieën, geen gewijzigde `data-canvas-tool` IDs, werkende M6a-knoppen en inert placeholders. Begin vanaf actuele `main`; bestaande toolpanelcode is daar al geïntegreerd. Model **GPT-6.1 Sol Medium**; eindcontrole **GPT-6 High**.
 - **G-TRI1 — implementatie**: drie bestaande punten A/B/C, één geconstrueerd `polygon` met drie vertices, typed construction sources, dynamiek, recoverable invalid, niet slepen, M6a-triangle-input, JSON/undo/SVG/PNG, author/restricted. Model **GPT-6 High**. Neem eerst expliciet ontwerpbesluit over constructor/schema-aanpassing en ontvang gebruikers-GO wanneer structureel nodig.
 - **UI-R1 — ontwerp**: visueel/keyboard/ARIA/context contract radiaalmenu, preserving inspector access. Model **GPT-6 High**.
 - **UI-R2 — implementatie**: generieke RadialMenu + geautoriseerde per-object property-acties, terugval naar volledige rechter inspector. Model **GPT-6 High** architectuur, **GPT-6.1 Sol Medium** vormgeving.
@@ -32,4 +32,4 @@ Vervolgens in aparte opdrachten en branches:
 - Commit en push naar featurebranch; **niet automatisch naar main mergen**. Wacht op expliciete gebruikersacceptatie vóór de volgende implementatiefase.
 
 ## Eerste Codex-opdracht (copy/paste)
-Inspecteer `main`, `codex/tool-panel-reorganization` en de eventuele M6a-/driehoekbranches. Vergelijk daadwerkelijk beschikbare code, docs, manifests, tool-ID's, polygon/triangle-model en rechten met `docs/GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md` en de roadmap v2.5.0. Lever een compacte SYNC-0 inventaris van verschil, risico, aanbevolen merge-/implementatievolgorde en exact welke ontwerpkeuzes nog gebruikersgoedkeuring vereisen. Wijzig in deze eerste opdracht **geen productiecode**, maak geen nieuwe mockups en start geen latere mijlpalen. Gebruik GPT-6 High.
+**Volgende opdracht — CORE-1:** inspecteer op actuele `main` de bestaande construction graph, polygon/triangle-bronrol, units/formatting, inspectorcommands, gereedschapscatalogus en permissies. Lever een concreet hergebruik-/API-ontwerp voor `resolveRegionGeometry`, `computeRegionArea`, gedeelde eigenschappenacties en declaratieve toolindeling; toon bestaande functies die al voldoen en identificeer uitsluitend noodzakelijke adapters. Voeg test- en schema-/permissiecontracten toe en stop vóór productiecode. Gebruik GPT-6 High.
