@@ -861,7 +861,7 @@ Deze actuele status vult de historische roadmap v2.5.0 aan; eerdere plannen, mil
 | CORE-1 | Architectuurdocument geactualiseerd tegen bestaande M6a/M6b/G-TRI1/ToolCatalog-code | Documentatiepoort geleverd; acceptatie van het ontwerp blijft expliciet. |
 | UI-T1 — toolcatalogus en paneel | Geïntegreerd op `main`; acht categorieën en bestaande tool-ID's behouden | Handmatige UX-controle uit `UI-T1-REPORT.md` blijft open. |
 | G-TRI1 — driehoek uit drie punten | Geïntegreerd op `main` via de mergegeschiedenis vóór `f403984` | Handmatige controles uit `G-TRI1-REPORT.md` blijven open. |
-| REG-1 — dynamische regio's | Contract v1.0.0 voorgesteld in `REG-1-CONTRACT.md`; niet geïmplementeerd | Wacht op expliciete goedkeuring van document v8, `regionSchema:1`, `constructionSchema:5` en restricted-rights-matrix. |
+| REG-1 — dynamische regio's | Contract v1.0.1 voorgesteld in `REG-1-CONTRACT.md`; niet geïmplementeerd | Wacht op expliciete goedkeuring van document v8, `regionSchema:1`, `constructionSchema:5` en restricted-rights-matrix. |
 | REG-2 — regio-objecten | Niet gestart | Alleen na REG-1-goedkeuring én aparte uitvoerings-GO; behoud alle contractgates. |
 | UI-R1 — radiaalmenuontwerp | Niet gestart | Start na REG-2 als aparte ontwerp-/acceptatiepoort. |
 | UI-R2 — radiale bediening | Niet gestart | Start na UI-R1-goedkeuring; inspector blijft bereikbaar tot afzonderlijke UX-acceptatie. |
@@ -870,4 +870,4 @@ Deze actuele status vult de historische roadmap v2.5.0 aan; eerdere plannen, mil
 
 **Gereedschapsclassificatie:** categorie volgt primaire taak, niet de prefix van een ID of alleen het resultaatobjecttype. `Vrije objecten` bevat handmatig getekende primaire geometrie; `Constructies` bevat afgeleide meetkundige punten/lijnen/cirkels en de G-TRI1-driehoek; `Meten & analyseren` bevat meet-/analyseacties; `Gebieden & opvulling` bevat selecteerbare afhankelijke gevulde polygon-, sector- en segmentgebieden. Overige bestaande topgroepen behouden hun betekenis. Een actief catalogusitem vereist een bestaande stabiele tool-ID, passend command-ID en bestaande autorisatie. `planned` is inert en heeft geen `data-tool`, command-ID, focusstop of uitvoeractie. Bestaande ID's wijzigen niet; nieuwe REG-2-ID's zijn `construct:polygonRegion`, `construct:circleSectorRegion` en `construct:circleSegmentRegion`.
 
-De normatieve numerieke, geometrische, schema-, permission- en exportgates staan in REG-1 v1.0.0. Deze roadmapstatus start REG-2, UI-R1 of UI-R2 niet en markeert geen resterende handmatige acceptatie als voltooid.
+De normatieve numerieke, geometrische, schema-, permission- en exportgates staan in REG-1 v1.0.1. Deze roadmapstatus start REG-2, UI-R1 of UI-R2 niet en markeert geen resterende handmatige acceptatie als voltooid.

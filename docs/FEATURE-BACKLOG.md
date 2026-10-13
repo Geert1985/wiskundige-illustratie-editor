@@ -200,7 +200,7 @@ Dit statusblok actualiseert de planningssnapshot hierboven zonder oorspronkelijk
 | G-TRI1 | Geïntegreerd op `main` | Handmatige acceptatie uit `G-TRI1-REPORT.md` blijft open. |
 | UI-T1 | Geïntegreerd op `main`; acht categorieën en bestaande ToolCatalog gebruiken stabiele tool-ID's | Handmatige UX-acceptatie uit `UI-T1-REPORT.md` blijft open. |
 | CORE-1 | Architectuuractualisatie v1.1.0 op basis van bestaande implementatie | Ontwerpstatus wordt niet automatisch als goedgekeurd beschouwd. |
-| REG-1 | Contractvoorstel v1.0.0 in `REG-1-CONTRACT.md` | Wacht op expliciete gebruikersgoedkeuring van schema- en permissionvoorstel. |
+| REG-1 | Contractvoorstel v1.0.1 in `REG-1-CONTRACT.md` | Wacht op expliciete gebruikersgoedkeuring van schema- en permissionvoorstel. |
 | REG-2 | Niet gestart | Afzonderlijke GO na REG-1-goedkeuring; deze branch bevat geen productiecode. |
 | UI-R1 / UI-R2 | Niet gestart | Volgen REG-2; afzonderlijke design-/implementatiegates blijven gelden. |
 

@@ -1,6 +1,6 @@
 # REG-1 — Normatief contract voor dynamische gebieden
 
-**Contractversie:** 1.0.0
+**Contractversie:** 1.0.1
 **Datum:** 2026-10-13
 **Status:** ontwerp ter expliciete gebruikersgoedkeuring; geen productie-implementatie
 **Repositorybasis:** `main` op `f4039842c44885d739b624d9d67bbfdd75d2394e`
@@ -102,7 +102,7 @@ De contour volgt exact de huidige resolved `vertices` in bronvolgorde en sluit v
 
 De hoek wordt in het modelradiaalstelsel in radialen berekend. Richtingsvectoren worden vertaald naar een lokaal frame rond het cirkelcentrum. Noem de genormaliseerde bronhoeken `α` en `β` en definieer `δ = mod(β−α, 2π)`, met `0 ≤ δ < 2π`. `θminor = atan2(abs(cross(u,v)), dot(u,v))`, met `0 ≤ θminor ≤ π`, is de kleinere ongerichte hoek.
 
-`extent:'minor'` kiest sweep `θ=θminor`; `extent:'major'` kiest `θ=2π−θminor`. De bronvolgorde kiest niet stilzwijgend welke kant wordt gevuld. Voor een niet-nul, niet-diametrale hoek geldt de canonieke CCW-contour zo: bij `minor` start de sweep op A als `δ<π`, anders op B; bij `major` start de sweep op B als `δ<π`, anders op A. De sweep eindigt steeds op de andere grensrichting. Bij `δ=π` start beide varianten op de grensrichting met de kleinste genormaliseerde hoek `α`/`β` en sweepen π; deze order-onafhankelijke tie-break kiest één van de twee mogelijke halve cirkels. Bij `δ=0` gelden de expliciete degeneratie-/volledige-schijfregels hieronder. Zo blijft het contour CCW en levert omwisselen van A en B dezelfde geometrische regio op. Hoekwrap over 0 wordt door modulo 2π verwerkt; `extent` kiest expliciet de kleinere of complementaire regio.
+`extent:'minor'` kiest sweep `θ=θminor`; `extent:'major'` kiest `θ=2π−θminor`. De bronvolgorde kiest niet stilzwijgend welke kant wordt gevuld. Voor een niet-nul, niet-diametrale hoek geldt de canonieke CCW-contour zo: bij `minor` start de sweep op A als `δ<π`, anders op B; bij `major` start de sweep op B als `δ<π`, anders op A. De sweep eindigt steeds op de andere grensrichting. Bij `δ=π` start beide varianten op de grensrichting met de kleinste genormaliseerde hoek `α`/`β` en sweepen π; deze order-onafhankelijke tie-break kiest één van de twee mogelijke halve cirkels. Dit is een bewuste deterministische conventie voor het exact ambigue geval. Bij een doorlopende beweging van een richtingpunt door `δ=π` wisselt het gekozen halve pad aan weerszijden van die grens. Dit zichtbare omschakelen hoort bij de `minor`/`major`-semantiek; er wordt geen hysterese of verborgen vorige-frame-status gebruikt. Bij `δ=0` gelden de expliciete degeneratie-/volledige-schijfregels hieronder. Zo blijft het contour CCW en levert omwisselen van A en B dezelfde geometrische regio op. Hoekwrap over 0 wordt door modulo 2π verwerkt; `extent` kiest expliciet de kleinere of complementaire regio.
 
 - `θ=0` voor `minor` is `DEGENERATE_REGION` (sector met nul oppervlak of segment met samenvallende koorde).
 - `θ=2π` voor `major` bij gelijke richtingen is de volledige schijf en is geldig zolang `r>0`.
@@ -171,7 +171,9 @@ Region is zelf selecteerbaar, stylebaar en via bestaande layer/group/visibility/
 
 ## 7. Renderer en export
 
-De regionrenderer consumeert de resolved contour: polygonen als gesloten contour; sectoren als centrumlijnen plus exacte SVG-boog; segmenten als exacte boog plus koorde. Fill, stroke en opacity gebruiken de bestaande style tokens. Hit testing is geometrisch in modelruimte met de bestaande schermtolerantie, niet gebaseerd op rasterpixels; selectievolgorde volgt de bestaande layer/paint order. Een area label is een renderer-output uit `computeRegionArea` → `formatRegionArea`, en wordt niet als extra tekstobject of bronveld toegevoegd.
+De regionrenderer consumeert de resolved contour: polygonen als gesloten contour; gewone sectoren als centrumlijnen plus exacte SVG-boog; gewone segmenten als exacte boog plus koorde. Fill, stroke en opacity gebruiken de bestaande style tokens. Hit testing is geometrisch in modelruimte met de bestaande schermtolerantie, niet gebaseerd op rasterpixels; selectievolgorde volgt de bestaande layer/paint order. Een area label is een renderer-output uit `computeRegionArea` → `formatRegionArea`, en wordt niet als extra tekstobject of bronveld toegevoegd.
+
+**Volledige-schijfgeval:** bij `extent:'major'` en samenvallende richtingen (`δ=0`, `θ=2π`) renderen zowel `circleSectorRegion` als `circleSegmentRegion` als een volledige gevulde schijf met de broncirkel als exacte buitencontour. Gebruik een volwaardige cirkelcontour of twee niet-degeneratieve halve SVG-bogen. Genereer geen enkele elliptische `A`-boog met identiek begin- en eindpunt: die beschrijft geen volledige cirkel. De schijf krijgt geen zichtbare radiale naad, centrumlijn of koorde als binnenrand; area is `πr²`, en hit testing/selectie gebruikt de volledige schijf. SVG- en offline-PNG-export moeten dezelfde gesloten schijf tonen, zonder gat, seam of extra documentobject.
 
 JSON bewaart bronrecept, objectidentiteit, stijl en `areaDisplay`, nooit afgeleide geometry/area. Import, replay en restore her-resolven de graph. SVG bevat geldige path/arc-geometrie en optioneel geformatteerde label; PNG rasteriseert de actuele SVG via de bestaande offline-exportroute. Beide exportpaden honoreren visibility, capabilities, source closure, invalidation en de bestaande rasterdimensie-/pixelgrenzen.
 
@@ -182,10 +184,12 @@ JSON bewaart bronrecept, objectidentiteit, stijl en `areaDisplay`, nooit afgelei
 1. Rechthoekige polygon uit `(0,0),(4,0),(4,3),(0,3)` heeft `A=12`; 3-4-5-triangle `(0,0),(4,0),(0,3)` heeft `A=6`. CW/CCW en cyclic shift leveren dezelfde positieve area.
 2. Cirkel `r=2`, richtingen 0° en 90°: kwartsector `A=π`; majorsector `A=3π`.
 3. Dezelfde cirkel en richtingen: klein kwartsegment `A=π−2`; major/complementair segment `A=3π+2`.
-4. `θ=0`, `π`, `2π`, net onder/boven deze grenzen en hoekwrap over 0 controleren bovenstaande sweep-/degeneratieregels. Exact π heeft voor minor/major gelijke region en area.
-5. Segmenten voor `θ=1e-12`, onder/boven `1e-12`, `1e-6`, net onder/boven `0.5` en `π` worden vergeleken met onafhankelijke hoge-precisie-referenties; er is geen negatieve area, NaN, discontinuïteit of cancellation-zero voor representabele resultaten.
-6. Polygonfixtures bevatten horizontale/verticale randen, collineaire tussenvertices, winding-reversal, een concave eenvoudige polygon, grote gemeenschappelijke translatie, zeer kleine/grote schalen, absolute coördinatenlimiet, herhaald punt, nularea en bow-tie-self-intersectie.
-7. Documentinstellingen bewijzen raw `coordinate²`, eenmaal toegepaste scale², cm²-/andere ondersteunde eenheid, precision 0–10, custom override, dimensionless suffix en value/equation-labelpariteit.
+4. `θ=0`, `π`, `2π`, net onder/boven deze grenzen en hoekwrap over 0 controleren bovenstaande sweep-/degeneratieregels. Exact π heeft voor minor/major dezelfde gekozen halve regio en area volgens de tie-break; leg ook vast dat het pad bij continue passage door π deterministisch naar de tegenoverliggende zijde omschakelt.
+5. Interactieve grenswaardetest: houd een eenheidscirkel en richting A op 0° vast en sleep richting B door `π−1e−6`, exact `π`, en `π+1e−6`, voor zowel `minor` als `major`. Vergelijk resolved sweep/startzijde, contour/hit-test, ruwe area en label op elk punt met de contractuele regels. Verifieer dat de zijwissel voorspelbaar en zichtbaar is, het region-ID stabiel blijft, ieder drag-event de actuele SVG bijwerkt en geen stale cache, invalid status of extra history-items per render ontstaan. Herhaal met omgewisselde bronreferenties en verifieer dezelfde gekozen geometrische regio.
+6. Volledige-schijftest: voor `major` met samenvallende richtingen test zowel sector als segment op area `πr²`, exacte cirkelcontour, gesloten vulling zonder radiale seam/centrumlijn/koorde, correcte hit testing/selectie, SVG en offline PNG. Test ook `minor` bij dezelfde richtingen als degeneratief zonder oude contour of area.
+7. Segmenten voor `θ=1e-12`, onder/boven `1e-12`, `1e-6`, net onder/boven `0.5` en `π` worden vergeleken met onafhankelijke hoge-precisie-referenties; er is geen negatieve area, NaN, discontinuïteit of cancellation-zero voor representabele resultaten.
+8. Polygonfixtures bevatten horizontale/verticale randen, collineaire tussenvertices, winding-reversal, een concave eenvoudige polygon, grote gemeenschappelijke translatie, zeer kleine/grote schalen, absolute coördinatenlimiet, herhaald punt, nularea en bow-tie-self-intersectie.
+9. Documentinstellingen bewijzen raw `coordinate²`, eenmaal toegepaste scale², cm²-/andere ondersteunde eenheid, precision 0–10, custom override, dimensionless suffix en value/equation-labelpariteit.
 
 ### 8.2 Lifecycle-, rechten- en integratietests
 
