@@ -1,0 +1,26 @@
+const assert=require('node:assert/strict');
+module.exports=async page=>{
+ const doc=()=>page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
+ await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.loadDocument({objects:[{id:'A',type:'point',x:-2,y:-1},{id:'B',type:'point',x:2,y:-1},{id:'C',type:'point',x:0,y:2}],presentation:{bounds:{xMin:-5,xMax:5,yMin:-4,yMax:4}}});});
+ await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:triangleFromPoints"]');
+ const click=async p=>{const at=await page.evaluate(p=>FZI.MathIllustration.editor.transform().mathToScreen(p),p);await page.mouse.click(at.x,at.y);};
+ await click({x:-2,y:-1});await click({x:-2,y:-1});assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.interaction.sources.length),1);
+ await click({x:2,y:-1});await click({x:0,y:2});
+ let saved=await doc(),triangle=saved.objects.find(o=>o.construction?.kind==='triangleFromPoints');assert.ok(triangle);assert.equal(triangle.type,'polygon');assert.deepEqual(triangle.construction.sources.map(ref=>ref.objectId),['A','B','C']);assert.equal(saved.constructionSchema,2);
+ const id=triangle.id;
+ await page.evaluate(id=>{const a=FZI.MathIllustration.editor;a.selectObject(id);},id);assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.selectedId),id);assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.moveSelectionPlan()),null);
+ await page.evaluate(id=>{const a=FZI.MathIllustration.editor;a.changeDocument(()=>a.execute('object.setProperties',{ids:[id],fields:[{path:'style.stroke',value:'#123456'}]}));},id);assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).style.stroke,id),'#123456');
+ await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.changeDocument(()=>a.execute('object.setGeometry',{id:'B',fields:[{path:'x',value:3}]}));});
+ assert.deepEqual(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).vertices,id),[{x:-2,y:-1},{x:3,y:-1},{x:0,y:2}]);
+ await page.locator('#undoBtn').click();assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).vertices[1].x,id),2);await page.locator('#redoBtn').click();assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).vertices[1].x,id),3);
+ await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.changeDocument(()=>a.execute('object.setGeometry',{id:'C',fields:[{path:'y',value:-1}]}));});
+ assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.getConstructionInfo(id).reasonCode,id),'DEGENERATE_TRIANGLE');assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.isDisplayed(id),id),false);
+ saved=await doc();await page.evaluate(d=>FZI.MathIllustration.editor.loadDocument(d),saved);assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.getConstructionInfo(id).reasonCode,id),'DEGENERATE_TRIANGLE');
+ await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.changeDocument(()=>a.execute('object.setGeometry',{id:'C',fields:[{path:'y',value:2}]}));});assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.getConstructionInfo(id).reasonCode,id),'VALID');
+ const center=await page.evaluate(id=>{const a=FZI.MathIllustration.editor;let result;a.changeDocument(()=>result=a.execute('construction.create',{toolId:'construct:centroid',sources:[{objectId:id}]}).result[0]);return result.id;},id);
+ await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.changeDocument(()=>a.execute('object.setGeometry',{id:'B',fields:[{path:'y',value:0}]}));});assert.notEqual(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).x,center),0);
+ const svg=await page.evaluate(()=>FZI.MathIllustration.editor.engine.renderSVG());assert.match(svg,new RegExp('data-object-id="'+id+'"'));assert.doesNotMatch(require('./browser-tool-menu.cjs').numericSVG(svg),/NaN|Infinity/);
+ const png=await page.evaluate(async svg=>{const a=FZI.MathIllustration.editor,b=await FZI.MathIllustration.ExportService.png(svg,{width:a.engine.renderer.width,height:a.engine.renderer.height});return {type:b.type,size:b.size};},svg);assert.equal(png.type,'image/png');assert.ok(png.size>100);
+ await page.evaluate(()=>localStorage.removeItem(FZI.MathIllustration.DraftStore.key));
+ return {threeOrderedCanvasPicks:'passed',dynamicVertices:'passed',undoRedo:'passed',degenerateJSONRecovery:'passed',m6aCenterCompatibility:'passed',svgExport:'passed',offlinePngExport:'passed'};
+};

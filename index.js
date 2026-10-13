@@ -115,8 +115,8 @@
         const model=new MI.IllustrationModel(this.model.toJSON()),created=solutions.map(s=>model.add({...s.evaluation.geometry,style:{stroke:MI.CONSTRUCTION_COLOR,fill:MI.CONSTRUCTION_COLOR},construction:s.recipe}));
         this.model=model;return created;
       }
-      const map=new Map(this.model.all().map(o=>[o.id,o])),first=MI.ConstructionService.evaluate(recipe,map).geometry;
-      if(!first)throw Error('Deze constructie bestaat niet voor de gekozen geometrie.');
+      const map=new Map(this.model.all().map(o=>[o.id,o])),evaluation=MI.ConstructionService.evaluate(recipe,map),first=evaluation.geometry;
+      if(!evaluation.valid||!first)throw Error('Deze constructie bestaat niet voor de gekozen geometrie.');
       const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&!MI.ConstructionService.tangentOnCircle(map.get(sources[0].objectId),{x:first.x1,y:first.y1})?2:1;
       const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,...(MI.AngleMeasurements.isLinked(kind)?{angleSettings:{...MI.AngleMeasurements.defaults}}:{}),style:{...first.style,stroke:MI.CONSTRUCTION_COLOR,...(first.type==='point'?{fill:MI.CONSTRUCTION_COLOR}:{})},construction:{...recipe, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
     }
