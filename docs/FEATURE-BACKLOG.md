@@ -1,8 +1,8 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.6.1
+Version: 1.7.0
 Status: proposed; reconcile with repository before implementation. T5a and the full text workspace are accepted and integrated; calculator F11 and future TI-36X Pro parity remain unimplemented. M6 geometry precedes the separately gated calculator milestones.
-Date: 2026-10-12
+Date: 2026-10-13
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
 
@@ -175,3 +175,16 @@ User-supplied checklist v2.1.0 extends F11 with future TI-36X Pro functional par
 - F05/M11 graphing and F06 parametric visualization remain in the existing illustration canvas; reuse K2 evaluation and K5 analysis where valid, without a second interpreter. Tables can have multiple presentation hosts with one evaluation contract.
 
 No exact-value, complex, matrix, variable or dimension extension silently changes accepted T5a binary64/angle/round/underflow behavior. Each package requires its own typed mathematical/schema/security contract, independent reference tests and explicit acceptance. The cited 105-item concept inventory is not an official TI function count; manual reconciliation remains open. No new parity, implementation or test PASS claimed by this document-only update.
+
+
+## F12 — Structurele gereedschappen, gekoppelde driehoeken, radiaalmenu en dynamische gebiedsoppervlakte (2026-10-13, backlog v1.7.0)
+
+**Normatief ontwerp:** [GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md](GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md); volgorde/poorten: [DEVELOPMENT-ROADMAP.md](DEVELOPMENT-ROADMAP.md) v2.5.0. Alle onderstaande nieuwe onderdelen **gepland, niet geïmplementeerd op main**.
+
+- **UI-T1:** basisobjecten hernoemen naar **Vrije objecten** en de *vrije* cirkel, driehoek, veelhoek daaronder plaatsen; afzonderlijke Figuren-sectie schrappen; **Constructies direct eronder**; **Gebieden & opvulling** als hoofdgroep; acht groepen totaal. Behoud bestaande `data-canvas-tool` IDs, fullscreen en inert placeholders; ontwikkelbranch toolpanel eerst controleren.
+- **G-TRI1:** **Constructies → Driehoekconstructies → Driehoek via 3 punten**. Selecteer A, B, C uit reeds bestaande getypeerde puntobjecten; creëer één afhankelijk polygon-object met drie resolved vertices, geen nieuwe permanente punten; vrij tekenen blijft aparte `triangle`-tool. Constructiedriehoek is selecteerbaar, opmaakbaar, te meten en geldige M6a-triangle source, **maar niet rechtstreeks versleepbaar**, ook niet door de punten als neveneffect te slepen. Gebruik construction DAG, typed recipe, degenerate/recoverable, cascade, schema/replay/JSON/SVG/offline PNG/restricted.
+- **UI-R1/R2/R3:** eigenschappenbediening aanvullen met generiek **radiaalmenu**, gedeelde actioncatalogus en commandadapter; toetsenbord/screenreader/ontkoppeling bij invalidation; alle bestaande eigenschappen blijven bereikbaar via “Alle eigenschappen” of rechter inspector. Pas rechterbar layout echt vervangen na bewijs van volledige veld-/capability-pariteit, gebruikersacceptatie en afzonderlijke GO.
+- **CORE-1:** gedeelde, pure geometrische punt-/driehoekbronvalidatie, typed `resolveRegionGeometry`, `computeRegionArea`, `formatRegionArea`, herbruikbare `getApplicableProperties` en `buildToolCatalog`; namen zijn interfaceschetsen, geen verplicht nieuwe framework-/bestandsarchitectuur. Eén wiskundige waarheid, geen tweede SVG-only rekenpad.
+- **REG-1/2:** selecteerbaar en dynamisch **veelhoekgebied, cirkelsector en cirkelsegment** met kleine/grote regio, opvulkleur/transparantie; verplicht in eerste release ook **optionele oppervlakteweergave**, live `A = 12,57 cm²` of numeriek-only; labelpositie/precisie/eenvuldig; reken via de geometrie en schaal², niet pixels of tekst. Dedicated source/permission validation, hit testing, export, undo/replay en geen verborgen waardelek. Later pas complexere regio's.
+- **REG-3:** overlap, Booleaanse regio's, gebieden onder/tussen grafieken, ongelijkheden en set-topologie na relevante M11/M12-services.
+- **Prioriteitsadvies:** eerst actuele featurebranches/status harmoniseren (SYNC-0), ontwerpcontracten CORE-1, UI-R1, REG-1; UI-T1 en G-TRI1 als afzonderlijke bounded mijlpalen; UI-R2, REG-2 pas na ontwerp-gate; UI-R3/REG-3 later. **GPT-6 High** voor geometrie, rechten, numeriek, architectuur en eindcontrole; **GPT-6.1 Sol Medium** voor afgebakende UI; **Sol Light** uitsluitend voor geringe documentatie/styling na bewezen contracts.
