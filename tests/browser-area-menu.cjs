@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),fs=require('node:fs');const {choose}=require('./browser-tool-menu.cjs');
 module.exports=async page=>{
- await page.reload();assert.equal(await page.locator('[data-tool-category][open]').count(),1);assert.ok(await page.locator('[data-tool-category="basis"]').getAttribute('open')!==null);assert.ok(await page.locator('[data-tool="select"]').isVisible());
+ await page.reload();assert.equal(await page.locator('[data-tool-category][open]').count(),1);assert.ok(await page.locator('[data-tool-category="vrije-objecten"]').getAttribute('open')!==null);assert.ok(await page.locator('[data-tool="select"]').isVisible());
  await page.locator('[data-tool-category="meten"]>summary').click();assert.equal(await page.locator('[data-tool-category][open]').count(),2);assert.ok(await page.locator('[data-tool="point"]').isVisible());
  await choose(page,'[data-tool="construct:area"]');await page.locator('[data-tool-category="meten"]>summary').click();assert.match(await page.locator('[data-tool-category="meten"]>summary').textContent(),/Oppervlakte/);assert.ok(await page.locator('[data-tool="select"]').isVisible());
  const doc=()=>page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON()),click=async(x,y)=>{const p=await page.evaluate(p=>FZI.MathIllustration.editor.transform().mathToScreen(p),{x,y});await page.mouse.click(p.x,p.y);};
