@@ -11,7 +11,7 @@
  const axisRoles=Object.freeze({angleDirections:[0,1],lineCircleIntersection:[0],lineIntersection:[0,1],parallel:[0],perpendicular:[0]});
  const supportsAxis=(kind,index)=>Object.prototype.hasOwnProperty.call(axisRoles,kind)&&(index==null||axisRoles[kind].includes(index));
  MI.AxisReferences=Object.freeze({isAxis,validate:validateAxis,references:axisReferences,line:axisLine,supports:supportsAxis});
- const recipes={anglePoints:['angle',['point','point','point']],angleDirections:['angle',['line','line']],angleXAxis:['angle',['line']],circleByCenterPoint:['circle',['point','point']],circleCircleIntersection:['point',['circle','circle']],lineCircleIntersection:['point',['line','circle']],lineIntersection:['point',['line','line']],lineBetweenPoints:['line',['point','point']],rayOrigin:['point',['ray']],pointOnSegment:['point',['segment']],pointOnCircle:['point',['circle']],distributedPointOnCircle:['point',['circle']],perimeter:['text',['figure']],area:['text',['figure']],midpoint:['point',['point','point']],centroid:['point',['triangle']],circumcenter:['point',['triangle']],orthocenter:['point',['triangle']],triangleFromPoints:['polygon',['point','point','point']],perpendicular:['straight',['line','point']],parallel:['straight',['line','point']],perpendicularBisector:['straight',['point','point']],bisector:['ray',['point','point','point']],tangent:['straight',['circle','point']]};
+ const recipes={anglePoints:['angle',['point','point','point']],angleDirections:['angle',['line','line']],angleXAxis:['angle',['line']],circleByCenterPoint:['circle',['point','point']],circleCircleIntersection:['point',['circle','circle']],lineCircleIntersection:['point',['line','circle']],lineIntersection:['point',['line','line']],lineBetweenPoints:['line',['point','point']],rayOrigin:['point',['ray']],pointOnSegment:['point',['segment']],pointOnCircle:['point',['circle']],distributedPointOnCircle:['point',['circle']],perimeter:['text',['figure']],area:['text',['figure']],midpoint:['point',['point','point']],centroid:['point',['triangle']],circumcenter:['point',['triangle']],orthocenter:['point',['triangle']],incenter:['point',['triangle']],incircle:['circle',['triangle']],eulerLine:['straight',['triangle']],ninePointCircle:['circle',['triangle']],triangleFromPoints:['polygon',['point','point','point']],perpendicular:['straight',['line','point']],parallel:['straight',['line','point']],perpendicularBisector:['straight',['point','point']],bisector:['ray',['point','point','point']],tangent:['straight',['circle','point']]};
  const fields={angle:['vertices'],circle:['cx','cy','r'],line:['x1','y1','x2','y2'],point:['x','y'],polygon:['vertices'],text:['x','y','text'],straight:['x1','y1','x2','y2'],ray:['x1','y1','x2','y2']};
  const definitions=freeze(Object.fromEntries(Object.entries(recipes).map(([kind,[resultType,sourceRoles]])=>[kind,{kind,resultType,sourceRoles,branches:['tangent','lineCircleIntersection','circleCircleIntersection'].includes(kind)?[0,1]:[],computedFields:fields[resultType]}])));
  const kinds=Object.fromEntries(Object.entries(definitions).map(([kind,d])=>[kind,d.sourceRoles.length]));
@@ -26,7 +26,7 @@
   return ref.part==null&&(role==='circle'?object.type==='circle':['circle','polygon'].includes(object.type));
  }
  const pathKind=kind=>['pointOnSegment','pointOnCircle'].includes(kind);
- const schema2=kind=>MI.AngleMeasurements.isLinked(kind)||pathKind(kind)||['distributedPointOnCircle','lineBetweenPoints','rayOrigin','lineIntersection','lineCircleIntersection','circleCircleIntersection','circleByCenterPoint','centroid','circumcenter','orthocenter','triangleFromPoints'].includes(kind);
+ const schema2=kind=>MI.AngleMeasurements.isLinked(kind)||pathKind(kind)||['distributedPointOnCircle','lineBetweenPoints','rayOrigin','lineIntersection','lineCircleIntersection','circleCircleIntersection','circleByCenterPoint','centroid','circumcenter','orthocenter','incenter','incircle','eulerLine','ninePointCircle','triangleFromPoints'].includes(kind);
  function normaliseParameter(kind,value=0){if(!pathKind(kind)){if(value!==0)failure('INVALID_PARAMETER','Deze constructie heeft geen padparameter.');return undefined;}if(typeof value!=='number'||!Number.isFinite(value))failure('INVALID_PARAMETER','De padpositie moet eindig zijn.');if(kind==='pointOnSegment')return Math.max(0,Math.min(1,value));const t=value%1;return t<0?t+1:t===0?0:t;}
  function referencesForRole(o,role,kind){const refs=referenceOptions(o),candidates=role==='segment'?refs.line.filter(ref=>accepts(o,ref,'segment')):refs[role]||[];return kind==='triangleFromPoints'?candidates.filter(ref=>role==='point'&&o.type==='point'&&ref.part==null&&ref.index==null):candidates;}
  function projectParameter(kind,o,ref,p){if(kind==='pointOnCircle')return normaliseParameter(kind,Math.atan2(p.y-o.cy,p.x-o.cx)/(2*Math.PI));const l=line(o,ref),dx=l.x2-l.x1,dy=l.y2-l.y1,n=dx*dx+dy*dy;return normaliseParameter(kind,n?((p.x-l.x1)*dx+(p.y-l.y1)*dy)/n:0);}
@@ -71,6 +71,7 @@
   return {geometry:{type:'point',x:a.cx+offset*ux-sign*h*uy,y:a.cy+offset*uy+sign*h*ux},reasonCode:'VALID'};
  }
  const TRIANGLE_CENTER_KINDS=new Set(['centroid','circumcenter','orthocenter']);
+ const TRIANGLE_M6B_KINDS=new Set(['incenter','incircle','eulerLine','ninePointCircle']);
  const TRIANGLE_DEGENERACY_LIMIT=1e-12,INVARIANT_ULPS=128;
  function triangleShapeStatus(vertices){
   if(!Array.isArray(vertices)||vertices.length!==3)return 'INVALID_REFERENCE';
@@ -118,10 +119,50 @@
   if(invariantStatus)return {geometry:null,reasonCode:invariantStatus};
   return {geometry:point,reasonCode:'VALID'};
  }
+ function triangleM6b(c,triangle){
+  const vertices=triangle?.vertices;
+  if(triangle?.type!=='polygon'||!Array.isArray(vertices)||vertices.length!==3)return {geometry:null,reasonCode:'INVALID_REFERENCE'};
+  const shapeStatus=triangleShapeStatus(vertices);if(shapeStatus)return {geometry:null,reasonCode:shapeStatus};
+  const [a,b,d]=vertices,abx=b.x-a.x,aby=b.y-a.y,acx=d.x-a.x,acy=d.y-a.y;
+  const s=Math.max(Math.hypot(abx,aby),Math.hypot(acx,acy),Math.hypot(d.x-b.x,d.y-b.y));
+  if(!Number.isFinite(s))return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+  if(s===0)return {geometry:null,reasonCode:'DEGENERATE_TRIANGLE'};
+  const u={x:abx/s,y:aby/s},v={x:acx/s,y:acy/s},q=u.x*v.y-u.y*v.x;
+  if(!Number.isFinite(q))return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+  const uu=u.x*u.x+u.y*u.y,vv=v.x*v.x+v.y*v.y,o={x:(uu*v.y-vv*u.y)/(2*q),y:(u.x*vv-v.x*uu)/(2*q)},g={x:(u.x+v.x)/3,y:(u.y+v.y)/3},h={x:u.x+v.x-2*o.x,y:u.y+v.y-2*o.y};
+  if(![o.x,o.y,g.x,g.y,h.x,h.y].every(Number.isFinite))return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+  const world=local=>({x:a.x+s*local.x,y:a.y+s*local.y}),norm=p=>Math.hypot(p.x,p.y),epsilon=INVARIANT_ULPS*Number.EPSILON;
+  if(c.kind==='incenter'||c.kind==='incircle'){
+   const sideA=Math.hypot(v.x-u.x,v.y-u.y),sideB=norm(v),sideC=norm(u),perimeter=sideA+sideB+sideC;
+   if(!Number.isFinite(perimeter)||perimeter===0)return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+   const incenterLocal={x:(sideB*u.x+sideC*v.x)/perimeter,y:(sideB*u.y+sideC*v.y)/perimeter},inradiusLocal=Math.abs(q)/perimeter,i=world(incenterLocal),radius=s*inradiusLocal;
+   if(![i.x,i.y,radius].every(Number.isFinite)||radius<=0)return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+   const cross=(p,r)=>p.x*r.y-p.y*r.x,bc={x:v.x-u.x,y:v.y-u.y},distances=[Math.abs(cross(u,incenterLocal))/norm(u),Math.abs(cross(bc,{x:incenterLocal.x-u.x,y:incenterLocal.y-u.y}))/norm(bc),Math.abs(cross(v,incenterLocal))/norm(v)];
+   if(!distances.every(Number.isFinite))return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+   if(distances.some(value=>Math.abs(value-inradiusLocal)>epsilon*Math.max(1,value,inradiusLocal)))return {geometry:null,reasonCode:'INVARIANT_FAILURE'};
+   return c.kind==='incenter'?{geometry:{type:'point',...i},reasonCode:'VALID'}:{geometry:{type:'circle',cx:i.x,cy:i.y,r:radius},reasonCode:'VALID'};
+  }
+  if(c.kind==='eulerLine'){
+   const direction={x:h.x-o.x,y:h.y-o.y},length=norm(direction),centerScale=Math.max(1,norm(o),norm(h));
+   if(!Number.isFinite(length))return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+   // At an equilateral triangle O=H and there is no unique Euler line. Treat
+   // center separations below binary64 resolution as the same undefined case.
+   if(length<=epsilon*centerScale)return {geometry:null,reasonCode:'UNDEFINED_EULER_LINE'};
+   const start=world(o),end=world(h);
+   if(start.x===end.x&&start.y===end.y)return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+   return {geometry:{type:'straight',x1:start.x,y1:start.y,x2:end.x,y2:end.y},reasonCode:'VALID'};
+  }
+  const nineCenter={x:(o.x+h.x)/2,y:(o.y+h.y)/2},nineRadius=norm(o)/2,midpoints=[{x:u.x/2,y:u.y/2},{x:v.x/2,y:v.y/2},{x:(u.x+v.x)/2,y:(u.y+v.y)/2}],radii=midpoints.map(point=>norm({x:point.x-nineCenter.x,y:point.y-nineCenter.y}));
+  if(!Number.isFinite(nineRadius)||nineRadius<=0||!radii.every(Number.isFinite))return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+  if(radii.some(value=>Math.abs(value-nineRadius)>epsilon*Math.max(1,value,nineRadius)))return {geometry:null,reasonCode:'INVARIANT_FAILURE'};
+  const center=world(nineCenter),radiusWorld=s*nineRadius;
+  if(![center.x,center.y,radiusWorld].every(Number.isFinite)||radiusWorld<=0)return {geometry:null,reasonCode:'NON_FINITE_RESULT'};
+  return {geometry:{type:'circle',cx:center.x,cy:center.y,r:radiusWorld},reasonCode:'VALID'};
+ }
  function triangleFromPoints(c,source){const vertices=c.sources.map((ref,index)=>point(source[index],ref));return {geometry:{type:'polygon',vertices},reasonCode:triangleShapeStatus(vertices)||'VALID'};}
  function evaluate(c,objects,distributions,geometryCache){
   validateReferences(c,objects);const source=c.sources.map(ref=>sourceObject(ref,objects));if(source.some(o=>o.construction&&o.constructionValid===false))return {valid:false,reasonCode:'SOURCE_INVALID',geometry:null};
-  const triangleResult=TRIANGLE_CENTER_KINDS.has(c.kind)?triangleCenter(c,source[0]):c.kind==='triangleFromPoints'?triangleFromPoints(c,source):null;
+  const triangleResult=TRIANGLE_CENTER_KINDS.has(c.kind)?triangleCenter(c,source[0]):TRIANGLE_M6B_KINDS.has(c.kind)?triangleM6b(c,source[0]):c.kind==='triangleFromPoints'?triangleFromPoints(c,source):null;
   const geometry=triangleResult?triangleResult.geometry:calculate(c,objects,distributions,geometryCache);let reasonCode=triangleResult?.reasonCode||'VALID';
   if(!geometry){if(reasonCode==='VALID')reasonCode=MI.AngleMeasurements.isLinked(c.kind)?(c.kind==='anglePoints'?'DEGENERATE_ARM':source.some((o,i)=>{const l=line(o,c.sources[i]);return Math.hypot(l.x2-l.x1,l.y2-l.y1)<=1e-9;})?'DEGENERATE_DIRECTION':'COORDINATE_LIMIT'):c.kind==='circleCircleIntersection'?circleCircleIntersection(c,source).reasonCode:c.kind==='lineCircleIntersection'?lineCircleIntersection(c,source).reasonCode:c.kind==='lineIntersection'?lineIntersection(c,source).reasonCode:['perpendicularBisector','lineBetweenPoints','pointOnSegment','circleByCenterPoint'].includes(c.kind)?'COINCIDENT_POINTS':c.kind==='pointOnCircle'?'ZERO_RADIUS':['parallel','perpendicular'].includes(c.kind)?'DEGENERATE_DIRECTION':c.kind==='bisector'?'DEGENERATE_ARM':c.kind==='tangent'?(source[0].r<=0?'ZERO_RADIUS':'POINT_INSIDE_CIRCLE'):'NON_FINITE_RESULT';}
   else for(const [key,value] of Object.entries(geometry))if(['x','y','x1','y1','x2','y2','cx','cy','r'].includes(key)){if(!Number.isFinite(value)){reasonCode='NON_FINITE_RESULT';break;}if(Math.abs(value)>1e12){reasonCode='COORDINATE_LIMIT';break;}}
@@ -150,6 +191,7 @@
  function calculate(c,objects,distributions,geometryCache){validateReferences(c,objects);const source=c.sources.map(s=>sourceObject(s,objects));
   if(source.some(o=>o.construction && o.constructionValid===false))return null;
   if(TRIANGLE_CENTER_KINDS.has(c.kind))return triangleCenter(c,source[0]).geometry;
+  if(TRIANGLE_M6B_KINDS.has(c.kind))return triangleM6b(c,source[0]).geometry;
   if(MI.AngleMeasurements.isLinked(c.kind))return angleGeometry(c,source);
   if(['perimeter','area'].includes(c.kind)) {
    const o=source[0];if(!['circle','polygon'].includes(o.type))throw Error('Kies een cirkel, driehoek of veelhoek.');

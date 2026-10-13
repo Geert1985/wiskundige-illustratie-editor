@@ -3,7 +3,7 @@ const {choose}=require('./browser-tool-menu.cjs');
 module.exports=async page=>{
  const originalViewport=page.viewportSize();await page.setViewportSize({width:1280,height:900});await page.reload();
  const ids=await page.locator('#toolGrid [data-tool]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tool));
- assert.equal(ids.length,33);assert.equal(new Set(ids).size,33);
+ assert.equal(ids.length,37);assert.equal(new Set(ids).size,37);
  const snapshot=()=>page.evaluate(()=>{const a=FZI.MathIllustration.editor;return {document:a.engine.toJSON(),tool:a.tool,selected:a.selectedIds,interaction:a.interaction,history:a.history.entries,cursor:a.history.cursor,status:a.nodes.status.textContent,storage:Object.entries(localStorage)};});
  await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[]}));
  const documentBefore=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
@@ -37,5 +37,5 @@ module.exports=async page=>{
   await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-'+name+'.png')});
  }
  await page.setViewportSize(originalViewport);await page.reload();await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-overview.png')});
- return {allTools:33,categories:8,plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
+ return {allTools:37,categories:8,plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
 };

@@ -26,6 +26,7 @@ const server = http.createServer((req, res) => {
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}/editor.html`);
     if (process.env.M6A_ONLY === '1') { const triangleCenters = await require('./browser-triangle-centers.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', triangleCenters, pageErrors: errors })); return; }
+    if (process.env.M6B_ONLY === '1') { const triangleM6b = await require('./browser-triangle-m6b.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', triangleM6b, pageErrors: errors })); return; }
     if (process.env.GTRI1_ONLY === '1') { const gTri1TriangleFromPoints = await require('./browser-g-tri1-triangle-from-points.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', gTri1TriangleFromPoints, pageErrors: errors })); return; }
     if (process.env.UI_T1_ONLY === '1') { const toolPanelReorganization = await require('./browser-tool-panel-reorganization.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', toolPanelReorganization, pageErrors: errors })); return; }
     const before = await page.evaluate(() => FZI.MathIllustration.activeEngine.renderer.scale());
@@ -117,6 +118,7 @@ const server = http.createServer((req, res) => {
     const constructions = await require('./browser-constructions.cjs')(page);
     const triangleCenters = await require('./browser-triangle-centers.cjs')(page);
     const gTri1TriangleFromPoints = await require('./browser-g-tri1-triangle-from-points.cjs')(page);
+    const triangleM6b = await require('./browser-triangle-m6b.cjs')(page);
     const areaMenu=await require('./browser-area-menu.cjs')(page);
     const rectangleSelection=await require('./browser-rectangle-selection.cjs')(page);
     const selectionPresentation=await require('./browser-selection-presentation.cjs')(page);
@@ -153,6 +155,6 @@ const server = http.createServer((req, res) => {
     const expressionEngine=await require('./browser-expression-engine.cjs')(page);
     const toolPanelReorganization=await require('./browser-tool-panel-reorganization.cjs')(page);
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ browser: 'Edge', toolPanelReorganization, expressionEngine, ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, richText, richMath, richValues, richLayout, richUx, textEditorModernization, polygon, styles, measurementsGroups, constructions, triangleCenters, gTri1TriangleFromPoints, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, splitTools, bisectorClip, minimalObjectList,canvasFullscreen,semanticSequence,linkedPaths, postM5aUX, lineIntersection, lineCircle, circleCircle, derivedCircle, linkedTangent, unitsScale, pointProjections, dynamicAngles, dynamicText, axisReferences, stackedTools, angleArms, pageErrors: errors }));
+    console.log(JSON.stringify({ browser: 'Edge', toolPanelReorganization, expressionEngine, ...result, pointCreation: 'passed', legacyImport: 'passed', saveReload: 'passed', labelRoundtrip: 'passed', presentationRestore: 'passed', exportImport: 'passed', atomicFailedImport: 'passed', corruptDraftRetained: 'passed', explicitNew: 'passed', snapping, lifecycle, performance, selection, auditFinal, linear, assetCompat, history, inputs, richText, richMath, richValues, richLayout, richUx, textEditorModernization, polygon, styles, measurementsGroups, constructions, triangleCenters, gTri1TriangleFromPoints, triangleM6b, areaMenu, rectangleSelection, selectionPresentation, permissions, importHistory, persistentGroups, layers, constructionContract, uiModernization, uiRefinements, inspectorFeedback, axesGrid, constructionHover, fullCanvasAxes, splitTools, bisectorClip, minimalObjectList,canvasFullscreen,semanticSequence,linkedPaths, postM5aUX, lineIntersection, lineCircle, circleCircle, derivedCircle, linkedTangent, unitsScale, pointProjections, dynamicAngles, dynamicText, axisReferences, stackedTools, angleArms, pageErrors: errors }));
   } finally { if (browser) await browser.close(); server.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });
