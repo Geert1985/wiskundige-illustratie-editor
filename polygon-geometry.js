@@ -15,21 +15,21 @@
       return {...p,x:Number(p.x),y:Number(p.y)};
     });
     const origin=points[0], span=Math.max(...points.map(p=>Math.max(Math.abs(p.x-origin.x),Math.abs(p.y-origin.y))));
-    if(!span) throw Error('Hoekpunten moeten verschillend zijn.');
+    if(!span) {if(options.allowDegenerateConstructedTriangle)return points;throw Error('Hoekpunten moeten verschillend zijn.');}
     const normalized=points.map(p=>({x:(p.x-origin.x)/span,y:(p.y-origin.y)/span}));
     let area=0;
     for(let i=0;i<points.length;i++) {
       const a=normalized[i], b=normalized[(i+1)%points.length]; area+=a.x*b.y-a.y*b.x;
-      for(let j=i+1;j<points.length;j++) if(Math.hypot(points[i].x-points[j].x,points[i].y-points[j].y)<(options.allowDegenerateTriangle?Number.MIN_VALUE:1e-9)) throw Error('Hoekpunten moeten verschillend zijn.');
+      for(let j=i+1;j<points.length;j++) if(!options.allowDegenerateConstructedTriangle&&Math.hypot(points[i].x-points[j].x,points[i].y-points[j].y)<(options.allowDegenerateTriangle?Number.MIN_VALUE:1e-9)) throw Error('Hoekpunten moeten verschillend zijn.');
       const c=normalized[(i+2)%points.length];
-      if(!options.allowDegenerateTriangle&&Math.abs(cross(a,b,c))<1e-12 && (a.x-b.x)*(c.x-b.x)+(a.y-b.y)*(c.y-b.y)>0) throw Error('Zijden mogen niet teruglopen.');
+      if(!options.allowDegenerateTriangle&&!options.allowDegenerateConstructedTriangle&&Math.abs(cross(a,b,c))<1e-12 && (a.x-b.x)*(c.x-b.x)+(a.y-b.y)*(c.y-b.y)>0) throw Error('Zijden mogen niet teruglopen.');
     }
-    if(!options.allowDegenerateTriangle&&Math.abs(area)<1e-12) throw Error('Een veelhoek moet een oppervlakte hebben.');
+    if(!options.allowDegenerateTriangle&&!options.allowDegenerateConstructedTriangle&&Math.abs(area)<1e-12) throw Error('Een veelhoek moet een oppervlakte hebben.');
     const on=(a,b,p)=>Math.abs(cross(a,b,p))<1e-12 && p.x>=Math.min(a.x,b.x)-1e-12 && p.x<=Math.max(a.x,b.x)+1e-12 && p.y>=Math.min(a.y,b.y)-1e-12 && p.y<=Math.max(a.y,b.y)+1e-12;
     for(let i=0;i<points.length;i++) for(let j=i+1;j<points.length;j++) {
       if(j===i+1 || (i===0&&j===points.length-1)) continue;
       const a=normalized[i],b=normalized[(i+1)%points.length],c=normalized[j],d=normalized[(j+1)%points.length];
-      if((cross(a,b,c)*cross(a,b,d)<0 && cross(c,d,a)*cross(c,d,b)<0)||on(a,b,c)||on(a,b,d)||on(c,d,a)||on(c,d,b)) throw Error('Zijden van een veelhoek mogen elkaar niet kruisen.');
+      if(!options.allowDegenerateConstructedTriangle&&((cross(a,b,c)*cross(a,b,d)<0 && cross(c,d,a)*cross(c,d,b)<0)||on(a,b,c)||on(a,b,d)||on(c,d,a)||on(c,d,b))) throw Error('Zijden van een veelhoek mogen elkaar niet kruisen.');
     }
     return points;
   }

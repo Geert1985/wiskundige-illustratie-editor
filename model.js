@@ -150,7 +150,8 @@
   }
 
   function normaliseObject(input, options={}) {
-    validateImportedObject(input, options);
+    const validationOptions=input?.type==='polygon'&&input.construction?.kind==='triangleFromPoints'?{...options,allowDegenerateConstructedTriangle:true}:options;
+    validateImportedObject(input, validationOptions);
     if (!input || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
     const type = input.type;
     if(input.construction) MI.ConstructionService.validate(input.construction);
@@ -178,7 +179,7 @@
     if ((type === 'straight' || type === 'ray') && Math.hypot(object.x2 - object.x1, object.y2 - object.y1) === 0) throw new Error('Een rechte of halfrechte vereist twee verschillende punten.');
     if (type === "circle") { object.cx = finite(input.cx, 0); object.cy = finite(input.cy, 0); object.r = Math.max(0, finite(input.r, 1)); if (input.label != null) object.label = String(input.label); }
     if (type === "text") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); object.text = String(input.text == null ? "" : input.text); object.rotation = finite(input.rotation, 0); if(input.textContent){object.textContent=validateTextContent(input.textContent);object.text=MI.TextContent.plain(object.textContent);} }
-    if (type === 'polygon') object.vertices = MI.PolygonGeometry.validate(object.vertices, options);
+    if (type === 'polygon') object.vertices = MI.PolygonGeometry.validate(object.vertices, validationOptions);
     if (type === 'angle') { object.angleMark = input.angleMark || 'arc'; object.vertices = MI.MeasurementGeometry.validateAngle(object.vertices, object.angleMark); }
     return object;
   }
@@ -305,10 +306,12 @@
       const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version>=5?["layers","layerSchema"]:[]), ...(version>=6?["circleDistributionSchema","circleDistributions"]:[]), ...(version>=7?["textSchema"]:[])].includes(key))));
       const seen = new Set();
       const triangleSourceIds = new Set(data.objects.filter(input => MI.ConstructionService.triangleCenterKinds.includes(input?.construction?.kind)).flatMap(input => Array.isArray(input?.construction?.sources) ? input.construction.sources.filter(ref => ref && ref.part == null && ref.index == null && typeof ref.objectId === 'string').map(ref => ref.objectId) : []));
+      const constructedTriangleIds = new Set(data.objects.filter(input => input?.construction?.kind === 'triangleFromPoints' && input.type === 'polygon').map(input => String(input.id)));
       let nextId = 1;
       const objects = data.objects.map(input => {
         const allowDegenerateTriangle = input?.type === 'polygon' && input.vertices?.length === 3 && triangleSourceIds.has(String(input.id));
-        const objectOptions = allowDegenerateTriangle ? {allowDegenerateTriangle:true} : {};
+        const allowDegenerateConstructedTriangle = input?.type === 'polygon' && input.vertices?.length === 3 && constructedTriangleIds.has(String(input.id));
+        const objectOptions = {...(allowDegenerateTriangle ? {allowDegenerateTriangle:true} : {}),...(allowDegenerateConstructedTriangle?{allowDegenerateConstructedTriangle:true}:{})};
         validateImportedObject(input, objectOptions);
         const migrated = { ...input };
         // v1 automatically filled name with id; recover a distinct legacy label once.
