@@ -1,6 +1,6 @@
 # REG-2 — Implementatie- en testrapport
 
-**Status:** geïmplementeerd op `codex/reg-2-dynamic-regions`; wacht op gebruikersacceptatie  
+**Status:** gerichte correctieronde uitgevoerd op `codex/reg-2-dynamic-regions`; klaar voor nieuwe onafhankelijke code-review
 **Basis:** `main` op `0575365c16962238a14f27fe4cc76ab6c57b0594`  
 **Contract:** `docs/REG-1-CONTRACT.md` v1.0.1
 
@@ -29,6 +29,17 @@ De numerieke implementatie gebruikt lokale vertaling en schaalnormalisatie voor 
 
 Een document zonder `region`-object behoudt de bestaande documentversie en het bestaande constructieschema. Met regio-objecten schrijft het model documentversie **8** en `regionSchema: 1`. Zodra een nieuw regiorecept aanwezig is, schrijft het `constructionSchema: 5`. Import valideert de combinatie strikt; onbekende of inconsistente schema's worden afgewezen. Bestaande document- en constructierecepten blijven ongewijzigd. Tijdelijke geometry-, area- en statusvelden worden nooit opgeslagen en worden na import/replay opnieuw berekend.
 
+### Correctieronde na code-review — 13 oktober 2026
+
+- `model.js`: asreferenties accepteren nu constructieschema 3, 4 en 5. De afzonderlijke controle blijft schema 5 uitsluitend toestaan met een regiorecept. Hoekarmen blijven schema 4/5 vereisen en bestaande schema-2-constructies blijven schema 2–5 accepteren.
+- `model.js`: de gedeelde rijke-tekstcontrole voor documentversie 7/8 controleert expliciet `textSchema` tegen de numerieke waarden 1, 2 en 3, voordat de vereiste inhoudsschemaversie wordt vergeleken. Ontbrekende, ongeldige en ontoereikende waarden worden vóór de modelcommit afgewezen; string- en booleanwaarden worden niet geconverteerd.
+- `tests/regions-schema.test.cjs`: afzonderlijke combinaties van polygongebied met asreferentie, expliciete hoekarmen en `lineBetweenPoints` (schema 2), inclusief volledige JSON-roundtrip en semantische replay. Ongeldige constructieschema's worden via zowel `Engine.load` als `IllustrationModel.load` afgewezen met behoud van de volledige voorafgaande JSON. Schema 5 zonder regiorecept blijft verboden. Dezelfde constructies zonder regio behouden hun oorspronkelijke schema.
+- Tekstregressies controleren schema 1 (opgemaakte tekst), schema 2 (wiskundefragment) en schema 3 (dynamische waarde), zowel zonder regio als gecombineerd met polygongebied en cirkelsector. Volledige opgeslagen JSON blijft na herladen gelijk; semantische replay van een radiuswijziging behoudt tekstinhoud en bindings en toont de actuele dynamische waarde. Hogere ondersteunde tekstschema's blijven leesbaar en worden bij opslag zoals voorheen canoniek afgeleid uit de inhoud. Versie 8 zonder rijke tekst vereist geen `textSchema`.
+- `tests/browser-regions.cjs`: versie 8 met asreferentie, rijke tekst/dynamische radius, polygongebied en sector wordt opgeslagen en via de editor herladen zonder informatieverlies; acht ontbrekende/ongeldige/ontoereikende tekstschemavarianten worden atomair afgewezen.
+- Node en Edge controleren concave polygoninterieurs en de uitgesloten inkeping, polygonranden, minor/major-segmentinterieurs en uitgesloten zijden, koorde- en booggrenzen, en selecteerbaarheid bij zichtbaarheid/intrekking. Hit-testimplementatie hoefde niet te worden gewijzigd.
+
+Er zijn geen bestaande assertions verwijderd of verzwakt. REG-1 is ongewijzigd; er is geen contractafwijking, UI-R1 is niet gestart en er wordt niet naar `main` gemerged.
+
 ## Numerieke keuzes en foutafhandeling
 
 Polygonen worden rond de eerste vertex genormaliseerd voordat de shoelace-som wordt uitgevoerd; eenvoudige polygonvalidatie blijft gedelegeerd aan `PolygonGeometry`. Cirkelrichting, radius-extremen en teruggetransformeerde coördinaten worden gecontroleerd tegen de bestaande absolute modelgrens `1e12`. De implementatie onderscheidt `INVALID_REFERENCE`, `SOURCE_INVALID`, `DEGENERATE_REGION`, `ZERO_RADIUS`, `DEGENERATE_DIRECTION`, `NUMERIC_UNDERFLOW`, `NON_FINITE_RESULT` en `COORDINATE_LIMIT`. Er wordt niet geclamped.
@@ -41,12 +52,16 @@ De drie nieuwe tool-ID's vereisen de bestaande expliciete tool- en bronrechten, 
 
 ## Testresultaten
 
-- **Node:** `node --test tests/*.test.cjs` — **608 geslaagd, 0 mislukt, 0 overgeslagen**.
-- **Edge:** `node tests/browser.cjs` — proces geëindigd met exitcode **0**; de volledige browserregressierunner meldde geen paginafouten. Deze runner publiceert geen enkel geaggregeerd aantal tests.
+- **Node na correctie:** `node --test tests/*.test.cjs` — **611 geslaagd, 0 mislukt, 0 overgeslagen**.
+- **Gerichte Node-regressies:** `node --test tests/region-geometry.test.cjs tests/regions-contract.test.cjs tests/regions-schema.test.cjs tests/axis-references.test.cjs tests/text-editor-t1.test.cjs tests/text-editor-t2.test.cjs tests/text-editor-t3.test.cjs` — **69 geslaagd, 0 mislukt, 0 overgeslagen**.
+- **Gerichte Edge-regressies:** `REG2_ONLY=1 node tests/browser.cjs` — exitcode **0**, alle elf gerapporteerde REG-2-controlecategorieën geslaagd, `pageErrors: []`.
+- **Volledige Edge-suite na correctie:** `node tests/browser.cjs` — proces geëindigd met exitcode **0**, `pageErrors: []`; de volledige browserregressierunner omvat de uitgebreide REG-2-scenario's. Deze runner publiceert geen enkel geaggregeerd aantal tests.
 - Gerichte REG-2 Edge-scenario's geslaagd: canvasgereedschap en selectie, alle drie recepten, onafhankelijke oppervlaktefixtures, dynamische ongeldigheid/herstel met JSON-roundtrip, blokkeren van directe drag, volledige-schijf-SVG, offline PNG en JSON-roundtrip.
 - De volledige Edge-run omvatte ook bestaande expressie-enginefixtures: contract 73/73, onafhankelijke afrondingsreferenties 912/912, transcendentale referenties 19/19 en bronadapter 14/14.
 - UI-T1-toolpanel Edge-controle geslaagd: 40 actieve tools, 8 categorieën en responsive controles op vier viewports.
 - `git diff --check` slaagde.
+
+De correctieronde gebruikte Node v22.18.0 en de reeds geïnstalleerde Playwright 1.62.1 uit de lokale hoofdcheckout via `NODE_PATH`. Voor de bestaande pixelvergelijking is de lokale `pngjs`-dependency naar de genegeerde preflight-`node_modules` van deze checkout gekopieerd. Er zijn geen dependencybestanden of testassertions aangepast om de suite te laten draaien. Edge moest buiten de sandbox worden gestart; de eerste sandboxstart en de eerste volledige run zonder `pngjs` bereikten geen volledige verificatie en tellen niet als geslaagde runs. De ruwe logs staan lokaal in `test-results/reg2-correction-{node,node-targeted,edge-full,edge-targeted}.log` (genegeerde testuitvoer).
 
 De Edge-suite heeft visuele PNG-bestanden onder `docs/images/t5-prep-final-ux` aangeraakt. Deze testbijwerkingen zijn niet onderdeel van de REG-2-commit. De automatische review blokkeerde het terugzetten van die bestanden omdat de wijziging meerdere bestaande bestanden buiten de REG-2-scope zou weggooien; ze zijn daarom lokaal ongemoeid gelaten.
 

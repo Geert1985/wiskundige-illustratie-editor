@@ -32,6 +32,28 @@ module.exports=async page=>{
  const svg=await page.evaluate(()=>FZI.MathIllustration.editor.engine.renderSVG());assert.match(svg,new RegExp('data-object-id="'+diskId+'"'));assert.match(svg,/<circle[^>]*data-region-full-disk=/);assert.doesNotMatch(require('./browser-tool-menu.cjs').numericSVG(svg),/NaN|Infinity/);
  const png=await page.evaluate(async svg=>{const e=FZI.MathIllustration.editor.engine,b=await FZI.MathIllustration.ExportService.png(svg,{width:e.renderer.width,height:e.renderer.height});return {type:b.type,size:b.size};},svg);assert.equal(png.type,'image/png');assert.ok(png.size>100);
  const snapshot=await saved(),encoded=JSON.stringify(snapshot);await page.evaluate(data=>FZI.MathIllustration.editor.loadDocument(JSON.parse(data)),encoded);assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.getConstructionInfo(id).reasonCode,sectorId),'VALID');
+ const compatibility=await page.evaluate(()=>{
+  const MI=FZI.MathIllustration,a=MI.editor,e=a.engine;
+  e.construct('angleDirections',[{kind:'axis',frame:'cartesian',axis:'x'},{kind:'axis',frame:'cartesian',axis:'y'}]);
+  e.add({id:'rich-reg2',type:'text',x:0,y:3,textContent:{schema:3,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:'Straal = ',marks:{bold:true}},{id:'d1',kind:'dynamicValue',binding:{sourceId:'circle',property:'radius'},format:{precision:2,unitMode:'document',angleMode:'document',prefix:'',suffix:''},marks:{}}]}]}});
+  const saved=e.toJSON(),encoded=JSON.stringify(saved);a.loadDocument(JSON.parse(encoded));
+  let rejected=0,atomic=true;
+  for(const textSchema of [undefined,null,0,1,2,4,'3',true]){try{a.engine.load({...saved,textSchema});}catch{rejected++;}atomic=atomic&&JSON.stringify(a.engine.toJSON())===encoded;}
+  const hits=[];
+  const concave=new MI.Engine({objects:[{id:'p',type:'polygon',vertices:[{x:0,y:0},{x:4,y:0},{x:4,y:1},{x:1,y:1},{x:1,y:4},{x:0,y:4}]}]});
+  const region=concave.construct('polygonRegion',[{objectId:'p'}])[0];
+  const select=(engine,p)=>engine.selectAt(p.x,p.y,{transform:new MI.CoordinateTransform(engine.renderer),tolerancePx:.01})?.object.id;
+  hits.push(select(concave,{x:.5,y:3})===region.id,select(concave,{x:1,y:2})===region.id,select(concave,{x:2,y:2})===undefined);
+  for(const extent of ['minor','major']){
+   const s=new MI.Engine({objects:[{id:'c',type:'circle',cx:0,cy:0,r:2},{id:'a',type:'point',x:2,y:0},{id:'b',type:'point',x:0,y:2}]}),r=s.construct('circleSegmentRegion',['c','a','b'].map(objectId=>({objectId})),undefined,extent)[0];
+   for(const o of s.model.objects)if(o.id!==r.id)s.update(o.id,{visible:false});
+   const inside=extent==='minor'?{x:1.3,y:1.3}:{x:0,y:0},outside=extent==='minor'?{x:0,y:0}:{x:1.3,y:1.3};
+   hits.push(select(s,inside)===r.id,select(s,outside)===undefined,select(s,{x:1,y:1})===r.id,select(s,{x:Math.SQRT2,y:extent==='minor'?Math.SQRT2:-Math.SQRT2})===r.id);
+   s.update(r.id,{visible:false});hits.push(select(s,inside)===undefined);
+  }
+  return {version:saved.version,textSchema:saved.textSchema,constructionSchema:saved.constructionSchema,roundtrip:JSON.stringify(a.engine.toJSON())===encoded,rejected,atomic,hits,richRendered:/data-rich-text=/.test(a.engine.renderSVG())&&/2,00/.test(a.engine.renderSVG()),kinds:saved.objects.map(o=>o.construction?.kind).filter(Boolean)};
+ });
+ assert.equal(compatibility.version,8);assert.equal(compatibility.textSchema,3);assert.equal(compatibility.constructionSchema,5);assert.equal(compatibility.roundtrip,true);assert.equal(compatibility.rejected,8);assert.equal(compatibility.atomic,true);assert.ok(compatibility.hits.every(Boolean));assert.equal(compatibility.richRendered,true);assert.ok(compatibility.kinds.includes('polygonRegion'));assert.ok(compatibility.kinds.includes('circleSectorRegion'));assert.ok(compatibility.kinds.includes('angleDirections'));
  await page.evaluate(()=>localStorage.removeItem(FZI.MathIllustration.DraftStore.key));
- return {canvasToolAndSelection:'passed',threeRegionRecipes:'passed',independentAreaReferences:'passed',dynamicInvalidRecoveryRoundtrip:'passed',directDragBlocked:'passed',fullDiskSvg:'passed',offlinePng:'passed',jsonRoundtrip:'passed'};
+ return {canvasToolAndSelection:'passed',threeRegionRecipes:'passed',independentAreaReferences:'passed',dynamicInvalidRecoveryRoundtrip:'passed',directDragBlocked:'passed',fullDiskSvg:'passed',offlinePng:'passed',jsonRoundtrip:'passed',schema5AxesAndRichV8Roundtrip:'passed',invalidTextSchemaAtomic:'passed',concaveAndSegmentBoundarySelection:'passed'};
 };
