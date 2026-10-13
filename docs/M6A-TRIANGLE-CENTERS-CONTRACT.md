@@ -1,7 +1,7 @@
 # M6a-contract — Driehoekcentra
 
-Contractversie: 1.1.0  
-Status: concept ter goedkeuring; M6a-code is nog niet gestart.  
+Contractversie: 1.1.1  
+Status: oorspronkelijk ontwerpcontract; M6a-code inmiddels geïntegreerd in `main` volgens SYNC-0 (2026-10-13); handmatige gebruikersacceptatie blijft afzonderlijk open.  
 Datum: 2026-10-12  
 Basis: `main`, commit `bcd0655`; wijziging gepubliceerd op `chatgpt/m6a-triangle-centers`.
 
@@ -100,4 +100,4 @@ Numerieke toetsen gebruiken onafhankelijke, vooraf bepaalde referentiepunten, gr
 
 ## Poorten en open voorwaarden
 
-Dit is contractversie 1.1.0 ter expliciete goedkeuring; er is geen M6a-productiecode geschreven. Volgens de roadmap staan gecombineerde Edge-regressies en handmatige T4/T5-prep-controles nog open. Hun status verandert niet door deze contractupdate. M6a-implementatie start pas na jouw expliciete goedkeuring van dit contract en afhandeling of expliciete beoordeling van toepasselijke open controles. M6b blijft een afzonderlijke milestone.
+**Historisch contract en actuele status:** dit document ontstond vóór de M6a-implementatie; volgens SYNC-0 op `main` commit `54b2f55027b69c39875f7ea4a5ebe8b16f1d2bde` zijn de M6a-constructies, rapporten en regressiecommits inmiddels geïntegreerd. Bestaande rapporten vermelden tests uit hun eigen uitvoermoment; SYNC-0 heeft geen tests opnieuw uitgevoerd. Handmatige gebruikersacceptatie is daarmee niet automatisch voltooid; M6b blijft een afzonderlijke milestone. De wiskundige en semantische contractregels hierboven blijven normatief zolang ze overeenkomen met de geïntegreerde implementatie.
