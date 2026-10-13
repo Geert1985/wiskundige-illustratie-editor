@@ -1,10 +1,10 @@
 # From Zero 2 Infinity — Geometrie, gereedschappen en radiaal eigenschappenmenu
-Versie: 1.0.0 — 2026-10-13
+Versie: 1.0.1 — 2026-10-13
 Status: **ontwerp en implementatiecontract ter goedkeuring; geen productie-implementatie in deze wijziging**
-Bron: huidige main (roadmap v2.4.0, feature backlog v1.6.x); `docs/TOOL-PANEL-REORGANIZATION-REPORT.md` is de expliciete, gepushte ontwikkelbranchreferentie, **niet** bewijs dat dit op main is gemerged; `docs/M6A-TRIANGLE-CENTERS-CONTRACT.md` geeft het bestaande M6a-`triangle`-broncontract.
+Bron: GitHub main op SYNC-0 SHA `54b2f55027b69c39875f7ea4a5ebe8b16f1d2bde` (roadmap v2.5.0, backlog v1.7.0). Gereedschapspaneelherstructurering én M6a-centra zijn al op main geïntegreerd. Hun historische rapporten en contracten blijven referenties; hun oude pre-implementatiestatus is achterhaald.
 
 ## 0. Omvang, prioriteit en implementatiepoorten
-Vier afzonderlijk te accepteren trajecten: **UI-T1** gereedschapsindeling; **G-TRI1** driehoek via drie bestaande punten; **UI-R1–R3** contextueel radiaal eigenschappenmenu; **REG-1–REG-3** dynamisch opgevulde gebieden + optionele oppervlakteweergave. Het herbruikbaarheidsontwerp **CORE-1** is een architectuurpoort vóór risicovolle UI/geometry-implementaties, geen afzonderlijke tweede wiskundige engine. Eerst de lopende/aanvaarde M6a-status en branches reconciliëren; geen niet-gemergede code of tests als aanwezig op main veronderstellen. M6b en bestaande M7–M20, T5b–T5d, K1–K8 blijven bestaan. Geen feature automatisch vrijgeven door deze documenten. Alle implementaties op afzonderlijke branch; eerst bestaande code en tests inventariseren; expliciete GO voor schema- en permissiewijzigingen; na bewijs en review pas mergen.
+Vier afzonderlijk te accepteren trajecten: **UI-T1** gereedschapsindeling; **G-TRI1** driehoek via drie bestaande punten; **UI-R1–R3** contextueel radiaal eigenschappenmenu; **REG-1–REG-3** dynamisch opgevulde gebieden + optionele oppervlakteweergave. Het herbruikbaarheidsontwerp **CORE-1** is een architectuurpoort vóór risicovolle UI/geometry-implementaties, geen afzonderlijke tweede wiskundige engine. SYNC-0 heeft integratie van M6a en de bestaande toolpanelbasis op main bevestigd; de nieuw geplande uitbreidingen zijn niet geïmplementeerd. M6b en bestaande M7–M20, T5b–T5d, K1–K8 blijven bestaan. Geen feature automatisch vrijgeven door deze documenten. Alle implementaties op afzonderlijke branch; eerst bestaande code en tests inventariseren; expliciete GO voor schema- en permissiewijzigingen; na bewijs en review pas mergen.
 
 **Normatieve principes:** hergebruik getypeerde geometrie, één dependency graph / model truth, bestaande commando- en undo/redo-paden, bestaande selectie/hit-testing, rechten en restricted-redactie, bestaande render/SVG/PNG. Geen tweede parser, polygon renderer, documentmodel of permissie-engine. Geen zelfstandige visuele demo/prototype.
 
@@ -19,7 +19,7 @@ Vier afzonderlijk te accepteren trajecten: **UI-T1** gereedschapsindeling; **G-T
 7. **Tekst & interactie**.
 8. **Verzamelingen**.
 
-In de ontwikkelbranch aanwezige acht categorieën omvatten een aparte `Figuren`-groep; migreer haar bestaande `triangle`, `polygon`, `circle` **zonder ID-wijziging** naar Vrije objecten. Het worden acht hoofdcategorieën na verwijdering van Figuren en toevoeging van Gebieden & opvulling. Verander niet de opslag- of constructietypen om een menunaam. Zorg dat sidebar en fullscreenkiezer exact dezelfde bron gebruiken; geen dubbele werkende tool-ID's. Behoud onafhankelijk inklapbare groepen, splitmenu's, werkende shortkeys, touch, keyboard, aria, actieve toolhint en huidige responsieve stijl. Toekomstige placeholders zijn statische inert gelabelde items zonder `button`, `tabindex`, `data-canvas-tool` of event handlers. Wat al bestaat mag nooit als placeholder terugvallen.
+In de op `main` geïntegreerde paneelimplementatie aanwezige acht categorieën omvatten een aparte `Figuren`-groep; migreer haar bestaande `triangle`, `polygon`, `circle` **zonder ID-wijziging** naar Vrije objecten. Het worden acht hoofdcategorieën na verwijdering van Figuren en toevoeging van Gebieden & opvulling. Verander niet de opslag- of constructietypen om een menunaam. Zorg dat sidebar en fullscreenkiezer exact dezelfde bron gebruiken; geen dubbele werkende tool-ID's. Behoud onafhankelijk inklapbare groepen, splitmenu's, werkende shortkeys, touch, keyboard, aria, actieve toolhint en huidige responsieve stijl. Toekomstige placeholders zijn statische inert gelabelde items zonder `button`, `tabindex`, `data-canvas-tool` of event handlers. Wat al bestaat mag nooit als placeholder terugvallen.
 
 ### UI-acceptatie
 Alle bestaande tool-ID's verschijnen precies één keer; werkende tool blijft functioneel in sidebar én fullscreen; geen document/selection/revision/history-effect door inert placeholder; testen op desktop/tablet/mobiel, Escape en pointercancel; full Node/Edge waar beschikbaar.
@@ -79,9 +79,9 @@ De hierboven gebruikte API-namen zijn **ontwerpinterfaces**, geen verplicht nieu
 ## 6. Geordende Codex-werkpakketten en stopcriteria
 | Werkpakket | Startvoorwaarde | Op te leveren bewijs | Model |
 |---|---|---|---|
-| **SYNC-0** actuele branches/repo+M6a/toolpanel/status vergelijken | start | baseline, onverenigbaarheden en toestemming waar nodig | GPT-6 High |
+| **SYNC-0** actuele main en M6a/toolpanelstatus | voltooid; rapport van Codex, geen tests opnieuw gedraaid | bestaande implementatie bevestigd; verdere nieuwe uitbreidingen open | GPT-6 High |
 | **CORE-1** gedeelde helpers/spec-contracten | SYNC-0 | ontwerp met risico's, unit/permission model en API-acceptatie | GPT-6 High |
-| **UI-T1** gereedschapsindeling | toolpanelbranch geïntegreerd of correct base | 8 categorieën, ID-mapping en screenshot/Edge | GPT-6.1 Sol Medium |
+| **UI-T1** gereedschapsindeling | start vanaf actuele main met geïntegreerd paneel | 8 categorieën, ID-mapping en screenshot/Edge | GPT-6.1 Sol Medium |
 | **G-TRI1** driehoek via 3 punten | M6a-rol en schema-consistentie geverifieerd | Node/Edge, undo/import/export en M6a op nieuwe bron | GPT-6 High |
 | **UI-R1** radiaalmenu-interactiecontract | CORE-1 | type-/capabilitymatrix en UX/keyboard spec | GPT-6 High |
 | **UI-R2** radiaalmenu + volledig toegangspad tot inspector | UI-R1 akkoord | UI integratie, focus/security/Edge, geen verlies inspector | GPT-6 High + Sol Medium |
