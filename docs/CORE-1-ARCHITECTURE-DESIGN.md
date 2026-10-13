@@ -1,8 +1,8 @@
 # CORE-1 — Herbruikbare geometrie-, eigenschappen- en gereedschapsarchitectuur
 
-Versie: 1.0.0  
-Status: ontwerp ter goedkeuring; geen productiecode of tests gewijzigd/uitgevoerd  
-Basis: GitHub `main`, roadmap v2.5.1, commit `c441cdb694314c53cf53027c68c9be7d4ff71a33`  
+Versie: 1.1.0
+Status: actualisatie op actuele GitHub `main`; documentatie-only, geen productiecode of tests gewijzigd/uitgevoerd
+Basis: GitHub `main` op `f4039842c44885d739b624d9d67bbfdd75d2394e`; omvat M6b `b5e693f`, G-TRI1, UI-T1 en de bestaande `MI.ToolCatalog`
 Normatieve context: [geometrie- en UI-architectuur v1.0.1](GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md), [uitvoeringsplan v1.0.1](CODEX-EXECUTION-PLAN-TOOLS-RADIAL-REGIONS-TRIANGLE-v1.0.0.md).
 
 ## 1. Doel en grens
@@ -17,22 +17,22 @@ De audit is gebaseerd op de bestanden op de hierboven genoemde `main`-commit. De
 
 | Bestaande code | Herbruikbaar contract | CORE-1-besluit |
 |---|---|---|
-| `construction-service.js`: `ConstructionService.referencesForRole`, `validateReferences`, `evaluate`, `resolve`, `point`, `line`, `contract` | Getypeerde bronrollen, bronvalidatie, topologische herberekening, resolved geometry en recoverable ongeldige constructies. `triangle` accepteert alleen een `polygon` met exact drie vertices; M6a-centra gebruiken deze rol. | Blijft eigenaar van construction-recepten en afhankelijkheden. Geen tweede graaf of triangle-resolver. De bestaande functies voldoen aan het M6a-broncontract. |
+| `construction-service.js`: `ConstructionService.referencesForRole`, `validateReferences`, `evaluate`, `resolve`, `point`, `line`, `contract` | Getypeerde bronrollen, bronvalidatie, topologische herberekening, resolved geometry en recoverable ongeldige constructies. `triangle` accepteert alleen een `polygon` met exact drie vertices; M6a en M6b gebruiken deze rol. `triangleFromPoints` is de G-TRI1-koppeling van drie afzonderlijke punten naar één afhankelijke polygon. | Blijft eigenaar van construction-recepten en afhankelijkheden. Geen tweede graaf of triangle-resolver. Regio-recepten worden later in dezelfde service en dependency graph geregistreerd. |
 | `construction-service.js`: interne `triangleCenter`; geëxporteerde `triangleCenterKinds`, `triangleInvariantStatus` | Genormaliseerde lokale driehoekscoördinaten, degeneratiegrens `1e-12`, invariantcontroles en statussen waaronder `DEGENERATE_TRIANGLE`, `NON_FINITE_RESULT` en `COORDINATE_LIMIT`. | Referentie voor numerieke schaalbehandeling en teststijl; niet kopiëren naar gebieds- of UI-code. De berekeningshelper zelf is intern en geen publieke adapter-API. |
 | `polygon-geometry.js`: `validate`, `edges`, `contains`, `anchor` | Begrensde validatie van eenvoudige polygonen, zelfsnijdingscontrole, randverzameling, punt-in-polygoon en labelanker. Validatie accepteert 3–256 vertices en modelcoördinaten binnen `1e12`. | Hergebruik voor bestaande polygonen en de polygonvariant van een toekomstig gebied. Introduceert geen sector-/segmentcontour en is geen oppervlakte-formatter. Behoud de bestaande aparte M6a-degeneratiebehandeling. |
 | `measurement-geometry.js`: `MeasurementGeometry.value`, `edges`, `anchors`; `MeasurementUnits.figureValue`, `format`, `settings` | Bestaande lengte-/hoekberekeningen, figuuroppervlakte voor cirkels en polygonen, perimeter en documenteenheden. `format(value, 'area', settings)` schaalt eenmaal met `scale²`, voegt `²` toe en past de ingestelde precisie toe. | Blijft de numerieke en presentatiebasis voor bestaande metingen. `construct:area` en bestaande oppervlakteweergave mogen niet worden gedupliceerd of gewijzigd om nieuwe regio's te ondersteunen. |
 | `model.js` en `construction-service.js`: constructierecept- en JSON-validatie | Recepten, dependencies en bestaande documentcompatibiliteit worden gevalideerd in het bestaande model-/constructiepad. | Nieuwe region-recepten horen, indien later goedgekeurd, in dit pad; geen afzonderlijk region-document of bypass bij import/replay. |
 | `permission-runtime.js`: `sourceAllowed`, `getObjectCapabilities`, `getAllowedTools`, `object.setProperties`-validatie en command-autorisatie | Rechten worden op commando-/bron- en objectniveau afgedwongen. Runtime-projectie redigeert restricted inhoud. `sourceAllowed` controleert onder meer lees-/displayrecht, beschikbaarheid en expliciete toegestane bronproperties. | Blijft de enige autoriteit. Nieuwe adapters consumeren runtime-capabilities en projecties; ze verlenen zelf geen rechten en vervangen commit-time validatie niet. |
-| `editor.js`: `commonInspector`, `setCommonProperty`, `allowed`, `capabilities`, `toolAllowed`, `SPLIT_TOOLS`, `renderSplitTools`, `renderCanvasTools`; `editor.html`: `data-tool-category`, `data-tool`, splitmenu's en toollabels | Bestaande inspectorgedragingen, toepassing via bestaande commands, capabilitycontrole, gereedschapsgroepen en splitknoppen. Fullscreenkeuze wordt momenteel uit toolpaneel-markup opgebouwd. | Bestaande command- en interactiegedragingen blijven behouden. De presentatiecatalogus en eigenschappenpresentatie zijn nu over meerdere bronnen verdeeld; dit zijn de enige geplande nieuwe adapters in CORE-1. |
+| `tool-catalog.js`: `MI.ToolCatalog.build/create/list/getTool/getSplit`; `editor.js`: `toolCatalog`, `commonInspector`, `setCommonProperty`, capability- en fullscreenrendering; `editor.html`: `data-tool-category`, `data-tool` en inert placeholders | De bestaande `MI.ToolCatalog` bouwt één genormaliseerde catalogus uit toolmarkup, valideert unieke categorie-/tool-ID's en splitgroepen en voedt sidebar en fullscreen. `planned` entries blijven inert en hebben geen tool- of command-ID. De bestaande inspector en commands blijven toepasbaarheid en writes afhandelen. | Hergebruik `MI.ToolCatalog`; introduceer geen concurrerende `buildToolCatalog` of tweede tooldefinitie. Een toekomstige `PropertyApplicability` is alleen een presentatie-adapter, geen autorisatie- of commandlaag. Bestaande M6-, G-TRI1- en tool-ID's blijven stabiel. |
 
 ### Wat niet al bestaat
 
 - `PolygonGeometry` valideert polygonen, maar bouwt geen getypeerde sector- of segmentgeometrie.
 - `MeasurementUnits.figureValue` kent de oppervlakte van een hele cirkel en een polygon, maar is geen getypeerde oppervlaktefunctie voor sectoren en segmenten.
 - `EditorApp.commonInspector` berekent toepasbaarheid, gemengde waarden en commandestatus in UI-rendercode. Er is geen gedeelde pure eigenschappencatalogus voor inspector en toekomstig radiaalmenu.
-- De hoofdwerkbalk is de declaratieve bron voor toolmarkup, terwijl splitgroepen in `SPLIT_TOOLS` staan en runtime-toolrechten elders worden afgeleid. Er is geen centrale stabiele toolcatalogus die deze presentatiedefinities beschrijft.
+- `MI.ToolCatalog` bestaat en wordt al door `EditorApp` gedeeld voor sidebar en fullscreen. De catalogus leest huidige markup; splits en command-/policyafhandeling blijven bij hun bestaande eigenaren. Er ontbreekt geen tweede catalogus, maar eigenschappen-toepasbaarheid is nog niet als gedeelde presentatieadapter uitgewerkt.
 
-Daarom stelt CORE-1 geen nieuwe algemene geometrie-engine voor. Het stelt één dunne bronadapter, één regioresolver, één regio-oppervlaktefunctie, één presentatieadapter voor eigenschappen en één declaratieve catalogus voor gereedschap voor. Bestaande services blijven de eigenaren van graph, policy, units, commands, geschiedenis en rendering.
+Daarom stelt CORE-1 geen nieuwe algemene geometrie-engine voor en bouwt het geen tweede catalogus. M6a/M6b en G-TRI1 blijven in `ConstructionService`; UI-T1 en fullscreen consumeren `MI.ToolCatalog`. Alleen als dunne toekomstige servicegrenzen blijven `GeometrySourceAdapter`, `resolveRegionGeometry`, `computeRegionArea`/`formatRegionArea` en `PropertyApplicability` over. Bestaande services blijven eigenaar van graph, policy, units, commands, geschiedenis en rendering.
 
 ## 3. Afhankelijkheidsgrenzen
 
@@ -51,7 +51,7 @@ flowchart LR
   Commands --> Props
   Props --> Inspector[Rechter inspector]
   Props --> Radial[Toekomstig radiaalmenu]
-  Catalog[ToolCatalog] --> Sidebar[Sidebar renderer]
+  Catalog[MI.ToolCatalog: existing] --> Sidebar[Sidebar renderer]
   Catalog --> Fullscreen[Fullscreen tool chooser]
   Runtime --> Sidebar
   Runtime --> Fullscreen
@@ -98,15 +98,15 @@ resolveRegionGeometry({ recipe, sources, limits })
 //   'COORDINATE_LIMIT' | 'UNSUPPORTED_REGION_KIND' }
 ```
 
-`recipe` is een al gevalideerde, getypeerde regio-invoer. De eerste beoogde typen zijn:
+`recipe` is een al gevalideerde, getypeerde regio-invoer. De canonieke receptnamen, bronvolgorde, JSON-velden en foutstatussen zijn nu vastgelegd in [REG-1-CONTRACT.md](REG-1-CONTRACT.md) §2–5. De drie types zijn:
 
-- `simplePolygon`: een begrensde eenvoudige polygoncontour; hergebruik `PolygonGeometry.validate`.
-- `circleSector`: cirkelbron plus gevalideerd begin en gerichte sweep in radialen. Behoud de bronrichting voor de contour; expliciete minor/major keuze wordt vóór deze functie vastgelegd.
-- `circleSegment`: cirkelbron plus koorde-/boogdefinitie met dezelfde sweepconventie.
+- `polygonRegion`: een bestaande begrensde eenvoudige polygonbron; hergebruik `PolygonGeometry.validate`.
+- `circleSectorRegion`: cirkelbron en twee richtingpuntreferenties met expliciet `extent: 'minor' | 'major'`.
+- `circleSegmentRegion`: dezelfde typed circle-/richtingpointbronnen en sweepkeuze.
 
 `RegionGeometry` bevat alleen eindige modelruimtepunt-/cirkelparameters, een discriminerend type en de gevalideerde contoursemantiek die de bestaande renderer later nodig heeft. Hij bevat geen SVG/DOM, pixelcoördinaten, geformatteerde getallen, objectmutaties of impliciete bronrechten. De service heeft vaste aantals-/dieptelimieten en gebruikt schaalbewuste lokale rekenstappen waar subtractie, cross-products of boogconstructie dat vereist. Elke teruggetransformeerde coördinaat wordt tegen de modelcoördinatenlimiet `1e12` gecontroleerd.
 
-De area-functie interpreteert sweepwaarden volgens de eenmaal vastgelegde REG-1 minor/major-conventie. Voor waarden rond `0`, `π` en `2π`, wrap over nul en samenvallende eindpunten levert de resolver een expliciete geometrie of `DEGENERATE_REGION`; een consumer leidt geen betekenis af uit schermklikvolgorde. De precieze grens-/collineariteits- en sweepregels zijn een verplichte REG-1-beslissing vóór implementatie, niet een stilzwijgende uitbreiding van CORE-1.
+De area-functie interpreteert sweepwaarden volgens de vastgelegde REG-1 minor/major-conventie. Voor waarden rond `0`, `π` en `2π`, wrap over nul en samenvallende eindpunten levert de resolver de geometrie/status zoals REG-1 die definieert; geen consumer leidt betekenis af uit schermklikvolgorde. REG-1 §3–5 beslist deze eerder open grens-/degeneratiegevallen vóór implementatie.
 
 ### 4.3 `computeRegionArea`
 
@@ -168,18 +168,18 @@ De afhankelijkheidsrichting is:
 3. `GeometrySourceAdapter` levert alleen voor een geautoriseerde aanvraag gevalideerde, resolved snapshots.
 4. `resolveRegionGeometry` bouwt getypeerde regio-geometrie; `computeRegionArea` retourneert de ruwe quantity; de bestaande `MeasurementUnits` formatteert die.
 5. Bestaande command-/model-/history-/replaypaden zijn later verantwoordelijk voor mutatie en opslag. Renderer/labels/export zijn consumers van een geldig, geautoriseerd resultaat.
-6. `PropertyApplicability` wordt door inspector/radial UI geconsumeerd. `ToolCatalog` wordt door sidebar/fullscreen UI geconsumeerd; beiden zijn presentatie-adapters.
+6. De bestaande `MI.ToolCatalog` wordt door sidebar/fullscreen UI geconsumeerd; maak geen alternatieve catalogus. Een toekomstige `PropertyApplicability` wordt door inspector/radial UI geconsumeerd. Beide zijn presentatie-adapters; runtime blijft autoriseren.
 
 Er is geen productievolgorde of modulemanifestwijziging in CORE-1. Bij implementatie moet de laadvolgorde de bestaande dependency-injectie volgen; een module die `ConstructionService`, `MeasurementUnits` of runtime-types gebruikt, mag niet vóór die providers worden geladen. `ToolCatalog` mag geen `EditorApp` nodig hebben; `EditorApp` levert de command-/permissionstatus bij render.
 
 ## 6. Opslag, schema en permissies
 
-CORE-1 introduceert **geen wijziging** aan documentversie 7, `constructionSchema`, `textSchema`, tool-ID's, JSON/SVG/PNG-uitvoer of autorisatieregels. De bestaande M6a-recepten en driehoekbronrol blijven ongewijzigd. De voorgestelde functies zijn berekeningen/adapters en creëren op zichzelf geen persistente objecten.
+CORE-1 introduceerde geen schema- of permissiewijziging. Op actuele `main` zijn documentversie 7 en constructieschema's tot en met 4 in gebruik; de M6a/M6b-recepten en `triangle`-bronrol blijven ongewijzigd. M6a, M6b, G-TRI1 en UI-T1 zijn geïntegreerd. Deze actualisatie is documentatie, geen implementatie of nieuw acceptatiebewijs.
 
 Voor een latere regio-implementatie geldt:
 
-- REG-1 bepaalt eerst of regio's als nieuwe constructierecepten binnen het bestaande documentmodel kunnen worden opgeslagen en welk constructionSchema-versienummer daarvoor vereist is. CORE-1 kiest geen nieuw schema en verhoogt niets.
-- `document.version: 7` wordt alleen aangepast na afzonderlijk bewijs dat het bestaande documentmodel dit vereist; er volgt geen migratiebesluit uit dit ontwerp.
+- REG-1 v1.0.0 stelt een nieuw objecttype `region` voor, omdat de bestaande objecttypen geen exact cirkelboogcontour voor sectoren/segmenten en geen onafhankelijk stijlbaar dynamisch gebied opslaan. De huidige reader gebruikt een vaste objecttype-allowlist en accepteert documentversies tot 7; REG-1 adviseert daarom `document.version: 8` plus `regionSchema: 1`. De nieuwe getypeerde recepten vereisen `constructionSchema: 5`. Dit zijn noodzakelijke, nog niet geïmplementeerde uitbreidingen; REG-2 wacht op expliciete contractgoedkeuring.
+- Legacy-documenten zonder region-object behouden hun document- en constructieschema. Een reader die v8/regionSchema 1 of constructionSchema 5 niet kent, moet fail-closed en zonder mutatie of downgrade weigeren; een nieuwe reader behoudt import en uitvoer van alle oudere versies.
 - Geen impliciete bronrechten: regio's mogen alleen bronnen gebruiken die de bestaande runtime voor de betreffende actor/actie toestaat. Nieuwe bronrol-, capability- of exportregels vereisen een expliciet, afzonderlijk contract en GO.
 - De bestaande runtime kent al geometrische `area`-bronproperties voor toegestane objecten. Dat autoriseert **niet** automatisch een nieuw region-object als bron. Type-/propertymatrix, redactie en grants worden door REG-1 gespecificeerd; geen permissieverbreding in CORE-1.
 - Verborgen, verwijderde, ongeldige of revoked bronnen mogen niet via tooltips, menu/ARIA, canvaslabels, JSON/SVG/PNG, clipboard, caches of foutdetails uitlekken. Een open menu of berekening wordt opnieuw gevalideerd tegen actuele object-, revision- en permission-context.
@@ -212,15 +212,15 @@ Dit zijn voorgestelde acceptatietests. Er zijn voor deze ontwerpwijziging geen t
 | Risico/besluit | Beheersing en beslismoment |
 |---|---|
 | Re-implementatie van M6a-bronrollen of graph kan verschillen in degeneratie, topo-volgorde en recovery geven. | M6a blijft op `ConstructionService`; de bronadapter delegeert bestaande rol- en graphvalidatie. Vergelijk nieuwe cases met de bestaande M6a fixtures. |
-| Sector-/segmenthoeken rond `0`, `π` en `2π` kunnen onduidelijke kleine/grote contouren opleveren. | Leg minor/major, directed sweep en nul-/samenvallende grensgevallen formeel vast in REG-1 voordat code wordt geschreven. |
+| Sector-/segmenthoeken rond `0`, `π` en `2π` kunnen onduidelijke kleine/grote contouren opleveren. | REG-1 §3 beslist minor/major, canonieke CCW-contour, π-tie en gelijke richting; golden tests uit §8 moeten dit bewijzen. |
 | Grote coördinaten en bijna degeneratieve polygonen kunnen overflow/cancellation geven. | Lokale genormaliseerde berekening, modelcoördinaatlimieten en onafhankelijk grenswaardenbewijs. Gebruik geen pixelgeometrie als numerieke invoer. |
 | `figureValue` geeft ruwe polygon-/cirkeloppervlakte; onbedoelde dubbele schaal leidt tot foutieve cm². | Alleen ruwe coördinaat² quantity naar `MeasurementUnits.format(..., 'area', settings)`; geen handmatige extra vermenigvuldiging met `scale²`. |
 | Eigenschappencatalogus kan de bestaande commandpolicy per ongeluk dupliceren of een stale menuactie committen. | Adapter presenteert uitsluitend; bestaande `canExecute` bij tonen en volledige commandvalidatie bij uitvoeren blijven verplicht. Contextwijziging maakt actie opnieuw op te bouwen. |
 | Centraliseren van tools kan de huidige splitkeuzes, fullscreenkloon, toetsenbordstatus of ID's breken. | IDs blijven stabiel; catalogus-tests vergelijken entries op beide oppervlakken en met de runtime; uitvoering blijft via `EditorApp`. |
 | Region area als dynamische tekstbron kan bestaande restricted policies verruimen. | Geen automatische autorisatie. REG-1 vereist expliciet schema-/property-/grant- en exportcontract voor regio-objecten. |
 
-Open ontwerpbesluiten voor volgende poorten zijn beperkt tot: (1) definitieve minor/major sweep- en degeneratiesemantiek in REG-1; (2) exacte region-receptvelden en eventuele `constructionSchema`-verhoging in REG-1; (3) of een region ooit als `area`-bron mag worden gebruikt en welke grants dat vereist; (4) de precieze presentatie-entry-/capability-structuren bij implementatie. Deze punten veranderen de reeds goedgekeurde M6a-regels niet.
+REG-1 v1.0.0 legt minor/major, degeneratie, bronrecepten, schema's, eenheden en de standaardrechten normatief vast. Voor REG-2 resteren de expliciete GO op dit contract en de beoordeling van de voorgestelde restricted-rights-matrix. Een region als bron voor dynamische tekst of andere constructies valt buiten REG-2 en vereist later een eigen bron-/grantbesluit. Details van `PropertyApplicability` en UI blijven bij UI-R1/UI-R2. Geen van deze punten verandert M6a/M6b/G-TRI1-regels.
 
 ## 9. Acceptatiepoort
 
-CORE-1 is ontwerp-klaar voor review wanneer de gebruiker kan vaststellen dat bestaande functies zijn hergebruikt waar zij al voldoen, adapters dun en niet-autoritair blijven, numerieke waarden één route volgen en document-/permissiegrenzen expliciet zijn. Dit document geeft **geen** toestemming om CORE-1 of een volgende milestone te implementeren. Na goedkeuring worden UI-T1, G-TRI1, UI-R1 en REG-1 volgens de afzonderlijke roadmappoorten uitgevoerd; CORE-1 opent niet automatisch UI-R2 of REG-2.
+CORE-1 is geactualiseerd tegen code op `main`: M6a/M6b/G-TRI1 en `MI.ToolCatalog` zijn bestaande infrastructuur, geen toekomstige implementatie. `REG-1-CONTRACT.md` is de normatieve ontwerpuitwerking voor regio's. De bijgewerkte roadmap stelt de volgorde CORE-1 → REG-1 → REG-2 → UI-R1 → UI-R2 vast. Deze documentatie geeft geen toestemming om REG-2, UI-R1/UI-R2 of andere productiecode te implementeren; REG-2 wacht op afzonderlijke expliciete goedkeuring van het contract.

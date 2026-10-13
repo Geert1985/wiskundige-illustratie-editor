@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.7.0
-Status: proposed; reconcile with repository before implementation. T5a and the full text workspace are accepted and integrated; calculator F11 and future TI-36X Pro parity remain unimplemented. M6 geometry precedes the separately gated calculator milestones.
+Version: 1.8.0
+Status: reconciled to GitHub `main` f403984 on 2026-10-13. M6a/M6b, G-TRI1 and UI-T1 are integrated; their reports retain open manual acceptance. CORE-1 is updated, REG-1 contract awaits explicit approval, and REG-2/UI-R1/UI-R2 have not started.
 Date: 2026-10-13
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
@@ -177,9 +177,9 @@ User-supplied checklist v2.1.0 extends F11 with future TI-36X Pro functional par
 No exact-value, complex, matrix, variable or dimension extension silently changes accepted T5a binary64/angle/round/underflow behavior. Each package requires its own typed mathematical/schema/security contract, independent reference tests and explicit acceptance. The cited 105-item concept inventory is not an official TI function count; manual reconciliation remains open. No new parity, implementation or test PASS claimed by this document-only update.
 
 
-## F12 — Structurele gereedschappen, gekoppelde driehoeken, radiaalmenu en dynamische gebiedsoppervlakte (2026-10-13, backlog v1.7.0)
+## F12 — Historische planning voor structurele gereedschappen, gekoppelde driehoeken, radiaalmenu en dynamische gebiedsoppervlakte
 
-**Normatief ontwerp:** [GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md](GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md); volgorde/poorten: [DEVELOPMENT-ROADMAP.md](DEVELOPMENT-ROADMAP.md) v2.5.0. Alle onderstaande nieuwe onderdelen **gepland, niet geïmplementeerd op main**.
+**Historische status ten tijde van backlog v1.7.0:** **alle onderstaande onderdelen werden toen als gepland en niet geïmplementeerd vastgelegd**. Dat statusstatement wordt voor de huidige implementatiestatus vervangen door de v1.8.0-reconciliatie hieronder; de oorspronkelijke scope en acceptatievoorwaarden blijven gelden. Normatieve actuele regio-contractbasis: [REG-1-CONTRACT.md](REG-1-CONTRACT.md); actuele volgorde staat in Roadmap v2.6.0.
 
 - **UI-T1:** basisobjecten hernoemen naar **Vrije objecten** en de *vrije* cirkel, driehoek, veelhoek daaronder plaatsen; afzonderlijke Figuren-sectie schrappen; **Constructies direct eronder**; **Gebieden & opvulling** als hoofdgroep; acht groepen totaal. Behoud bestaande `data-canvas-tool` IDs, fullscreen en inert placeholders; ontwikkelbranch toolpanel eerst controleren.
 - **G-TRI1:** **Constructies → Driehoekconstructies → Driehoek via 3 punten**. Selecteer A, B, C uit reeds bestaande getypeerde puntobjecten; creëer één afhankelijk polygon-object met drie resolved vertices, geen nieuwe permanente punten; vrij tekenen blijft aparte `triangle`-tool. Constructiedriehoek is selecteerbaar, opmaakbaar, te meten en geldige M6a-triangle source, **maar niet rechtstreeks versleepbaar**, ook niet door de punten als neveneffect te slepen. Gebruik construction DAG, typed recipe, degenerate/recoverable, cascade, schema/replay/JSON/SVG/offline PNG/restricted.
@@ -188,3 +188,22 @@ No exact-value, complex, matrix, variable or dimension extension silently change
 - **REG-1/2:** selecteerbaar en dynamisch **veelhoekgebied, cirkelsector en cirkelsegment** met kleine/grote regio, opvulkleur/transparantie; verplicht in eerste release ook **optionele oppervlakteweergave**, live `A = 12,57 cm²` of numeriek-only; labelpositie/precisie/eenvuldig; reken via de geometrie en schaal², niet pixels of tekst. Dedicated source/permission validation, hit testing, export, undo/replay en geen verborgen waardelek. Later pas complexere regio's.
 - **REG-3:** overlap, Booleaanse regio's, gebieden onder/tussen grafieken, ongelijkheden en set-topologie na relevante M11/M12-services.
 - **Prioriteitsadvies:** eerst actuele featurebranches/status harmoniseren (SYNC-0), ontwerpcontracten CORE-1, UI-R1, REG-1; UI-T1 en G-TRI1 als afzonderlijke bounded mijlpalen; UI-R2, REG-2 pas na ontwerp-gate; UI-R3/REG-3 later. **GPT-6 High** voor geometrie, rechten, numeriek, architectuur en eindcontrole; **GPT-6.1 Sol Medium** voor afgebakende UI; **Sol Light** uitsluitend voor geringe documentatie/styling na bewezen contracts.
+
+## F12 — Statusreconciliatie na SYNC-1 (backlog v1.8.0, 2026-10-13)
+
+Dit statusblok actualiseert de planningssnapshot hierboven zonder oorspronkelijke eisen of historie te verwijderen. Basis is actuele `main` `f4039842c44885d739b624d9d67bbfdd75d2394e`, waarin M6b `b5e693f`, G-TRI1 en UI-T1 zijn geïntegreerd.
+
+| Item | Status | Openstaande acceptatie/gate |
+|---|---|---|
+| M6a | Geïntegreerd op `main` | De handmatige cases uit `M6a-REPORT.md` blijven open. |
+| M6b | Geïntegreerd op `main`; eerder rapport: 599 Node PASS, volledige Edge-suite PASS | Gebruikersacceptatie blijft open; cijfers komen uit dat rapport en zijn niet opnieuw uitgevoerd in SYNC-1. |
+| G-TRI1 | Geïntegreerd op `main` | Handmatige acceptatie uit `G-TRI1-REPORT.md` blijft open. |
+| UI-T1 | Geïntegreerd op `main`; acht categorieën en bestaande ToolCatalog gebruiken stabiele tool-ID's | Handmatige UX-acceptatie uit `UI-T1-REPORT.md` blijft open. |
+| CORE-1 | Architectuuractualisatie v1.1.0 op basis van bestaande implementatie | Ontwerpstatus wordt niet automatisch als goedgekeurd beschouwd. |
+| REG-1 | Contractvoorstel v1.0.0 in `REG-1-CONTRACT.md` | Wacht op expliciete gebruikersgoedkeuring van schema- en permissionvoorstel. |
+| REG-2 | Niet gestart | Afzonderlijke GO na REG-1-goedkeuring; deze branch bevat geen productiecode. |
+| UI-R1 / UI-R2 | Niet gestart | Volgen REG-2; afzonderlijke design-/implementatiegates blijven gelden. |
+
+**Actuele prioriteit:** CORE-1 → REG-1 → REG-2 → UI-R1 → UI-R2. UI-T1, G-TRI1, M6a en M6b zijn geïntegreerde basis, maar open handmatige acceptatie wordt niet als PASS of formele milestone-acceptatie voorgesteld.
+
+**Definitieve toolclassificatie:** classificeer op primaire gebruikersintentie. Handmatig tekenen van punt/lijn/cirkel/driehoek/polygoon hoort bij `Vrije objecten`; dynamische afgeleide constructies bij `Constructies`; maat-/meet-/analyseacties bij `Meten & analyseren`; gevulde afhankelijke gebiedsobjecten bij `Gebieden & opvulling`. Een `construct:`-prefix dwingt een item dus niet naar `Constructies`. `MI.ToolCatalog` blijft de ene gedeelde bron voor sidebar en fullscreen. Bestaande IDs en commandroutes worden niet hernoemd; uitsluitend nieuwe REG-2-items krijgen `construct:polygonRegion`, `construct:circleSectorRegion`, `construct:circleSegmentRegion`. Geïmplementeerde items hebben stabiele tool-/command-ID's en bestaande autorisatie; geplande items blijven inert zonder ID, knop of focusactie.
