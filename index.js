@@ -38,9 +38,29 @@
     const y = y1 + t * dy;
     return Math.hypot(px - x, py - y);
   }
+  function regionContains(g,p){
+    if(!g||!p)return false;if(g.kind==='polygon')return MI.PolygonGeometry.contains(g.vertices,p);
+    const c=g.center,dx=p.x-c.x,dy=p.y-c.y,d=Math.hypot(dx,dy);if(d>g.radius)return false;if(g.fullDisk)return true;
+    const theta=(Math.atan2(dy,dx)-g.startAngle+2*Math.PI)%(2*Math.PI),inWedge=theta<=g.sweep+1e-12;
+    if(g.kind==='sector')return d===0||inWedge;
+    const a={x:c.x+g.radius*Math.cos(g.startAngle),y:c.y+g.radius*Math.sin(g.startAngle)},b={x:c.x+g.radius*Math.cos(g.startAngle+g.sweep),y:c.y+g.radius*Math.sin(g.startAngle+g.sweep)},m=g.startAngle+g.sweep/2,arc={x:c.x+g.radius*Math.cos(m),y:c.y+g.radius*Math.sin(m)},side=(q)=>(b.x-a.x)*(q.y-a.y)-(b.y-a.y)*(q.x-a.x);
+    return side(p)*side(arc)>=-1e-12;
+  }
+  function regionHit(object,p,transform){
+    const g=object.regionGeometry;if(!g)return Infinity;
+    const toScreen=q=>transform?transform.mathToScreen(q):q,point=transform?transform.screenToMath(p):p;
+    if(regionContains(g,point))return 0;
+    const edges=[];if(g.kind==='polygon'){for(let i=0;i<g.vertices.length;i++)edges.push([g.vertices[i],g.vertices[(i+1)%g.vertices.length]]);}
+    else if(g.fullDisk){edges.push([0,Math.PI*2]);}
+    else if(g.kind==='sector'){edges.push([{x:g.center.x,y:g.center.y},{x:g.center.x+g.radius*Math.cos(g.startAngle),y:g.center.y+g.radius*Math.sin(g.startAngle)}],[{x:g.center.x,y:g.center.y},{x:g.center.x+g.radius*Math.cos(g.startAngle+g.sweep),y:g.center.y+g.radius*Math.sin(g.startAngle+g.sweep)}],[g.startAngle,g.sweep]);}
+    else edges.push([g.startAngle,g.sweep],[{x:g.center.x+g.radius*Math.cos(g.startAngle),y:g.center.y+g.radius*Math.sin(g.startAngle)},{x:g.center.x+g.radius*Math.cos(g.startAngle+g.sweep),y:g.center.y+g.radius*Math.sin(g.startAngle+g.sweep)}]);
+    let best=Infinity;for(const edge of edges){if(typeof edge[0]==='number'){const [a,sweep]=edge;for(let i=0;i<=96;i++){const t=a+sweep*i/96,q=toScreen({x:g.center.x+g.radius*Math.cos(t),y:g.center.y+g.radius*Math.sin(t)});best=Math.min(best,Math.hypot(p.x-q.x,p.y-q.y));}}else{const a=toScreen(edge[0]),b=toScreen(edge[1]);best=Math.min(best,distancePointToSegment(p.x,p.y,a.x,a.y,b.x,b.y));}}
+    return best;
+  }
 
   function hitDistance(object, x, y) {
     if(object.type === "angle") return Math.min(...MI.MeasurementGeometry.edges(object).map(edge=>linearDistance(edge,{x,y})));
+    if(object.type === 'region')return regionHit(object,{x,y});
     if (object.type === "polygon") return MI.PolygonGeometry.contains(object.vertices,{x,y}) ? 0 : Math.min(...MI.PolygonGeometry.edges(object).map(edge=>linearDistance(edge,{x,y})));
     if (object.type === "point") return Math.hypot(x - object.x, y - object.y);
     if (MI.LinearGeometry.isLinear(object)) return linearDistance(object, { x, y });
@@ -60,6 +80,7 @@
   function screenHit(object, point, transform) {
     const map = (x, y) => transform.mathToScreen({ x, y });
     if(object.type === 'angle') return Math.min(...MI.MeasurementGeometry.edges(object).map(edge=>linearDistance(edge,point,transform)));
+    if(object.type === 'region')return regionHit(object,point,transform);
     if (object.type === 'polygon') return MI.PolygonGeometry.contains(object.vertices.map(p=>map(p.x,p.y)), point) ? 0 : Math.min(...MI.PolygonGeometry.edges(object).map(edge=>linearDistance(edge,point,transform)));
     if (object.type === 'point' || object.type === 'text') { const p = map(object.x, object.y); return Math.hypot(point.x - p.x, point.y - p.y); }
     if (MI.LinearGeometry.isLinear(object)) return linearDistance(object, point, transform);
@@ -97,17 +118,18 @@
       const model=new MI.IllustrationModel(this.model.toJSON());
       const distributions=model.circleDistributions.filter(d=>d.pointIds.some(id=>ids.includes(id)));
       if(distributions.length){const allowed=new Set(distributions.flatMap(d=>d.pointIds));for(const d of distributions)if(!d.pointIds.every(id=>ids.includes(id)))throw Error('Een puntenverdeling moet volledig worden gedupliceerd.');for(const id of ids)if(!allowed.has(id)&&!distributions.some(d=>d.circleId===id))throw Error('Dupliceer de volledige puntenverdeling afzonderlijk.');const copies=[];for(const d of distributions){let circleId=d.circleId;if(ids.includes(d.circleId)){const source=model.get(d.circleId),{id:oldId,construction,constructionValid,...data}=source;circleId=model.add({...data,...MI.MeasurementGeometry.translate(source,delta),name:source.name+' (kopie)',locked:false}).id;}const first=model.get(d.pointIds[0]),circle=model.get(circleId),angle=((d.startAngle%(2*Math.PI))+2*Math.PI)%(2*Math.PI),parameter=angle/(2*Math.PI),{id:oldId,construction,constructionValid,...pointData}=first,point=model.add({...pointData,id:undefined,name:first.name+' (kopie)',locked:false,construction:{kind:'pointOnCircle',sources:[{objectId:circleId}],parameter}});const copy=model.setCircleDistribution(point.id,{count:d.count,startAngle:d.startAngle});copies.push(...copy.pointIds.map(id=>model.get(id)));}this.model=model;return copies;}
-      const copies=ids.map(id=>{const original=model.get(id);if(!original)throw Error('Object niet gevonden: '+id);const {id:ignored,construction:ignoredConstruction,constructionValid:ignoredValidity,...data}=original;return model.add({...data,...MI.MeasurementGeometry.translate(original,delta),name:original.name+' (kopie)',locked:false});});
+      const copies=ids.map(id=>{const original=model.get(id);if(!original)throw Error('Object niet gevonden: '+id);const {id:ignored,construction:ignoredConstruction,constructionValid:ignoredValidity,regionGeometry,regionArea,regionStatus,...data}=original;return model.add({...data,...(original.type==='region'?{construction:original.construction}:MI.MeasurementGeometry.translate(original,delta)),name:original.name+' (kopie)',locked:false});});
       const mapping=new Map(ids.map((id,i)=>[id,copies[i].id]));
       for(const id of ids){const original=this.get(id);if(original.textContent&&MI.TextValues.runs(original.textContent).length){const content=JSON.parse(JSON.stringify(original.textContent));for(const run of MI.TextValues.runs(content))if(mapping.has(run.binding.sourceId))run.binding.sourceId=mapping.get(run.binding.sourceId);model.update(mapping.get(id),{textContent:content});}}
       if(model.layers.length)for(const id of ids)model.assignLayer([mapping.get(id)],MI.DocumentLayers.index(this.model.layers).owner.get(id).id);
       const pending=this.model.groups.filter(g=>this.groupMembers(g.id).every(id=>mapping.has(id)));
       const grouped=new Set(pending.flatMap(g=>this.groupMembers(g.id)));
       for(const id of ids){const original=this.get(id);if(grouped.has(id)&&original.construction&&original.construction.sources.every(r=>MI.AxisReferences.isAxis(r)||mapping.has(r.objectId)))model.update(mapping.get(id),{construction:{...original.construction,sources:original.construction.sources.map(r=>MI.AxisReferences.isAxis(r)?{...r}:({...r,objectId:mapping.get(r.objectId)}))}});}
+      for(const id of ids){const original=this.get(id);if(original.type==='region'&&original.construction){const sources=original.construction.sources.map(r=>MI.AxisReferences.isAxis(r)?{...r}:({...r,...(mapping.has(r.objectId)?{objectId:mapping.get(r.objectId)}:{})}));model.update(mapping.get(id),{construction:{...original.construction,sources}});}}
       while(pending.length){const i=pending.findIndex(g=>g.members.every(id=>mapping.has(id)));if(i<0)throw Error('Ongeldige groepshierarchie.');const [g]=pending.splice(i,1);mapping.set(g.id,model.createGroup(g.members.map(id=>mapping.get(id)),g.name+' (kopie)').id);}
       this.model=model;return copies.map(o=>model.get(o.id));
     }
-    construct(kind,sources,parameter) {
+    construct(kind,sources,parameter,extent) {
       if(parameter!==undefined&&!MI.ConstructionService.pathKind(kind))throw Error('Deze constructie heeft geen padparameter.');const recipe={kind,sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.normaliseParameter(kind,parameter)}:{})};
       if(['lineCircleIntersection','circleCircleIntersection'].includes(kind)) {
         const map=new Map(this.model.all().map(o=>[o.id,o])),solutions=[0,1].map(branch=>({recipe:{...recipe,branch},evaluation:MI.ConstructionService.evaluate({...recipe,branch},map)})).filter(s=>s.evaluation.valid);
@@ -115,10 +137,11 @@
         const model=new MI.IllustrationModel(this.model.toJSON()),created=solutions.map(s=>model.add({...s.evaluation.geometry,style:{stroke:MI.CONSTRUCTION_COLOR,fill:MI.CONSTRUCTION_COLOR},construction:s.recipe}));
         this.model=model;return created;
       }
+      if(['circleSectorRegion','circleSegmentRegion'].includes(kind))recipe.extent=extent||'minor';
       const map=new Map(this.model.all().map(o=>[o.id,o])),evaluation=MI.ConstructionService.evaluate(recipe,map),first=evaluation.geometry;
       if(!evaluation.valid||!first)throw Error('Deze constructie bestaat niet voor de gekozen geometrie.');
       const data=this.model.toJSON(),model=new MI.IllustrationModel(data),count=kind==='tangent'&&!MI.ConstructionService.tangentOnCircle(map.get(sources[0].objectId),{x:first.x1,y:first.y1})?2:1;
-      const created=[];for(let branch=0;branch<count;branch++)created.push(model.add({...first,...(MI.AngleMeasurements.isLinked(kind)?{angleSettings:{...MI.AngleMeasurements.defaults}}:{}),style:{...first.style,stroke:MI.CONSTRUCTION_COLOR,...(first.type==='point'?{fill:MI.CONSTRUCTION_COLOR}:{})},construction:{...recipe, ...(kind==='tangent'?{branch}:{})}}));this.model=model;return created;
+      const created=[];for(let branch=0;branch<count;branch++){const region=first.type==='region',data=region?{type:'region',areaDisplay:MI.RegionGeometry.areaDisplay(),style:{stroke:MI.CONSTRUCTION_COLOR,fill:'#f4c84a',opacity:.35}}:{...first,...(MI.AngleMeasurements.isLinked(kind)?{angleSettings:{...MI.AngleMeasurements.defaults}}:{}),style:{...first.style,stroke:MI.CONSTRUCTION_COLOR,...(first.type==='point'?{fill:MI.CONSTRUCTION_COLOR}:{})}};created.push(model.add({...data,construction:{...recipe,...(kind==='tangent'?{branch}:{})}}));}this.model=model;return created;
     }
     getTextDependents(id){return MI.TextDependencies.forSource(this.model.objects,id);}
     getConstructionInfo(id){return MI.ConstructionService.describe(this.model.objects,id,this.model.circleDistributions);}

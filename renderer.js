@@ -251,6 +251,13 @@
         svg = '<polygon points="'+object.vertices.map(p=>number(this.mapX(p.x))+','+number(this.mapY(p.y))).join(' ')+'" fill="'+esc(style.fill)+'" '+strokeAttrs(style)+'/>';
         if (object.showLabel) { const anchor=MI.PolygonGeometry.anchor(object); svg += this.renderLabel({...object,...anchor},object.name || object.id,8,-8); }
       }
+      if(object.type==='region'&&object.regionGeometry){
+        const g=object.regionGeometry,fill=esc(style.fill&&style.fill!=='none'?style.fill:'#f4c84a'),stroke=esc(style.stroke||'#222'),sw=number(style.strokeWidth||0),base=' fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" stroke-linejoin="round"'+dash(style);
+        if(g.kind==='polygon')svg='<polygon data-region-contour points="'+g.vertices.map(p=>number(this.mapX(p.x))+','+number(this.mapY(p.y))).join(' ')+'"'+base+'/>';
+        else if(g.fullDisk)svg='<circle data-region-full-disk cx="'+number(this.mapX(g.center.x))+'" cy="'+number(this.mapY(g.center.y))+'" r="'+number(g.radius*this.scale())+'"'+base+'/>';
+        else {const c=g.center,r=g.radius,a=g.startAngle,b=a+g.sweep,x1=this.mapX(c.x+r*Math.cos(a)),y1=this.mapY(c.y+r*Math.sin(a)),x2=this.mapX(c.x+r*Math.cos(b)),y2=this.mapY(c.y+r*Math.sin(b)),large=g.sweep>Math.PI?1:0,arc=' A '+number(r*this.scale())+' '+number(r*this.scale())+' 0 '+large+' 1 '+number(x2)+' '+number(y2);const d=g.kind==='sector'?'M '+number(this.mapX(c.x))+' '+number(this.mapY(c.y))+' L '+number(x1)+' '+number(y1)+arc+' Z':'M '+number(x1)+' '+number(y1)+arc+' L '+number(x1)+' '+number(y1)+' Z';svg='<path data-region-contour d="'+d+'"'+base+'/>';}
+        if(object.areaDisplay?.visible&&Number.isFinite(object.regionArea)){const d=object.areaDisplay,anchor=g.anchor||g.center,dx=d.position.mode==='offset'?d.position.dx:0,dy=d.position.mode==='offset'?d.position.dy:0,label=MI.RegionGeometry.format(object.regionArea,d,this.measurement);svg+='<g data-region-area-label>'+this.renderLabel({...object,type:'text',x:anchor.x+dx,y:anchor.y+dy},label,6,-6).replace('<text ','<text pointer-events="none" ')+'</g>';}
+      }
       if(object.type==='angle') {
         svg=MI.MeasurementGeometry.edges(object).map(edge=>'<line x1="'+number(this.mapX(edge.x1))+'" y1="'+number(this.mapY(edge.y1))+'" x2="'+number(this.mapX(edge.x2))+'" y2="'+number(this.mapY(edge.y2))+'" '+strokeAttrs(style)+'/>').join('');
       }

@@ -3,7 +3,7 @@ const {choose}=require('./browser-tool-menu.cjs');
 module.exports=async page=>{
  const originalViewport=page.viewportSize();await page.setViewportSize({width:1280,height:900});await page.reload();
  const ids=await page.locator('#toolGrid [data-tool]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tool));
- assert.equal(ids.length,37);assert.equal(new Set(ids).size,37);
+ assert.equal(ids.length,40);assert.equal(new Set(ids).size,40);
  const snapshot=()=>page.evaluate(()=>{const a=FZI.MathIllustration.editor;return {document:a.engine.toJSON(),tool:a.tool,selected:a.selectedIds,interaction:a.interaction,history:a.history.entries,cursor:a.history.cursor,status:a.nodes.status.textContent,storage:Object.entries(localStorage)};});
  await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[]}));
  const documentBefore=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
@@ -12,7 +12,7 @@ module.exports=async page=>{
  const categories=page.locator('#toolGrid > [data-tool-category]');assert.equal(await categories.count(),8);assert.deepEqual(await categories.evaluateAll(nodes=>nodes.map(node=>node.querySelector(':scope > summary').childNodes[0].textContent.trim())),['Vrije objecten','Constructies','Meten & analyseren','Gebieden & opvulling','Transformeren','Functies & grafieken','Tekst & interactie','Verzamelingen']);
  assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').map(category=>category.id)),['vrije-objecten','constructies','meten','gebieden','transformeren','functies','tekst','verzamelingen']);
  assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').map(category=>category.entries.filter(entry=>entry.status==='implemented').map(entry=>entry.id)).flat().sort()),ids.slice().sort());
- assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').find(category=>category.id==='gebieden').entries.every(entry=>entry.status==='planned'&&!('commandToolId' in entry))),true);
+ assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').find(category=>category.id==='gebieden').entries.filter(entry=>entry.status==='implemented').map(entry=>entry.commandToolId).sort()),['construct:circleSectorRegion','construct:circleSegmentRegion','construct:polygonRegion'].sort());
  for(let i=0;i<8;i++){const category=categories.nth(i),wasOpen=await category.evaluate(n=>n.open),others=await categories.evaluateAll(ns=>ns.map(n=>n.open));await category.locator(':scope > summary').focus();await page.keyboard.press('Enter');assert.equal(await category.evaluate(n=>n.open),!wasOpen);const after=await categories.evaluateAll(ns=>ns.map(n=>n.open));for(let j=0;j<8;j++)if(i!==j)assert.equal(after[j],others[j]);if(wasOpen)await category.locator(':scope > summary').click();}
  const placeholders=page.locator('#toolGrid .tool-placeholder'),before=await snapshot();
  for(let i=0;i<await placeholders.count();i++){await placeholders.nth(i).click();assert.deepEqual(await snapshot(),before);}
@@ -37,5 +37,5 @@ module.exports=async page=>{
   await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-'+name+'.png')});
  }
  await page.setViewportSize(originalViewport);await page.reload();await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-overview.png')});
- return {allTools:37,categories:8,plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
+ return {allTools:40,categories:8,plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
 };
