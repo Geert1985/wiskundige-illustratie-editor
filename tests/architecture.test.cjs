@@ -51,6 +51,7 @@ const modules = [
   { file: 'editor-tool-instructions.js', provides: ['ToolInstructions'], after: ['renderer.js'] },
   { file: 'export-service.js', provides: ['ExportService'], after: ['index.js','math-fragments.js'] },
   { file: 'text-workspace.js', provides: ['TextWorkspace'], after: ['model.js'] },
+  { file: 'tool-catalog.js', provides: ['ToolCatalog'], after: [] },
   { file: 'editor.js', provides: ['EditorApp'], after: modulesBeforeEditor() },
   { file: 'editor-bootstrap.js', provides: ['bootstrapEditor', 'editor', 'activeEngine', 'bootstrapRestrictedEditor'], after: ['editor.js'] },
 ];
@@ -63,7 +64,7 @@ function modulesBeforeEditor() {
     'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js',
     'permission-runtime.js', 'editor-startup.js', 'editor-adaptive-grid.js',
     'editor-label-drag.js', 'editor-enhancements.js', 'editor-color.js', 'text-editor-ux.js',
-    'editor-axis-settings.js', 'editor-history.js', 'editor-tool-instructions.js', 'text-workspace.js',
+    'editor-axis-settings.js', 'editor-history.js', 'editor-tool-instructions.js', 'text-workspace.js', 'tool-catalog.js',
   ];
 }
 

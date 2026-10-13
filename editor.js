@@ -2,7 +2,6 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
-  const SPLIT_TOOLS={pointConstruction:['construct:midpoint', 'construct:pointOnSegment', 'construct:pointOnCircle', 'construct:lineIntersection', 'construct:lineCircleIntersection', 'construct:circleCircleIntersection'],linear:['line','straight','ray','vector'],angleShape:['angle','rightAngle'],figure:['triangle','polygon'],angle:['construct:anglePoints','construct:angleDirections'],measure:['dimension','construct:perimeter','construct:area'],perpendicular:['construct:perpendicular','construct:perpendicularBisector','construct:bisector','construct:lineBetweenPoints']};
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
@@ -13,17 +12,18 @@
       this.hoverId=null; this.hoverHit=null; this.hoverFrame=null; this.hoverPointer=null; this.presentationKey=null;
       this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;this.richTextEditor=null;this.textEditId=null;this.textEditorRequest=0;
       this.history = new (this.runtime ? MI.RuntimeHistory : services.history || MI.EditorHistory)(this); this.editBefore = null;
-      this.linearTool='line';this.figureTool='triangle';this.angleTool='construct:anglePoints';this.splitMenuOpen=null;
-      for(const [group,tools] of Object.entries(SPLIT_TOOLS))try{const saved=storage?.getItem('fzi-math-illustration-'+(group==='angleShape'?'linear':group)+'-tool');if(group==='angle'&&saved==='construct:angleXAxis')this.angleTool='construct:angleDirections';else if(tools.includes(saved))this[group+'Tool']=saved;}catch(_){}
       this.nodes = {};
       for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "exportPngBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textEditorStatus", "richTextSurface", "richFont", "richFontSize", "richColor", "richColorMenu", "richUndo", "richRedo", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
+      for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "exportPngBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textEditorStatus", "richTextSurface", "richFont", "richFontSize", "richColor", "richColorMenu", "richUndo", "richRedo", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
+      this.toolCatalog=MI.ToolCatalog.build(this.nodes.toolGrid);this.splitToolSelection=new Map();this.splitMenuOpen=null;
+      for(const group of this.toolCatalog.splits)try{const saved=storage?.getItem('fzi-math-illustration-'+group.storageKey+'-tool'),legacy=saved==='construct:angleXAxis'&&group.id==='angle'?'construct:angleDirections':saved;if(group.toolIds.includes(legacy))this.splitToolSelection.set(group.id,legacy);}catch(_){}
       MI.EditorColor.renderPalette(this.nodes.colorPalette, { groupLabel: "Kleuren" });
       MI.EditorColor.renderPalette(this.nodes.richColorMenu, { buttonClass: "rich-color-swatch", groupLabel: "Tekstkleur kiezen" });
       if (this.nodes.richFontSize?.options && !this.nodes.richFontSize.options.length) for (const preset of MI.TextEditorUX.fontSizes) { const option = document.createElement("option"); option.value = String(preset.pixels); option.textContent = preset.label; this.nodes.richFontSize.add(option); }
     }
     renderCanvasTools() {
       const menu=this.nodes.canvasToolsMenu;if(!menu||typeof menu.append!=='function')return;
-      if(!menu.childElementCount){for(const category of this.nodes.toolGrid.querySelectorAll('[data-tool-category]')){const section=this.document.createElement('section'),heading=this.document.createElement('strong');heading.textContent=category.querySelector('summary').childNodes[0].textContent;section.append(heading);for(const source of category.querySelectorAll('[data-tool], .tool-placeholder')){if(source.classList.contains('tool-placeholder')){section.append(source.cloneNode(true));continue;}const button=this.document.createElement('button');button.type='button';button.className='tool';button.dataset.canvasTool=source.dataset.tool;button.innerHTML=source.innerHTML;section.append(button);}menu.append(section);}}
+      if(!menu.childElementCount){for(const category of this.toolCatalog.list('fullscreen')){const section=this.document.createElement('section'),heading=this.document.createElement('strong');heading.textContent=category.label;section.append(heading);for(const entry of category.entries){if(entry.status==='planned'){const placeholder=this.document.createElement('div');placeholder.className='tool-placeholder';placeholder.innerHTML=entry.markup;section.append(placeholder);continue;}const button=this.document.createElement('button');button.type='button';button.className='tool';button.dataset.canvasTool=entry.id;button.innerHTML=entry.markup;section.append(button);}menu.append(section);}}
       for(const button of menu.querySelectorAll('[data-canvas-tool]')){button.disabled=!this.toolAllowed(button.dataset.canvasTool);button.classList.toggle('active',this.tool===button.dataset.canvasTool);button.setAttribute('aria-pressed',String(this.tool===button.dataset.canvasTool));}
     }
     closeCanvasTools(focus=false) {if(this.nodes.canvasToolsMenu)this.nodes.canvasToolsMenu.hidden=true;this.nodes.canvasToolsBtn?.setAttribute?.('aria-expanded','false');if(focus)this.nodes.canvasToolsBtn?.focus?.();}
@@ -58,22 +58,22 @@
     }
     zoomBy(direction) { const b=this.engine.renderer.bounds,screen=this.transform().mathToScreen({x:(b.xMin+b.xMax)/2,y:(b.yMin+b.yMax)/2});this.zoom({deltaY:direction,clientX:screen.x,clientY:screen.y,preventDefault(){},stopImmediatePropagation(){}}); }
     renderSplitTools() {
-      for(const group of Object.keys(SPLIT_TOOLS)) {
-        const main=this.document.getElementById(group+'ToolMain'),toggle=this.document.getElementById(group+'ToolToggle'),menu=this.document.getElementById(group+'ToolMenu');
+      for(const group of this.toolCatalog.splits) {
+        const main=this.document.getElementById(group.mainId),toggle=this.document.getElementById(group.toggleId),menu=this.document.getElementById(group.menuId);
         const items=Array.from(menu?.querySelectorAll?.('[data-tool]')||[]);if(!main||!toggle||!items.length)continue;
-        const enabled=items.filter(b=>this.toolAllowed(b.dataset.tool)),item=enabled.find(b=>b.dataset.tool===this[group+'Tool'])||enabled[0]||items[0];
+        const selected=this.splitToolSelection.get(group.id),enabled=items.filter(b=>this.toolAllowed(b.dataset.tool)),item=enabled.find(b=>b.dataset.tool===selected)||enabled[0]||items[0];
         main.innerHTML=item.innerHTML;main.dataset.choice=item.dataset.tool;main.disabled=!this.toolAllowed(item.dataset.tool);main.classList.toggle('active',this.tool===item.dataset.tool);
-        main.setAttribute('aria-label',item.textContent.trim());main.setAttribute('title',item.textContent.trim());toggle.disabled=!enabled.length;toggle.setAttribute('aria-expanded',String(this.splitMenuOpen===group));menu.hidden=this.splitMenuOpen!==group;
-        if(!menu.hidden){menu.style.left='0px';menu.style.right='auto';menu.style.top='calc(100% + 5px)';menu.style.bottom='auto';const side=main.closest('.sidebar')?.getBoundingClientRect(),anchor=main.getBoundingClientRect();if(side&&group==='pointConstruction')menu.style.maxHeight=Math.max(0,Math.min(300,Math.max(side.bottom-anchor.bottom-13,anchor.top-side.top-13)))+'px';const box=menu.getBoundingClientRect();if(side){menu.style.left=Math.max(side.left+8-anchor.left,Math.min(0,side.right-8-anchor.left-box.width))+'px';if(box.bottom>side.bottom && anchor.top-box.height-5>=side.top){menu.style.top='auto';menu.style.bottom='calc(100% + 5px)';}}}
+        main.setAttribute('aria-label',item.textContent.trim());main.setAttribute('title',item.textContent.trim());toggle.disabled=!enabled.length;toggle.setAttribute('aria-expanded',String(this.splitMenuOpen===group.id));menu.hidden=this.splitMenuOpen!==group.id;
+        if(!menu.hidden){menu.style.left='0px';menu.style.right='auto';menu.style.top='calc(100% + 5px)';menu.style.bottom='auto';const side=main.closest('.sidebar')?.getBoundingClientRect(),anchor=main.getBoundingClientRect();if(side&&group.menuMaxHeight)menu.style.maxHeight=Math.max(0,Math.min(group.menuMaxHeight,Math.max(side.bottom-anchor.bottom-13,anchor.top-side.top-13)))+'px';const box=menu.getBoundingClientRect();if(side){menu.style.left=Math.max(side.left+8-anchor.left,Math.min(0,side.right-8-anchor.left-box.width))+'px';if(box.bottom>side.bottom && anchor.top-box.height-5>=side.top){menu.style.top='auto';menu.style.bottom='calc(100% + 5px)';}}}
 
       }
     }
-    closeSplitMenu(focus=false) {const group=this.splitMenuOpen;this.splitMenuOpen=null;this.renderSplitTools();if(focus&&group)this.document.getElementById(group+'ToolToggle')?.focus?.();}
+    closeSplitMenu(focus=false) {const group=this.toolCatalog.getSplit(this.splitMenuOpen);this.splitMenuOpen=null;this.renderSplitTools();if(focus&&group)this.document.getElementById(group.toggleId)?.focus?.();}
     splitMenuKey(event) {
-      const toggle=event.target.closest('[data-split-toggle]'),group=toggle?.dataset.splitToggle||this.splitMenuOpen;if(!SPLIT_TOOLS[group])return;
-      const menu=this.document.getElementById(group+'ToolMenu'),items=Array.from(menu?.querySelectorAll?.('[data-tool]')||[]).filter(b=>!b.disabled);if(!items.length)return;
-      if(toggle && event.key==='ArrowDown'){event.preventDefault();this.splitMenuOpen=group;this.renderSplitTools();items[0].focus();return;}
-      if(this.splitMenuOpen===group && menu.contains(event.target) && ['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();const i=items.indexOf(event.target),next=event.key==='Home'?0:event.key==='End'?items.length-1:(i+(event.key==='ArrowUp'?-1:1)+items.length)%items.length;items[next].focus();}
+      const toggle=event.target.closest('[data-split-toggle]'),groupId=toggle?.dataset.splitToggle||this.splitMenuOpen,group=this.toolCatalog.getSplit(groupId);if(!group)return;
+      const menu=this.document.getElementById(group.menuId),items=Array.from(menu?.querySelectorAll?.('[data-tool]')||[]).filter(b=>!b.disabled);if(!items.length)return;
+      if(toggle && event.key==='ArrowDown'){event.preventDefault();this.splitMenuOpen=group.id;this.renderSplitTools();items[0].focus();return;}
+      if(this.splitMenuOpen===group.id && menu.contains(event.target) && ['ArrowDown','ArrowUp','Home','End'].includes(event.key)){event.preventDefault();const i=items.indexOf(event.target),next=event.key==='Home'?0:event.key==='End'?items.length-1:(i+(event.key==='ArrowUp'?-1:1)+items.length)%items.length;items[next].focus();}
     }
     closeFileMenu(returnFocus=false) { if(this.nodes.fileMenu){this.nodes.fileMenu.open=false;if(returnFocus)this.nodes.moreBtn?.focus?.();} }
     decorateInspector() {
@@ -350,7 +350,7 @@
       this.on(n.canvasWrap, "wheel", e => this.zoom(e), { capture: true, passive: false });
       this.on(n.toolGrid,'toggle',()=>this.invalidate(),{capture:true});this.on(n.layersSection,'toggle',()=>this.invalidate());
       this.on(n.toolGrid,'keydown',e=>this.splitMenuKey(e));
-      this.on(n.toolGrid, "click", e => {const toggle=e.target.closest('[data-split-toggle]');if(SPLIT_TOOLS[toggle?.dataset.splitToggle]){this.splitMenuOpen=this.splitMenuOpen===toggle.dataset.splitToggle?null:toggle.dataset.splitToggle;this.renderSplitTools();return;}const main=e.target.closest('[data-split-main]');if(main?.dataset.choice){this.setTool(main.dataset.choice);return;}const button=e.target.closest('[data-tool]');if(button)this.setTool(button.dataset.tool);});
+      this.on(n.toolGrid, "click", e => {const toggle=e.target.closest('[data-split-toggle]');if(this.toolCatalog.getSplit(toggle?.dataset.splitToggle)){this.splitMenuOpen=this.splitMenuOpen===toggle.dataset.splitToggle?null:toggle.dataset.splitToggle;this.renderSplitTools();return;}const main=e.target.closest('[data-split-main]');if(main?.dataset.choice){this.setTool(main.dataset.choice);return;}const button=e.target.closest('[data-tool]');if(button)this.setTool(button.dataset.tool);});
       this.on(n.viewList, "click", e => this.viewClick(e));
       this.on(n.viewControls,"click",e=>this.viewClick(e));
       this.on(n.navigationTools,"click",e=>{if(e.target.closest('[data-view-select=axes]')){this.selectAxes();return;}const button=e.target.closest('[data-tool]');if(button)this.setTool(button.dataset.tool);});
@@ -541,7 +541,7 @@
       catch(error){this.status(error.message);}
       this.invalidate();
     }
-    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.tool = tool;this.splitMenuOpen=null;for(const [group,tools] of Object.entries(SPLIT_TOOLS))if(tools.includes(tool)){this[group+'Tool']=tool;try{this.storage?.setItem('fzi-math-illustration-'+(group==='angleShape'?'linear':group)+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
+    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.tool = tool;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
     begin(state, event) {
       this.clearHover();
       this.flushEdits();

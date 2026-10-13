@@ -9,7 +9,10 @@ module.exports=async page=>{
  const documentBefore=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
  for(const id of ids){await choose(page,'#toolGrid [data-tool="'+id+'"]');assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.tool),id);assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON()),documentBefore);}
  await page.keyboard.press('Escape');
- const categories=page.locator('#toolGrid > [data-tool-category]');assert.equal(await categories.count(),8);
+ const categories=page.locator('#toolGrid > [data-tool-category]');assert.equal(await categories.count(),8);assert.deepEqual(await categories.evaluateAll(nodes=>nodes.map(node=>node.querySelector(':scope > summary').childNodes[0].textContent.trim())),['Vrije objecten','Constructies','Meten & analyseren','Gebieden & opvulling','Transformeren','Functies & grafieken','Tekst & interactie','Verzamelingen']);
+ assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').map(category=>category.id)),['vrije-objecten','constructies','meten','gebieden','transformeren','functies','tekst','verzamelingen']);
+ assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').map(category=>category.entries.filter(entry=>entry.status==='implemented').map(entry=>entry.id)).flat().sort()),ids.slice().sort());
+ assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').find(category=>category.id==='gebieden').entries.every(entry=>entry.status==='planned'&&!('commandToolId' in entry))),true);
  for(let i=0;i<8;i++){const category=categories.nth(i),wasOpen=await category.evaluate(n=>n.open),others=await categories.evaluateAll(ns=>ns.map(n=>n.open));await category.locator(':scope > summary').focus();await page.keyboard.press('Enter');assert.equal(await category.evaluate(n=>n.open),!wasOpen);const after=await categories.evaluateAll(ns=>ns.map(n=>n.open));for(let j=0;j<8;j++)if(i!==j)assert.equal(after[j],others[j]);if(wasOpen)await category.locator(':scope > summary').click();}
  const placeholders=page.locator('#toolGrid .tool-placeholder'),before=await snapshot();
  for(let i=0;i<await placeholders.count();i++){await placeholders.nth(i).click();assert.deepEqual(await snapshot(),before);}
