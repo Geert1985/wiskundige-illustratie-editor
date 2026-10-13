@@ -4,6 +4,12 @@
 **Basis:** `main` op `0575365c16962238a14f27fe4cc76ab6c57b0594`  
 **Contract:** `docs/REG-1-CONTRACT.md` v1.0.1
 
+### Correctie sectorboog — 14 oktober 2026
+
+`renderer.js` tekende de sectorboog met SVG-sweepflag 1. De modelhoeken draaien in wiskundige coördinaten met y omhoog, terwijl `Renderer.mapY` y voor SVG omkeert. De boog liep daardoor in schermcoördinaten de andere kant op dan de hoekgeometrie, waardoor het gekleurde deel niet met de bedoelde zijde van de broncirkel samenviel. De sweepflag is nu 0. Middelpunt en radii blijven getransformeerd via respectievelijk `mapX/mapY` en `radius * scale()`, gelijk aan de broncirkel. De gesloten sectorkontour bevat beide armen als gestreken begrenzingen.
+
+Gerichte regressie in `tests/regions-contract.test.cjs` controleert minor- en majorboogpaden, gelijke centrumcoördinaten en straal met de broncirkel, de scherm-sweepflag, zichtbare radiale begrenzingen en herberekening na wijziging van een richtingpunt. De Edge-regressierunner meldt `sectorSvgAndOfflinePng` naast de bestaande SVG- en offline-PNG-controles. Gerichte Node-controle: **5/5 geslaagd**; `git diff --check`: geslaagd. Deze wijziging wacht op nieuwe onafhankelijke review.
+
 ## Implementatie
 
 REG-2 voegt drie afzonderlijke constructierecepten toe: `polygonRegion`, `circleSectorRegion` en `circleSegmentRegion`. Elk resultaat is één zelfstandig `region`-object met een stabiele ID. De bestaande `ConstructionService` resolveert de bronobjecten en volgt afhankelijkheden; herberekening, tijdelijke ongeldigheid en herstel wijzigen de identiteit van het resultaat niet.

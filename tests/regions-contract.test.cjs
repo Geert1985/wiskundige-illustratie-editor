@@ -30,6 +30,23 @@ test('region boundary hit testing, fill formatting, identity and render purity',
   assert.equal(MI.ConstructionService.contract('polygonRegion').computedFields.includes('regionArea'),true);
 });
 
+test('sector SVG arcs follow the source circle in screen coordinates for minor and major regions',()=>{
+  const {MI,e}=make(),circle=e.add({id:'SC',type:'circle',cx:1,cy:-.5,r:2}),a=e.add({id:'SA',type:'point',x:3,y:-.5}),b=e.add({id:'SB',type:'point',x:1,y:1.5});
+  const sectors=['minor','major'].map(extent=>e.construct('circleSectorRegion',[{objectId:circle.id},{objectId:a.id},{objectId:b.id}],undefined,extent)[0]);
+  const scale=e.renderer.scale(),centerX=e.renderer.mapX(1),centerY=e.renderer.mapY(-.5),radius=2*scale;
+  for(const sector of sectors){
+    const svg=e.renderSVG(),circleSvg=svg.match(/<circle[^>]*cx="[^"]+"[^>]*cy="[^"]+"[^>]*r="[^"]+"[^>]*>/)?.[0],path=svg.match(/<path data-region-contour="" d="([^"]+)"/)?.[1];
+    assert.ok(circleSvg);assert.ok(path);
+    assert.match(circleSvg,new RegExp('cx="'+centerX+'"'));assert.match(circleSvg,new RegExp('cy="'+centerY+'"'));assert.match(circleSvg,new RegExp('r="'+radius+'"'));
+    assert.match(path,new RegExp(' A '+radius+' '+radius+' 0 [01] 0 '));
+    // Both direction arms are real source radii; the closed sector contour strokes each edge.
+    assert.match(path,/^M .* L .* A .* Z$/);assert.equal(sector.regionGeometry.center.x,1);assert.equal(sector.regionGeometry.center.y,-.5);assert.equal(sector.regionGeometry.radius,2);
+  }
+  const old=sectors.map(s=>e.renderer.renderObject(e.get(s.id)));
+  e.update('SB',{x:-1,y:-.5});
+  for(let i=0;i<sectors.length;i++)assert.notEqual(e.renderer.renderObject(e.get(sectors[i].id)),old[i]);
+});
+
 test('restricted region visibility, styling, source revocation and JSON export stay fail-closed',()=>{
   const {MI}=runtime(),{fixture}=require('./permission-fixtures.cjs'),f=fixture();
   f.initialDocument={type:'geometry',version:8,regionSchema:1,constructionSchema:5,meta:{title:'',description:''},objects:[
