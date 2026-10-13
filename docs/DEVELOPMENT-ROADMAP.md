@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.5.1 (SYNC-0 integration status corrected, 2026-10-13)
-Status: T5a and full text workspace accepted and integrated into main (user-reported 573 Node PASS). TI-36X Pro functionality accepted as a future product goal; first continue illustrator (next M6), later gated T5b/T5c/T5d and separate K1–K8 calculator packages. No new calculator implementation started; latest combined Edge and earlier manual checks still open.
+Version: 2.6.0 (SYNC-1 status and REG-1 contract, 2026-10-13)
+Status: T5a/full text workspace remain integrated as previously recorded. M6a, M6b, G-TRI1 and UI-T1 are integrated on `main` at `f403984`; their reports retain open manual acceptance. CORE-1 is updated against that code; REG-1 contract is proposed for approval. No REG-2 or UI-R1 implementation has started. Sequence: CORE-1 → REG-1 → REG-2 → UI-R1 → UI-R2.
 Date: 2026-10-13
 
 ## Baseline
@@ -827,9 +827,9 @@ Statuses below reproduce the supplied export and preserve stable task references
 **Codex selection guideline:** GPT-6 **High** for architectural design, mathematics, security, schema or high-risk tests; GPT-6.1 **Sol Medium** for ordinary bounded UI integration after design approval; GPT-6.1 **Sol Light** only for low-risk styling/documentation changes. These are task recommendations subject to the models available in Codex, **not** evidence of implementation quality: Node/Edge/manual tests and independent review remain obligatory. No T5b/K-package implementation or tests were started by this documentation update. The original illustrator milestones and their current recorded status remain unchanged.
 
 
-## Roadmap v2.5.0 — Gebieden, gereedschappen, radiaal eigenschappenmenu en driehoek via 3 punten (2026-10-13)
+## Roadmap v2.5.0 — Historische planningssnapshot, gesynchroniseerd door v2.6.0 hieronder
 
-**Normatieve specificatie:** [GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md](GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md). Deze sectie **plant werk**, zij levert geen productiecode, testbewijs of impliciete acceptatie. **SYNC-0 bevestigd op main `54b2f55027b69c39875f7ea4a5ebe8b16f1d2bde`:** de bestaande gereedschapspaneelherstructurering en M6a-driekhoekcentra zijn in main geïntegreerd; de nieuwe UI-T1-herindeling, G-TRI1, het radiaalmenu en dynamische gebiedsobjecten ontbreken nog. Bestaande M6a- en panel-rapporten vermelden 585 Node PASS en 54 Edge-regressiemodules; dit zijn historische uitvoeringen, niet opnieuw tijdens SYNC-0 gedraaid. Handmatige acceptatie blijft afzonderlijk te beoordelen. M1–M20, M6b, TI-36X Pro K1–K8 en T5b–T5d worden niet geschrapt of hernummerd.
+**Normatieve specificatie ten tijde van deze snapshot:** [GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md](GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md). Deze sectie plande werk en status op SYNC-0 (`54b2f55`); de statements dat UI-T1/G-TRI1 ontbraken en alle `not_started`-statussen in de matrix hieronder zijn historisch en worden voor de actuele status vervangen door Roadmap v2.6.0 aan het einde van dit bestand. Oorspronkelijke scope, acceptatiepoorten en M1–M20/T5/K-milestonehistorie blijven behouden. Historische testresultaten zijn niet opnieuw uitgevoerd tijdens SYNC-1; resterende handmatige acceptatie blijft open.
 
 **Gebruikersbesluiten:** eerste gereedschapsgroep wordt **Vrije objecten** (vrije punten/lijnen/vectoren + bestaande cirkel, driehoek, veelhoek; afzonderlijke **Figuren**-groep vervalt); onmiddellijk daaronder **Constructies** met **Driehoekconstructies → Driehoek via 3 punten**. Extra groep **Gebieden & opvulling**. Een driehoek geconstrueerd uit drie bestaande puntobjecten is **één dynamisch afhankelijk driehoek-/polygon-object**, zelf selecteerbaar en stijlbaar maar **nooit rechtstreeks versleepbaar**; verplaatsen van A/B/C is de enige geometrische bewerkingsroute. Uit bestaande M6a-broncontracten volgt `type='polygon'` en exact drie vertices; hergebruik dit, geen tweede driehoekrenderer. De eigenschappenbediening ontwikkelt richting een **contextueel radiaalmenu met herbruikbare acties**, met behoud van bereikbare volledige inspector totdat expliciete UX-pariteit en gebruikersacceptatie zijn vastgesteld. Gebieden inkleuren omvat in de **eerste werkende release** een optionele dynamisch berekende oppervlakte en labelweergave, niet slechts decoratieve vulling.
 
@@ -849,3 +849,25 @@ Statuses below reproduce the supplied export and preserve stable task references
 **Prioriteiten en synchronisatie:** vervolg bestaande geometrie (M6) en hergebruik de al op main geïntegreerde gereedschapspaneelcode; UI-T1 kan daarna als begrensde UX-mijlpaal. G-TRI1 ondersteunt M6a/M6b als bron, zonder automatische voltooiing van M6. CORE-1/UI-R1/REG-1 worden eerst als **ontwerp-/architectuurpoort** aangeboden. UI-R2 en REG-2 starten na expliciete goedkeuring en op aparte branches, niet in één grote Codex-run. Rechter inspector blijft bereikbaar, zodat numerieke input, groeps-/laagacties, geautoriseerde broninformatie en accessibility behouden blijven. Regiogebieden zijn wiskundige gekoppelde objecten met één getypeerde oppervlaktewaarheid; geen nieuwe canvasplotter of automatische T5a-source-grant.
 
 **Kwaliteitsgates per implementatie:** inventaris van bestaande knoppen, objecttypen, command/permissieroutes en tests; test-first acceptancefixtures waar mathematisch relevant; gerichte Node & Edge en relevante volledige regressies; dynamic source drag, degeneratie, selection/focus/keyboard/fullscreen, restricted privacy, import/legacy/replay/undo en SVG/offline PNG; concreet report met echte aantallen en unexecuted controls; gebruikersacceptatie vóór merge. **Geen oude teststand claimen als nieuwe main-teststand.**
+
+## Roadmap v2.6.0 — SYNC-1 status en REG-1 contractpoort (2026-10-13)
+
+Deze actuele status vult de historische roadmap v2.5.0 aan; eerdere plannen, milestonevoorwaarden en uitvoeringsrapporten blijven behouden. De sync-basis is `main` commit `f4039842c44885d739b624d9d67bbfdd75d2394e`, waarin M6b `b5e693f` is geïntegreerd naast M6a, G-TRI1 en UI-T1. Branchintegratie is verifieerbaar in Git, maar is geen gebruikersacceptatie. De rapporten voor M6a, M6b, G-TRI1 en UI-T1 houden de reeds genoemde handmatige controles open; status hieronder betekent uitsluitend code-/documentatie-integratie.
+
+| Mijlpaal | Actuele status op de sync-basis | Acceptatie-/startpoort |
+|---|---|---|
+| M6a — driehoekcentra | Geïntegreerd op `main`; bestaand rapport behouden | Handmatige controles uit `M6a-REPORT.md` blijven open; geen heracceptatie geclaimd. |
+| M6b — uitgebreide driehoekconstructies | Geïntegreerd op `main` via `b5e693f`; eerder gerapporteerd 599/599 Node en volledige Edge-suite geslaagd | Handmatige acceptatie uit `M6B-REPORT.md` blijft open; deze historische aantallen zijn geen nieuwe SYNC-1-rerun. |
+| CORE-1 | Architectuurdocument geactualiseerd tegen bestaande M6a/M6b/G-TRI1/ToolCatalog-code | Documentatiepoort geleverd; acceptatie van het ontwerp blijft expliciet. |
+| UI-T1 — toolcatalogus en paneel | Geïntegreerd op `main`; acht categorieën en bestaande tool-ID's behouden | Handmatige UX-controle uit `UI-T1-REPORT.md` blijft open. |
+| G-TRI1 — driehoek uit drie punten | Geïntegreerd op `main` via de mergegeschiedenis vóór `f403984` | Handmatige controles uit `G-TRI1-REPORT.md` blijven open. |
+| REG-1 — dynamische regio's | Contract v1.0.1 voorgesteld in `REG-1-CONTRACT.md`; niet geïmplementeerd | Wacht op expliciete goedkeuring van document v8, `regionSchema:1`, `constructionSchema:5` en restricted-rights-matrix. |
+| REG-2 — regio-objecten | Niet gestart | Alleen na REG-1-goedkeuring én aparte uitvoerings-GO; behoud alle contractgates. |
+| UI-R1 — radiaalmenuontwerp | Niet gestart | Start na REG-2 als aparte ontwerp-/acceptatiepoort. |
+| UI-R2 — radiale bediening | Niet gestart | Start na UI-R1-goedkeuring; inspector blijft bereikbaar tot afzonderlijke UX-acceptatie. |
+
+**Definitieve volgorde:** **CORE-1 → REG-1 → REG-2 → UI-R1 → UI-R2**. M6a/M6b, G-TRI1 en UI-T1 zijn gerealiseerde basis en geen reden de volgorde om te keren. REG-2 bouwt dynamische polygongebieden, sectoren en segmenten volgens het goed te keuren REG-1-contract. Het voegt geen rekenengine, autorisatiepad of toolcatalogus toe: het hergebruikt `ConstructionService`, de bestaande graph/commands/permission runtime en `MI.ToolCatalog`.
+
+**Gereedschapsclassificatie:** categorie volgt primaire taak, niet de prefix van een ID of alleen het resultaatobjecttype. `Vrije objecten` bevat handmatig getekende primaire geometrie; `Constructies` bevat afgeleide meetkundige punten/lijnen/cirkels en de G-TRI1-driehoek; `Meten & analyseren` bevat meet-/analyseacties; `Gebieden & opvulling` bevat selecteerbare afhankelijke gevulde polygon-, sector- en segmentgebieden. Overige bestaande topgroepen behouden hun betekenis. Een actief catalogusitem vereist een bestaande stabiele tool-ID, passend command-ID en bestaande autorisatie. `planned` is inert en heeft geen `data-tool`, command-ID, focusstop of uitvoeractie. Bestaande ID's wijzigen niet; nieuwe REG-2-ID's zijn `construct:polygonRegion`, `construct:circleSectorRegion` en `construct:circleSegmentRegion`.
+
+De normatieve numerieke, geometrische, schema-, permission- en exportgates staan in REG-1 v1.0.1. Deze roadmapstatus start REG-2, UI-R1 of UI-R2 niet en markeert geen resterende handmatige acceptatie als voltooid.
