@@ -461,17 +461,8 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   .workspace{grid-template-columns:minmax(0,1fr)!important}
 }
 #propertiesToggle{display:none!important}
-.radial-trigger[hidden],.radial-wheel[hidden],.radial-detail-pane[hidden],
+.radial-wheel[hidden],.radial-detail-pane[hidden],
 .radial-tool-instructions[hidden]{display:none!important}
-.radial-trigger{
-  position:absolute;z-index:35;display:grid;place-items:center;
-  width:36px;height:36px;padding:0;border:2px solid #e7c35f;border-radius:50%;
-  background:#152f40;color:#f4cc63;font-size:21px;
-  box-shadow:0 5px 17px #05152075;cursor:pointer;touch-action:manipulation;
-}
-.radial-trigger:hover,.radial-trigger:focus-visible{
-  background:#2e4b5d;outline:2px solid #f6d88b;outline-offset:2px
-}
 /* The wheel always uses the same 460×460 design coordinates. At small
    viewports JS scales this complete component, rather than distorting cards. */
 .radial-wheel{
@@ -648,7 +639,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 .radial-tool-instructions .active-step{color:#efd58e}
 .canvas-area>#status.canvas-status{left:14px;right:auto;bottom:9px;z-index:5}
 .canvas-fullscreen .radial-wheel,.canvas-fullscreen .radial-detail-pane,
-.canvas-fullscreen .radial-trigger{position:absolute}
+{position:absolute}
 @media(max-width:760px){
   .radial-detail-pane{
     left:8px!important;right:8px!important;width:auto!important;
