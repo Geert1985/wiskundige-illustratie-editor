@@ -97,8 +97,18 @@
       // EditorApp's pointerup handler is registered earlier, so selection/drag
       // has already committed when this listener places the contextual trigger.
       this.listen(this.win,'pointerup',e=>{
-        if(e.button!==0||this.app.tool!=='select'||!this.app.nodes.canvasWrap.contains(e.target))return;
-        if(!this.app.selectedIds.length)return;
+        if(!this.app.nodes.canvasWrap.contains(e.target)||this.app.tool!=='select')return;
+        if(e.button===2){
+          // The existing right-drag rectangle selector owns active drags.
+          // A simple right click with no active marquee opens the wheel.
+          if(this.app.suppressMarqueeMenu||this.app.interaction)return;
+          const hit=this.app.hitAt(e);
+          if(!hit?.object||!this.app.canvasSelectable(hit.object))return;
+          this.app.selectObject(hit.object.id,false,'canvas');
+          this.openAt({x:e.clientX,y:e.clientY},false);
+          return;
+        }
+        if(e.button!==0||!this.app.selectedIds.length)return;
         this.anchor={x:e.clientX,y:e.clientY};
         this.positionTrigger();
       });
@@ -178,9 +188,11 @@
       const label=text('span','radial-center-caption',ctx.type==='axes'?'Document':ctx.type==='multiple'?'Selectie':ctx.type==='group'?'Groep':'Object',this.doc);
       const input=this.doc.createElement('input');input.type='text';input.className='radial-center-input';input.value=ctx.name;
       input.setAttribute('aria-label','Naam geselecteerd object');input.maxLength=200;
-      const editable=ctx.type!=='axes'&&ctx.type!=='multiple'&&ctx.type!=='group'&&ctx.objects?.length===1&&!ctx.objects[0].locked&&this.app.allowed('object.setProperties',{ids:[ctx.objects[0].id],fields:[{path:'name',value:ctx.objects[0].name}]});
+      const editable=ctx.type==='group'
+        ?!this.app.runtime&&this.app.allowed('group.rename',{id:ctx.id,name:ctx.name})
+        :ctx.type!=='axes'&&ctx.type!=='multiple'&&ctx.objects?.length===1&&!ctx.objects[0].locked&&this.app.allowed('object.setProperties',{ids:[ctx.objects[0].id],fields:[{path:'name',value:ctx.objects[0].name}]});
       input.readOnly=!editable;
-      if(!editable){input.title=ctx.type==='group'?'Groepsnaam wijzigen is nog niet beschikbaar':ctx.type==='axes'?'Assenstelsel':'Niet wijzigbaar';}
+      if(!editable){input.title=ctx.type==='axes'?'Assenstelsel':'Niet wijzigbaar';}
       hub.append(label,input);this.wheel.append(hub);
     }
     openAt(anchor,focus=false){
@@ -279,12 +291,19 @@
       }catch(error){app.status(error.message);app.invalidate();}
     }
     rename(name){
-      const ctx=this.context();if(!ctx||!ctx.objects||ctx.objects.length!==1||ctx.type==='group')return;
-      const obj=ctx.objects[0],value=name.trim();
-      if(!value||value===obj.name)return;
+      const ctx=this.context();if(!ctx)return;
+      const value=name.trim();
+      if(!value||value===ctx.name)return;
       try{
-        if(!this.app.allowed('object.setProperties',{ids:[obj.id],fields:[{path:'name',value}]}))return;
-        this.app.changeDocument(()=>this.app.execute('object.setProperties',{ids:[obj.id],fields:[{path:'name',value}]}));
+        if(ctx.type==='group'){
+          if(!this.app.allowed('group.rename',{id:ctx.id,name:value}))return;
+          this.app.changeDocument(()=>this.app.execute('group.rename',{id:ctx.id,name:value}));
+        }else{
+          if(ctx.objects?.length!==1)return;
+          const obj=ctx.objects[0];
+          if(!this.app.allowed('object.setProperties',{ids:[obj.id],fields:[{path:'name',value}]}))return;
+          this.app.changeDocument(()=>this.app.execute('object.setProperties',{ids:[obj.id],fields:[{path:'name',value}]}));
+        }
         this.sync();
       }catch(error){this.app.status(error.message);this.app.invalidate();}
     }
