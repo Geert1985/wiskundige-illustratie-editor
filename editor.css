@@ -656,3 +656,94 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   }
   .radial-tool-instructions{max-height:24%}
 }
+
+
+/* UI-RADIAL-7 — point-only pilot: no duplicate property sections, reusable
+   full-size inspector forms, and selectable existing construction recipes. */
+.radial-detail-pane .radial-construction-options[hidden],
+.radial-detail-pane #selectionPanel[hidden]{
+  display:none!important;
+}
+.radial-construction-options{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:7px;
+  padding:1px 0 4px;
+}
+.radial-construction-lead,
+.radial-construction-empty{
+  margin:0 0 5px;
+  color:#dbe8f0;
+  font-size:12px;
+  line-height:1.4;
+}
+.radial-construction-empty{
+  color:#f0cc72;
+}
+.radial-construction-tool{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  width:100%;
+  min-height:62px;
+  text-align:left;
+  gap:11px;
+  padding:10px 11px;
+  border:1px solid #536d7d;
+  border-radius:9px;
+  background:linear-gradient(120deg,#244154,#1a3242);
+  color:#f6f8fa;
+  cursor:pointer;
+}
+.radial-construction-tool:hover,
+.radial-construction-tool:focus-visible{
+  background:#31546b;
+  border-color:#edc665;
+  outline:2px solid #edc665;
+  outline-offset:1px;
+}
+.radial-construction-icon{
+  flex:0 0 29px;
+  height:29px;
+  display:grid;
+  place-items:center;
+  color:#f3cc6b;
+}
+.radial-construction-icon svg{
+  width:26px;
+  height:26px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.radial-construction-description{
+  display:flex;
+  flex:1 1 auto;
+  min-width:0;
+  flex-direction:column;
+  gap:4px;
+  line-height:1.25;
+}
+.radial-construction-description strong{
+  color:#f5f7fa;
+  font-size:13px;
+  font-weight:700;
+}
+.radial-construction-description small{
+  color:#cedce5;
+  font-size:11px;
+  line-height:1.3;
+}
+/* Actions remain in the shared small icon toolbar. The redundant name field
+   from the old inspector heading is hidden specifically in point Actions. */
+.radial-detail-pane[data-radial-filter="actions"] #selectionPanel .object-heading>div:first-child{
+  display:none;
+}
+.radial-detail-pane[data-radial-filter="actions"] #selectionPanel .object-heading{
+  margin:0;
+  padding:0;
+  border:0;
+}
