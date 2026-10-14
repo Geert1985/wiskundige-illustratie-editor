@@ -77,6 +77,8 @@
       this.listen(this.doc,'keydown',e=>{
         if(e.key!=='Escape'||this.doc.querySelector('dialog[open]'))return;
         if(!this.opened&&!this.detailMode)return;
+        const editingName=this.wheel.querySelector('.radial-center-input');
+        if(editingName&&this.doc.activeElement===editingName)editingName.value=this.context()?.name||'';
         e.preventDefault();e.stopPropagation();this.close();
         this.trigger.focus?.({preventScroll:true});
       },true);
@@ -135,7 +137,7 @@
       return {type:obj.type==='text'?'text':obj.construction?'linked':'object',name:obj.name,id:obj.id,objects};
     }
     allowedContext(ctx){
-      if(!ctx||this.doc.querySelector('dialog[open]'))return false;
+      if(!ctx||this.doc.querySelector('dialog[open]')||this.app.interaction)return false;
       if(this.app.tool!=='select'&&ctx.type!=='axes')return false;
       return ctx.type==='axes'||ctx.objects.some(o=>o&&(!this.app.runtime||this.app.capabilities(o.id).selectCanvas||this.app.capabilities(o.id).selectList));
     }
