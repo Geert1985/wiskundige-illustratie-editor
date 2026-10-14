@@ -778,3 +778,94 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   border:1px solid var(--border);border-radius:6px;
 }
 .measurement-symbol-picker button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+
+/* UI-TOOLBAR-1 — shared accessible history and consistent titlebar icons.
+   Control IDs and action handlers remain unchanged after moving the buttons. */
+.top-actions .header-icon-label,
+.top-actions .file-menu>summary.header-icon-label{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  height:40px;
+  box-sizing:border-box;
+  padding:8px 14px;
+  border-radius:8px;
+  font-family:inherit;
+  font-size:14px;
+  font-weight:600;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.top-actions .header-icon-label svg{
+  display:block;
+  width:19px;
+  height:19px;
+  flex:0 0 19px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.top-actions .file-menu>summary.header-icon-label svg circle{
+  fill:currentColor;
+  stroke:none;
+}
+.top-actions .file-menu>summary.header-icon-label{
+  color:#edf1f3;
+  background:#17252f;
+  border:1px solid var(--border);
+}
+.top-actions .file-menu>summary.header-icon-label:hover{
+  background:#273a46;
+}
+.navigation-tools .history-icon-button:disabled,
+.text-editor-dialog .rich-history-group .history-icon-button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+.rich-history-group{
+  display:inline-flex;
+  gap:4px;
+  align-items:center;
+  margin-left:6px;
+  padding-left:10px;
+  border-left:1px solid #344850;
+}
+.text-editor-dialog .rich-history-group button.history-icon-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:36px;
+  min-width:36px;
+  height:36px;
+  padding:6px;
+}
+.text-editor-dialog .rich-history-group button svg{
+  width:19px;
+  height:19px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+@media(max-width:999px){
+  .top-actions .header-icon-label,
+  .top-actions .file-menu>summary.header-icon-label{
+    padding:7px 10px;
+    font-size:13px;
+    height:36px;
+  }
+}
+@media(max-width:540px){
+  .rich-history-group{margin-left:4px;padding-left:6px}
+  .text-editor-dialog .rich-history-group button.history-icon-button{
+    width:30px;
+    min-width:30px;
+    height:30px;
+    padding:4px;
+  }
+}
