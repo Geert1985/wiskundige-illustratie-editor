@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.1 (UI-RADIAL-10 region presentation and construction-scroll refinement, 2026-10-14)
+Version: 2.8.2 (UI-TOOLBAR-1 history and icon consistency, 2026-10-14)
 Status: **current working-branch overview**: UI-RADIAL-1–9 are implemented on `codex/ui-radial-7-point-context-constructions`, manually reviewed in stages by the user, not merged to `main`, and not automatically retested in this development sequence. REG-2 and the sidebar/layer integration are present in the feature-branch lineage; this is NOT a claim of `main` integration or full release verification. Previous gates and historical statuses below refer to their original dated snapshots. Read the v2.8.0 addendum and `docs/UI-RADIAL-9-CONTRACT-DRIVEN.md` before following older UI-R1–R3 planning.
 Date: 2026-10-14
 
@@ -961,3 +961,20 @@ UI-RADIAL-9 vraagt **geen automatische uitbreiding** naar nieuwe constructies of
 | Labelpositie oppervlakte | Het gewone selecteerbare/versleepbare `object-label` gebruikt `labelOffsetX/Y`; oude `areaDisplay.position`-waarden blijven voor laden/weergave ondersteund maar verschijnen niet meer als instelling | **Open** | **Niet uitgevoerd** |
 
 **Vaste ontwerpeis:** alle berekende regiolabels gebruiken de gedeelde labeldragcontroller en behoud van positie bij dynamische bronwijzigingen; bouw geen aparte regio-labeldragcode. Voor toekomstig regio- of labelwerk [AGENTS.md](../AGENTS.md), [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en het nieuwe [UI-RADIAL-10-verslag](UI-RADIAL-10-REGION-LABEL-AND-SCROLL.md) raadplegen. Automatische regressietests en gebruikersbeoordeling van deze wijzigingen moeten apart worden gerapporteerd. Historische eerdere statusregels worden niet terugwerkend gewijzigd.
+
+## Roadmap v2.8.2 — UI-TOOLBAR-1: geschiedenis- en icoonconsistentie (2026-10-14)
+
+**Branch:** `codex/ui-radial-7-point-context-constructions`. **Status:** geïmplementeerd op featurebranch, handmatige acceptatie nog open, geen regressietests in deze taak, niet naar `main` gemerged. Specificatie: [UI-TOOLBAR-1-HISTORY-AND-ICONS.md](UI-TOOLBAR-1-HISTORY-AND-ICONS.md).
+
+| Bediening | Normatieve positie en gedrag |
+|---|---|
+| Document `undoBtn` / `redoBtn` | Alleen iconen in de canvaswerkbalk, niet meer in de hoofdtitelbalk; bestaande documentgeschiedenis en sneltoetsen |
+| Tekst `richUndo` / `richRedo` | Alleen iconen in de rijke tekstopmaakbalk, direct rechts van **Rechts uitlijnen**; bestaande, afzonderlijke tekstgeschiedenis |
+| Hoofdproducttitel | **Wiskundige Illustratie Editor** |
+| Opslaan | Herkenbaar diskette-SVG met label **Opslaan** |
+| Meer (hoofd- en teksttitelbalk) | Zelfde ellipsis-SVG en typografie; `details/summary`-semantiek behouden |
+| Toevoegen (teksteditor) | Plus-SVG met label **Toevoegen**; bestaande submit behouden |
+
+**Architectuur:** verplaats de bestaande semantische elementen met ongewijzigde IDs en handlers; bouw geen tweede historycontroller en voorkom dubbele knoppen of conflicterende keyboardkortsluitingen. Iconen zijn inline SVG met gedeelde CSS, zonder visuele emoji/Unicode-plaatsvervangers. UI-RADIAL-9 en UI-RADIAL-10 blijven normatief voor constructies en regiolabels.
+
+**Validatie:** GitHub-broncontrole uitgevoerd; geen Node/Edge/browsertests uitgevoerd op verzoek uit de eerdere ontwikkelreeks.
