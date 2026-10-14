@@ -73,6 +73,16 @@
     organization:'<path d="M3 5h18M3 12h18M3 19h18"/>'
   });
   const CENTER_CAPTIONS=Object.freeze({object:'OBJECT',linked:'CONSTRUCTIE',text:'TEKST',axes:'ASSENSTELSEL',multiple:'SELECTIE',group:'GROEP'});
+  // UI-PANEL-1: one section-icon vocabulary for every floating inspector.
+  // Presentation only: no change to details state, model fields or commands.
+  const PROPERTY_ICONS=Object.freeze({
+    'point-projections':'axes',geometry:'geometry',appearance:'appearance',
+    relations:'relations',labels:'labels',region:'measurement',
+    'angle-measurement':'angleUnits','circle-distribution':'geometry',
+    'dynamic-text':'editText',common:'appearance',axes:'axes',
+    grid:'grid',units:'units','angle-units':'angleUnits'
+  });
+
   const SVG_NS='http://www.w3.org/2000/svg';
   const SEGMENT_SHAPE='M39 10 Q105 -1 171 10 Q201 14 191 48 L175 112 Q170 133 148 122 Q105 110 62 122 Q40 133 35 112 L19 48 Q9 14 39 10 Z';
   // UI-RADIAL-8 — one six-segment wheel for points, circles and linear geometry.
@@ -488,8 +498,25 @@
         else el.hidden=true;
       }
     }
+    decoratePropertySections(){
+      // Inspector HTML is regenerated after edits: decorate the current DOM,
+      // never store duplicate icons or alter native <details>/<summary>.
+      for(const section of this.panel.querySelectorAll('[data-property-section]')){
+        if(section.tagName!=='DETAILS')continue;
+        const summary=Array.from(section.children).find(child=>child.tagName==='SUMMARY');
+        if(!summary||summary.querySelector('.radial-property-icon'))continue;
+        const iconName=PROPERTY_ICONS[section.dataset.propertySection]||'geometry';
+        const svg=this.doc.createElementNS(SVG_NS,'svg');
+        svg.setAttribute('class','radial-property-icon');
+        svg.setAttribute('viewBox','0 0 24 24');
+        svg.setAttribute('aria-hidden','true');
+        svg.innerHTML=SEGMENT_ICONS[iconName]||SEGMENT_ICONS.geometry;
+        summary.insertBefore(svg,summary.firstChild);
+      }
+    }
     applyFilter(filter){
       if(!this.panel||this.detail.hidden)return;
+      this.decoratePropertySections();
       this.detail.dataset.radialContext=this.constructionContext()?'point':'other';
       if(this.constructionContext()){this.applyContextFilter(filter);return;}
       this.panel.hidden=false;this.pointConstructPanel.hidden=true;

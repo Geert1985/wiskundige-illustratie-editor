@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.2 (UI-TOOLBAR-1 history and icon consistency, 2026-10-14)
+Version: 2.8.4 (UI-PANEL-1 shared contextual property design, 2026-10-14)
 Status: **current working-branch overview**: UI-RADIAL-1–9 are implemented on `codex/ui-radial-7-point-context-constructions`, manually reviewed in stages by the user, not merged to `main`, and not automatically retested in this development sequence. REG-2 and the sidebar/layer integration are present in the feature-branch lineage; this is NOT a claim of `main` integration or full release verification. Previous gates and historical statuses below refer to their original dated snapshots. Read the v2.8.0 addendum and `docs/UI-RADIAL-9-CONTRACT-DRIVEN.md` before following older UI-R1–R3 planning.
 Date: 2026-10-14
 
@@ -978,3 +978,24 @@ UI-RADIAL-9 vraagt **geen automatische uitbreiding** naar nieuwe constructies of
 **Architectuur:** verplaats de bestaande semantische elementen met ongewijzigde IDs en handlers; bouw geen tweede historycontroller en voorkom dubbele knoppen of conflicterende keyboardkortsluitingen. Iconen zijn inline SVG met gedeelde CSS, zonder visuele emoji/Unicode-plaatsvervangers. UI-RADIAL-9 en UI-RADIAL-10 blijven normatief voor constructies en regiolabels.
 
 **Validatie:** GitHub-broncontrole uitgevoerd; geen Node/Edge/browsertests uitgevoerd op verzoek uit de eerdere ontwikkelreeks.
+
+## Roadmap v2.8.3 — UI-COLOR-1: kleurenpalet en kleurkiezer (2026-10-14)
+
+**Branch:** `codex/ui-radial-7-point-context-constructions`. **Status:** geïmplementeerd op featurebranch; handmatige acceptatie en browserregressie **open**, geen automatische tests uitgevoerd, niet naar `main` gemerged. Normatief verslag: [UI-COLOR-1-PALETTE-REDESIGN.md](UI-COLOR-1-PALETTE-REDESIGN.md).
+
+- **Visueel:** kleurenvenster in donkerblauw/goud, oorspronkelijke en nieuwe kleur naast elkaar, 12 grotere kleurstalen in 6×2, gouden selectie- en focusindicator, responsief.
+- **Interactie:** gedeelde HEX-invoer, native systeemkleurkiezer, presetkeuze en live preview synchroniseren. Bestaande Apply/Cancel-, Undo/Redo- en permission-contracten blijven behouden.
+- **Regio's:** `Geen vulling` alleen bij `style.fill`, transparantie en expliciete `style.fill='none'` behouden; bij ontbrekende fill rendererstandaard tonen.
+- **Geen nieuwe kleurenengine:** `EditorColor`, de bestaande `object.setProperties`-paden en de gedeelde dialoog blijven de eigenaars. De teksteditor deelt het bijgewerkte presetpalet.
+
+**Validatie:** statische code-/GitHub-verificatie; gebruiker moet nieuwe kleurkiezer en geschiedenisgedrag nog in browser beoordelen.
+
+## Roadmap v2.8.4 — UI-PANEL-1: uniforme eigenschappenpanelen (2026-10-14)
+
+**Status:** geïmplementeerd op `codex/ui-radial-7-point-context-constructions`; niet naar `main` gemerged, gebruikersacceptatie en browserregressie nog open. Normatief ontwerp: [UI-PANEL-1 — gedeelde vormgeving](UI-PANEL-1-UNIFIED-PROPERTY-DESIGN.md).
+
+De goedgekeurde **Geometrie**-preview wordt de **visuele standaard** voor alle eigenschappenpanelen: Uiterlijk, Relaties, Acties, Metingen, Labels, Alles, regio-eigenschappen en andere bestaande `data-property-section`-secties. Dezelfde navy/gold-kaarten, SVG-sectieiconen, chevrons, invoervelden, informatievakken, sliders en focusstates worden centraal toegepast. De bestaande compacte afmetingen, viewport-veilige scroll en native `details/summary`-interactie blijven behouden.
+
+**Architectuur:** één gescopeerd CSS-systeem onder `.radial-detail-pane`, en één idempotente `RadialProperties.decoratePropertySections()`-presentatiehelper die de bestaande `SEGMENT_ICONS` hergebruikt. Geen duplicatie van object-specifieke propertypanels, geen nieuwe model-/commandopaden, geen aanpassing van bestaande permissies of Undo/Redo.
+
+**Validatie:** GitHub-broncontrole uitgevoerd; handmatige toetsing op verschillende objecttypes, fullscreen, kleine vensters en keyboardnavigatie vereist; geen automatische/browsertests uitgevoerd.

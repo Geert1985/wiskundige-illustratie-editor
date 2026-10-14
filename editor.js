@@ -353,10 +353,12 @@
       this.on(n.richColorMenu,'keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();n.richColorMenu.hidden=true;n.richColor.setAttribute('aria-expanded','false');n.richColor.focus();}});
       this.on(n.textDialog,'click',event=>{const align=event.target.closest('[data-rich-align]');if(align)this.richTextEditor?.setAlign(align.dataset.richAlign);});
       this.on(n.richUndo,'click',()=>this.richTextEditor?.undo());this.on(n.richRedo,'click',()=>this.richTextEditor?.redo());
-      this.on(n.colorForm, "submit", e => { e.preventDefault(); if (this.validColor()) { this.setColor(this.colorId, this.colorInput.value); this.closeColor(); } });
+      this.on(n.colorForm, "submit", e => { e.preventDefault(); if (this.validColor()) { if(this.colorPickerChosen!=='none')this.setColor(this.colorId, this.colorInput.value); this.closeColor(); } });
       this.on(n.colorCancel, "click", () => this.closeColor(true));
       this.on(n.colorDialog, "cancel", e => { e.preventDefault(); this.closeColor(true); });
-      this.on(n.colorPalette, "click", e => { const button = e.target.closest("[data-color]"); if (button) { this.colorInput.value = button.dataset.color; this.setColor(this.colorId, this.colorInput.value); } });
+      this.on(n.colorPalette, "click", e => { const button = e.target.closest("[data-color]"); if (button) { this.colorInput.value = button.dataset.color; this.updateColorPicker(button.dataset.color); this.setColor(this.colorId, this.colorInput.value); } });
+       const nativeColor=this.document.getElementById('colorNative');
+       this.on(nativeColor,"input",()=>{if(!this.colorId)return;this.colorInput.value=nativeColor.value;this.updateColorPicker(nativeColor.value);this.setColor(this.colorId,nativeColor.value);});
       this.on(this.document.getElementById('colorNone'),'click',()=>{if(this.colorProperty==='fill'){this.setColor(this.colorId,'none');this.closeColor(false);}});
       this.on(n.undoBtn, "click", () => this.travelHistory());
       this.on(n.redoBtn, "click", () => this.travelHistory(true));
@@ -486,7 +488,12 @@
         this.colorInput = this.document.createElement("input"); this.colorInput.type = "text"; this.colorInput.dataset.editorColor = "true";
         this.colorInput.id = "colorValue"; this.colorInput.required = true; this.colorInput.pattern = "#[0-9a-fA-F]{6}"; this.colorInput.maxLength = 7;
         (n.colorField || this.document.body).appendChild(this.colorInput);
-        this.on(this.colorInput, "input", () => { if (this.validColor()) this.setColor(this.colorId, this.colorInput.value); });
+        this.on(this.colorInput, "input", () => {
+           const valid=this.validColor();
+           this.colorInput.setAttribute("aria-invalid",String(!valid));
+           const apply=this.document.getElementById('colorApply');if(apply)apply.disabled=!valid;
+           if(valid){this.updateColorPicker(this.colorInput.value);this.setColor(this.colorId,this.colorInput.value);}
+         });
         this.on(this.colorInput, "change", () => { if (!n.colorDialog || !n.colorDialog.open) { this.flushEdits(); this.colorId = null; this.invalidate(); } });
       }
       if(this.runtime)this.listeners.push(this.runtime.subscribe(event=>{
@@ -525,6 +532,28 @@
       const pending=this.pendingText,id=this.textEditId;let content;try{content=this.richTextEditor?.get();}catch(error){this.status(error.message);return;}if(!content&&this.nodes.textValue.value.trim()){content={schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:this.nodes.textValue.value.trim(),marks:{}}]}]};}if(!content)return;const text=MI.TextContent.plain(content);if(!text.trim())return;const request=this.textEditorRequest;try{if(MI.MathFragments.has([{textContent:content}])){await MI.MathFragments.load();for(const p of content.paragraphs)for(const r of p.runs)if(r.kind==='math')MI.MathFragments.box(r.source);}}catch(error){this.status(error.message);return;}if(request!==this.textEditorRequest)return;const target=id?{kind:'existing',id}:{kind:'new',position:{x:pending.point.x,y:pending.point.y}},command={schema:1,operation:'text.commit',expectedDocumentRevision:this.textExpectedRevision,payload:{target,content,...(this.textMigrateLegacy?{migrateLegacy:true}:{})}},decision=this.commands.canExecute(command);if(!decision.allowed){this.status(decision.code==='STALE_TRANSACTION'?'De illustratie is intussen gewijzigd. Sluit de teksteditor en open hem opnieuw.':'Tekstwijziging niet toegestaan: '+decision.code);return;}const handle=this.textTransaction;this.textTransaction=null;this.closeText();this.changeDocument(()=>{const result=handle?this.runtime.commit(handle,command.payload):this.commands.execute(command);this.selectedId=result.result.id;});
     }
     validColor() { return this.colorInput && /^#[0-9a-f]{6}$/i.test(this.colorInput.value); }
+    updateColorPicker(color,{initial=false}={}) {
+      const value=/^#[0-9a-f]{6}$/i.test(color)?color.toUpperCase():'none';
+      const doc=this.document;
+      const chip=doc.getElementById(initial?'colorPreviewCurrent':'colorPreviewNew');
+      const label=doc.getElementById(initial?'colorPreviewCurrentValue':'colorPreviewNewValue');
+      if(chip){
+        chip.dataset.none=String(value==='none');
+        chip.style.backgroundColor=value==='none'?'':value;
+      }
+      if(label)label.textContent=value==='none'?'Geen vulling':value;
+      if(initial)return;
+      this.colorPickerChosen=value;
+      const native=doc.getElementById('colorNative');
+      if(native&&value!=='none')native.value=value.toLowerCase();
+      const palette=this.nodes.colorPalette;
+      for(const button of palette?.querySelectorAll('[data-color]')||[])
+        button.setAttribute('aria-pressed',String(button.dataset.color.toUpperCase()===value));
+      const clear=doc.getElementById('colorNone');
+      if(clear)clear.setAttribute('aria-pressed',String(value==='none'));
+      if(this.colorInput)this.colorInput.setAttribute('aria-invalid','false');
+      const apply=doc.getElementById('colorApply');if(apply)apply.disabled=false;
+    }
     closeColor(cancel = false) {
       if (this.colorId) {
         if(this.runtime && this.colorTransaction){try{if(cancel)this.runtime.cancel(this.colorTransaction);else this.runtime.commit(this.colorTransaction,this.colorPayload);}catch(error){this.status(error.message);}this.colorTransaction=null;this.colorPayload=null;this.editBefore=null;}
@@ -1062,8 +1091,12 @@
       this.colorId=id; this.colorProperty=property;
       const none=this.document.getElementById('colorNone');if(none)none.hidden=property!=='fill';
       let color=property ? object.style[property] : this.services.color.value(object);
+      // A missing fill value uses the renderer's default, not transparency.
+      if(color==null)color=property==='fill'?'#f4c84a':'#222222';
       if(/^#[0-9a-f]{3}$/i.test(color)) color='#'+color.slice(1).split('').map(c=>c+c).join('');
       this.colorInput.value=/^#[0-9a-f]{6}$/i.test(color) ? color : '#222222';
+      this.updateColorPicker(color,{initial:true});
+      this.updateColorPicker(color);
       this.nodes.colorDialog.showModal(); this.colorInput.focus();
     }
     setColor(id, color) { const object = this.engine.get(id); if (!object || object.locked) return; this.cancel(); if (!this.editBefore) this.editBefore = this.history.capture(); const patch=this.colorProperty ? {style:{[this.colorProperty]:color}} : this.services.color.patch(object,color);if(patch.style)patch.style=Object.fromEntries(Object.entries(patch.style).filter(([k,v])=>MI.PermissionFields.properties.includes('style.'+k) && JSON.stringify(v)!==JSON.stringify(object.style[k])));if(this.runtime){const paths=this.colorProperty?[this.colorProperty]:object.type==='text'?['fill','stroke']:object.type==='point'?['fill','stroke']:['stroke'];const style=(this.colorProperty?{style:{[this.colorProperty]:color}}:this.services.color.patch(object,color)).style;const fields=paths.map(k=>({path:'style.'+k,value:style[k]}));const payload={ids:[id],fields};if(!this.colorTransaction)this.colorTransaction=this.runtime.begin(this.command('object.setProperties',payload));this.runtime.preview(this.colorTransaction,payload);this.colorPayload=payload;}else this.updateObject(id,patch); this.invalidate(); }

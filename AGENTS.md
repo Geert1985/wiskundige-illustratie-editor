@@ -40,6 +40,22 @@
 - De knoppen blijven toegankelijk (`aria-label`, tooltip, focus) en gebruiken **inline SVG**, gedeelde CSS en bestaande handlers; voeg geen dubbele/parallelle undo-implementatie toe. Zie [UI-TOOLBAR-1](docs/UI-TOOLBAR-1-HISTORY-AND-ICONS.md).
 - **Status:** op featurebranch geïmplementeerd, handmatige acceptatie en geautomatiseerde tests voor deze wijziging nog open, niet naar `main` gemerged.
 
+## UI-COLOR-1 — Gedeelde kleurkiezer (2026-10-14)
+
+- De bestaande **Kleur wijzigen**-dialoog blijft de enige stijl-kleurkiezer. Gebruik `EditorColor`, bestaande `style.fill`/`style.stroke`-commando's, permissies en Undo/Redo; introduceer geen alternatieve kleurenengine.
+- De kleurkiezer heeft **Huidig/Nieuw**-preview, twaalf benoemde presets in een 6×2-raster, een HEX-veld en een native kleurkiezer. Alle keuzes synchroniseren met dezelfde live objectpreview. Presets krijgen `aria-pressed`; HEX-validatie voorkomt bevestiging van ongeldige codes.
+- **Geen vulling** is alleen voor `style.fill`; bewaar `none` en onderscheid het van een ontbrekende fill (rendererstandaard). **Annuleren** moet de oorspronkelijke stijl herstellen, **Toepassen** moet bestaande transacties correct afsluiten.
+- Bewaar responsiviteit, focus, toetsenbordbediening en het visuele donkerblauw/gouden ontwerpsysteem. Zie [UI-COLOR-1](docs/UI-COLOR-1-PALETTE-REDESIGN.md).
+- **Status:** gepusht op featurebranch; handmatige acceptatie en automatische tests nog open, niet naar `main` gemerged.
+
+## UI-PANEL-1 — Uniforme contextuele eigenschappenpanelen (2026-10-14)
+
+- De door de gebruiker goedgekeurde **Geometrie**-preview is de **standaard voor alle eigenschappenpanelen** (o.a. Uiterlijk, Relaties, Acties, Metingen, Labels, Alles, regio's en andere objecttypes). Gebruik de gedeelde donkerblauw/gouden sectiekaarten, SVG-sectieiconen, duidelijke labels en focusstates. Zie [UI-PANEL-1](docs/UI-PANEL-1-UNIFIED-PROPERTY-DESIGN.md).
+- **Geen paneelkopieën:** definieer styling centraal in `editor.css` onder `.radial-detail-pane`. `RadialProperties.decoratePropertySections()` voegt idempotent decoratieve SVG-iconen toe aan bestaande `<details data-property-section><summary>`-secties, zonder nieuwe eventhandlers of duplicaatcontrols.
+- Behoud de **compacte paneelbreedte**, UI-RADIAL-10 viewportveilige scrollhoogte en sticky titel; de preview is visuele referentie, geen vergrotingsopdracht. Houd coördinatenvelden compact met naam links en waarde rechts.
+- Behoud native `details/summary`, toegankelijkheid, data-attributen, permissies, bestaande inspector-handler, Undo/Redo, open/dicht-status en filtergedrag. Nieuwe objecteigenschappen gebruiken dezelfde presentatiecomponenten.
+- **Status:** op ontwikkelbranch geïmplementeerd, niet naar `main` gemerged; handmatige acceptatie en tests nog open.
+
 ## Nieuwe gereedschappen en objecttypen — ontwikkelchecklist
 
 1. Registreer het object en de geometrische/constructiesemantiek in de **bestaande** model-/servicecontracten.
