@@ -1,8 +1,10 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.7.0 (FUN-OBJ/MAT-OBJ roadmap amendment, 2026-10-14)
-Status: T5a/full text workspace remain integrated as previously recorded. M6a, M6b, G-TRI1 and UI-T1 are integrated on `main` at `f403984`; their reports retain open manual acceptance. CORE-1 is updated against that code; REG-1 contract is proposed for approval. No REG-2 or UI-R1 implementation has started. Sequence: CORE-1 → REG-1 → REG-2 → UI-R1 → UI-R2.
-Date: 2026-10-13
+Version: 2.8.0 (DOC-RADIAL-1 architecture/status consolidation, 2026-10-14)
+Status: **current working-branch overview**: UI-RADIAL-1–9 are implemented on `codex/ui-radial-7-point-context-constructions`, manually reviewed in stages by the user, not merged to `main`, and not automatically retested in this development sequence. REG-2 and the sidebar/layer integration are present in the feature-branch lineage; this is NOT a claim of `main` integration or full release verification. Previous gates and historical statuses below refer to their original dated snapshots. Read the v2.8.0 addendum and `docs/UI-RADIAL-9-CONTRACT-DRIVEN.md` before following older UI-R1–R3 planning.
+Date: 2026-10-14
+
+> **Lees eerst:** [AGENTS.md](../AGENTS.md) en [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md). De oorspronkelijke gate- en roadmapteksten blijven als historische momentopname beschikbaar; v2.8.0 is de actuele status op de bovengenoemde ontwikkelbranch. De projectbrede roadmap en eerder goedgekeurde FUN-OBJ/MAT-OBJ-uitbreidingen blijven volledig behouden.
 
 ## Baseline
 User-reported 0A–0D PASS on chatgpt/math-illustration-stabilization, 0D HEAD 297b4d7c834fe0cd9f9b01bc3a43a7d592ef2713, 60/60 Node tests and Edge tests. Verify repository and user's manual acceptance before proceeding. User reports development has advanced beyond phase 0 and already includes bisectors, parallels, perpendiculars, tangents, area and circumference. Do not assume 0E is still pending; inspect actual HEAD and current backlog.
@@ -912,3 +914,36 @@ De normatieve numerieke, geometrische, schema-, permission- en exportgates staan
 7. **Geregisseerde uitvoering:** FUN-OBJ en MAT-OBJ zijn **aanvullingen op** M7/M11/M12/M13 en K4/T5; ze vervangen geen bestaande milestone en geven geen toestemming voor implementatie. Neem ze mee bij de latere milestone-specificaties, in kleine afzonderlijk te accepteren pakketten.
 
 **Voorgestelde plaats in gereedschappen:** grafische functies onder **Functies & grafieken**; matrices als wiskundige waardebron via **Tekst & interactie** en calculator/K4, met **Matrixtransformaties** onder **Transformeren**. Geen duplicaat-ID of tweede eigenaar voor dezelfde matrixfunctie. Voor een functionele matrixeditor pas een afzonderlijk nieuw gereedschap toe na een catalogus-/UX-besluit.
+
+
+## Roadmap v2.8.0 — DOC-RADIAL-1: consolidatie van UI-RADIAL-1–9 (2026-10-14)
+
+**Type:** documentatie- en statusconsolidatie. Geen nieuwe geometrische productiecode, tests of permissiewijzigingen. **Actuele bron:** featurebranch `codex/ui-radial-7-point-context-constructions` na UI-RADIAL-9; `main` is hiermee niet impliciet bijgewerkt.
+
+### Actueel statusoverzicht (featurebranch, niet historisch herinterpreteren)
+
+| Werkpakket | Inhoud en actuele bron | Implementatie | Handmatige beoordeling | Automatische tests | Merge |
+|---|---|---|---|---|---|
+| UI-RADIAL-1–3 | Contextueel wiel, zwevende inspector in plaats van permanente rechterbalk, pointer-/contextafhandeling; [oorspronkelijk verslag](UI-RADIAL-1-REPORT.md) | Op featurebranch | Iteratief bijgestuurd | Niet uitgevoerd in dit UI-RADIAL-traject | Niet op `main` |
+| UI-RADIAL-4–6 | Compacte navy/gold-ring met zes gebogen segmenten (ongeveer 322 px), sleepgreep en goedgekeurde actieve indicator; [vormgevingsverslag](UI-RADIAL-4-REPORT.md) | Op featurebranch | Iteratief beoordeeld | Niet uitgevoerd | Niet op `main` |
+| UI-RADIAL-7A/B/C | Exclusieve puntcategorieën, contextuele puntconstructies, grotere aanklikzone, uitsluitend rechtsklik; [historisch pilotverslag](UI-RADIAL-7-POINT-PILOT.md) | Op featurebranch | Gebruiker bevestigt werking | Niet uitgevoerd | Niet op `main` |
+| UI-RADIAL-8 | Cirkel en lineaire objecten: gedeelde constructies, voorinvulling van latere bronnen, eindpuntpaar; [pilotverslag](UI-RADIAL-7-POINT-PILOT.md) | Op featurebranch | Gebruiker bevestigt werking | Niet uitgevoerd | Niet op `main` |
+| UI-RADIAL-9 | Generieke contractgestuurde bronplannen, één starter, ook driehoeken/veelhoeken via normale rollen; [actueel normatief contract](UI-RADIAL-9-CONTRACT-DRIVEN.md) | Op featurebranch | Gebruiker bevestigt werking | Niet uitgevoerd | Niet op `main` |
+| DOC-RADIAL-1 | Architectuurafspraken, statussen en Codex-bronvoorrang consolideren; [AGENTS.md](../AGENTS.md) en dit addendum | Documentatie-only | Nog niet apart afgetekend | Geen tests uitgevoerd | Niet op `main` |
+
+**Normatief:** [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md); [CORE-1](CORE-1-ARCHITECTURE-DESIGN.md) is de onderliggende geometrische architectuur. De vroegere UI-R1–R3-voorstellen en hun instructies om een permanente **rechter inspector** te behouden zijn **historische ontwerpbeslissingen**, vervangen door de later afzonderlijk goedgekeurde zwevende detailweergave.
+
+### Product- en architectuurafspraken die voortaan moeten blijven gelden
+
+1. Voor één geselecteerd object met geldige bronplannen: **Constructie, Uiterlijk, Geometrie, Relaties, Acties, Alles**. `Alles` blijft de volledige inspector; labelzichtbaarheid is een bestaande actie en er wordt geen extra Labels-categorie voor dergelijke objecten aangemaakt.
+2. Het radiaalmenu opent alleen met **rechtsklikken op de geometrie**. Normale linkermuisklikselectie en verslepen tonen geen los eigenschappenicoon; rechts-sleep kan kaderselectie blijven. Het compacte wiel wordt alleen via de greep verplaatst; categorieklikken houden het anker vast.
+3. **Niet de UI maar de constructieservice bepaalt toepasselijkheid**: `ConstructionService.contextualPlans(object,kind)` gebruikt bestaande bronrollen en referenties. `ToolCatalog` beperkt tot geïmplementeerde gereedschappen; permissies bepalen zichtbaarheid en uitvoering.
+4. **Eén startfunctie**, `EditorApp.startContextConstruction(toolId,objectId,planKey)`, gebruikt `prefill`, `complete` en `placement`. Alle modelmutaties blijven via bestaande geautoriseerde `construction.create`-commands en geschiedenis.
+5. Voor **nieuwe objecttypen** blijft implementatie van de nodige geometrische rol-/onderdeelreferenties, geldige toolregistratie en soms gespecialiseerde interactie vereist. Er mag geen radiale objecttype-whitelist opnieuw verschijnen. De bestaande keuze van maximaal één plan per gereedschap en uitzonderingen zoals cirkelverdeling/gerichte hoekarmen zijn expliciete grenzen, geen reeds opgeloste functionaliteit.
+6. Houd **gebruikersacceptatie en automatische verificatie gescheiden**. Gebruikersfeedback bevestigt dat de huidige radiale constructiewerkwijze functioneert; er is daarmee niet verklaard dat alle regressie-, toegangs-, mobiele of exportscenario's automatisch getest of gemerged zijn.
+
+### Vervolgpoort
+
+UI-RADIAL-9 vraagt **geen automatische uitbreiding** naar nieuwe constructies of schemawijzigingen. Wanneer nieuwe objecten of bronsoorten worden geïmplementeerd: model en broncontract → catalogus → `contextualPlans` → bestaande starter/commando en rechten → gerichte verificatie volgens gebruikersopdracht. Een toekomstige merge naar `main` moet als afzonderlijke beslissing worden behandeld.
+
+**Behouden oudere plannen:** M7/M11–M13 en K4/T5 voor functies/matrices (v2.7.0) blijven ongewijzigd gepland. Dit addendum verandert geen historische testresultaten of eerdere beslissingen.
