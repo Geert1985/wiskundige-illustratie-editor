@@ -334,7 +334,7 @@
       const area=this.area.getBoundingClientRect(),p=this.relative(this.anchor||this.defaultAnchor());
       // The approved design is presented at 88% by default; smaller viewports scale further.
       // Clamp to available room without rewriting the user's chosen anchor.
-      const scale=Math.min(.88,Math.max(.42,Math.min((area.width-12)/460,(area.height-76)/460)));
+      const scale=Math.min(.70,Math.max(.36,Math.min((area.width-12)/460,(area.height-76)/460)));
       this.wheel.style.setProperty('--radial-scale',String(scale));
       const radius=230*scale;
       const x=clamp(p.x,Math.min(radius+8,area.width/2),Math.max(area.width/2,area.width-radius-8));
