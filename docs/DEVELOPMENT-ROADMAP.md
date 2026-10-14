@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.6.0 (SYNC-1 status and REG-1 contract, 2026-10-13)
+Version: 2.7.0 (FUN-OBJ/MAT-OBJ roadmap amendment, 2026-10-14)
 Status: T5a/full text workspace remain integrated as previously recorded. M6a, M6b, G-TRI1 and UI-T1 are integrated on `main` at `f403984`; their reports retain open manual acceptance. CORE-1 is updated against that code; REG-1 contract is proposed for approval. No REG-2 or UI-R1 implementation has started. Sequence: CORE-1 → REG-1 → REG-2 → UI-R1 → UI-R2.
 Date: 2026-10-13
 
@@ -871,3 +871,44 @@ Deze actuele status vult de historische roadmap v2.5.0 aan; eerdere plannen, mil
 **Gereedschapsclassificatie:** categorie volgt primaire taak, niet de prefix van een ID of alleen het resultaatobjecttype. `Vrije objecten` bevat handmatig getekende primaire geometrie; `Constructies` bevat afgeleide meetkundige punten/lijnen/cirkels en de G-TRI1-driehoek; `Meten & analyseren` bevat meet-/analyseacties; `Gebieden & opvulling` bevat selecteerbare afhankelijke gevulde polygon-, sector- en segmentgebieden. Overige bestaande topgroepen behouden hun betekenis. Een actief catalogusitem vereist een bestaande stabiele tool-ID, passend command-ID en bestaande autorisatie. `planned` is inert en heeft geen `data-tool`, command-ID, focusstop of uitvoeractie. Bestaande ID's wijzigen niet; nieuwe REG-2-ID's zijn `construct:polygonRegion`, `construct:circleSectorRegion` en `construct:circleSegmentRegion`.
 
 De normatieve numerieke, geometrische, schema-, permission- en exportgates staan in REG-1 v1.0.1. Deze roadmapstatus start REG-2, UI-R1 of UI-R2 niet en markeert geen resterende handmatige acceptatie als voltooid.
+
+
+## Roadmap v2.7.0 — expliciete functie- en matrixobjecten (2026-10-14)
+
+**Status:** roadmap- en productcontractaanvulling; geen productiecode, schemas, commandtypes of tests gewijzigd. Bron voor deze aanvulling: de bestaande v2.6.0-roadmap op branch \`codex/reg-2-dynamic-regions\`, die bij het opstellen vier commits vóór op \`main\` lag. De status van REG-2 in de historische SYNC-1-sectie is een momentopname en wordt door deze documentatie niet achteraf herschreven. Deze uitbreiding vormt **geen** impliciete GO voor implementatie of merge.
+
+**Productbesluit:** functies en matrices mogen niet uitsluitend verborgen rekenresultaten of getekende SVG-vormen zijn. Ze moeten als **getypeerde, benoemde, herbruikbare wiskundige entiteiten** kunnen functioneren. Hun definitieve opslagvorm (top-level object, apart documentregister of gedeelde waardebron) wordt pas na een afzonderlijke architectuur-/permissieaudit gekozen. Vermijd twee onafhankelijke mathematische bronnen van waarheid.
+
+### FUN-OBJ — Herbruikbaar functieobject (plaatsing bij M11; analyse bij M12; interactie bij M13)
+
+| Werkpakket | Geplande scope | Afhankelijkheden/acceptatie | Status |
+|---|---|---|---|
+| **FUN-OBJ-1: contract** | Stabiele functie-ID en zichtbare naam; getypeerd voorschrift/AST; parameters; domein; geldigheid/undefined-regio's; koppeling met bestaande K2-functieservice en expression-engine | M11, K2 en bestaande T5a-parser/evaluator verifiëren; geen tweede interpreter, geen JavaScript-eval; eenheden, numerieke grenzen en versiebeheer expliciet definiëren | \`planned\` |
+| **FUN-OBJ-2: grafische representatie** | Functies \`y=f(x)\` als selecteerbare, stijlbare grafiek op het bestaande illustratorcanvas; kleur, lijndikte/patroon, zichtbaarheid, naamlabel, segmentatie/discontinuïteiten, viewport en eventueel asymptoten | M11a; robuuste adaptive sampling/clipping, geen koppeling van de functie-identiteit aan een tijdelijke SVG-path; SVG/PNG, hit-test, zoom, pan, beperkingen/rechten | \`planned\` |
+| **FUN-OBJ-3: afgeleide analyses** | Gekoppelde nulpunten, functiedoorsneden, extrema, raaklijn/afgeleide, integraalgrenzen en Riemannsom; behoud van dynamische bronreferenties | M12a–c; numerieke foutcontracten, degeneratie/geen oplossing, stale recalculations, dependency graph en Undo/Redo | \`planned\` |
+| **FUN-OBJ-4: parameterkoppeling** | Functieparameters koppelen aan bestaande/geplande sliders, interactieve lessen en getypeerde tekstwaarden | M13, M14, T5c en permissiemodel; geen direct DOM-to-model pad; export/replay deterministisch | \`planned\` |
+
+**Minimale zichtbare eigenschappen van een functie:** identiteit/naam (bv. \`f\`), voorschrift, domein, parameterdefinities, kleur, lijnpatroon/dikte, label, zichtbaarheid en document-/asreferentie. **Afgeleide/read-only** eigenschappen zoals functiewaarde op een punt, intercepts of asymptoten komen pas beschikbaar volgens het passende M12-contract. Parametrische/impliciete functies (M11b/c) gebruiken dezelfde gedeelde functie- en evaluatieprincipes maar vereisen eigen getypeerde varianten; forceer ze niet in de \`y=f(x)\`-vorm.
+
+### MAT-OBJ — Getypeerde matrixwaarde en visueel matrixobject (K4, M7, teksteditor)
+
+| Werkpakket | Geplande scope | Afhankelijkheden/acceptatie | Status |
+|---|---|---|---|
+| **MAT-OBJ-1: matrixwaarde** | Stabiele ID/naam, getypeerde dimensies \`m×n\`, celwaarden/expressies en expliciet numeriek/exact contract; validatie van afmetingen, overflow en singulariteit | K4; één centrale matrix-/vectoralgebraservice, compatibel met bestaande T5a/K1/K2 waardecontracten; geen tweede evaluator | \`planned\` |
+| **MAT-OBJ-2: rekenen** | Optellen, vermenigvuldigen, transponeren, determinant, inverse, RREF en waar van toepassing rang; gecontroleerde dimensie- en singulariteitsfouten | K4, numerieke golden tests/onafhankelijke orakels; veilige dimensie-/geheugenlimieten en versiebeheer | \`planned\` |
+| **MAT-OBJ-3: visuele editor** | Matrix als leesbaar én bewerkbaar object/waarde op het canvas via de bestaande tekstwerkruimte: cellen, haken, lettertype, stijl, schaal, labels en selectie | T1–T4 tekst-layout/export, toekomstige T5c bronbinding; geen tweede rich-text-editor, geen gecachte onafhankelijke matrixwaarheid | \`planned\` |
+| **MAT-OBJ-4: geometrische koppeling** | Typisch 2×2 voor lineaire vlaktransformaties; 3×3 homogene matrices voor affiene transformaties als afzonderlijk goedgekeurd contract; dynamische koppeling aan objecten | M7; expliciete conventie rij-/kolomvector, volgorde van vermenigvuldiging, affine versus projectieve semantiek, degeneratie en bronafhankelijkheid | \`planned\` |
+
+**Minimale eigenschappen:** naam, afmetingen, individuele elementen, weergavenotatie, precisie/exactheid waar ondersteund, label en stijleigenschappen. Een **matrixwaarde** is niet automatisch een geometrisch canvasobject. De editor toont een gecontroleerde visuele projectie van diezelfde waarde, bij voorkeur via de bestaande tekst-/formulelayout. Bij matrixgestuurde geometrie mag wijziging van een cel na geldige commit een afhankelijke transformatie opnieuw berekenen; matrixopslag en grafische weergave blijven gescheiden.
+
+### Overkoepelende ontwerp- en veiligheidsgates
+
+1. **Eén rekenwaarheid:** hergebruik \`expression-engine\`, bestaande typed source adapters en geplande K2/K4-services; geen aparte functieparser, vector-/matrixengine of grafiekcalculator.
+2. **Eén geometrische waarheid:** M7/M11/M12 integreren met bestaande model-/constructie-/transformatiecontracten, selectie, undo/redo, documentvalidatie en persistente IDs.
+3. **Schema- en permissiepoort vóór implementatie:** documentversie, bronnen/capabilities, restricted projections, author/course/assessment, locks, duplicatie, verwijdercascade, import, export en semantic replay moeten expliciet worden ontworpen en goedgekeurd.
+4. **Presentatie:** objecten en resultaten zijn bereikbaar via de bestaande inspector en later de contextuele radiale eigenschappenbediening; keyboard/touch/screenreader/fullscreen moeten werken; geen uitsluitend visuele representatie.
+5. **Numerieke veiligheid:** ongedefinieerde functies, discontinuïteiten, divergente evaluatie, dimensiemismatch, singuliere matrices, zeer grote getallen, schaal en eenheden hebben gedefinieerd fout- of invalid-beleid; geen stilzwijgende fictieve precisie.
+6. **Relevante tests:** onafhankelijke algebra- en functietests, bronafhankelijkheden, matrixtransformatie, Undo/Redo, duplicatie, import/legacy, restricted-permissies, deterministische SVG/PNG en real-browser regressies. Rapporteer werkelijk uitgevoerde tests; documentatie-only is niet hetzelfde als PASS.
+7. **Geregisseerde uitvoering:** FUN-OBJ en MAT-OBJ zijn **aanvullingen op** M7/M11/M12/M13 en K4/T5; ze vervangen geen bestaande milestone en geven geen toestemming voor implementatie. Neem ze mee bij de latere milestone-specificaties, in kleine afzonderlijk te accepteren pakketten.
+
+**Voorgestelde plaats in gereedschappen:** grafische functies onder **Functies & grafieken**; matrices als wiskundige waardebron via **Tekst & interactie** en calculator/K4, met **Matrixtransformaties** onder **Transformeren**. Geen duplicaat-ID of tweede eigenaar voor dezelfde matrixfunctie. Voor een functionele matrixeditor pas een afzonderlijk nieuw gereedschap toe na een catalogus-/UX-besluit.
