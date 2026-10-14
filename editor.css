@@ -590,10 +590,10 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 /* Reused original inspector, now only a floating detail card. */
 .radial-detail-pane{
   position:absolute;z-index:43;max-width:calc(100% - 16px);
-  max-height:min(78vh,calc(100% - 88px));min-height:120px;overflow:auto;
+  max-height:min(78vh,calc(100% - 88px));min-height:120px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
   padding:12px 14px 15px;border-radius:14px;border:1px solid #c79f4a;
   background:linear-gradient(135deg,#1b3140,#0e222f);color:#e9f1f6;
-  box-shadow:0 14px 40px #07151ab8;scrollbar-width:thin;scrollbar-color:#607380 transparent;
+  box-shadow:0 14px 40px #07151ab8;scrollbar-width:auto;scrollbar-color:#7995a6 #152c3a;
 }
 .radial-detail-heading{
   position:sticky;top:-12px;margin:-12px -14px 12px;z-index:2;
@@ -736,4 +736,35 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   margin:0;
   padding:0;
   border:0;
+}
+
+
+/* UI-RADIAL-10 — bounded, discoverably scrollable contextual construction list.
+   The title stays visible while long construction lists scroll inside the pane. */
+.radial-detail-pane[data-radial-filter="construct"]{
+  scrollbar-gutter:stable;
+}
+.radial-detail-pane[data-radial-filter="construct"] .radial-construction-options{
+  min-height:0;
+}
+.radial-detail-pane .selection-panel .region-precision-slider{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.radial-detail-pane .selection-panel .region-precision-slider input[type=range]{
+  flex:1 1 auto;
+  width:auto;
+  min-width:0;
+  height:25px;
+  min-height:0;
+  padding:0;
+  cursor:pointer;
+  accent-color:#f0c85e;
+}
+.radial-detail-pane .selection-panel .region-precision-slider output{
+  flex:0 0 16px;
+  color:#f0d27a;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
 }
