@@ -55,6 +55,7 @@
   // UI-RADIAL-4: native SVG icon shapes reproduce the approved navy/gold
   // concept without bitmaps, duplicate action engines or network dependencies.
   const SEGMENT_ICONS=Object.freeze({
+    construct:'<path d="M12 2v4M3 12h4M17 12h4M12 18v4"/><circle cx="12" cy="12" r="5"/><path d="M8.5 15.5 5 19M15.5 8.5 19 5"/>',
     relations:'<circle cx="5" cy="12" r="2.3"/><circle cx="19" cy="5" r="2.3"/><circle cx="19" cy="19" r="2.3"/><path d="M7.3 10.9 16.7 6.1M7.3 13.1l9.4 4.8M19 7.3v9.4"/>',
     appearance:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6.4"/>',
     measurement:'<path d="m2.8 16.5 13.7-13.7 4.7 4.7L7.5 21.2l-4.7-4.7Z"/><path d="m13.5 6 3.1 3.1M10.6 8.9l1.8 1.8M8 11.5l3.1 3.1M5.3 14.2l1.8 1.8"/>',
@@ -74,6 +75,12 @@
   const CENTER_CAPTIONS=Object.freeze({object:'OBJECT',linked:'CONSTRUCTIE',text:'TEKST',axes:'ASSENSTELSEL',multiple:'SELECTIE',group:'GROEP'});
   const SVG_NS='http://www.w3.org/2000/svg';
   const SEGMENT_SHAPE='M39 10 Q105 -1 171 10 Q201 14 191 48 L175 112 Q170 133 148 122 Q105 110 62 122 Q40 133 35 112 L19 48 Q9 14 39 10 Z';
+  // Point-only pilot: fixed six-sector presentation, no duplicate point cards.
+  const POINT_CONTENT=[
+    ['construct','Constructie','⌘'],['appearance','Uiterlijk','◉'],
+    ['geometry','Geometrie','◇'],['labels','Labels','T'],
+    ['actions','Acties','⚙'],['all','Alles','⋯']
+  ];
   const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
   const text=(tag,cls,value,doc)=>{const el=doc.createElement(tag);if(cls)el.className=cls;el.textContent=value;return el;};
   const editableTarget=target=>!!target?.closest?.('input,textarea,select,[contenteditable="true"],dialog[open]');
@@ -87,6 +94,10 @@
       this.detail=this.doc.getElementById('propertiesSidebar');
       this.panel=app.nodes.selectionPanel;
       this.closeBtn=app.nodes.propertiesClose;
+      this.pointConstructPanel=this.doc.createElement('section');
+      this.pointConstructPanel.className='radial-construction-options';
+      this.pointConstructPanel.hidden=true;
+      this.detail?.insertBefore(this.pointConstructPanel,this.panel);
       if(!this.area||!this.trigger||!this.wheel||!this.detail||!this.panel)return;
       this.bound=[];this.anchor=null;this.identity='';this.opened=false;this.detailMode=null;this.drag=null;
       this.menuType='';
@@ -94,6 +105,10 @@
       this.listen(this.trigger,'click',e=>{e.preventDefault();this.openAt(this.anchor,true);});
       this.listen(this.closeBtn,'click',e=>{e.stopPropagation();this.closeDetail();this.wheel.querySelector('.radial-center-input')?.focus();});
       this.listen(this.wheel,'click',e=>{const button=e.target.closest('[data-radial-action]');if(button&&!button.disabled)this.choose(button.dataset.radialAction);});
+      this.listen(this.pointConstructPanel,'click',e=>{
+        const button=e.target.closest('[data-radial-construct]');
+        if(button&&!button.disabled)this.startPointConstruction(button.dataset.radialConstruct);
+      });
       this.listen(this.wheel,'change',e=>{if(e.target.matches('.radial-center-input'))this.rename(e.target.value);});
       this.listen(this.wheel,'keydown',e=>{if(e.target.matches('.radial-center-input')&&e.key==='Enter'){e.preventDefault();this.rename(e.target.value);e.target.blur();}});
       // Explicit drag handle only: clicking another radial segment must never
@@ -246,8 +261,9 @@
     }
     renderWheel(){
       const ctx=this.context()||{type:'object',name:''};
-      const items=(CONTENT[ctx.type]||CONTENT.object).map(item=>item.slice());
-      if(ctx.type==='object'&&['point','polygon'].includes(ctx.objects?.[0]?.type)){
+      const isPoint=this.pointContext(ctx);
+      const items=(isPoint?POINT_CONTENT:(CONTENT[ctx.type]||CONTENT.object)).map(item=>item.slice());
+      if(!isPoint&&ctx.type==='object'&&['point','polygon'].includes(ctx.objects?.[0]?.type)){
         const i=items.findIndex(item=>item[0]==='measurement');
         if(i>=0)items[i]=['labels','Labels','T'];
       }
@@ -351,6 +367,7 @@
     }
     choose(action){
       const ctx=this.context();if(!ctx)return;
+      if(action==='construct'&&this.pointContext(ctx)){this.showDetail('construct');return;}
       if(action==='editText'){
         if(ctx.objects?.length===1&&!ctx.objects[0].locked&&!ctx.objects[0].construction&&!ctx.objects[0].textBinding){this.close();this.app.openRichText(ctx.objects[0].id);}
         else this.showDetail('relations');
@@ -372,14 +389,122 @@
         button.setAttribute('aria-pressed',String(button.dataset.radialAction===filter));
       this.applyFilter(filter);this.place();
       this.detail.querySelector('.radial-detail-title').textContent=filter==='all'?'Alle eigenschappen':({
-        appearance:'Uiterlijk',geometry:'Geometrie',measurement:'Metingen',labels:'Labels',
+        construct:'Constructie vanuit dit punt',appearance:'Uiterlijk',geometry:'Geometrie',measurement:'Metingen',labels:'Labels',
         relations:'Relaties',organization:'Organisatie',axes:'Assen',grid:'Raster',units:'Schaal en eenheden',
         angleUnits:'Hoekeenheid',actions:'Acties'
       }[filter]||'Eigenschappen');
       // The existing compact object-action toolbar is the sole action surface.
     }
+    // Only a single selected point is eligible in this pilot. Other object
+    // types and multi-selection keep the previous radial behaviour untouched.
+    pointContext(ctx=this.context()){
+      const o=ctx?.objects?.length===1?ctx.objects[0]:null;
+      return !!o&&o.type==='point'&&['object','linked'].includes(ctx.type)&&
+        this.app.selectedIds.length===1&&this.app.selectedIds[0]===o.id;
+    }
+    pointConstructions(ctx=this.context()){
+      if(!this.pointContext(ctx))return [];
+      const point=ctx.objects[0],app=this.app;
+      if(!app.canvasSelectable(point))return [];
+      return app.toolCatalog.list('sidebar').flatMap(category=>category.entries)
+        .filter(entry=>entry.status==='implemented'&&entry.id.startsWith('construct:'))
+        .filter(entry=>{
+          const kind=entry.id.slice(10),contract=MI.ConstructionService.contract(kind);
+          return contract.sourceRoles.length>1&&contract.sourceRoles[0]==='point'&&
+            MI.ConstructionService.referencesForRole(point,'point',kind)
+              .some(ref=>ref.objectId===point.id&&ref.part==null)&&
+            app.toolAllowed(entry.id)&&
+            (!app.runtime||app.capabilities(point.id).sourceTools.includes(entry.id));
+        });
+    }
+    renderPointConstructions(){
+      const panel=this.pointConstructPanel;
+      if(!panel||this.detailMode!=='construct'||!this.pointContext()){
+        if(panel)panel.hidden=true;
+        return;
+      }
+      const ctx=this.context(),items=this.pointConstructions(ctx);
+      panel.hidden=false;panel.replaceChildren();
+      const lead=text('p','radial-construction-lead',
+        (ctx.name||ctx.id)+' is het eerste bronpunt. Kies een constructie:',this.doc);
+      panel.append(lead);
+      if(!items.length){
+        panel.append(text('p','radial-construction-empty',
+          'Geen toegestane constructies voor dit punt.',this.doc));
+        return;
+      }
+      for(const item of items){
+        const button=this.doc.createElement('button');
+        button.type='button';button.className='radial-construction-tool';
+        button.dataset.radialConstruct=item.id;
+        button.setAttribute('aria-label',item.label);
+        const ico=text('span','radial-construction-icon','',this.doc);
+        // Reuse the same trusted icon markup already present in the shared
+        // sidebar/fullscreen catalog, without duplicating tool definitions.
+        const template=this.doc.createElement('template');
+        template.innerHTML=item.markup;
+        const drawing=template.content.querySelector('svg');
+        if(drawing)ico.append(drawing.cloneNode(true));
+        const info=text('span','radial-construction-description','',this.doc);
+        info.append(text('strong','',item.label,this.doc));
+        const hint=MI.ToolInstructions.constructionHint(item.id.slice(10),1);
+        info.append(text('small','',hint||'Selecteer het volgende bronobject.',this.doc));
+        button.append(ico,info);panel.append(button);
+      }
+    }
+    startPointConstruction(toolId){
+      const ctx=this.context();
+      if(!this.pointContext(ctx)||!this.pointConstructions(ctx).some(t=>t.id===toolId))return;
+      const id=ctx.objects[0].id;
+      this.close();
+      this.app.startConstructionFromPoint(toolId,id);
+    }
+    ensurePointLabels(o){
+      let section=this.panel.querySelector('[data-property-section="point-labels"]');
+      if(!section){
+        section=this.doc.createElement('details');
+        section.dataset.propertySection='point-labels';section.open=true;
+        const summary=this.doc.createElement('summary');
+        summary.textContent='Objectlabel';
+        const label=this.doc.createElement('label');
+        label.className='style-toggle';
+        const checkbox=this.doc.createElement('input');
+        checkbox.type='checkbox';checkbox.dataset.edit='showLabel';
+        label.append(checkbox,this.doc.createTextNode(' Objectnaam tonen'));
+        section.append(summary,label,text('p','help-text',
+          'Versleep het zichtbare naamlabel op het canvas om het te positioneren.',this.doc));
+        this.panel.append(section);
+      }
+      const input=section.querySelector('[data-edit="showLabel"]');
+      input.checked=!!o.showLabel;
+      input.disabled=o.locked||!this.app.allowed('object.setProperties',{
+        ids:[o.id],fields:[{path:'showLabel',value:!o.showLabel}]
+      });
+      return section;
+    }
+    applyPointFilter(filter){
+      const o=this.context().objects[0];
+      this.panel.hidden=filter==='construct';
+      this.pointConstructPanel.hidden=filter!=='construct';
+      if(filter==='construct'){this.renderPointConstructions();return;}
+      const labels=this.ensurePointLabels(o);
+      for(const el of this.panel.children){
+        const section=el.dataset?.propertySection;
+        if(el===labels){el.hidden=filter!=='labels';continue;}
+        if(el.classList.contains('object-heading')){
+          el.hidden=!['actions','all'].includes(filter);
+          continue;
+        }
+        if(filter==='all'){el.hidden=false;continue;}
+        if(filter==='geometry')el.hidden=!['geometry','point-projections','circle-distribution'].includes(section);
+        else if(filter==='appearance')el.hidden=section!=='appearance';
+        else el.hidden=true;
+      }
+    }
     applyFilter(filter){
       if(!this.panel||this.detail.hidden)return;
+      if(this.pointContext()){this.applyPointFilter(filter);return;}
+      this.panel.hidden=false;this.pointConstructPanel.hidden=true;
       const axesRoot=this.panel.querySelector('.axis-settings');
       if(axesRoot&&this.app.inspectorTarget==='axes'){
         axesRoot.hidden=false;
@@ -425,6 +550,8 @@
     }
     closeDetail(){
       this.detailMode=null;this.detail.hidden=true;
+      if(this.pointConstructPanel)this.pointConstructPanel.hidden=true;
+      if(this.panel)this.panel.hidden=false;
     }
     close(){
       this.drag=null;this.wheel.classList.remove('radial-is-dragging');
