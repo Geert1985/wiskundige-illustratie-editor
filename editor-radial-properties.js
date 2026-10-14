@@ -78,7 +78,7 @@
   // Point-only pilot: fixed six-sector presentation, no duplicate point cards.
   const POINT_CONTENT=[
     ['construct','Constructie','⌘'],['appearance','Uiterlijk','◉'],
-    ['geometry','Geometrie','◇'],['labels','Labels','T'],
+    ['geometry','Geometrie','◇'],['relations','Relaties','⌁'],
     ['actions','Acties','⚙'],['all','Alles','⋯']
   ];
   const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
@@ -89,7 +89,6 @@
     constructor(app){
       this.app=app;this.doc=app.document;this.win=app.window;
       this.area=this.doc.querySelector('.canvas-area');
-      this.trigger=this.doc.getElementById('radialPropertiesTrigger');
       this.wheel=this.doc.getElementById('radialPropertiesWheel');
       this.detail=this.doc.getElementById('propertiesSidebar');
       this.panel=app.nodes.selectionPanel;
@@ -98,11 +97,10 @@
       this.pointConstructPanel.className='radial-construction-options';
       this.pointConstructPanel.hidden=true;
       this.detail?.insertBefore(this.pointConstructPanel,this.panel);
-      if(!this.area||!this.trigger||!this.wheel||!this.detail||!this.panel)return;
+      if(!this.area||!this.wheel||!this.detail||!this.panel)return;
       this.bound=[];this.anchor=null;this.identity='';this.opened=false;this.detailMode=null;this.drag=null;
       this.menuType='';
       this.renderWheel();
-      this.listen(this.trigger,'click',e=>{e.preventDefault();this.openAt(this.anchor,true);});
       this.listen(this.closeBtn,'click',e=>{e.stopPropagation();this.closeDetail();this.wheel.querySelector('.radial-center-input')?.focus();});
       this.listen(this.wheel,'click',e=>{const button=e.target.closest('[data-radial-action]');if(button&&!button.disabled)this.choose(button.dataset.radialAction);});
       this.listen(this.pointConstructPanel,'click',e=>{
@@ -149,58 +147,49 @@
         const editingName=this.wheel.querySelector('.radial-center-input');
         if(editingName&&this.doc.activeElement===editingName)editingName.value=this.context()?.name||'';
         e.preventDefault();e.stopPropagation();this.close();
-        this.trigger.focus?.({preventScroll:true});
+        this.app.nodes.canvasWrap?.focus?.({preventScroll:true});
       },true);
       this.listen(this.doc,'pointerdown',e=>{
         if(!this.opened&&!this.detailMode)return;
-        if(e.target.closest('#radialPropertiesWheel,#propertiesSidebar,#radialPropertiesTrigger'))return;
+        if(e.target.closest('#radialPropertiesWheel,#propertiesSidebar'))return;
         this.close();
       },true);
-      // A right-click on selected geometry may open the wheel at pointerup,
-      // before the browser sends contextmenu. Its hit target may consequently
-      // be the overlay rather than canvasWrap. Capture it at document level.
+      // Open the contextual wheel only through the right mouse button.
+      // Handle contextmenu at capture phase because selected SVG content may
+      // be rerendered on pointerup; the native browser menu is suppressed.
       this.listen(this.doc,'contextmenu',e=>{
         if(this.app.tool!=='select'||this.app.navigationMode==='pan')return;
         const rect=this.app.nodes.canvasWrap.getBoundingClientRect();
-        const inCanvas=e.clientX>=rect.left&&e.clientX<=rect.right&&
+        const inside=e.clientX>=rect.left&&e.clientX<=rect.right&&
           e.clientY>=rect.top&&e.clientY<=rect.bottom;
-        const onMenu=!!e.target.closest?.('#radialPropertiesWheel,#radialPropertiesTrigger,#propertiesSidebar');
-        if(inCanvas||onMenu)e.preventDefault();
-      },true);
-      this.listen(this.app.nodes.canvasWrap,'contextmenu',e=>{
-        if(e.defaultPrevented||this.app.tool!=='select'||this.app.navigationMode==='pan'||this.app.interaction)return;
-        const hit=this.app.hitAt(e);
-        if(!hit?.object)return;
-        if(!this.app.canvasSelectable(hit.object))return;
+        const onMenu=!!e.target.closest?.('#radialPropertiesWheel,#propertiesSidebar');
+        if(!inside&&!onMenu)return;
         e.preventDefault();
+        if(onMenu||this.opened||this.detailMode||
+          this.app.suppressMarqueeMenu||this.app.interaction)return;
+        const hit=this.app.hitAt(e);
+        if(!hit?.object||!this.app.canvasSelectable(hit.object))return;
         this.app.selectObject(hit.object.id,false,'canvas');
         this.openAt({x:e.clientX,y:e.clientY},true);
-      });
-      // EditorApp's pointerup handler is registered earlier, so selection/drag
-      // has already committed when this listener places the contextual trigger.
+      },true);
+      // Right-button pointerup fallback for browsers that dispatch
+      // contextmenu during the initial right-button marquee interaction.
+      // A movement marquee must not open the wheel.
       this.listen(this.win,'pointerup',e=>{
-        // Popup pointer events must never rewrite the canvas anchor. The wheel
-        // stays stationary until the user uses its dedicated drag handle.
-        if(this.drag||this.opened||this.detailMode||
-          e.target.closest?.('#radialPropertiesWheel,#propertiesSidebar,#radialPropertiesTrigger'))return;
-        const bounds=this.app.nodes.canvasWrap.getBoundingClientRect();
-        const inside=e.clientX>=bounds.left&&e.clientX<=bounds.right&&e.clientY>=bounds.top&&e.clientY<=bounds.bottom;
-        if(!inside||this.app.tool!=='select')return;
-        if(e.button===2){
-          // The existing right-drag rectangle selector owns active drags.
-          // A simple right click with no active marquee opens the wheel.
-          if(this.app.suppressMarqueeMenu||this.app.interaction)return;
-          const hit=this.app.hitAt(e);
-          if(!hit?.object||!this.app.canvasSelectable(hit.object))return;
-          this.app.selectObject(hit.object.id,false,'canvas');
-          this.openAt({x:e.clientX,y:e.clientY},false);
-          return;
-        }
-        if(e.button!==0||!this.app.selectedIds.length)return;
-        this.anchor={x:e.clientX,y:e.clientY};
-        this.positionTrigger();
+        if(e.button!==2||this.drag||this.opened||this.detailMode||
+          this.app.tool!=='select'||this.app.navigationMode==='pan')return;
+        const rect=this.app.nodes.canvasWrap.getBoundingClientRect();
+        if(e.clientX<rect.left||e.clientX>rect.right||
+          e.clientY<rect.top||e.clientY>rect.bottom)return;
+        if(this.app.suppressMarqueeMenu||this.app.interaction)return;
+        const hit=this.app.hitAt(e);
+        if(!hit?.object||!this.app.canvasSelectable(hit.object))return;
+        this.app.selectObject(hit.object.id,false,'canvas');
+        this.openAt({x:e.clientX,y:e.clientY},false);
       });
-      this.listen(this.win,'resize',()=>{if(this.opened||this.detailMode)this.place();else this.positionTrigger();});
+      this.listen(this.win,'resize',()=>{
+        if(this.opened||this.detailMode)this.place();
+      });
       this.sync();
     }
     listen(node,type,fn,options){if(!node)return;node.addEventListener(type,fn,options);this.bound.push(()=>node.removeEventListener(type,fn,options));}
@@ -227,14 +216,11 @@
       return ctx.type==='axes'||ctx.objects.some(o=>o&&(!this.app.runtime||this.app.capabilities(o.id).selectCanvas||this.app.capabilities(o.id).selectList));
     }
     sync(){
-      if(!this.trigger)return;
+      if(!this.wheel)return;
       const ctx=this.context(),valid=this.allowedContext(ctx);
       const id=valid?ctx.type+':'+ctx.id:'';
       if(id!==this.identity){this.identity=id;this.close();this.anchor=null;}
-      this.trigger.hidden=!valid||this.opened;
       if(!valid)return;
-      if(!this.anchor)this.anchor=this.defaultAnchor();
-      this.positionTrigger();
       if(this.opened){
         if(ctx.type!==this.menuType)this.renderWheel();
         const input=this.wheel.querySelector('.radial-center-input');
@@ -242,23 +228,13 @@
         const cap=this.wheel.querySelector('.radial-center-caption');
         if(cap)cap.textContent=CENTER_CAPTIONS[ctx.type]||'OBJECT';
       }
-      if(this.detailMode){
-        this.applyFilter(this.detailMode);
-        // Reuse the inspector's existing small action toolbar.
-      }
+      if(this.detailMode)this.applyFilter(this.detailMode);
     }
     defaultAnchor(){
       const rect=this.app.nodes.canvasWrap.getBoundingClientRect();
       return {x:rect.left+Math.min(rect.width-28,Math.max(28,rect.width*.65)),y:rect.top+Math.min(rect.height-36,Math.max(36,rect.height*.34))};
     }
     relative(p){const r=this.area.getBoundingClientRect();return {x:clamp(p.x-r.left,18,Math.max(18,r.width-18)),y:clamp(p.y-r.top,18,Math.max(18,r.height-18))};}
-    positionTrigger(){
-      if(this.trigger.hidden)return;
-      const {x,y}=this.relative(this.anchor||this.defaultAnchor());
-      this.trigger.style.left=clamp(x+17,12,Math.max(12,this.area.clientWidth-42))+'px';
-      this.trigger.style.top=clamp(y-39,64,Math.max(64,this.area.clientHeight-46))+'px';
-      this.trigger.setAttribute('aria-label','Eigenschappen van '+(this.context()?.name||'selectie')+' openen');
-    }
     renderWheel(){
       const ctx=this.context()||{type:'object',name:''};
       const isPoint=this.pointContext(ctx);
@@ -338,7 +314,7 @@
     openAt(anchor,focus=false){
       const ctx=this.context();if(!this.allowedContext(ctx))return;
       this.anchor=anchor||this.anchor||this.defaultAnchor();
-      this.opened=true;this.renderWheel();this.wheel.hidden=false;this.trigger.hidden=true;
+      this.opened=true;this.renderWheel();this.wheel.hidden=false;
       this.place();
       if(focus)this.wheel.querySelector('.radial-segment')?.focus?.({preventScroll:true});
     }
@@ -363,7 +339,6 @@
       this.detail.style.left=left+'px';
       this.detail.style.top=clamp(y-108,70,Math.max(70,area.height-245))+'px';
       this.detail.style.width=width+'px';
-      this.positionTrigger();
     }
     choose(action){
       const ctx=this.context();if(!ctx)return;
@@ -459,38 +434,12 @@
       this.close();
       this.app.startConstructionFromPoint(toolId,id);
     }
-    ensurePointLabels(o){
-      let section=this.panel.querySelector('[data-property-section="point-labels"]');
-      if(!section){
-        section=this.doc.createElement('details');
-        section.dataset.propertySection='point-labels';section.open=true;
-        const summary=this.doc.createElement('summary');
-        summary.textContent='Objectlabel';
-        const label=this.doc.createElement('label');
-        label.className='style-toggle';
-        const checkbox=this.doc.createElement('input');
-        checkbox.type='checkbox';checkbox.dataset.edit='showLabel';
-        label.append(checkbox,this.doc.createTextNode(' Objectnaam tonen'));
-        section.append(summary,label,text('p','help-text',
-          'Versleep het zichtbare naamlabel op het canvas om het te positioneren.',this.doc));
-        this.panel.append(section);
-      }
-      const input=section.querySelector('[data-edit="showLabel"]');
-      input.checked=!!o.showLabel;
-      input.disabled=o.locked||!this.app.allowed('object.setProperties',{
-        ids:[o.id],fields:[{path:'showLabel',value:!o.showLabel}]
-      });
-      return section;
-    }
     applyPointFilter(filter){
-      const o=this.context().objects[0];
       this.panel.hidden=filter==='construct';
       this.pointConstructPanel.hidden=filter!=='construct';
       if(filter==='construct'){this.renderPointConstructions();return;}
-      const labels=this.ensurePointLabels(o);
       for(const el of this.panel.children){
         const section=el.dataset?.propertySection;
-        if(el===labels){el.hidden=filter!=='labels';continue;}
         if(el.classList.contains('object-heading')){
           el.hidden=!['actions','all'].includes(filter);
           continue;
@@ -498,6 +447,7 @@
         if(filter==='all'){el.hidden=false;continue;}
         if(filter==='geometry')el.hidden=!['geometry','point-projections','circle-distribution'].includes(section);
         else if(filter==='appearance')el.hidden=section!=='appearance';
+        else if(filter==='relations')el.hidden=section!=='relations';
         else el.hidden=true;
       }
     }
@@ -557,13 +507,10 @@
     close(){
       this.drag=null;this.wheel.classList.remove('radial-is-dragging');
       this.opened=false;this.wheel.hidden=true;this.closeDetail();
-      this.trigger.hidden=!this.allowedContext(this.context());
-      if(!this.trigger.hidden)this.positionTrigger();
     }
     dispose(){
       this.close();
       this.bound.splice(0).forEach(fn=>fn());
-      this.trigger.hidden=true;
     }
   }
   MI.RadialProperties=RadialProperties;
