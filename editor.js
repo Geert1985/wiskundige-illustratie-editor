@@ -584,82 +584,58 @@
       this.invalidate();
     }
     setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.regionExtent=undefined;this.tool = tool;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
-    // UI-RADIAL-7B pilot: use the same construction workflow as the toolbar.
-    // Only the FIRST source point is prefilled. Remaining sources are picked
-    // by constructionClick() with the existing validation/permission contract.
-    startConstructionFromPoint(toolId,pointId){
-      if(typeof toolId!=='string'||!toolId.startsWith('construct:'))return false;
-      const kind=toolId.slice(10),o=this.engine.get(pointId);
-      if(!o||o.type!=='point'||this.selectedIds.length!==1||
-          this.selectedIds[0]!==pointId||!this.canvasSelectable(o)||
+    // UI-RADIAL-9: generic adapter for any document object accepted by a
+    // registered construction contract. The service owns source matching;
+    // this controller only stages the existing create/interaction workflow.
+    startContextConstruction(toolId,objectId,planKey){
+      const kind=typeof toolId==='string'&&toolId.startsWith('construct:')?
+        toolId.slice(10):null;
+      const source=kind&&this.engine.get(objectId);
+      if(!source||this.selectedIds.length!==1||
+          this.selectedIds[0]!==objectId||!this.canvasSelectable(source)||
           !this.toolCatalog.getTool(toolId)||!this.toolAllowed(toolId)||
-          MI.ConstructionService.contract(kind).sourceRoles[0]!=='point'||
-          !MI.ConstructionService.referencesForRole(o,'point',kind)
-            .some(ref=>ref.objectId===pointId&&ref.part==null)||
-          (this.runtime&&!this.capabilities(pointId).sourceTools.includes(toolId))){
-        this.status('Deze constructie is niet beschikbaar voor het geselecteerde punt.');
-        return false;
-      }
-      const selectionBefore=this.selectedIds.slice();
-      this.setTool(toolId);
-      if(this.tool!==toolId)return false;
-      this.interaction={mode:'construction',sources:[{objectId:pointId}],
-        selectionIdsBefore:selectionBefore,pointerId:null};
-      this.status('Startpunt '+(o.name||pointId)+' vastgelegd. '+this.constructionHint(kind,1));
-      this.invalidate();
-      return true;
-    }
-    // UI-RADIAL-8 — circular and linear construction adapter.
-    // Reuses the existing ConstructionService contract and construction.create
-    // command; never produces an unlinked geometric copy of the source.
-    startConstructionFromObject(toolId,objectId,sourceIndex=0,options={}){
-      if(typeof toolId!=='string'||!toolId.startsWith('construct:'))return false;
-      const kind=toolId.slice(10),source=this.engine.get(objectId);
-      if(!source||!['circle','line','straight','ray','vector'].includes(source.type)||
-          this.selectedIds.length!==1||this.selectedIds[0]!==objectId||
-          !this.canvasSelectable(source)||!this.toolCatalog.getTool(toolId)||
-          !this.toolAllowed(toolId)||!Number.isInteger(sourceIndex)||
           (this.runtime&&!this.capabilities(objectId).sourceTools.includes(toolId))){
         this.status('Deze constructie is niet beschikbaar voor het geselecteerde object.');
         return false;
       }
-      const contract=MI.ConstructionService.contract(kind);
-      if(sourceIndex<0||sourceIndex>=contract.sourceRoles.length)return false;
-      // A line segment can supply its two endpoints to the existing point/
-      // point midpoint and perpendicular-bisector recipes as a single action.
-      const endpointPair=options.endpoints===true&&source.type==='line'&&
-        sourceIndex===0&&['midpoint','perpendicularBisector'].includes(kind);
-      const ref={objectId};
-      if(!endpointPair&&!MI.ConstructionService.referencesForRole(
-          source,contract.sourceRoles[sourceIndex],kind)
-          .some(candidate=>candidate.objectId===objectId&&!candidate.part&&!candidate.index)){
+      const plan=MI.ConstructionService.contextualPlans(source,kind)
+        .find(option=>option.key===planKey);
+      if(!plan){
+        this.status('De geselecteerde constructiebron past niet bij dit gereedschap.');
         return false;
       }
-      const selectionBefore=this.selectedIds.slice();
-      const sources=endpointPair?[{objectId,part:'start'},{objectId,part:'end'}]:[ref];
-      if(endpointPair||(contract.sourceRoles.length===1&&
-          !MI.ConstructionService.pathKind(kind))){
+      // Single-source measurements and compound predefined endpoint plans
+      // are already complete, so use the usual document command directly.
+      if(plan.mode==='complete'){
         try{
           this.changeDocument(()=>{
-            this.selectedIds=this.execute('construction.create',{toolId,sources}).result.map(o=>o.id);
+            this.selectedIds=this.execute('construction.create',{
+              toolId,sources:plan.sources.map(ref=>({...ref}))
+            }).result.map(object=>object.id);
           });
           this.status('Gekoppelde constructie toegevoegd.');
           this.invalidate();
           return true;
-        }catch(error){this.status(error.message);this.invalidate();return false;}
+        }catch(error){
+          this.status(error.message);this.invalidate();return false;
+        }
       }
+      const selectionBefore=this.selectedIds.slice();
       this.setTool(toolId);
       if(this.tool!==toolId)return false;
       this.interaction={
-        mode:'construction',sources:sourceIndex===0?sources:[],
-        ...(sourceIndex>0?{radialPrefill:{index:sourceIndex,source:ref}}:{}),
-        ...(MI.ConstructionService.pathKind(kind)?{radialPlacement:true}:{}),
+        mode:'construction',
+        sources:plan.sourceIndex===0?plan.sources.map(ref=>({...ref})):[],
+        ...(plan.sourceIndex>0?{
+          radialPrefill:{index:plan.sourceIndex,source:{...plan.sources[0]}}
+        }:{}),
+        ...(plan.mode==='placement'?{radialPlacement:true}:{}),
         selectionIdsBefore:selectionBefore,pointerId:null
       };
-      const prompt=MI.ConstructionService.pathKind(kind)
-        ?'Klik op de lijn of cirkelrand om het punt te plaatsen.'
-        :this.constructionHint(kind,sourceIndex===0?1:0);
-      this.status((source.name||objectId)+' is vastgelegd. '+prompt);
+      const hint=plan.mode==='placement'
+        ?'Klik op het bronobject om de puntpositie vast te leggen.'
+        :this.constructionHint(kind,plan.sourceIndex===0?1:0);
+      this.status((source.name||objectId)+' is vastgelegd. '+hint);
       this.invalidate();
       return true;
     }
