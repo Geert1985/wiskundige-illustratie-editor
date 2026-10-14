@@ -31,3 +31,17 @@ Deze UI-RADIAL-4-implementatie bouwt voort op UI-RADIAL-3 en behoudt alle bestaa
 Het doel is de preview **visueel zo dicht mogelijk te benaderen met echte DOM/CSS/SVG-code**. Een exacte pixel-voor-pixel-identiteit met een gegenereerde rasterafbeelding is niet gegarandeerd: lettertype-rendering, de werkelijke canvasgrootte, browserzoom en viewport beïnvloeden de weergave.
 
 Op expliciet eerder verzoek zijn **geen geautomatiseerde tests of browsertests** uitgevoerd. Alleen de gepushte bronbestanden en branchverschillen zijn statisch gecontroleerd. Voer voor een merge handmatige browsercontrole uit voor categorieklikken, hover/focus, rechtsklikken, groepsnaam wijzigen, slepen via de zespuntsgreep, fullscreen, responsiveness en SVG/JSON-opslag.
+
+
+## UI-RADIAL-5 — visuele verfijning (14 oktober 2026)
+
+Op expliciet verzoek na beoordeling van de browserweergave zijn de onderstaande details verfijnd:
+
+- De standaardgrootte van het volledige wiel is **88%** van de UI-RADIAL-4-weergave (circa 12% kleiner); kleinere canvassen blijven adaptief schalen.
+- Het pictogram bij **Geometrie** is een herkenbare driehoek met cirkel in plaats van een abstracte ruit.
+- Het pictogram bij **Relaties** toont drie gekoppelde knooppunten in plaats van een bliksemsymbool.
+- Het centrale invoerveld voor de objectnaam is versmald van **159 px naar 143 px**.
+- De reeds aanwezige markering van de actieve categorie is **ongewijzigd** gebleven.
+- CSS- en JavaScript-cacheversies zijn bijgewerkt naar `ui-radial-5`.
+
+Alle aanpassingen betreffen presentatie. Er zijn geen objectmodellen, commandobewerkingen, constructierelaties of bestaande eigenschapscategorieën gewijzigd. **Geen tests uitgevoerd**, conform de eerdere afspraak. Deze branch is nog niet gemerged naar `main`.
