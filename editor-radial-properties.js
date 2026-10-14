@@ -337,8 +337,14 @@
       const left=(x+margin+width<=area.width-8)?x+margin:
         (x-margin-width>=8?x-margin-width:clamp(x-width/2,8,Math.max(8,area.width-width-8)));
       this.detail.style.left=left+'px';
-      this.detail.style.top=clamp(y-108,70,Math.max(70,area.height-245))+'px';
+      // The detail pane's scrollport must fit below its *actual* top edge,
+      // including the browser viewport when the canvas extends offscreen.
+      const viewportBottom=Math.min(area.height,this.win.innerHeight-area.top);
+      const available=Math.max(150,viewportBottom-12);
+      const top=clamp(y-108,12,Math.max(12,available-156));
+      this.detail.style.top=top+'px';
       this.detail.style.width=width+'px';
+      this.detail.style.maxHeight=Math.max(126,available-top-8)+'px';
     }
     choose(action){
       const ctx=this.context();if(!ctx)return;
@@ -360,6 +366,7 @@
     }
     showDetail(filter){
       this.detailMode=filter;this.detail.hidden=false;this.detail.dataset.radialFilter=filter;
+      this.detail.scrollTop=0;
       for(const button of this.wheel.querySelectorAll('[data-radial-action]'))
         button.setAttribute('aria-pressed',String(button.dataset.radialAction===filter));
       this.applyFilter(filter);this.place();
