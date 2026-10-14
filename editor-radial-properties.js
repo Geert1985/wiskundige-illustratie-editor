@@ -55,13 +55,13 @@
   // UI-RADIAL-4: native SVG icon shapes reproduce the approved navy/gold
   // concept without bitmaps, duplicate action engines or network dependencies.
   const SEGMENT_ICONS=Object.freeze({
-    relations:'<path d="m13.3 1.5-8.5 12H12l-1.2 9 8.5-12h-6.6l.6-9Z" fill="currentColor" stroke="none"/>',
+    relations:'<circle cx="5" cy="12" r="2.3"/><circle cx="19" cy="5" r="2.3"/><circle cx="19" cy="19" r="2.3"/><path d="M7.3 10.9 16.7 6.1M7.3 13.1l9.4 4.8M19 7.3v9.4"/>',
     appearance:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6.4"/>',
     measurement:'<path d="m2.8 16.5 13.7-13.7 4.7 4.7L7.5 21.2l-4.7-4.7Z"/><path d="m13.5 6 3.1 3.1M10.6 8.9l1.8 1.8M8 11.5l3.1 3.1M5.3 14.2l1.8 1.8"/>',
     labels:'<path d="M4 4.5h16M12 4.5V20M9 20h6" stroke-width="2.8"/>',
     actions:'<path d="M10 2.4h4l.65 2.7a8 8 0 0 1 2.1 1.2l2.6-1 2 3.5-2 1.9a8.5 8.5 0 0 1 0 2.5l2 1.9-2 3.5-2.6-1a8 8 0 0 1-2.1 1.2L14 21.6h-4l-.65-2.8a8 8 0 0 1-2.1-1.2l-2.6 1-2-3.5 2-1.9a8.5 8.5 0 0 1 0-2.5l-2-1.9 2-3.5 2.6 1a8 8 0 0 1 2.1-1.2L10 2.4Z"/><circle cx="12" cy="12" r="3.15"/>',
     all:'<circle cx="5.5" cy="12" r="2.15" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2.15" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="2.15" fill="currentColor" stroke="none"/>',
-    geometry:'<path d="m12 2 9 10-9 10-9-10 9-10Z"/><path d="m3 12 18 0"/>',
+    geometry:'<path d="M3 19 11 4l8 15Z"/><circle cx="18.3" cy="7" r="3.3"/><path d="M3 19h18"/>',
     editText:'<path d="M4 5h16M12 5v15M8 20h8" stroke-width="2.5"/>',
     grid:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>',
     axes:'<path d="M4 20V3M4 20h17M2 6l2-3 2 3M18 18l3 2-3 2"/>',
@@ -332,9 +332,9 @@
     }
     place(){
       const area=this.area.getBoundingClientRect(),p=this.relative(this.anchor||this.defaultAnchor());
-      // A viewport-scaled 460px design keeps its proportions in the editor.
+      // The approved design is presented at 88% by default; smaller viewports scale further.
       // Clamp to available room without rewriting the user's chosen anchor.
-      const scale=Math.min(1,Math.max(.48,Math.min((area.width-12)/460,(area.height-76)/460)));
+      const scale=Math.min(.88,Math.max(.42,Math.min((area.width-12)/460,(area.height-76)/460)));
       this.wheel.style.setProperty('--radial-scale',String(scale));
       const radius=230*scale;
       const x=clamp(p.x,Math.min(radius+8,area.width/2),Math.max(area.width/2,area.width-radius-8));
