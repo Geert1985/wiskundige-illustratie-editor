@@ -255,6 +255,12 @@
       const counter=this._nextId;
       try {const group={id:this._generateId('group'),name,members};const groups=MI.PersistentGroups.validate([...this.#groups,group],this.#objects);if(this.#layers.length)MI.DocumentLayers.validate(this.#layers,this.#objects,groups);this.#groups=freeze(groups);return clone(groups.at(-1));}catch(error){this._nextId=counter;throw error;}
     }
+    renameGroup(id,name) {
+      if(typeof id!=='string'||!this.#groups.some(g=>g.id===id))throw Error('Groep niet gevonden.');
+      if(typeof name!=='string'||!name.trim()||name.length>200)throw Error('Ongeldige groepsnaam.');
+      this.#groups=freeze(MI.PersistentGroups.validate(this.#groups.map(g=>g.id===id?{...g,name:name.trim()}:g),this.#objects));
+      return this.#groups.find(g=>g.id===id);
+    }
     createLayer(name) {
       if('layers' in this._extra || 'layerSchema' in this._extra)throw Error('Legacy laaggegevens moeten eerst expliciet worden gemigreerd.');
       const counter=this._nextId;try{const base=this.#layers.length?this.#layers:[{id:this._generateId('layer'),name:'Basislaag',visible:true,members:this.#objects.map(o=>o.id)}],layer={id:this._generateId('layer'),name,visible:true,members:[]};const layers=MI.DocumentLayers.validate([...base,layer],this.#objects,this.#groups);this.#layers=freeze(layers);return clone(layers.at(-1));}catch(error){this._nextId=counter;throw error;}
