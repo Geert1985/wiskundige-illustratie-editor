@@ -99,7 +99,9 @@
       // EditorApp's pointerup handler is registered earlier, so selection/drag
       // has already committed when this listener places the contextual trigger.
       this.listen(this.win,'pointerup',e=>{
-        if(!this.app.nodes.canvasWrap.contains(e.target)||this.app.tool!=='select')return;
+        const bounds=this.app.nodes.canvasWrap.getBoundingClientRect();
+        const inside=e.clientX>=bounds.left&&e.clientX<=bounds.right&&e.clientY>=bounds.top&&e.clientY<=bounds.bottom;
+        if(!inside||this.app.tool!=='select')return;
         if(e.button===2){
           // The existing right-drag rectangle selector owns active drags.
           // A simple right click with no active marquee opens the wheel.
