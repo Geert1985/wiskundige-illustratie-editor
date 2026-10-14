@@ -56,6 +56,6 @@
     if(!['circleSectorRegion','circleSegmentRegion'].includes(recipe.kind)||sources.length!==3||sources[0].type!=='circle'||sources[1].type!=='point'||sources[2].type!=='point'||!['directed','minor','major'].includes(recipe.extent||'directed'))return invalid('INVALID_REFERENCE');
     return circular(recipe.kind==='circleSectorRegion'?'sector':'segment',sources[0],{x:sources[0].cx,y:sources[0].cy},sources[1],sources[2],recipe.extent||'directed');
   }
-  function format(area,display,measurement){const d=areaDisplay(display);if(!d.visible)return '';const config=d.precision==null?measurement:{...(measurement||MI.MeasurementUnits.defaults),precision:d.precision};const value=MI.MeasurementUnits.format(area,'area',config);return d.mode==='equation'?'A = '+value:value;}
+  function format(area,display,measurement){const d=areaDisplay(display);if(!d.visible)return '';const precision=Math.min(3,Math.max(0,d.precision??2));const config={...(measurement||MI.MeasurementUnits.defaults),precision};const value=MI.MeasurementUnits.format(area,'area',config);return d.mode==='equation'?'A = '+value:value;}
   MI.RegionGeometry=Object.freeze({areaDisplay,resolve,format,limit:LIMIT});
 })(window);
