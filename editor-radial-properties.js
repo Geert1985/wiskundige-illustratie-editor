@@ -52,6 +52,19 @@
       ['actions','Acties','⚙'],['all','Alles','⋯']
     ]
   };
+  // Trusted, inline SVG outlines: captions remain accessible through each button's
+  // aria-label/title, without adding a second action or permission layer.
+  const ACTION_ICONS=Object.freeze({
+    labels:'<path d="M4 6h16M12 6v13M8 19h8"/>',
+    hide:'<path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7"/><path d="M9.9 5.4A10.9 10.9 0 0 1 12 5c5 0 9.5 4.5 10 7a10.6 10.6 0 0 1-3.3 4.7M6.2 6.2C4.4 7.3 2.7 9.3 2 12c.5 2.5 5 7 10 7 1.5 0 3-.4 4.3-1.1"/>',
+    show:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+    lock:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    unlock:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0"/>',
+    duplicate:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/>',
+    group:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',
+    ungroup:'<path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',
+    delete:'<path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/>'
+  });
   const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
   const text=(tag,cls,value,doc)=>{const el=doc.createElement(tag);if(cls)el.className=cls;el.textContent=value;return el;};
   const editableTarget=target=>!!target?.closest?.('input,textarea,select,[contenteditable="true"],dialog[open]');
@@ -254,7 +267,9 @@
         relations:'Relaties',organization:'Organisatie',axes:'Assen',grid:'Raster',units:'Schaal en eenheden',
         angleUnits:'Hoekeenheid',actions:'Acties'
       }[filter]||'Eigenschappen');
-      if(filter==='actions')this.renderQuickActions();
+      // Always reconcile quick actions when switching categories: the old
+      // buttons belong only to the 'Acties' detail, never to another card.
+      this.renderQuickActions();
     }
     applyFilter(filter){
       if(!this.panel||this.detail.hidden)return;
@@ -283,7 +298,6 @@
         if(filter==='appearance'&&el.classList.contains('object-style')){el.hidden=false;continue;}
         el.hidden=!(sectionNames&&sectionNames.includes(section));
       }
-      if(filter==='actions')this.renderQuickActions();
     }
     renderQuickActions(){
       const target=this.detail.querySelector('.radial-quick-actions');
@@ -293,19 +307,25 @@
       const c=this.context(),objects=this.app.selectedObjects();
       if(!c||c.type==='axes')return;
       const actions=[
-        ['labels','Label wisselen',objects.every(o=>!o.locked)],
-        ['visibility',objects.every(o=>o.visible!==false)?'Verbergen':'Tonen',true],
-        ['lock',objects.every(o=>o.locked)?'Ontgrendelen':'Vergrendelen',!this.app.runtime],
-        ['duplicate','Dupliceren',!this.app.runtime],
-        ['group','Groeperen',objects.length>1&&!this.app.runtime],
-        ['ungroup','Groep opheffen',!!this.app.selectedGroups?.()?.length&&!this.app.runtime],
-        ['delete','Verwijderen',!this.app.runtime&&objects.every(o=>!o.locked)]
+        ['labels','Label wisselen',objects.every(o=>!o.locked),'labels'],
+        ['visibility',objects.every(o=>o.visible!==false)?'Verbergen':'Tonen',true,objects.every(o=>o.visible!==false)?'hide':'show'],
+        ['lock',objects.every(o=>o.locked)?'Ontgrendelen':'Vergrendelen',!this.app.runtime,objects.every(o=>o.locked)?'unlock':'lock'],
+        ['duplicate','Dupliceren',!this.app.runtime,'duplicate'],
+        ['group','Groeperen',objects.length>1&&!this.app.runtime,'group'],
+        ['ungroup','Groep opheffen',!!this.app.selectedGroups?.()?.length&&!this.app.runtime,'ungroup'],
+        ['delete','Verwijderen',!this.app.runtime&&objects.every(o=>!o.locked),'delete']
       ];
-      for(const [id,title,enabled] of actions){
+      for(const [id,title,enabled,icon] of actions){
         if(!enabled)continue;
-        const button=text('button','secondary radial-quick-action',title,this.doc);
-        button.type='button';button.dataset.radialQuick=id;
-        target.append(button);
+        const button=this.doc.createElement('button');
+        button.type='button';button.className='secondary radial-quick-action';
+        button.dataset.radialQuick=id;button.title=title;
+        button.setAttribute('aria-label',title);
+        const graphic=this.doc.createElementNS('http://www.w3.org/2000/svg','svg');
+        graphic.setAttribute('viewBox','0 0 24 24');
+        graphic.setAttribute('aria-hidden','true');
+        graphic.innerHTML=ACTION_ICONS[icon];
+        button.append(graphic);target.append(button);
       }
     }
     quick(id){
