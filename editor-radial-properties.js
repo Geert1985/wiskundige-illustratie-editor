@@ -75,8 +75,8 @@
   const CENTER_CAPTIONS=Object.freeze({object:'OBJECT',linked:'CONSTRUCTIE',text:'TEKST',axes:'ASSENSTELSEL',multiple:'SELECTIE',group:'GROEP'});
   const SVG_NS='http://www.w3.org/2000/svg';
   const SEGMENT_SHAPE='M39 10 Q105 -1 171 10 Q201 14 191 48 L175 112 Q170 133 148 122 Q105 110 62 122 Q40 133 35 112 L19 48 Q9 14 39 10 Z';
-  // Point-only pilot: fixed six-sector presentation, no duplicate point cards.
-  const POINT_CONTENT=[
+  // UI-RADIAL-8 — one six-segment wheel for points, circles and linear geometry.
+  const CONTEXT_CONTENT=[
     ['construct','Constructie','⌘'],['appearance','Uiterlijk','◉'],
     ['geometry','Geometrie','◇'],['relations','Relaties','⌁'],
     ['actions','Acties','⚙'],['all','Alles','⋯']
@@ -105,7 +105,7 @@
       this.listen(this.wheel,'click',e=>{const button=e.target.closest('[data-radial-action]');if(button&&!button.disabled)this.choose(button.dataset.radialAction);});
       this.listen(this.pointConstructPanel,'click',e=>{
         const button=e.target.closest('[data-radial-construct]');
-        if(button&&!button.disabled)this.startPointConstruction(button.dataset.radialConstruct);
+        if(button&&!button.disabled)this.startContextConstruction(button);
       });
       this.listen(this.wheel,'change',e=>{if(e.target.matches('.radial-center-input'))this.rename(e.target.value);});
       this.listen(this.wheel,'keydown',e=>{if(e.target.matches('.radial-center-input')&&e.key==='Enter'){e.preventDefault();this.rename(e.target.value);e.target.blur();}});
@@ -237,9 +237,9 @@
     relative(p){const r=this.area.getBoundingClientRect();return {x:clamp(p.x-r.left,18,Math.max(18,r.width-18)),y:clamp(p.y-r.top,18,Math.max(18,r.height-18))};}
     renderWheel(){
       const ctx=this.context()||{type:'object',name:''};
-      const isPoint=this.pointContext(ctx);
-      const items=(isPoint?POINT_CONTENT:(CONTENT[ctx.type]||CONTENT.object)).map(item=>item.slice());
-      if(!isPoint&&ctx.type==='object'&&['point','polygon'].includes(ctx.objects?.[0]?.type)){
+      const supported=this.constructionContext(ctx);
+      const items=(supported?CONTEXT_CONTENT:(CONTENT[ctx.type]||CONTENT.object)).map(item=>item.slice());
+      if(!supported&&ctx.type==='object'&&['point','polygon'].includes(ctx.objects?.[0]?.type)){
         const i=items.findIndex(item=>item[0]==='measurement');
         if(i>=0)items[i]=['labels','Labels','T'];
       }
@@ -342,7 +342,7 @@
     }
     choose(action){
       const ctx=this.context();if(!ctx)return;
-      if(action==='construct'&&this.pointContext(ctx)){this.showDetail('construct');return;}
+      if(action==='construct'&&this.constructionContext(ctx)){this.showDetail('construct');return;}
       if(action==='editText'){
         if(ctx.objects?.length===1&&!ctx.objects[0].locked&&!ctx.objects[0].construction&&!ctx.objects[0].textBinding){this.close();this.app.openRichText(ctx.objects[0].id);}
         else this.showDetail('relations');
@@ -364,7 +364,7 @@
         button.setAttribute('aria-pressed',String(button.dataset.radialAction===filter));
       this.applyFilter(filter);this.place();
       this.detail.querySelector('.radial-detail-title').textContent=filter==='all'?'Alle eigenschappen':({
-        construct:'Constructie vanuit dit punt',appearance:'Uiterlijk',geometry:'Geometrie',measurement:'Metingen',labels:'Labels',
+        construct:'Constructies vanuit de selectie',appearance:'Uiterlijk',geometry:'Geometrie',measurement:'Metingen',labels:'Labels',
         relations:'Relaties',organization:'Organisatie',axes:'Assen',grid:'Raster',units:'Schaal en eenheden',
         angleUnits:'Hoekeenheid',actions:'Acties'
       }[filter]||'Eigenschappen');
@@ -372,72 +372,122 @@
     }
     // Only a single selected point is eligible in this pilot. Other object
     // types and multi-selection keep the previous radial behaviour untouched.
-    pointContext(ctx=this.context()){
+    // UI-RADIAL-8: supported single-object contexts only. The previous
+    // point implementation remains the first branch of the shared catalog.
+    constructionContext(ctx=this.context()){
       const o=ctx?.objects?.length===1?ctx.objects[0]:null;
-      return !!o&&o.type==='point'&&['object','linked'].includes(ctx.type)&&
-        this.app.selectedIds.length===1&&this.app.selectedIds[0]===o.id;
+      return !!o&&['point','circle','line','straight','ray','vector'].includes(o.type)&&
+        ['object','linked'].includes(ctx.type)&&this.app.selectedIds.length===1&&
+        this.app.selectedIds[0]===o.id;
     }
-    pointConstructions(ctx=this.context()){
-      if(!this.pointContext(ctx))return [];
-      const point=ctx.objects[0],app=this.app;
-      if(!app.canvasSelectable(point))return [];
-      return app.toolCatalog.list('sidebar').flatMap(category=>category.entries)
+    pointContext(ctx=this.context()){
+      return this.constructionContext(ctx)&&ctx.objects[0].type==='point';
+    }
+    contextConstructions(ctx=this.context()){
+      if(!this.constructionContext(ctx))return [];
+      const source=ctx.objects[0],app=this.app;
+      if(!app.canvasSelectable(source))return [];
+      const entries=app.toolCatalog.list('sidebar').flatMap(category=>category.entries)
         .filter(entry=>entry.status==='implemented'&&entry.id.startsWith('construct:'))
-        .filter(entry=>{
-          const kind=entry.id.slice(10),contract=MI.ConstructionService.contract(kind);
-          return contract.sourceRoles.length>1&&contract.sourceRoles[0]==='point'&&
-            MI.ConstructionService.referencesForRole(point,'point',kind)
-              .some(ref=>ref.objectId===point.id&&ref.part==null)&&
-            app.toolAllowed(entry.id)&&
-            (!app.runtime||app.capabilities(point.id).sourceTools.includes(entry.id));
-        });
+        .filter(entry=>app.toolAllowed(entry.id)&&
+          (!app.runtime||app.capabilities(source.id).sourceTools.includes(entry.id)));
+      const out=[];
+      for(const entry of entries){
+        const kind=entry.id.slice(10),contract=MI.ConstructionService.contract(kind);
+        // The normal point experience deliberately stays first-source only.
+        if(source.type==='point'){
+          if(contract.sourceRoles.length<=1||contract.sourceRoles[0]!=='point')continue;
+          if(MI.ConstructionService.referencesForRole(source,'point',kind)
+            .some(ref=>ref.objectId===source.id&&ref.part==null))
+            out.push({entry,sourceIndex:0,endpoints:false});
+          continue;
+        }
+        // Multi-point distribution has its own distribution transaction. A
+        // standalone construction.create would lack the required group data.
+        // Directed-angle picking requires an explicit first-arm direction.
+        if(['distributedPointOnCircle','angleDirections'].includes(kind))continue;
+        if(source.type==='line'&&['midpoint','perpendicularBisector'].includes(kind)){
+          out.push({entry,sourceIndex:0,endpoints:true});
+          continue;
+        }
+        const sourceIndex=contract.sourceRoles.findIndex(role=>
+          MI.ConstructionService.referencesForRole(source,role,kind)
+            .some(ref=>ref.objectId===source.id&&ref.part==null&&ref.index==null));
+        if(sourceIndex<0)continue;
+        out.push({entry,sourceIndex,endpoints:false});
+      }
+      return out;
     }
-    renderPointConstructions(){
+    renderContextConstructions(){
       const panel=this.pointConstructPanel;
-      if(!panel||this.detailMode!=='construct'||!this.pointContext()){
+      if(!panel||this.detailMode!=='construct'||!this.constructionContext()){
         if(panel)panel.hidden=true;
         return;
       }
-      const ctx=this.context(),items=this.pointConstructions(ctx);
+      const ctx=this.context(),items=this.contextConstructions(ctx);
       panel.hidden=false;panel.replaceChildren();
-      const lead=text('p','radial-construction-lead',
-        (ctx.name||ctx.id)+' is het eerste bronpunt. Kies een constructie:',this.doc);
-      panel.append(lead);
+      const object=ctx.objects[0],isPoint=object.type==='point';
+      panel.append(text('p','radial-construction-lead',
+        (ctx.name||ctx.id)+' is als constructiebron geselecteerd. Kies een gereedschap:',this.doc));
       if(!items.length){
         panel.append(text('p','radial-construction-empty',
-          'Geen toegestane constructies voor dit punt.',this.doc));
+          'Geen toegestane constructies voor dit object.',this.doc));
         return;
       }
       for(const item of items){
+        const {entry,sourceIndex,endpoints}=item;
         const button=this.doc.createElement('button');
         button.type='button';button.className='radial-construction-tool';
-        button.dataset.radialConstruct=item.id;
-        button.setAttribute('aria-label',item.label);
+        button.dataset.radialConstruct=entry.id;
+        button.dataset.radialSourceIndex=String(sourceIndex);
+        if(endpoints)button.dataset.radialEndpoints='true';
+        button.setAttribute('aria-label',entry.label);
         const ico=text('span','radial-construction-icon','',this.doc);
-        // Reuse the same trusted icon markup already present in the shared
-        // sidebar/fullscreen catalog, without duplicating tool definitions.
         const template=this.doc.createElement('template');
-        template.innerHTML=item.markup;
+        template.innerHTML=entry.markup;
         const drawing=template.content.querySelector('svg');
         if(drawing)ico.append(drawing.cloneNode(true));
         const info=text('span','radial-construction-description','',this.doc);
-        info.append(text('strong','',item.label,this.doc));
-        const hint=MI.ToolInstructions.constructionHint(item.id.slice(10),1);
-        info.append(text('small','',hint||'Selecteer het volgende bronobject.',this.doc));
+        info.append(text('strong','',entry.label,this.doc));
+        const kind=entry.id.slice(10),contract=MI.ConstructionService.contract(kind);
+        let hint;
+        if(endpoints)hint='Gebruikt direct de twee eindpunten van het lijnstuk.';
+        else if(MI.ConstructionService.pathKind(kind))
+          hint='Klik daarna op de lijn of cirkelrand voor de puntpositie.';
+        else if(contract.sourceRoles.length===1)hint='Direct uit de geselecteerde bron berekenen.';
+        else hint=MI.ToolInstructions.constructionHint(kind,sourceIndex===0?1:0)||
+          'Kies het volgende bronobject.';
+        if(!isPoint&&sourceIndex>0)hint+=' De selectie wordt daarna automatisch ingevuld.';
+        info.append(text('small','',hint,this.doc));
         button.append(ico,info);panel.append(button);
       }
     }
-    startPointConstruction(toolId){
+    startContextConstruction(button){
       const ctx=this.context();
-      if(!this.pointContext(ctx)||!this.pointConstructions(ctx).some(t=>t.id===toolId))return;
-      const id=ctx.objects[0].id;
+      if(!this.constructionContext(ctx))return;
+      const toolId=button.dataset.radialConstruct,sourceIndex=Number(button.dataset.radialSourceIndex);
+      const endpoints=button.dataset.radialEndpoints==='true';
+      const allowed=this.contextConstructions(ctx).some(item=>
+        item.entry.id===toolId&&item.sourceIndex===sourceIndex&&item.endpoints===endpoints);
+      if(!allowed)return;
+      const sourceId=ctx.objects[0].id;
       this.close();
-      this.app.startConstructionFromPoint(toolId,id);
+      if(this.pointContext(ctx)){
+        this.app.startConstructionFromPoint(toolId,sourceId);
+      }else{
+        this.app.startConstructionFromObject(toolId,sourceId,sourceIndex,{endpoints});
+      }
     }
-    applyPointFilter(filter){
+    applyContextFilter(filter){
+      const object=this.context().objects[0],isPoint=object.type==='point';
       this.panel.hidden=filter==='construct';
       this.pointConstructPanel.hidden=filter!=='construct';
-      if(filter==='construct'){this.renderPointConstructions();return;}
+      if(filter==='construct'){this.renderContextConstructions();return;}
+      const measurementSection=this.panel.querySelector('[data-property-section="labels"]');
+      if(measurementSection&&!isPoint){
+        const summary=measurementSection.querySelector('summary');
+        if(summary)summary.textContent=filter==='geometry'?'Metingen':'Label en meting';
+      }
       for(const el of this.panel.children){
         const section=el.dataset?.propertySection;
         if(el.classList.contains('object-heading')){
@@ -445,7 +495,10 @@
           continue;
         }
         if(filter==='all'){el.hidden=false;continue;}
-        if(filter==='geometry')el.hidden=!['geometry','point-projections','circle-distribution'].includes(section);
+        if(filter==='geometry')el.hidden=!([
+          'geometry','point-projections','circle-distribution',
+          ...(!isPoint?['labels']:[])
+        ].includes(section));
         else if(filter==='appearance')el.hidden=section!=='appearance';
         else if(filter==='relations')el.hidden=section!=='relations';
         else el.hidden=true;
@@ -453,8 +506,8 @@
     }
     applyFilter(filter){
       if(!this.panel||this.detail.hidden)return;
-      this.detail.dataset.radialContext=this.pointContext()?'point':'other';
-      if(this.pointContext()){this.applyPointFilter(filter);return;}
+      this.detail.dataset.radialContext=this.constructionContext()?'point':'other';
+      if(this.constructionContext()){this.applyContextFilter(filter);return;}
       this.panel.hidden=false;this.pointConstructPanel.hidden=true;
       const axesRoot=this.panel.querySelector('.axis-settings');
       if(axesRoot&&this.app.inspectorTarget==='axes'){
