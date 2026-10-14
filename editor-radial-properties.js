@@ -9,10 +9,10 @@
 
   const SECTIONS={
     geometry:['geometry','point-projections','circle-distribution'],
-    appearance:['appearance'],
+    appearance:['appearance','common'],
     measurement:['labels','angle-measurement','region'],
     relations:['relations','dynamic-text'],
-    labels:['labels','point-projections'],
+    labels:['labels','point-projections','common'],
     axes:['axes'],
     grid:['grid'],
     units:['units'],
@@ -228,7 +228,12 @@
       }
       if(action==='group'){if(ctx.objects?.length>=2){this.close();this.app.groupSelection();}return;}
       if(action==='ungroup'){this.close();this.app.ungroupSelection();return;}
-      if(action==='actions'){this.showDetail('actions');return;}
+      if(action==='appearance'&&ctx.type==='text'){
+        if(ctx.objects?.length===1&&!ctx.objects[0].locked&&!ctx.objects[0].construction&&!ctx.objects[0].textBinding){this.close();this.app.openRichText(ctx.objects[0].id);}
+        else this.showDetail('relations');
+        return;
+      }
+      if(action==='actions'){this.showDetail(ctx.type==='axes'?'all':'actions');return;}
       this.showDetail(action);
     }
     showDetail(filter){
@@ -243,9 +248,26 @@
     }
     applyFilter(filter){
       if(!this.panel||this.detail.hidden)return;
+      const axesRoot=this.panel.querySelector('.axis-settings');
+      if(axesRoot&&this.app.inspectorTarget==='axes'){
+        axesRoot.hidden=false;
+        for(const el of axesRoot.children){
+          const section=el.dataset.propertySection;
+          if(filter==='all'){el.hidden=false;continue;}
+          if(filter==='axes')el.hidden=!!section&&section!=='axes';
+          else if(filter==='grid')el.hidden=section!=='axes'&&section!=='grid';
+          else if(filter==='units')el.hidden=section!=='units';
+          else if(filter==='angleUnits')el.hidden=section!=='angle-units';
+          else el.hidden=false;
+        }
+        return;
+      }
       const sectionNames=SECTIONS[filter];
       for(const el of this.panel.children){
-        if(el.classList.contains('object-heading')){el.hidden=filter!=='all'&&filter!=='actions'&&filter!=='organization';continue;}
+        if(el.classList.contains('object-heading')){
+          el.hidden=!['all','actions','organization','labels'].includes(filter);
+          continue;
+        }
         if(filter==='all'){el.hidden=false;continue;}
         const section=el.dataset.propertySection;
         if(filter==='appearance'&&el.classList.contains('object-style')){el.hidden=false;continue;}
