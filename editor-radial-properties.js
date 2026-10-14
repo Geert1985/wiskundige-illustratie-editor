@@ -52,19 +52,6 @@
       ['actions','Acties','⚙'],['all','Alles','⋯']
     ]
   };
-  // Trusted, inline SVG outlines: captions remain accessible through each button's
-  // aria-label/title, without adding a second action or permission layer.
-  const ACTION_ICONS=Object.freeze({
-    labels:'<path d="M4 6h16M12 6v13M8 19h8"/>',
-    hide:'<path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7"/><path d="M9.9 5.4A10.9 10.9 0 0 1 12 5c5 0 9.5 4.5 10 7a10.6 10.6 0 0 1-3.3 4.7M6.2 6.2C4.4 7.3 2.7 9.3 2 12c.5 2.5 5 7 10 7 1.5 0 3-.4 4.3-1.1"/>',
-    show:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
-    lock:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
-    unlock:'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0"/>',
-    duplicate:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/>',
-    group:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',
-    ungroup:'<path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',
-    delete:'<path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/>'
-  });
   const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
   const text=(tag,cls,value,doc)=>{const el=doc.createElement(tag);if(cls)el.className=cls;el.textContent=value;return el;};
   const editableTarget=target=>!!target?.closest?.('input,textarea,select,[contenteditable="true"],dialog[open]');
@@ -79,7 +66,7 @@
       this.panel=app.nodes.selectionPanel;
       this.closeBtn=app.nodes.propertiesClose;
       if(!this.area||!this.trigger||!this.wheel||!this.detail||!this.panel)return;
-      this.bound=[];this.anchor=null;this.identity='';this.opened=false;this.detailMode=null;
+      this.bound=[];this.anchor=null;this.identity='';this.opened=false;this.detailMode=null;this.drag=null;
       this.menuType='';
       this.renderWheel();
       this.listen(this.trigger,'click',e=>{e.preventDefault();this.openAt(this.anchor,true);});
@@ -87,6 +74,27 @@
       this.listen(this.wheel,'click',e=>{const button=e.target.closest('[data-radial-action]');if(button&&!button.disabled)this.choose(button.dataset.radialAction);});
       this.listen(this.wheel,'change',e=>{if(e.target.matches('.radial-center-input'))this.rename(e.target.value);});
       this.listen(this.wheel,'keydown',e=>{if(e.target.matches('.radial-center-input')&&e.key==='Enter'){e.preventDefault();this.rename(e.target.value);e.target.blur();}});
+      // Explicit drag handle only: clicking another radial segment must never
+      // move the wheel. Store positions in viewport coordinates.
+      this.listen(this.wheel,'pointerdown',e=>{
+        if(e.button!==0||!e.target.closest('[data-radial-drag]')||!this.opened)return;
+        e.preventDefault();e.stopPropagation();
+        this.drag={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,
+          anchor:{...(this.anchor||this.defaultAnchor())}};
+        this.wheel.classList.add('radial-is-dragging');
+      });
+      this.listen(this.win,'pointermove',e=>{
+        if(!this.drag||e.pointerId!==this.drag.pointerId)return;
+        this.anchor={x:this.drag.anchor.x+e.clientX-this.drag.startX,
+          y:this.drag.anchor.y+e.clientY-this.drag.startY};
+        this.place();
+      });
+      const stopDrag=e=>{
+        if(!this.drag||e.pointerId!==this.drag.pointerId)return;
+        this.drag=null;this.wheel.classList.remove('radial-is-dragging');
+      };
+      this.listen(this.win,'pointerup',stopDrag);
+      this.listen(this.win,'pointercancel',stopDrag);
       this.listen(this.doc,'keydown',e=>{
         if(e.key!=='Escape'||this.doc.querySelector('dialog[open]'))return;
         if(!this.opened&&!this.detailMode)return;
@@ -100,6 +108,17 @@
         if(e.target.closest('#radialPropertiesWheel,#propertiesSidebar,#radialPropertiesTrigger'))return;
         this.close();
       },true);
+      // A right-click on selected geometry may open the wheel at pointerup,
+      // before the browser sends contextmenu. Its hit target may consequently
+      // be the overlay rather than canvasWrap. Capture it at document level.
+      this.listen(this.doc,'contextmenu',e=>{
+        if(this.app.tool!=='select'||this.app.navigationMode==='pan')return;
+        const rect=this.app.nodes.canvasWrap.getBoundingClientRect();
+        const inCanvas=e.clientX>=rect.left&&e.clientX<=rect.right&&
+          e.clientY>=rect.top&&e.clientY<=rect.bottom;
+        const onMenu=!!e.target.closest?.('#radialPropertiesWheel,#radialPropertiesTrigger,#propertiesSidebar');
+        if(inCanvas||onMenu)e.preventDefault();
+      },true);
       this.listen(this.app.nodes.canvasWrap,'contextmenu',e=>{
         if(e.defaultPrevented||this.app.tool!=='select'||this.app.navigationMode==='pan'||this.app.interaction)return;
         const hit=this.app.hitAt(e);
@@ -112,6 +131,10 @@
       // EditorApp's pointerup handler is registered earlier, so selection/drag
       // has already committed when this listener places the contextual trigger.
       this.listen(this.win,'pointerup',e=>{
+        // Popup pointer events must never rewrite the canvas anchor. The wheel
+        // stays stationary until the user uses its dedicated drag handle.
+        if(this.drag||this.opened||this.detailMode||
+          e.target.closest?.('#radialPropertiesWheel,#propertiesSidebar,#radialPropertiesTrigger'))return;
         const bounds=this.app.nodes.canvasWrap.getBoundingClientRect();
         const inside=e.clientX>=bounds.left&&e.clientX<=bounds.right&&e.clientY>=bounds.top&&e.clientY<=bounds.bottom;
         if(!inside||this.app.tool!=='select')return;
@@ -130,7 +153,6 @@
         this.positionTrigger();
       });
       this.listen(this.win,'resize',()=>{if(this.opened||this.detailMode)this.place();else this.positionTrigger();});
-      this.listen(this.area,'click',e=>{const b=e.target.closest('[data-radial-quick]');if(b)this.quick(b.dataset.radialQuick);});
       this.sync();
     }
     listen(node,type,fn,options){if(!node)return;node.addEventListener(type,fn,options);this.bound.push(()=>node.removeEventListener(type,fn,options));}
@@ -161,7 +183,7 @@
       const ctx=this.context(),valid=this.allowedContext(ctx);
       const id=valid?ctx.type+':'+ctx.id:'';
       if(id!==this.identity){this.identity=id;this.close();this.anchor=null;}
-      this.trigger.hidden=!valid;
+      this.trigger.hidden=!valid||this.opened;
       if(!valid)return;
       if(!this.anchor)this.anchor=this.defaultAnchor();
       this.positionTrigger();
@@ -174,9 +196,7 @@
       }
       if(this.detailMode){
         this.applyFilter(this.detailMode);
-        // Re-evaluate icon and tooltip states after existing commands change
-        // visibility, locking, grouping or the active selection.
-        if(this.detailMode==='actions')this.renderQuickActions();
+        // Reuse the inspector's existing small action toolbar.
       }
     }
     defaultAnchor(){
@@ -221,7 +241,11 @@
         :ctx.type!=='axes'&&ctx.type!=='multiple'&&ctx.objects?.length===1&&!ctx.objects[0].locked&&this.app.allowed('object.setProperties',{ids:[ctx.objects[0].id],fields:[{path:'name',value:ctx.objects[0].name}]});
       input.readOnly=!editable;
       if(!editable){input.title=ctx.type==='axes'?'Assenstelsel':'Niet wijzigbaar';}
-      hub.append(label,input);this.wheel.append(hub);
+      const grip=this.doc.createElement('button');
+      grip.type='button';grip.className='radial-drag-handle';grip.dataset.radialDrag='';
+      grip.textContent='⠿';grip.title='Sleep om het radiaalmenu te verplaatsen';
+      grip.setAttribute('aria-label','Radiaalmenu verplaatsen');
+      hub.append(grip,label,input);this.wheel.append(hub);
     }
     openAt(anchor,focus=false){
       const ctx=this.context();if(!this.allowedContext(ctx))return;
@@ -272,9 +296,7 @@
         relations:'Relaties',organization:'Organisatie',axes:'Assen',grid:'Raster',units:'Schaal en eenheden',
         angleUnits:'Hoekeenheid',actions:'Acties'
       }[filter]||'Eigenschappen');
-      // Always reconcile quick actions when switching categories: the old
-      // buttons belong only to the 'Acties' detail, never to another card.
-      this.renderQuickActions();
+      // The existing compact object-action toolbar is the sole action surface.
     }
     applyFilter(filter){
       if(!this.panel||this.detail.hidden)return;
@@ -304,49 +326,6 @@
         el.hidden=!(sectionNames&&sectionNames.includes(section));
       }
     }
-    renderQuickActions(){
-      const target=this.detail.querySelector('.radial-quick-actions');
-      if(!target)return;
-      target.replaceChildren();target.hidden=this.detailMode!=='actions';
-      if(target.hidden)return;
-      const c=this.context(),objects=this.app.selectedObjects();
-      if(!c||c.type==='axes')return;
-      const actions=[
-        ['labels','Label wisselen',objects.every(o=>!o.locked),'labels'],
-        ['visibility',objects.every(o=>o.visible!==false)?'Verbergen':'Tonen',true,objects.every(o=>o.visible!==false)?'hide':'show'],
-        ['lock',objects.every(o=>o.locked)?'Ontgrendelen':'Vergrendelen',!this.app.runtime,objects.every(o=>o.locked)?'unlock':'lock'],
-        ['duplicate','Dupliceren',!this.app.runtime,'duplicate'],
-        ['group','Groeperen',objects.length>1&&!this.app.runtime,'group'],
-        ['ungroup','Groep opheffen',!!this.app.selectedGroups?.()?.length&&!this.app.runtime,'ungroup'],
-        ['delete','Verwijderen',!this.app.runtime&&objects.every(o=>!o.locked),'delete']
-      ];
-      for(const [id,title,enabled,icon] of actions){
-        if(!enabled)continue;
-        const button=this.doc.createElement('button');
-        button.type='button';button.className='secondary radial-quick-action';
-        button.dataset.radialQuick=id;button.title=title;
-        button.setAttribute('aria-label',title);
-        const graphic=this.doc.createElementNS('http://www.w3.org/2000/svg','svg');
-        graphic.setAttribute('viewBox','0 0 24 24');
-        graphic.setAttribute('aria-hidden','true');
-        graphic.innerHTML=ACTION_ICONS[icon];
-        button.append(graphic);target.append(button);
-      }
-    }
-    quick(id){
-      const app=this.app,objects=app.selectedObjects(),ids=app.selectedIds.slice();
-      if(!ids.length||objects.length!==ids.length)return;
-      try{
-        if(id==='labels')app.setCommonProperty('showLabel',!objects.every(o=>o.showLabel));
-        else if(id==='visibility')app.changeDocument(()=>app.execute('object.setVisibility',{ids,value:!objects.every(o=>o.visible!==false)}));
-        else if(id==='lock')app.toggleLockSelection();
-        else if(id==='duplicate')app.duplicateSelection();
-        else if(id==='group')app.groupSelection();
-        else if(id==='ungroup')app.ungroupSelection();
-        else if(id==='delete')app.deleteSelection();
-        this.sync();
-      }catch(error){app.status(error.message);app.invalidate();}
-    }
     rename(name){
       const ctx=this.context();if(!ctx)return;
       const value=name.trim();
@@ -366,9 +345,9 @@
     }
     closeDetail(){
       this.detailMode=null;this.detail.hidden=true;
-      this.detail.querySelector('.radial-quick-actions')?.replaceChildren();
     }
     close(){
+      this.drag=null;this.wheel.classList.remove('radial-is-dragging');
       this.opened=false;this.wheel.hidden=true;this.closeDetail();
       this.trigger.hidden=!this.allowedContext(this.context());
       if(!this.trigger.hidden)this.positionTrigger();
