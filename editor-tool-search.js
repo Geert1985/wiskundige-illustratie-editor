@@ -1,5 +1,5 @@
 /* UI-LEFT-1: sidebar-only disclosure and live tool search.
- * Keeps the existing declarative tool catalog, tool IDs and split menus intact.
+ * Every tool is a standalone button under a collapsible category or subgroup.
  */
 (function (global) {
   'use strict';
@@ -42,15 +42,6 @@
   });
 
   const categoryLabel = category => category.querySelector(':scope > summary')?.firstChild?.textContent || '';
-  function entryLabels(entry) {
-    if (entry.matches('.tool-split')) {
-      const labels = Array.from(entry.querySelectorAll('[data-tool]'), button => button.dataset.tool + ' ' + button.textContent);
-      const main = entry.querySelector('[data-split-main]');
-      if (main) labels.push(main.textContent);
-      return labels;
-    }
-    return [entry.dataset.tool + ' ' + entry.textContent];
-  }
   function filter() {
     const query = normalize(search.value);
     if (!query) {
@@ -73,17 +64,16 @@
     let matches = 0;
     for (const category of categories) {
       const allCategory = matching(categoryLabel(category), query);
-      const entries = Array.from(category.querySelectorAll('.tool-grid > .tool, .tool-grid > .tool-split'));
+      const entries = Array.from(category.querySelectorAll('.tool-grid > .tool'));
       for (const entry of entries) {
         const subgroup = entry.closest('[data-tool-subgroup]');
         const allSubgroup = subgroup && matching(controls(subgroup).toggle.textContent, query);
-        const labels = entryLabels(entry);
-        const visible = allCategory || allSubgroup || labels.some(label => matching(label, query));
+        const visible = allCategory || allSubgroup || matching(entry.dataset.tool + ' ' + entry.textContent, query);
         setHidden(entry, !visible);
-        if (visible) matches += (allCategory || allSubgroup) ? (entry.matches('.tool-split') ? entry.querySelectorAll('[data-tool]').length : 1) : (entry.matches('.tool-split') ? labels.filter(label => matching(label, query)).length : 1);
+        if (visible) matches += 1;
       }
       for (const subgroup of category.querySelectorAll('[data-tool-subgroup]')) {
-        const visible = Array.from(subgroup.querySelectorAll('.tool-grid > .tool, .tool-grid > .tool-split')).some(entry => entry.dataset.searchHidden !== 'true');
+        const visible = Array.from(subgroup.querySelectorAll('.tool-grid > .tool')).some(entry => entry.dataset.searchHidden !== 'true');
         setHidden(subgroup, !visible);
         setExpanded(subgroup, visible);
       }
