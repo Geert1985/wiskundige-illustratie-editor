@@ -1083,3 +1083,242 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   .color-preview-chip{flex-basis:34px;width:34px;height:34px}
   .color-preview-item{gap:6px}
 }
+
+
+/* UI-PANEL-1 — unified navy/gold inspector design for all radial categories.
+   Presentation-only: native details, existing data-* controls and permissions. */
+.radial-detail-pane{
+  border:1px solid #cda955;
+  border-radius:15px;
+  background:linear-gradient(150deg,#122b3a 0%,#0d2431 68%,#102735 100%);
+  box-shadow:0 18px 46px #06141cc4,0 0 0 1px #f3d37c0d inset;
+  color:#e8f0f5;
+}
+.radial-detail-pane .radial-detail-heading{
+  min-height:49px;
+  background:linear-gradient(110deg,#203f50,#1c3748);
+  border-bottom:1px solid #476274;
+  color:#f6ce6c;
+  font-size:14px;
+  letter-spacing:.005em;
+}
+.radial-detail-pane .radial-detail-heading .panel-close{
+  width:30px;
+  height:30px;
+  background:#2a485b;
+  border:1px solid #607d8f;
+  border-radius:8px;
+  font-size:18px;
+  transition:background .12s,border-color .12s;
+}
+.radial-detail-pane .radial-detail-heading .panel-close:hover{
+  background:#385a6e;
+  border-color:#e9c46a;
+  filter:none;
+}
+.radial-detail-pane .selection-panel details[data-property-section]{
+  overflow:visible;
+  margin:0 0 12px;
+  padding:0 0 11px;
+  border:1px solid #36596a;
+  border-radius:11px;
+  background:linear-gradient(145deg,#183647,#112b3a);
+  box-shadow:0 1px 0 #ffffff09 inset;
+}
+.radial-detail-pane .selection-panel details[data-property-section]>summary{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:42px;
+  margin:0;
+  padding:10px 12px;
+  border-radius:10px;
+  color:#f4cc6b;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.35;
+  list-style:none;
+  cursor:pointer;
+  transition:background .15s;
+}
+.radial-detail-pane .selection-panel details[data-property-section]>summary::-webkit-details-marker{display:none}
+.radial-detail-pane .selection-panel details[data-property-section]>summary::before{
+  content:"";
+  flex:0 0 6px;
+  width:6px;
+  height:6px;
+  border-right:2px solid #f4cc6b;
+  border-bottom:2px solid #f4cc6b;
+  transform:rotate(-45deg);
+  transition:transform .14s;
+}
+.radial-detail-pane .selection-panel details[data-property-section][open]>summary::before{
+  transform:rotate(45deg);
+}
+.radial-detail-pane .selection-panel details[data-property-section][open]>summary{
+  border-bottom:1px solid #315163;
+  border-radius:10px 10px 0 0;
+}
+.radial-detail-pane .selection-panel details[data-property-section]>summary:hover{
+  background:#244457;
+}
+.radial-detail-pane .selection-panel details[data-property-section]>summary:focus-visible{
+  outline:2px solid #f6cf65;
+  outline-offset:-3px;
+}
+.radial-detail-pane .selection-panel details[data-property-section] .radial-property-icon{
+  flex:0 0 19px;
+  width:19px;
+  height:19px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.75;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.radial-detail-pane .selection-panel details[data-property-section]>:not(summary){
+  margin-left:12px;
+  margin-right:12px;
+}
+.radial-detail-pane .selection-panel details[data-property-section]>label:not(.style-toggle){
+  display:block;
+  margin-top:12px;
+  margin-bottom:10px;
+  color:#c4d3dc;
+  font-size:12px;
+  font-weight:500;
+}
+.radial-detail-pane .selection-panel details[data-property-section]>label.style-toggle{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:29px;
+  margin-top:10px;
+  margin-bottom:10px;
+  color:#e2ebef;
+  line-height:1.4;
+}
+.radial-detail-pane .selection-panel details[data-property-section]>label.style-toggle input[type=checkbox]{
+  flex:0 0 auto;
+  width:15px;
+  height:15px;
+  margin:0;
+  accent-color:#f6cf65;
+}
+.radial-detail-pane .selection-panel details[data-property-section] input:not([type=checkbox]):not([type=range]),
+.radial-detail-pane .selection-panel details[data-property-section] select,
+.radial-detail-pane .selection-panel details[data-property-section] textarea{
+  box-sizing:border-box;
+  width:100%;
+  min-height:35px;
+  margin-top:6px;
+  padding:7px 10px;
+  border:1px solid #4c6d80;
+  border-radius:8px;
+  background:#0b202c;
+  color:#f1f6f8;
+  font-size:12px;
+  font-family:inherit;
+}
+.radial-detail-pane .selection-panel details[data-property-section] input:not([type=checkbox]):not([type=range]):focus-visible,
+.radial-detail-pane .selection-panel details[data-property-section] select:focus-visible,
+.radial-detail-pane .selection-panel details[data-property-section] textarea:focus-visible{
+  outline:2px solid #f6cf65;
+  outline-offset:2px;
+}
+.radial-detail-pane .selection-panel details[data-property-section] .help-text{
+  position:relative;
+  padding:10px 10px 10px 34px;
+  border:1px solid #315468;
+  border-radius:8px;
+  background:#0d2533;
+  color:#afc5d4;
+  font-size:11px;
+  line-height:1.5;
+}
+.radial-detail-pane .selection-panel details[data-property-section] .help-text::before{
+  content:"i";
+  position:absolute;
+  left:11px;
+  top:11px;
+  display:grid;
+  place-items:center;
+  width:15px;
+  height:15px;
+  border:1px solid #81a6bc;
+  border-radius:50%;
+  color:#b5d2e4;
+  font-size:11px;
+  font-weight:700;
+  line-height:1;
+}
+.radial-detail-pane .selection-panel details[data-property-section="geometry"]>label:has(>input[type=number]){
+  display:grid;
+  grid-template-columns:minmax(22px,max-content) minmax(0,1fr);
+  align-items:center;
+  column-gap:12px;
+}
+.radial-detail-pane .selection-panel details[data-property-section="geometry"]>label:has(>input[type=number]) input{
+  min-width:0;
+  margin:0;
+  font-variant-numeric:tabular-nums;
+}
+.radial-detail-pane .selection-panel .object-style{
+  padding:0;
+  margin:8px 0 4px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+}
+.radial-detail-pane .selection-panel .inspector-color-row{
+  margin-top:12px;
+  margin-bottom:12px;
+}
+.radial-detail-pane .selection-panel .inspector-color{
+  border-color:#5d7686;
+  border-radius:8px;
+}
+.radial-detail-pane .selection-panel .stroke-slider,
+.radial-detail-pane .selection-panel .region-precision-slider{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:6px;
+}
+.radial-detail-pane .selection-panel .stroke-slider output,
+.radial-detail-pane .selection-panel .region-precision-slider output{
+  min-width:34px;
+  text-align:right;
+  color:#f2d27d;
+  font-size:11px;
+  font-variant-numeric:tabular-nums;
+}
+.radial-detail-pane .selection-panel .object-heading{
+  margin:0 0 13px;
+  padding:0 0 12px;
+  border-bottom:1px solid #395b6d;
+}
+.radial-detail-pane .selection-panel .object-kind{
+  color:#e5c56e;
+  font-size:11px;
+}
+.radial-detail-pane .selection-panel .object-name-input{
+  min-height:35px;
+  border:1px solid #557487;
+  border-radius:8px;
+  background:#0c2230;
+}
+.radial-detail-pane .selection-panel .object-actions button{
+  border-radius:8px;
+  border-color:#4a687a;
+  background:#223c4c;
+}
+.radial-detail-pane .selection-panel .object-actions button:hover:not(:disabled){
+  border-color:#f4cc6b;
+  background:#2e5062;
+}
+@media(max-width:760px){
+  .radial-detail-pane .selection-panel details[data-property-section]>summary{padding:9px 10px}
+  .radial-detail-pane .selection-panel details[data-property-section]>:not(summary){margin-left:10px;margin-right:10px}
+}
