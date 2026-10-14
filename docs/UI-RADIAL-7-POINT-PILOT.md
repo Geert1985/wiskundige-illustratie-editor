@@ -120,6 +120,9 @@ Bij een van deze geselecteerde objecten toont het zesdelige wiel: **Constructie 
 - **Lijnstuk als twee bronnen:** \`midpoint\` en \`perpendicularBisector\` gebruiken expliciet de bestaande begin-/eindpuntverwijzingen van het lijnstuk; er hoeven geen aparte puntobjecten aangemaakt te worden.
 - **Bewuste uitsluitingen:** \`distributedPointOnCircle\` vereist een afzonderlijke cirkelverdelings-/groepsoperatie; \`angleDirections\` vereist expliciete hoekarmrichting en mag niet op basis van een willekeurige oriëntatie worden ingevuld. Deze ontbreken daarom nog in de contextlijst, in plaats van een misleidende of ongeldige actie aan te bieden.
 
+
+- **Selectiegemak:** cirkel, lijnstuk, rechte, halfrechte en vector krijgen bij normale canvasselectie een gerichte 11px-hitzone als er geen eerder geldig exact object geraakt werd. Puntselectie en expliciete labels/eindpuntgrepen behouden hun eigen voorrang.
+
 ### Handmatige acceptatie na het uitchecken
 
 1. Rechtsklik op cirkel, lijnstuk, rechte, halfrechte en vector. Alle hebben **Constructie** en exclusieve categorieën. Er verschijnt geen los eigenschappenicoon.
