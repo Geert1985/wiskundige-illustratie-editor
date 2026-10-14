@@ -32,6 +32,7 @@ module.exports=async page=>{
  for(const [name,width,height] of [['desktop',1280,900],['tablet',768,900],['mobile',390,844]]){
   await page.setViewportSize({width,height});await page.reload();if(await page.locator('#toolsToggle').isVisible())await page.locator('#toolsToggle').click();
   await page.locator('[data-tool-category="constructies"] > summary').click();
+  await page.locator('[data-tool-category="constructies"] .tool-subgroup-toggle').evaluateAll(buttons=>buttons.forEach(button=>button.click()));
   const bounds=await page.evaluate(()=>{const s=document.querySelector('.sidebar'),b=s.getBoundingClientRect();return {sidebar:b.toJSON(),overflow:document.documentElement.scrollWidth>innerWidth,rows:[...document.querySelectorAll('#toolGrid .tool-subgroup > .tool-grid > .tool')].map(n=>n.getBoundingClientRect().toJSON())};});
   assert.equal(bounds.overflow,false);for(const row of bounds.rows){assert.ok(row.x>=bounds.sidebar.x);assert.ok(row.right<=bounds.sidebar.right+1);}
   await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-'+name+'.png')});
