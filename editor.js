@@ -181,6 +181,19 @@
         const position=this.transform()?.mathToScreen({x:selectedPathPoint.x,y:selectedPathPoint.y});
         if(position&&Math.hypot(position.x-event.clientX,position.y-event.clientY)<=8)return {object:selectedPathPoint,kind:'object'};
       }
+      // Points can be visually small or partially obscured by nearby SVG.
+      // Expand the hit radius, without hijacking draggable labels/endpoints.
+      if(this.tool==='select'&&this.navigationMode!=='pan'&&
+          !target?.closest?.('.object-label,.fzi-polygon-vertex,.fzi-line-endpoint')){
+        const t=this.transform();let nearest=null,nearestDistance=11;
+        for(const candidate of this.engine.model.objects){
+          if(candidate.type!=='point'||!this.canvasSelectable(candidate))continue;
+          const position=t?.mathToScreen({x:candidate.x,y:candidate.y});
+          const distance=position?Math.hypot(position.x-event.clientX,position.y-event.clientY):Infinity;
+          if(distance<nearestDistance){nearest=candidate;nearestDistance=distance;}
+        }
+        if(nearest)return {object:nearest,kind:'object'};
+      }
       const paintedObject=target?.closest?.('[data-object-id]'),painted=paintedObject&&n.canvas.contains(paintedObject)&&this.engine.get(paintedObject.getAttribute('data-object-id'));
       if(painted&&MI.LinearGeometry.isLinear(painted)) {
         let nearest=null,nearestDistance=8;
