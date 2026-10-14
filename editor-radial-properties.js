@@ -174,7 +174,13 @@
       this.trigger.setAttribute('aria-label','Eigenschappen van '+(this.context()?.name||'selectie')+' openen');
     }
     renderWheel(){
-      const ctx=this.context()||{type:'object',name:''},items=CONTENT[ctx.type]||CONTENT.object;
+      const ctx=this.context()||{type:'object',name:''};
+      const items=(CONTENT[ctx.type]||CONTENT.object).map(item=>item.slice());
+      // Do not offer an empty measurement card for points and plain polygons.
+      if(ctx.type==='object'&&['point','polygon'].includes(ctx.objects?.[0]?.type)){
+        const i=items.findIndex(item=>item[0]==='measurement');
+        if(i>=0)items[i]=['labels','Labels','T'];
+      }
       this.menuType=ctx.type;
       this.wheel.replaceChildren();
       const circle=text('div','radial-disc','',this.doc);circle.setAttribute('aria-hidden','true');this.wheel.append(circle);
