@@ -214,6 +214,14 @@
       if(this.canvasSelectable(object))return {object};
       const hit=point&&this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8});
       if(hit&&this.canvasSelectable(hit.object))return hit;
+      // Give thin circular and linear strokes a slightly wider pickup area
+      // in selection mode, without changing explicit label/endpoint handles.
+      if(point&&this.tool==='select'&&this.navigationMode!=='pan'&&
+          !target?.closest?.('.object-label,.fzi-polygon-vertex,.fzi-line-endpoint')){
+        const nearby=this.engine.selectAt(point.x,point.y,{transform,tolerancePx:11});
+        if(nearby&&['circle','line','straight','ray','vector'].includes(nearby.object?.type)&&
+            this.canvasSelectable(nearby.object))return nearby;
+      }
       return null;
     }
     cursorFor(hit) {
