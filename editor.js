@@ -557,6 +557,31 @@
       this.invalidate();
     }
     setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.regionExtent=undefined;this.tool = tool;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
+    // UI-RADIAL-7B pilot: use the same construction workflow as the toolbar.
+    // Only the FIRST source point is prefilled. Remaining sources are picked
+    // by constructionClick() with the existing validation/permission contract.
+    startConstructionFromPoint(toolId,pointId){
+      if(typeof toolId!=='string'||!toolId.startsWith('construct:'))return false;
+      const kind=toolId.slice(10),o=this.engine.get(pointId);
+      if(!o||o.type!=='point'||this.selectedIds.length!==1||
+          this.selectedIds[0]!==pointId||!this.canvasSelectable(o)||
+          !this.toolCatalog.getTool(toolId)||!this.toolAllowed(toolId)||
+          MI.ConstructionService.contract(kind).sourceRoles[0]!=='point'||
+          !MI.ConstructionService.referencesForRole(o,'point',kind)
+            .some(ref=>ref.objectId===pointId&&ref.part==null)||
+          (this.runtime&&!this.capabilities(pointId).sourceTools.includes(toolId))){
+        this.status('Deze constructie is niet beschikbaar voor het geselecteerde punt.');
+        return false;
+      }
+      const selectionBefore=this.selectedIds.slice();
+      this.setTool(toolId);
+      if(this.tool!==toolId)return false;
+      this.interaction={mode:'construction',sources:[{objectId:pointId}],
+        selectionIdsBefore:selectionBefore,pointerId:null};
+      this.status('Startpunt '+(o.name||pointId)+' vastgelegd. '+this.constructionHint(kind,1));
+      this.invalidate();
+      return true;
+    }
     begin(state, event) {
       this.clearHover();
       this.flushEdits();
