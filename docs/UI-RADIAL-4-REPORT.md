@@ -45,3 +45,19 @@ Op expliciet verzoek na beoordeling van de browserweergave zijn de onderstaande 
 - CSS- en JavaScript-cacheversies zijn bijgewerkt naar `ui-radial-5`.
 
 Alle aanpassingen betreffen presentatie. Er zijn geen objectmodellen, commandobewerkingen, constructierelaties of bestaande eigenschapscategorieën gewijzigd. **Geen tests uitgevoerd**, conform de eerdere afspraak. Deze branch is nog niet gemerged naar `main`.
+
+
+## UI-RADIAL-6 — Compacte afmetingen zoals eerste menu (14 oktober 2026)
+
+Op verzoek van de gebruiker is de goedgekeurde gebogen navy/gold-vorm behouden, maar de standaardafmetingen zijn teruggebracht naar de eerste compacte versie.
+
+- Maximale schaal `0.70` op de vectorbasis `460×460`: circa **322×322 px** wanneer er voldoende ruimte is; in kleine canvassen verder adaptief.
+- Segmentlabel: `16 px × .70 ≈ 11,2 px` effectief.
+- Segmenticoon: `35 px × .70 ≈ 24,5 px` effectief.
+- Centraal objectbijschrift: `14 px × .70 ≈ 9,8 px` effectief.
+- Centrale objectnaam: `18 px × .70 ≈ 12,6 px` effectief.
+- Centrale cirkel: `192 px × .70 ≈ 134 px`; centraal naamveld `143 px × .70 ≈ 100 px`.
+- De visuele geometrie, gouden omlijning, gekoppelde-knooppunten- en geometrie-iconen, actieve categorieweergave en bestaande interacties blijven intact.
+- Assetversie verhoogd naar `ui-radial-6`.
+
+**Validatie:** alleen GitHub-bestanden gecontroleerd; **geen tests of browseruitvoering**, conform eerdere afspraak. Nog niet gemerged naar `main`.
