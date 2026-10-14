@@ -52,6 +52,28 @@
       ['actions','Acties','⚙'],['all','Alles','⋯']
     ]
   };
+  // UI-RADIAL-4: native SVG icon shapes reproduce the approved navy/gold
+  // concept without bitmaps, duplicate action engines or network dependencies.
+  const SEGMENT_ICONS=Object.freeze({
+    relations:'<path d="m13.3 1.5-8.5 12H12l-1.2 9 8.5-12h-6.6l.6-9Z" fill="currentColor" stroke="none"/>',
+    appearance:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6.4"/>',
+    measurement:'<path d="m2.8 16.5 13.7-13.7 4.7 4.7L7.5 21.2l-4.7-4.7Z"/><path d="m13.5 6 3.1 3.1M10.6 8.9l1.8 1.8M8 11.5l3.1 3.1M5.3 14.2l1.8 1.8"/>',
+    labels:'<path d="M4 4.5h16M12 4.5V20M9 20h6" stroke-width="2.8"/>',
+    actions:'<path d="M10 2.4h4l.65 2.7a8 8 0 0 1 2.1 1.2l2.6-1 2 3.5-2 1.9a8.5 8.5 0 0 1 0 2.5l2 1.9-2 3.5-2.6-1a8 8 0 0 1-2.1 1.2L14 21.6h-4l-.65-2.8a8 8 0 0 1-2.1-1.2l-2.6 1-2-3.5 2-1.9a8.5 8.5 0 0 1 0-2.5l-2-1.9 2-3.5 2.6 1a8 8 0 0 1 2.1-1.2L10 2.4Z"/><circle cx="12" cy="12" r="3.15"/>',
+    all:'<circle cx="5.5" cy="12" r="2.15" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2.15" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="2.15" fill="currentColor" stroke="none"/>',
+    geometry:'<path d="m12 2 9 10-9 10-9-10 9-10Z"/><path d="m3 12 18 0"/>',
+    editText:'<path d="M4 5h16M12 5v15M8 20h8" stroke-width="2.5"/>',
+    grid:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>',
+    axes:'<path d="M4 20V3M4 20h17M2 6l2-3 2 3M18 18l3 2-3 2"/>',
+    units:'<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/>',
+    angleUnits:'<path d="M4 20V5M4 20h15M4 12a8 8 0 0 1 8 8"/>',
+    group:'<rect x="2.5" y="2.5" width="19" height="19" rx="2"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',
+    ungroup:'<path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',
+    organization:'<path d="M3 5h18M3 12h18M3 19h18"/>'
+  });
+  const CENTER_CAPTIONS=Object.freeze({object:'OBJECT',linked:'CONSTRUCTIE',text:'TEKST',axes:'ASSENSTELSEL',multiple:'SELECTIE',group:'GROEP'});
+  const SVG_NS='http://www.w3.org/2000/svg';
+  const SEGMENT_SHAPE='M39 10 Q105 -1 171 10 Q201 14 191 48 L175 112 Q170 133 148 122 Q105 110 62 122 Q40 133 35 112 L19 48 Q9 14 39 10 Z';
   const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
   const text=(tag,cls,value,doc)=>{const el=doc.createElement(tag);if(cls)el.className=cls;el.textContent=value;return el;};
   const editableTarget=target=>!!target?.closest?.('input,textarea,select,[contenteditable="true"],dialog[open]');
@@ -203,7 +225,7 @@
         const input=this.wheel.querySelector('.radial-center-input');
         if(input&&this.doc.activeElement!==input)input.value=ctx.name;
         const cap=this.wheel.querySelector('.radial-center-caption');
-        if(cap)cap.textContent=ctx.type==='axes'?'Document':ctx.type==='multiple'? 'Selectie':ctx.type==='group'?'Groep':ctx.type==='linked'?'Constructie':ctx.type==='text'?'Tekst':'Object';
+        if(cap)cap.textContent=CENTER_CAPTIONS[ctx.type]||'OBJECT';
       }
       if(this.detailMode){
         this.applyFilter(this.detailMode);
@@ -225,37 +247,75 @@
     renderWheel(){
       const ctx=this.context()||{type:'object',name:''};
       const items=(CONTENT[ctx.type]||CONTENT.object).map(item=>item.slice());
-      // Do not offer an empty measurement card for points and plain polygons.
       if(ctx.type==='object'&&['point','polygon'].includes(ctx.objects?.[0]?.type)){
         const i=items.findIndex(item=>item[0]==='measurement');
         if(i>=0)items[i]=['labels','Labels','T'];
       }
       this.menuType=ctx.type;
       this.wheel.replaceChildren();
-      const circle=text('div','radial-disc','',this.doc);circle.setAttribute('aria-hidden','true');this.wheel.append(circle);
-      items.forEach(([action,label,symbol],i)=>{
-        const node=this.doc.createElement('button');node.type='button';node.className='radial-segment';node.dataset.radialAction=action;
-        const angle=(-Math.PI/2)+i*2*Math.PI/items.length;
-        node.style.setProperty('--radial-x',Math.round(Math.cos(angle)*112)+'px');
-        node.style.setProperty('--radial-y',Math.round(Math.sin(angle)*112)+'px');
-        const ico=text('span','radial-segment-icon',symbol,this.doc);
-        const caption=text('span','radial-segment-text',label,this.doc);
-        node.append(ico,caption);node.title=label;
-        this.wheel.append(node);
+      // Cream ivory background, discrete spokes and golden outside circle.
+      // SVG geometry is a scalable decorative layer; real HTML buttons own input.
+      const backdrop=this.doc.createElementNS(SVG_NS,'svg');
+      backdrop.setAttribute('viewBox','0 0 460 460');
+      backdrop.setAttribute('class','radial-disc');
+      backdrop.setAttribute('aria-hidden','true');
+      backdrop.innerHTML='<defs><radialGradient id="fziRadialIvory"><stop offset="0%" stop-color="#fffdf6"/><stop offset="100%" stop-color="#ece7d8"/></radialGradient></defs>'
+        +'<circle cx="230" cy="230" r="209" fill="url(#fziRadialIvory)" stroke="#e8c35f" stroke-width="3.5"/>';
+      for(let i=0;i<6;i++){
+        const angle=(-120+i*60)*Math.PI/180;
+        const x1=230+Math.cos(angle)*90,y1=230+Math.sin(angle)*90;
+        const x2=230+Math.cos(angle)*207,y2=230+Math.sin(angle)*207;
+        const line=this.doc.createElementNS(SVG_NS,'line');
+        for(const [key,value] of Object.entries({x1,y1,x2,y2,stroke:'#aeb0ac','stroke-width':1.2,'stroke-opacity':.8}))line.setAttribute(key,String(value));
+        backdrop.append(line);
+      }
+      this.wheel.append(backdrop);
+      items.forEach(([action,label],i)=>{
+        const node=this.doc.createElement('button');
+        node.type='button';node.className='radial-segment';
+        node.dataset.radialAction=action;node.title=label;
+        node.setAttribute('aria-label',label);
+        node.setAttribute('aria-pressed',String(this.detailMode===action));
+        node.style.setProperty('--radial-angle',(360*i/items.length)+'deg');
+        if(i===0)node.classList.add('radial-segment-primary');
+
+        const frame=this.doc.createElementNS(SVG_NS,'svg');
+        frame.setAttribute('viewBox','0 0 210 140');
+        frame.setAttribute('class','radial-segment-skin');
+        frame.setAttribute('aria-hidden','true');
+        const shape=this.doc.createElementNS(SVG_NS,'path');
+        shape.setAttribute('d',SEGMENT_SHAPE);shape.setAttribute('class','radial-segment-silhouette');
+        frame.append(shape);
+        // Counter-rotation keeps the icon and text upright while the sculpted
+        // segment itself rotates around the hub.
+        const face=text('span','radial-segment-content','',this.doc);
+        const graphic=text('span','radial-segment-icon','',this.doc);
+        const svg=this.doc.createElementNS(SVG_NS,'svg');
+        svg.setAttribute('viewBox','0 0 24 24');
+        svg.setAttribute('aria-hidden','true');
+        svg.innerHTML=SEGMENT_ICONS[action]||SEGMENT_ICONS.geometry;
+        graphic.append(svg);
+        face.append(graphic,text('span','radial-segment-text',label,this.doc));
+        node.append(frame,face);this.wheel.append(node);
       });
       const hub=text('div','radial-center','',this.doc);
-      const label=text('span','radial-center-caption',ctx.type==='axes'?'Document':ctx.type==='multiple'?'Selectie':ctx.type==='group'?'Groep':'Object',this.doc);
-      const input=this.doc.createElement('input');input.type='text';input.className='radial-center-input';input.value=ctx.name;
+      const label=text('span','radial-center-caption',CENTER_CAPTIONS[ctx.type]||'OBJECT',this.doc);
+      const input=this.doc.createElement('input');
+      input.type='text';input.className='radial-center-input';input.value=ctx.name;
       input.setAttribute('aria-label','Naam geselecteerd object');input.maxLength=200;
       const editable=ctx.type==='group'
         ?!this.app.runtime&&this.app.allowed('group.rename',{id:ctx.id,name:ctx.name})
         :ctx.type!=='axes'&&ctx.type!=='multiple'&&ctx.objects?.length===1&&!ctx.objects[0].locked&&this.app.allowed('object.setProperties',{ids:[ctx.objects[0].id],fields:[{path:'name',value:ctx.objects[0].name}]});
       input.readOnly=!editable;
-      if(!editable){input.title=ctx.type==='axes'?'Assenstelsel':'Niet wijzigbaar';}
+      if(!editable)input.title=ctx.type==='axes'?'Assenstelsel':'Niet wijzigbaar';
       const grip=this.doc.createElement('button');
       grip.type='button';grip.className='radial-drag-handle';grip.dataset.radialDrag='';
-      grip.textContent='⠿';grip.title='Sleep om het radiaalmenu te verplaatsen';
+      grip.title='Sleep om het radiaalmenu te verplaatsen';
       grip.setAttribute('aria-label','Radiaalmenu verplaatsen');
+      const dots=text('span','radial-grip-dots','',this.doc);
+      dots.setAttribute('aria-hidden','true');
+      for(let i=0;i<6;i++)dots.append(text('i','radial-grip-dot','',this.doc));
+      grip.append(dots);
       hub.append(grip,label,input);this.wheel.append(hub);
     }
     openAt(anchor,focus=false){
@@ -271,14 +331,20 @@
     }
     place(){
       const area=this.area.getBoundingClientRect(),p=this.relative(this.anchor||this.defaultAnchor());
-      const offset=Math.max(0,Math.min(142,(Math.min(area.width,area.height)-320)/2));
-      const x=clamp(p.x,155,Math.max(155,area.width-155));
-      const y=clamp(p.y,155,Math.max(155,area.height-155));
+      // A viewport-scaled 460px design keeps its proportions in the editor.
+      // Clamp to available room without rewriting the user's chosen anchor.
+      const scale=Math.min(1,Math.max(.48,Math.min((area.width-12)/460,(area.height-76)/460)));
+      this.wheel.style.setProperty('--radial-scale',String(scale));
+      const radius=230*scale;
+      const x=clamp(p.x,Math.min(radius+8,area.width/2),Math.max(area.width/2,area.width-radius-8));
+      const y=clamp(p.y,Math.min(radius+8,area.height/2),Math.max(area.height/2,area.height-radius-8));
       this.wheel.style.left=x+'px';this.wheel.style.top=y+'px';
-      const width=Math.min(360,Math.max(270,area.width-18));
-      const left=(x+168+width<=area.width-8)?x+168:(x-168-width>=8?x-168-width:clamp(x-width/2,8,Math.max(8,area.width-width-8)));
+      const width=Math.min(365,Math.max(270,area.width-18));
+      const margin=radius+14;
+      const left=(x+margin+width<=area.width-8)?x+margin:
+        (x-margin-width>=8?x-margin-width:clamp(x-width/2,8,Math.max(8,area.width-width-8)));
       this.detail.style.left=left+'px';
-      this.detail.style.top=clamp(y-110,72,Math.max(72,area.height-235))+'px';
+      this.detail.style.top=clamp(y-108,70,Math.max(70,area.height-245))+'px';
       this.detail.style.width=width+'px';
       this.positionTrigger();
     }
@@ -301,6 +367,8 @@
     }
     showDetail(filter){
       this.detailMode=filter;this.detail.hidden=false;this.detail.dataset.radialFilter=filter;
+      for(const button of this.wheel.querySelectorAll('[data-radial-action]'))
+        button.setAttribute('aria-pressed',String(button.dataset.radialAction===filter));
       this.applyFilter(filter);this.place();
       this.detail.querySelector('.radial-detail-title').textContent=filter==='all'?'Alle eigenschappen':({
         appearance:'Uiterlijk',geometry:'Geometrie',measurement:'Metingen',labels:'Labels',
