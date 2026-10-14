@@ -2,6 +2,8 @@
 exports.choose=async(page,selector)=>{
  const button=page.locator(selector),category=await button.evaluate(el=>el.closest('[data-tool-category]')?.dataset.toolCategory||null);
  if(category && !(await page.locator(`[data-tool-category="${category}"]`).getAttribute('open')!==null))await page.locator(`[data-tool-category="${category}"]>summary`).click();
+ const subgroup=await button.evaluate(el=>el.closest('[data-tool-subgroup]')?.dataset.toolSubgroup||null);
+ if(subgroup && await page.locator(`[data-tool-subgroup="${subgroup}"] > .tool-subgroup-toggle`).getAttribute('aria-expanded')==='false')await page.locator(`[data-tool-subgroup="${subgroup}"] > .tool-subgroup-toggle`).click();
  const split=await button.evaluate(el=>el.closest('[data-split-menu]')?.dataset.splitMenu||null);if(split && !(await page.locator('#'+split+'ToolMenu').isVisible()))await page.locator('#'+split+'ToolToggle').click();
  await button.click();
 };
