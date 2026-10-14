@@ -1,0 +1,33 @@
+# UI-RADIAL-4 — Previewgetrouw, technisch programmeerbaar radiaalmenu
+
+**Datum:** 14 oktober 2026  
+**Basisbranch:** \`codex/ui-radial-context-properties\`  
+**Implementatiebranch:** \`codex/ui-radial-wheel-preview-design\`  
+**Status:** code gepusht naar nieuwe featurebranch; geen merge naar main.
+
+## Ontwerpdoel
+
+Vertaal de door de gebruiker goedgekeurde afbeelding van het radiaalmenu naar echte browsercomponenten, **zonder de afbeelding zelf als achtergrond of als knop te gebruiken**. De preview toont een elegante ivoorkleurige cirkel met gouden buitenring, zes donkerblauwe, afgeronde radiale segmenten, gouden pictogrammen en een centrale donkerblauwe cirkel met naamveld en zespunts-sleepgreep.
+
+Deze UI-RADIAL-4-implementatie bouwt voort op UI-RADIAL-3 en behoudt alle bestaande contextafhankelijke categorieën, inspectordetails, constructie- en groepsfunctionaliteit, permission checks, gegevenspersistente opdrachten en Undo/Redo. De permanente rechterbalk blijft verwijderd.
+
+## Wijzigingen
+
+- **\`editor-radial-properties.js\`**: zes SVG-vormsegmenten met gebogen trapeziumcontour, SVG-pictogrammen en semantische HTML-knoppen met \`aria-label\` en \`aria-pressed\`; ivoorkleurige cirkelachtergrond met gouden rand en zes spaken; dynamisch contextbijschrift (\`CONSTRUCTIE\`, \`OBJECT\`, \`TEKST\`, \`ASSENSTELSEL\`, \`SELECTIE\` en \`GROEP\`); zespunts-sleepgreep in midden; knoptekst tegenrotatie houdt labels rechtop; actieve sectie krijgt subtiele selectiefeedback.
+- **\`editor.css\`**: consolideert de verspreide eerdere radiale CSS-aanvullingen in één coherente \`UI-RADIAL-4\`-sectie. Schaalbare 460×460 vectorlayout, navy/ivory/gold, afgeronde SVG-wedges, zachte schaduwen, ivoorkleurige ring, goudomlijnde middenzone, centrering van naam en pictogrammen, toetsenbordfocus en responsive inspector.
+- **\`editor.html\`**: bijgewerkte CSS- en radiaalmodulecacheversie \`ui-radial-4\` voor het opnieuw laden van browsers.
+
+## Renderingcontract
+
+- **Geen bitmap-afhankelijkheid:** de goedgekeurde afbeeldingspreview is de visuele referentie, niet een noodzakelijke asset in het programma. Nieuwe objectnamen, andere categorieën, high DPI en browserzoom blijven daarom mogelijk.
+- **Eén bron voor gedrag:** \`CONTENT\`, \`choose()\`, \`showDetail()\`, de bestaande inspector en geautoriseerde commando's blijven leidend; alleen presentatie en positionering zijn vervangen.
+- **Vaste positie:** \`anchor\` verandert niet wanneer een categorie aangeklikt wordt; het bestaande sleepgreepje en de pijltjestoetsen verplaatsen het gehele wiel.
+- **Schaalbaarheid:** de interne vormgeving gebruikt vaste 460×460 vectorcoördinaten; \`place()\` past uitsluitend de globale schaal aan de canvasafmetingen aan.
+- **Bestaande quick actions:** de actie-detailkaart hergebruikt de reeds bestaande kleine inspector-iconen; er zijn geen extra grote duplicaatknoppen.
+- **Contextmenu:** documentcapture blokkeert het native browsercontextmenu binnen de selecteerbare canvas-/radiale regio, conform UI-RADIAL-3.
+
+## Aanvaarding en beperkingen
+
+Het doel is de preview **visueel zo dicht mogelijk te benaderen met echte DOM/CSS/SVG-code**. Een exacte pixel-voor-pixel-identiteit met een gegenereerde rasterafbeelding is niet gegarandeerd: lettertype-rendering, de werkelijke canvasgrootte, browserzoom en viewport beïnvloeden de weergave.
+
+Op expliciet eerder verzoek zijn **geen geautomatiseerde tests of browsertests** uitgevoerd. Alleen de gepushte bronbestanden en branchverschillen zijn statisch gecontroleerd. Voer voor een merge handmatige browsercontrole uit voor categorieklikken, hover/focus, rechtsklikken, groepsnaam wijzigen, slepen via de zespuntsgreep, fullscreen, responsiveness en SVG/JSON-opslag.
