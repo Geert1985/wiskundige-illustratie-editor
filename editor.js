@@ -38,7 +38,7 @@
       this.syncFullscreen(true);
       try{await this.document.documentElement.requestFullscreen?.();}catch(_){/* Canvas still fills the browser viewport when native fullscreen is unavailable. */}
     }
-    selectAxes() { this.closeDialogs(true);this.cancel();this.flushEdits();this.selectedIds=[];this.inspectorTarget='axes';this.axisMenuOpen=true;this.document.body?.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');this.invalidate(); }
+    selectAxes() { this.closeDialogs(true);this.cancel();this.flushEdits();this.selectedIds=[];this.inspectorTarget='axes';this.axisMenuOpen=true;this.document.body?.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.invalidate();this.radialProperties?.openForAxes(); }
     setNavigation(mode) { this.setTool('select');this.navigationMode=mode==='pan'?'pan':'select';this.clearHover();this.invalidate(); }
     setPresentationFlag(path,value) {
       if(!MI.PRESENTATION_FLAGS.includes(path)||typeof value!=='boolean')throw new MI.PermissionError('INVALID_COMMAND');
@@ -128,7 +128,7 @@
     }
     get selectedId() { return this.selectedIds[this.selectedIds.length-1] || null; }
     set selectedId(id) { this.selectedIds=id ? this.groupLeaves(id) : [];this.openFullscreenObjectProperties(); }
-    openFullscreenObjectProperties(){if(this.canvasFullscreen&&this.tool==='select'&&this.selectedIds.length===1&&['point','angle','text'].includes(this.engine.get(this.selectedIds[0])?.type)){this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');}}
+    openFullscreenObjectProperties(){this.radialProperties?.sync();}
     selectedObjects() { return this.selectedIds.map(id=>this.engine.get(id)).filter(Boolean); }
     groupIndex() {
       const groups=this.engine.model.groups||[],objects=this.engine.model.objects;
@@ -449,10 +449,12 @@
         if(event.type==='context-changed'||event.type==='disposed'){this.closeDialogs(true);}if(event.type==='context-changed'||event.type==='disposed'||this.interaction?.transaction){this.cancel();if(!this.toolAllowed(this.tool))this.tool='select';}
         this.selectedIds=this.selectedIds.filter(id=>this.capabilities(id).selectCanvas||this.capabilities(id).selectList);this.invalidate();
       }));
+      this.radialProperties=new MI.RadialProperties(this);
       this.invalidate();if(!this.runtime)this.savedDocument=JSON.stringify(this.engine.toJSON()); return this;
     }
     dispose() {
       this.closeDialogs(true); this.cancel(); this.flushEdits(); this.closeSplitMenu();this.closeCanvasTools();if(this.canvasFullscreen){this.syncFullscreen(false);if(this.document.fullscreenElement)this.document.exitFullscreen?.().catch(()=>{});}this.initialized = false; this.invalidateImport();
+      this.radialProperties?.dispose();this.radialProperties=null;
       for (const remove of this.listeners.splice(0)) remove();
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
       this.engine.renderer.preview = null; this.feedback = null;
@@ -973,6 +975,7 @@
       this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool && this.navigationMode!=="pan"));
       const navigationHeight=n.navigationTools?.parentElement?.offsetHeight;if(navigationHeight)this.document.documentElement?.style.setProperty("--navigation-height",navigationHeight+"px");
       this.restrictControls();this.renderSplitTools();this.renderCanvasTools();
+      this.radialProperties?.sync();
       n.crosshair.hidden = !this.interaction || this.interaction.mode !== "draw" || (this.feedback && this.feedback.snapped && r.showSnapPoints !== false);
       if (this.feedback && this.interaction && this.interaction.mode === "draw") { const p = this.transform().mathToScreen(this.feedback.point), rect = n.canvasWrap.getBoundingClientRect(); n.crosshair.style.left = p.x - rect.left + "px"; n.crosshair.style.top = p.y - rect.top + "px"; }
     }
