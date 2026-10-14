@@ -66,3 +66,27 @@ Er is **geen tweede constructie-engine** en geen wijziging van het document-/con
 10. Selecteer cirkel, rechte, groep of meerdere objecten: het oude radiaalmenu blijft intact.
 
 **Teststatus:** geen geautomatiseerde tests uitgevoerd, conform eerdere instructie. Deze branch is een gerichte **functionele pilot** voor visuele acceptatie, niet een gevalideerde release.
+
+
+## UI-RADIAL-7C — vlottere puntselectie en alleen rechtsklik (14 oktober 2026)
+
+**Gevraagd:** de puntmarkering vlotter kunnen selecteren en verslepen; geen permanent zichtbaar eigenschappenicoon; de puntcategorie Labels vervangen door Relaties.
+
+### Wijzigingen
+- Het losse `radialPropertiesTrigger`-element en de gerelateerde JS-/CSS-bediening zijn verwijderd. De radiale bediening wordt niet meer na een linkermuisklik naast de selectie getoond; links klikken en slepen blijven voor de normale canvasinteractie.
+- De bestaande rechtermuisknoproute opent rechtstreeks het radiaalmenu op een selecteerbaar canvasobject. Document-capture onderschept `contextmenu` om het browsermenu te blokkeren; `pointerup` blijft als fallback voor browsers waarbij `contextmenu` al tijdens de rechtsklikinteractie wordt verzonden. Rechts-sleep-kaderselectie mag geen radiaalmenu activeren.
+- In `EditorApp.hitAt` heeft een selecteerbaar punt tijdens selectiemodus een voorkeurszone van maximaal 11 CSS-pixels vanaf zijn weergegeven positie. Expliciete label-, veelhoekhoekpunt- en lijneindpuntgrepen behouden voorrang, om hun versleepfunctie niet onbedoeld te breken.
+- Voor het **puntobject** zijn de zes categorieën nu: **Constructie, Uiterlijk, Geometrie, Relaties, Acties, Alles**. Het eerdere, uitsluitend voor de pilot toegevoegde label-detailblok is verwijderd. Label tonen/verbergen blijft beschikbaar via het kleine icoon onder Acties (en in het volledige overzicht Alles).
+- De bestaande sectie `data-property-section="relations"` wordt opnieuw gebruikt voor bronrelaties, constructieparameters en laagtoewijzing. Geen tweede relaties- of objectmodel.
+- De cacheversies in `editor.html` zijn verhoogd naar `ui-radial-8`.
+
+### Aandachtspunten voor handmatige controle
+1. Linksklik op en sleep een vrij punt. Er mag geen apart eigenschappenicoon verschijnen.
+2. Rechtsklik op een geselecteerd en niet-geselecteerd punt. Alleen het WIE-radiaalmenu verschijnt, niet het browsercontextmenu.
+3. Rechts-sleep om een selectiegebied te trekken: geen radiaalmenu.
+4. Controleer onder Relaties onder meer de bestaande laaginstelling en eventuele constructiebronnen.
+5. Onder Acties: bestaande kleine iconen, inclusief label tonen/verbergen.
+6. Vergelijk Constructie, Geometrie, Uiterlijk en Alles met de eerdere UI-RADIAL-7A/B-pilot; overige objecttypen blijven hun bestaande categorieën behouden.
+7. Controleer interactie met overlappende objecten; de voorkeur voor punten geldt binnen 11 pixels, maar objectlabels/grepen zijn uitgezonderd.
+
+**Teststatus:** geen geautomatiseerde of browsertests uitgevoerd, conform eerdere afspraak. Bronbestanden en push zijn statisch gecontroleerd; niet gemerged naar `main`.
