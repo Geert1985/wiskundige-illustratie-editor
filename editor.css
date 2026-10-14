@@ -739,10 +739,10 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 }
 /* Actions remain in the shared small icon toolbar. The redundant name field
    from the old inspector heading is hidden specifically in point Actions. */
-.radial-detail-pane[data-radial-filter="actions"] #selectionPanel .object-heading>div:first-child{
+.radial-detail-pane[data-radial-context="point"][data-radial-filter="actions"] #selectionPanel .object-heading>div:first-child{
   display:none;
 }
-.radial-detail-pane[data-radial-filter="actions"] #selectionPanel .object-heading{
+.radial-detail-pane[data-radial-context="point"][data-radial-filter="actions"] #selectionPanel .object-heading{
   margin:0;
   padding:0;
   border:0;
