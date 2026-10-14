@@ -90,3 +90,47 @@ Er is **geen tweede constructie-engine** en geen wijziging van het document-/con
 7. Controleer interactie met overlappende objecten; de voorkeur voor punten geldt binnen 11 pixels, maar objectlabels/grepen zijn uitgezonderd.
 
 **Teststatus:** geen geautomatiseerde of browsertests uitgevoerd, conform eerdere afspraak. Bronbestanden en push zijn statisch gecontroleerd; niet gemerged naar `main`.
+
+
+## UI-RADIAL-8 — Cirkel en lineaire objecten (14 oktober 2026)
+
+**Status:** doorontwikkeling op **dezelfde branch** \`codex/ui-radial-7-point-context-constructions\`, geen merge naar main. Deze sectie is een aanvulling op de eerdere puntpilot, die behouden blijft.
+
+### Gedekte enkelvoudige selecties
+
+- \`point\` (eerder UI-RADIAL-7, ongewijzigde eerste-punt-bronvolgorde).
+- \`circle\` — cirkel.
+- \`line\` — lijnstuk.
+- \`straight\` — rechte.
+- \`ray\` — halfrechte.
+- \`vector\` — vector.
+
+Bij een van deze geselecteerde objecten toont het zesdelige wiel: **Constructie · Uiterlijk · Geometrie · Relaties · Acties · Alles**. De eerder verwijderde losse eigenschappenknop wordt niet teruggebracht; openen gebeurt door rechtsklikken op de geometrie. Categorieën blijven zonder overlap: **Maat- en meetinstellingen** voor lijn/cirkel vallen onder **Geometrie**, **Relaties** bevat bestaande constructiebronnen en laagtoewijzing, **Acties** gebruikt alleen de bestaande kleine acties (inclusief labels), **Alles** biedt het volledige bestaande overzicht. Het radiaalwiel behoudt de compacte navy/gold-UI.
+
+### Contextuele constructies uit bestaande toolcatalogus
+
+- Op basis van \`ToolCatalog.list('sidebar')\`, \`ConstructionService.contract(kind).sourceRoles\` en \`ConstructionService.referencesForRole\`; alleen **geïmplementeerde** en toegestane gereedschappen zijn zichtbaar.
+- **Cirkel:** onder meer punt op cirkel, raaklijn, snijpunt van twee cirkels, snijpunt lijn-cirkel, cirkelsector-/cirkelsegmentgebied, omtrek en oppervlakte (wanneer beschikbaar/geautoriseerd).
+- **Lijnstuk:** onder meer loodlijn, evenwijdige, lijnsnijpunten, lijn-cirkelsnijpunten, punt op lijnstuk, middenpunt, middelloodlijn en hoek t.o.v. x-as waar contract/gereedschap beschikbaar is.
+- **Rechte, halfrechte, vector:** toepasselijke lineaire constructies, bijvoorbeeld snijpunt, loodlijn, evenwijdige en hoek t.o.v. x-as. Halfrechte omvat indien beschikbaar ook oorsprong.
+- **Geen dubbele geometrische kern:** \`EditorApp.startConstructionFromObject()\` is een kleine adapter die de bron vastlegt en de bestaande \`constructionClick\`/\`construction.create\`-pijplijn hergebruikt.
+- **Bron op positie 2:** het geselecteerde object kan ook een latere bronrol vullen. Voor \`lineCircleIntersection\` kan de geselecteerde cirkel vooraf als tweede bron worden vastgelegd; de gebruiker kiest dan alleen nog de rechte.
+- **Punt op pad:** na keuze van een cirkel/lijnstuk kiest de gebruiker expliciet een plaats op de geometrie, binnen 12 schermpixels van rand of lijn. De bestaande \`projectParameter()\` berekent vervolgens de afhankelijke parameter; er ontstaat geen statisch kopiepunt.
+- **Gereedschappen met één bron** (zoals omtrek/oppervlakte/hoek t.o.v. x-as) worden rechtstreeks aangemaakt via de bestaande \`construction.create\`-opdracht, inclusief Undo/Redo en modelvalidatie.
+- **Lijnstuk als twee bronnen:** \`midpoint\` en \`perpendicularBisector\` gebruiken expliciet de bestaande begin-/eindpuntverwijzingen van het lijnstuk; er hoeven geen aparte puntobjecten aangemaakt te worden.
+- **Bewuste uitsluitingen:** \`distributedPointOnCircle\` vereist een afzonderlijke cirkelverdelings-/groepsoperatie; \`angleDirections\` vereist expliciete hoekarmrichting en mag niet op basis van een willekeurige oriëntatie worden ingevuld. Deze ontbreken daarom nog in de contextlijst, in plaats van een misleidende of ongeldige actie aan te bieden.
+
+### Handmatige acceptatie na het uitchecken
+
+1. Rechtsklik op cirkel, lijnstuk, rechte, halfrechte en vector. Alle hebben **Constructie** en exclusieve categorieën. Er verschijnt geen los eigenschappenicoon.
+2. Cirkel → **Punt op cirkel**: klik een plaats nabij de cirkelrand, controleer dynamische bronrelatie, versleep broncirkel, Undo/Redo.
+3. Cirkel → **Raaklijn**: kies een tweede punt buiten de cirkel en verifieer de raaklijn.
+4. Cirkel → **Snijpunt lijn-cirkel**: de cirkel moet vooraf als tweede bron vastliggen; kies een rechte en controleer het resultaat.
+5. Lijnstuk → **Middenpunt** en **Middelloodlijn**: resultaat volgt het lijnstuk.
+6. Lijnstuk → **Punt op lijnstuk**: klik nabij het segment, controleer het gekoppelde punt.
+7. Rechte → **Evenwijdige / Loodlijn**: kies nog een punt, controleer uitkomst. Herhaal waar zinvol met halfrechte/vector.
+8. **Geometrie** toont brongeometrie en maatinstellingen; **Relaties** bevat broninformatie en laagtoewijzing; **Acties** bevat compacte iconen en geen dubbele labels.
+9. Selecteer een punt: de reeds goedgekeurde UI-RADIAL-7A/B-functionaliteit blijft intact.
+10. Controleer onbevoegde/geblokkeerde/verborgen objecten, fullscreen, linksverslepen en contextueel rechtsklikgedrag.
+
+**Teststatus:** geen geautomatiseerde of browsertests uitgevoerd, conform de eerdere afspraak. De implementatie is alleen door bron-/GitHub-controle bekeken. Er is nog **geen releasevalidatie** of merge naar \`main\`.
