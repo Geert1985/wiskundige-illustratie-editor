@@ -397,7 +397,12 @@
       this.on(this.document,"click",e=>{if(this.splitMenuOpen&&!e.target.closest('.tool-split'))this.closeSplitMenu();if(n.fileMenu?.open && !e.target.closest('#fileMenu'))this.closeFileMenu();if(e.target.closest('#fileMenu button'))this.closeFileMenu();});
       this.on(n.selectionPanel, "input", e => {
         const distributionControl=e.target.closest('[data-circle-distribution]');if(distributionControl){if(!this.circleDistributionPreview)this.circleDistributionPreview={history:this.history.capture(),nextId:this.engine.model._nextId};const preview=this.circleDistributionPreview;this.engine.load(JSON.parse(preview.history.document));this.engine.model._nextId=preview.nextId;const object=this.engine.get(this.selectedId),prior=this.engine.model.circleDistributions.find(d=>d.pointIds.includes(object.id)),count=distributionControl.dataset.circleDistribution==='count'?distributionControl.valueAsNumber:(prior?.count||1),startAngle=distributionControl.dataset.circleDistribution==='startAngle'?distributionControl.valueAsNumber*Math.PI/180:(prior?.startAngle??2*Math.PI*(object.construction?.parameter||0));try{this.engine.setCircleDistribution(object.id,{count,startAngle});}catch(error){this.status(error.message);}const distributionCount=e.target.closest('[data-circle-distribution="count"]');if(distributionCount)distributionCount.parentElement.querySelector('output').textContent=distributionCount.value;this.renderCanvasPreview();return;}
-        const slider=e.target.closest('[data-style="strokeWidth"], [data-style="opacity"], [data-style="fontSize"]');
+        const regionPrecision=e.target.closest('[data-region-display="precision"]');
+         if(regionPrecision?.type==='range'){
+           const value=regionPrecision.parentElement.querySelector('output');
+           if(value)value.textContent=regionPrecision.value;
+         }
+         const slider=e.target.closest('[data-style="strokeWidth"], [data-style="opacity"], [data-style="fontSize"]');
         const pathSlider=e.target.closest('[data-path-parameter]');if(pathSlider?.hasAttribute?.('data-path-parameter')){pathSlider.parentElement.querySelector('output').textContent=Number((pathSlider.valueAsNumber*100).toFixed(1))+'%';}
         if(slider?.type==='range'){const value=slider.parentElement.querySelector('output');if(value)value.textContent=slider.value+(slider.dataset.style==='opacity'?'%':' px');}
       });
@@ -1040,6 +1045,9 @@
     }
     openColor(id,property=null) {
       this.cancel(); this.flushEdits(); const object=this.engine.get(id); if(!object || object.locked || !this.colorInput) return;
+      // Region fill is the primary visible color. The inspector's separate
+      // Randkleur button still requests stroke explicitly.
+      if(property==null&&object.type==='region')property='fill';
       this.colorId=id; this.colorProperty=property;
       const none=this.document.getElementById('colorNone');if(none)none.hidden=property!=='fill';
       let color=property ? object.style[property] : this.services.color.value(object);
@@ -1188,7 +1196,7 @@
       }
       html+='</details>';
       const style=object.style,esc=MI.escapeXml;
-      html+='<fieldset class="object-style"><legend>Stijl</legend><div class="inspector-color-row"><span>'+(object.type==='text'?'Tekstkleur':'Lijnkleur')+'</span><button type="button" class="secondary inspector-color" data-style-color="'+esc(object.id)+'" aria-label="'+(object.type==='text'?'Tekstkleur wijzigen':'Lijnkleur wijzigen')+'" title="Kleur wijzigen" style="--object-color:'+esc(object.type==='text'?style.fill:style.stroke)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
+      html+='<fieldset class="object-style"><legend>Stijl</legend><div class="inspector-color-row"><span>'+(object.type==='text'?'Tekstkleur':object.type==='region'?'Randkleur':'Lijnkleur')+'</span><button type="button" class="secondary inspector-color" data-style-color="'+esc(object.id)+'" aria-label="'+(object.type==='text'?'Tekstkleur wijzigen':'Lijnkleur wijzigen')+'" title="Kleur wijzigen" style="--object-color:'+esc(object.type==='text'?style.fill:style.stroke)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
       if(object.type==='text') html+='<label>Tekstgrootte<span class="stroke-slider"><input aria-label="Tekstgrootte" data-style="fontSize" type="range" min="1" max="'+Math.max(96,style.fontSize)+'" step="1" value="'+esc(style.fontSize)+'"><output>'+esc(style.fontSize)+' px</output></span></label>';
       else {
         html+='<label>Lijndikte<span class="stroke-slider"><input aria-label="Lijndikte" data-style="strokeWidth" type="range" min="0" max="'+Math.max(20,style.strokeWidth)+'" step="0.1" value="'+esc(style.strokeWidth)+'"><output>'+esc(style.strokeWidth)+' px</output></span></label>';
@@ -1202,7 +1210,21 @@
       if(object.type==='text')html='<details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       else html='<details data-property-section="appearance" open><summary>Uiterlijk</summary>'+html.slice(appearance)+'</details><details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       html=html.replace('<details data-property-section="labels" open><summary>Label en meting</summary></details>','');
-      const regionDisplay=object.type==='region'?(()=>{const d=object.areaDisplay,precision=d.precision==null?'':d.precision,pos=d.position;const extentControl=['circleSectorRegion','circleSegmentRegion'].includes(object.construction?.kind)&&!this.runtime?MI.ToolInstructions.extentControl(object.construction.extent,'data-region-extent',object.construction.kind):'';return extentControl+ '<details data-property-section="region" open><summary>Oppervlakte</summary><label class="style-toggle"><input type="checkbox" data-region-display="visible"'+(d.visible?' checked':'')+'>Oppervlakte weergeven</label><label>Weergave<select data-region-display="mode"><option value="value"'+(d.mode==='value'?' selected':'')+'>Alleen waarde</option><option value="equation"'+(d.mode==='equation'?' selected':'')+'>A = waarde</option></select></label><label>Precisie<input type="number" min="0" max="10" step="1" data-region-display="precision" value="'+precision+'" placeholder="Documentinstelling"></label><label>Labelpositie<select data-region-display="position.mode"><option value="auto"'+(pos.mode==='auto'?' selected':'')+'>Automatisch</option><option value="offset"'+(pos.mode==='offset'?' selected':'')+'>Handmatig</option></select></label>'+(pos.mode==='offset'?'<label>Horizontale offset<input type="number" step="0.1" data-region-display="position.dx" value="'+pos.dx+'"></label><label>Verticale offset<input type="number" step="0.1" data-region-display="position.dy" value="'+pos.dy+'"></label>':'')+'<output>'+MI.escapeXml(object.constructionValid===false?'Niet beschikbaar':MI.RegionGeometry.format(object.regionArea,d,this.engine.model.meta.measurement))+'</output></details>';})():'';
+      const regionDisplay=object.type==='region'?(()=>{
+        const d=object.areaDisplay;
+        // Null/legacy precision still has an effective default of 2 decimals;
+        // old documents with values >3 remain loadable, but the current UI
+        // intentionally exposes only the requested 0..3 range.
+        const precision=Math.min(3,Math.max(0,d.precision??2));
+        const extentControl=['circleSectorRegion','circleSegmentRegion'].includes(object.construction?.kind)&&!this.runtime
+          ?MI.ToolInstructions.extentControl(object.construction.extent,'data-region-extent',object.construction.kind):'';
+        const visible='<label class="style-toggle"><input type="checkbox" data-region-display="visible"'+(d.visible?' checked':'')+'>Oppervlakte weergeven</label>';
+        const mode='<label>Weergave<select data-region-display="mode"><option value="value"'+(d.mode==='value'?' selected':'')+'>Alleen waarde</option><option value="equation"'+(d.mode==='equation'?' selected':'')+'>A = waarde</option></select></label>';
+        const slider='<label>Precisie (decimalen)<span class="region-precision-slider"><input type="range" min="0" max="3" step="1" data-region-display="precision" aria-label="Precisie oppervlakte: aantal decimalen" value="'+precision+'"><output aria-live="polite">'+precision+'</output></span></label>';
+        const help='<p class="help-text">Versleep het oppervlaktelabel rechtstreeks op het canvas om het te verplaatsen.</p>';
+        const output='<output>'+MI.escapeXml(object.constructionValid===false?'Niet beschikbaar':MI.RegionGeometry.format(object.regionArea,d,this.engine.model.meta.measurement))+'</output>';
+        return extentControl+'<details data-property-section="region" open><summary>Oppervlakte</summary>'+visible+mode+slider+help+output+'</details>';
+      })():'';
       panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+regionDisplay+html;
     }
     async exportImage(kind){
