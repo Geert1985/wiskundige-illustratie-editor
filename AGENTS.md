@@ -24,6 +24,14 @@
 - **Groepen en lagen:** behoud bestaande groepsnaam, laagtoewijzing, verslepen tussen lagen, selectie-, lock- en geschiedenissemantiek.
 - **Beperkte uitbreiding:** implementeer alleen gevraagde wijzigingen; geen grootschalige refactoring, schemawijziging, nieuwe permissions, merge of implementatie van toekomstige milestones zonder expliciete opdracht.
 
+## UI-RADIAL-10 — lang contextmenu en dynamische regiolabels (2026-10-14)
+
+- **Viewport:** het zwevende constructie-/eigenschappenpaneel moet zelf scrolbaar zijn en zijn `maxHeight` berekenen **ná** het vaststellen van de verticale positie, binnen canvas en werkelijk zichtbaar browservenster. Titel sticky, scrollbar zichtbaar en scrollpositie resetten bij nieuwe categorie. Zie [UI-RADIAL-10-verslag](docs/UI-RADIAL-10-REGION-LABEL-AND-SCROLL.md).
+- **Regiostijl:** bij `region` is de standaard kleuractie **Vulkleur** (`style.fill`), randkleur (`style.stroke`) is apart; expliciet `fill='none'` blijft transparant. Hergebruik de bestaande kleurenpicker, validatie en Undo/Redo.
+- **Oppervlakteweergave:** precisie voor cirkelsector/-segment en overige regio-oppervlakten via **slider 0–3 hele decimalen, standaard effectief 2**. De oude `precision:null` en `areaDisplay.position` mogen zonder schema-breaking migratie worden gelezen.
+- **Labelpositie:** de oppervlakte van een regio is geen apart besturingsmechanisme. `renderer.renderLabel`, `.object-label`, `data-label-id`, de bestaande muiscontroller en de normale `labelOffsetX/Y`-eigenschappen verzorgen selectie, versleping, permissies en Undo/Redo. **Geen Labelpositie-dropdown/offsetvelden** voor regiogebieden opnieuw introduceren. Behoud oude opgeslagen offsets bij import voor visuele compatibiliteit.
+- **Status:** UI-RADIAL-10 is op ontwikkelbranch geïmplementeerd, niet naar `main` gemerged, en de nieuwe fixes zijn nog niet handmatig beoordeeld of geautomatiseerd getest.
+
 ## Nieuwe gereedschappen en objecttypen — ontwikkelchecklist
 
 1. Registreer het object en de geometrische/constructiesemantiek in de **bestaande** model-/servicecontracten.
