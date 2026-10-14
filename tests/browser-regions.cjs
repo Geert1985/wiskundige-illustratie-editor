@@ -11,6 +11,13 @@ module.exports=async page=>{
  await click({x:-1,y:0});
  let doc=await saved(),polygon=doc.objects.find(o=>o.construction?.kind==='polygonRegion');assert.ok(polygon);assert.equal(polygon.type,'region');assert.deepEqual(polygon.construction.sources,[{objectId:'poly'}]);assert.equal(doc.version,8);assert.equal(doc.regionSchema,1);assert.equal(doc.constructionSchema,5);
  const polygonId=polygon.id;
+ await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:circleSectorRegion"]');
+ await click({x:2,y:-2});await click({x:4,y:0});await click({x:2,y:2});
+ const directedDoc=await saved(),directed=directedDoc.objects.find(o=>o.construction?.kind==='circleSectorRegion');
+ assert.ok(directed);assert.equal(directed.construction.extent,'directed');
+ assert.ok(Math.abs(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).regionArea,directed.id)-Math.PI)<1e-12);
+ await page.locator('#undoBtn').click();assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id),directed.id),null);
+ await page.locator('#redoBtn').click();assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).construction.extent,directed.id),'directed');
  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:circleSegmentRegion"]');await click({x:2,y:-2});await click({x:4,y:0});await page.keyboard.down('Shift');await click({x:2,y:2});await page.keyboard.up('Shift');
  let uiDoc=await saved(),uiSegment=uiDoc.objects.find(o=>o.construction?.kind==='circleSegmentRegion');assert.ok(uiSegment);assert.equal(uiSegment.construction.extent,'major');assert.ok(Math.abs((await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).regionArea,uiSegment.id))-(3*Math.PI+2))<1e-12);
  const uiSegmentId=uiSegment.id;await page.locator('#undoBtn').click();assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id),uiSegmentId),null);await page.locator('#redoBtn').click();assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).id,uiSegmentId),uiSegmentId);
@@ -54,6 +61,31 @@ module.exports=async page=>{
   return {version:saved.version,textSchema:saved.textSchema,constructionSchema:saved.constructionSchema,roundtrip:JSON.stringify(a.engine.toJSON())===encoded,rejected,atomic,hits,richRendered:/data-rich-text=/.test(a.engine.renderSVG())&&/2,00/.test(a.engine.renderSVG()),kinds:saved.objects.map(o=>o.construction?.kind).filter(Boolean)};
  });
  assert.equal(compatibility.version,8);assert.equal(compatibility.textSchema,3);assert.equal(compatibility.constructionSchema,5);assert.equal(compatibility.roundtrip,true);assert.equal(compatibility.rejected,8);assert.equal(compatibility.atomic,true);assert.ok(compatibility.hits.every(Boolean));assert.equal(compatibility.richRendered,true);assert.ok(compatibility.kinds.includes('polygonRegion'));assert.ok(compatibility.kinds.includes('circleSectorRegion'));assert.ok(compatibility.kinds.includes('angleDirections'));
+ for(const kind of ['circleSectorRegion','circleSegmentRegion']){
+  await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[{id:'C',type:'circle',cx:0,cy:0,r:2},{id:'A',type:'point',x:2,y:0},{id:'B',type:'point',x:0,y:-2}]}));
+  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:'+kind+'"]');
+  await page.locator('#toolInstructions [data-region-create-extent]').selectOption('minor');
+  await click({x:-2,y:0});await click({x:2,y:0});await click({x:0,y:-2});
+  let doc=await saved(),r=doc.objects.find(o=>o.type==='region');assert.ok(r);assert.equal(r.construction.extent,'minor');
+  assert.ok(Math.abs(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).regionArea,r.id)-(kind==='circleSectorRegion'?Math.PI:Math.PI-2))<1e-12);
+  await page.evaluate(id=>FZI.MathIllustration.editor.selectObject(id),r.id);
+  await page.locator('[data-region-extent]').selectOption('directed');
+  assert.equal((await saved()).objects.find(o=>o.id===r.id).construction.extent,'directed');
+  assert.ok(Math.abs(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).regionArea,r.id)-(kind==='circleSectorRegion'?3*Math.PI:3*Math.PI+2))<1e-12);
+  await page.locator('#undoBtn').click();assert.equal((await saved()).objects.find(o=>o.id===r.id).construction.extent,'minor');
+  await page.locator('#redoBtn').click();assert.equal((await saved()).objects.find(o=>o.id===r.id).construction.extent,'directed');
+  await page.locator('[data-region-extent]').selectOption('minor');
+  const pixels=await page.evaluate(async({id,kind})=>{
+   const a=FZI.MathIllustration.editor,e=a.engine;e.renderer.showGrid=false;e.renderer.showAxes=false;
+   for(const o of e.model.objects)if(o.id!==id)e.update(o.id,{visible:false});
+   e.update(id,{style:{fill:'#ff0000',stroke:'#ff0000',opacity:1}});
+   const svg=e.renderSVG(),blob=await FZI.MathIllustration.ExportService.png(svg,{width:e.renderer.width,height:e.renderer.height});
+   const bitmap=await createImageBitmap(blob),canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;const ctx=canvas.getContext('2d');ctx.drawImage(bitmap,0,0);
+   const red=p=>{const pixel=ctx.getImageData(Math.round(e.renderer.mapX(p.x)),Math.round(e.renderer.mapY(p.y)),1,1).data;return pixel[0]>200&&pixel[1]<80&&pixel[2]<80;};
+   return {inside:red(kind==='circleSectorRegion'?{x:.8,y:-.8}:{x:1.3,y:-1.3}),outside:red({x:-.8,y:.8}),outsideDisk:red({x:2.2,y:-2.2}),svg};
+  },{id:r.id,kind});
+  assert.equal(pixels.inside,true);assert.equal(pixels.outside,false);assert.equal(pixels.outsideDisk,false);assert.match(pixels.svg,/data-region-contour/);
+ }
  await page.evaluate(()=>localStorage.removeItem(FZI.MathIllustration.DraftStore.key));
  return {canvasToolAndSelection:'passed',threeRegionRecipes:'passed',independentAreaReferences:'passed',dynamicInvalidRecoveryRoundtrip:'passed',directDragBlocked:'passed',fullDiskSvg:'passed',offlinePng:'passed',jsonRoundtrip:'passed',schema5AxesAndRichV8Roundtrip:'passed',invalidTextSchemaAtomic:'passed',concaveAndSegmentBoundarySelection:'passed',sectorSvgAndOfflinePng:'passed'};
 };

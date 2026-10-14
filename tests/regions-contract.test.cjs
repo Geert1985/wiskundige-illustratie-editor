@@ -35,10 +35,10 @@ test('sector SVG arcs follow the source circle in screen coordinates for minor a
   const sectors=['minor','major'].map(extent=>e.construct('circleSectorRegion',[{objectId:circle.id},{objectId:a.id},{objectId:b.id}],undefined,extent)[0]);
   const scale=e.renderer.scale(),centerX=e.renderer.mapX(1),centerY=e.renderer.mapY(-.5),radius=2*scale;
   for(const sector of sectors){
-    const svg=e.renderSVG(),circleSvg=svg.match(/<circle[^>]*cx="[^"]+"[^>]*cy="[^"]+"[^>]*r="[^"]+"[^>]*>/)?.[0],path=svg.match(/<path data-region-contour="" d="([^"]+)"/)?.[1];
+    const circleSvg=e.renderer.renderObject(e.get(circle.id)).match(/<circle[^>]*cx="[^"]+"[^>]*cy="[^"]+"[^>]*r="[^"]+"[^>]*>/)?.[0],path=e.renderer.renderObject(e.get(sector.id)).match(/<path data-region-contour(?:="")? d="([^"]+)"/)?.[1];
     assert.ok(circleSvg);assert.ok(path);
     assert.match(circleSvg,new RegExp('cx="'+centerX+'"'));assert.match(circleSvg,new RegExp('cy="'+centerY+'"'));assert.match(circleSvg,new RegExp('r="'+radius+'"'));
-    assert.match(path,new RegExp(' A '+radius+' '+radius+' 0 [01] 0 '));
+    assert.match(path,new RegExp(' A '+radius+' '+radius+' 0 '+(sector.regionGeometry.sweep>Math.PI?1:0)+' 0 '));
     // Both direction arms are real source radii; the closed sector contour strokes each edge.
     assert.match(path,/^M .* L .* A .* Z$/);assert.equal(sector.regionGeometry.center.x,1);assert.equal(sector.regionGeometry.center.y,-.5);assert.equal(sector.regionGeometry.radius,2);
   }

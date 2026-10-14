@@ -2,7 +2,21 @@
 
 **Status:** gerichte correctieronde uitgevoerd op `codex/reg-2-dynamic-regions`; klaar voor nieuwe onafhankelijke code-review
 **Basis:** `main` op `0575365c16962238a14f27fe4cc76ab6c57b0594`  
-**Contract:** `docs/REG-1-CONTRACT.md` v1.0.1
+**Contract:** `docs/REG-1-CONTRACT.md` v1.1.0
+
+### Gerichte sectoren/segmenten en expliciete gebiedskeuze — 14 oktober 2026
+
+Nieuwe creatie schrijft expliciet `extent: directed`. Het recept blijft schema 5, de regio schema 1 en het document versie 8; de uitbreiding is één gesloten enumwaarde, geen nieuw veld of brontype. Een oudere reader weigert deze onbekende enumwaarde atomair. Bestaande `minor`-/`major`-bestanden worden zonder migratie gelezen en blijven inhoudelijk identiek. Bron A is begin, B einde; de standaardboog loopt tegenwijzerzin met modulo 2π. Exact gelijke richtingen zijn degeneratief, en alleen de expliciete `major`-modus maakt bij gelijke richtingen een volle schijf. Rond 180° ontstaat geen zijdewisseling; rond 0/360° geldt de contractuele modulo-overgang, zonder verborgen geschiedenis.
+
+De instructiepanelen bieden nu een zichtbare Gebiedsmodus-keuze: Gerichte sector / Gerichte segmentboog, Altijd kleinste gebied en Altijd grootste gebied. De keuze wordt expliciet in het recept opgeslagen. Een gekozen modus heeft voorrang op de behouden Shift-sneltoets voor major; elke nieuwe gereedschapskeuze start weer in directed. De author-inspector kan een bestaande regio via `construction.setExtent` wijzigen als één undo-stap, met behoud van ID. Locked objecten en ongeldige waarden worden geweigerd; restricted actors kunnen geen bestaande modus wijzigen en behouden de bestaande tool-/bron-grants voor creatie.
+
+De nieuwe Node-regressies controleren ook omwisseling van A/B, labels/selectie, legacy-roundtrips en source-revocation. De Edge-regressie klikt beide tools daadwerkelijk aan met een gerichte bronhoek van 270° en kiest expliciet minor: het opgeslagen recept en de ruwe area worden klein. Een inspectorwissel naar directed geeft 270° en werkt met undo/redo. Onafhankelijke pixels uit de offline-PNG-export bewijzen dat de kleine sector/het kleine segment op de juiste zijde wordt gevuld, het complement niet wordt gevuld en niets buiten de broncirkel wordt gekleurd. De bestaande SVG-boogtest is aangescherpt om iedere regio afzonderlijk te controleren in plaats van steeds het eerste pad.
+
+Verificatie na deze uitbreiding: volledige Node-suite **614/614 geslaagd**; gerichte Node-suite (regio's + lifecycle) **90/90 geslaagd**, aanvullende gerichte checks **2/2 geslaagd**; gerichte Edge-suite exitcode **0**, `pageErrors: []`. `git diff --check` slaagt. De volledige Edge-suite is eveneens geslaagd (exitcode 0, pageErrors: []), inclusief de nieuwe klik- en PNG-pixelregressies. Geen bestaande assertions verwijderd of verzwakt. UI-R1 niet gestart; de branch stopt voor review en wordt niet naar main gemerged.
+
+De nieuwe `directed`-waarde werd door de commandruntime afgewezen bij de laatste puntkeuze (`INVALID_COMMAND`). De allowlist van `construction.create` accepteert nu die waarde naast `minor` en `major`. Een eerder ingeslopen letterlijke `\n` in `region-geometry.js` is hersteld: deze syntaxfout verhinderde het laden van `RegionGeometry` en veroorzaakte de eerdere `resolve`-melding. De standaardcreatie vanuit de editor gebruikt nu `directed`.
+
+Gerichte Node-controle: **6/6 geslaagd**, inclusief semantische commands, oppervlakten bij 90/180/240/300 graden, passage door 180 en 0/360, exacte degeneratie, JSON-roundtrip en replay. De gerichte Edge-suite is geslaagd met `pageErrors: []`; de nieuwe echte klikfixture kiest cirkel, A en B, controleert `extent: directed`, de oppervlakte en undo/redo. Bestaande SVG/PNG- en restricted controles in die suite slagen eveneens. Contract v1.1.0 en de modekeuze-UI zijn nu geïmplementeerd.
 
 ### Correctie sectorboog — 14 oktober 2026
 

@@ -35,13 +35,14 @@
     if(!Number.isFinite(un)||!Number.isFinite(vn))return invalid('NON_FINITE_RESULT');if(un===0||vn===0)return invalid('DEGENERATE_DIRECTION');
     const alpha=(Math.atan2(uy,ux)+TAU)%TAU,beta=(Math.atan2(vy,vx)+TAU)%TAU,delta=(beta-alpha+TAU)%TAU;
     const cross=(ux/un)*(vy/vn)-(uy/un)*(vx/vn),dot=(ux/un)*(vx/vn)+(uy/un)*(vy/vn),minor=Math.atan2(Math.abs(cross),Math.max(-1,Math.min(1,dot)));
-    const full=extent==='major'&&delta===0,theta=extent==='minor'?minor:TAU-minor;
-    if(extent==='minor'&&theta===0)return invalid('DEGENERATE_REGION');
+    const mode=extent||'directed',full=mode==='major'&&delta===0,theta=mode==='directed'?delta:mode==='minor'?minor:TAU-minor;
+    if(mode!=='major'&&theta===0)return invalid('DEGENERATE_REGION');
     // Deterministic CCW canonical start, including a stable tie at pi.
     let start;
-    if(minor===Math.PI)start=Math.min(alpha,beta);
-    else if(delta<Math.PI)start=extent==='minor'?alpha:beta;
-    else start=extent==='minor'?beta:alpha;
+    if(mode==='directed')start=alpha;
+    else if(minor===Math.PI)start=Math.min(alpha,beta);
+    else if(delta<Math.PI)start=mode==='minor'?alpha:beta;
+    else start=mode==='minor'?beta:alpha;
     const r=c.r,extremes=[center.x+r,center.x-r,center.y+r,center.y-r];
     if(extremes.some(v=>!Number.isFinite(v)))return invalid('NON_FINITE_RESULT');
     if(extremes.some(v=>Math.abs(v)>LIMIT))return invalid('COORDINATE_LIMIT');
@@ -52,8 +53,8 @@
   function resolve(recipe,sources){
     if(!recipe||!Array.isArray(sources))return invalid('INVALID_REFERENCE');
     if(recipe.kind==='polygonRegion')return sources.length===1&&sources[0].type==='polygon'?polygon(sources[0].vertices):invalid('INVALID_REFERENCE');
-    if(!['circleSectorRegion','circleSegmentRegion'].includes(recipe.kind)||sources.length!==3||sources[0].type!=='circle'||sources[1].type!=='point'||sources[2].type!=='point'||!['minor','major'].includes(recipe.extent))return invalid('INVALID_REFERENCE');
-    return circular(recipe.kind==='circleSectorRegion'?'sector':'segment',sources[0],{x:sources[0].cx,y:sources[0].cy},sources[1],sources[2],recipe.extent);
+    if(!['circleSectorRegion','circleSegmentRegion'].includes(recipe.kind)||sources.length!==3||sources[0].type!=='circle'||sources[1].type!=='point'||sources[2].type!=='point'||!['directed','minor','major'].includes(recipe.extent||'directed'))return invalid('INVALID_REFERENCE');
+    return circular(recipe.kind==='circleSectorRegion'?'sector':'segment',sources[0],{x:sources[0].cx,y:sources[0].cy},sources[1],sources[2],recipe.extent||'directed');
   }
   function format(area,display,measurement){const d=areaDisplay(display);if(!d.visible)return '';const config=d.precision==null?measurement:{...(measurement||MI.MeasurementUnits.defaults),precision:d.precision};const value=MI.MeasurementUnits.format(area,'area',config);return d.mode==='equation'?'A = '+value:value;}
   MI.RegionGeometry=Object.freeze({areaDisplay,resolve,format,limit:LIMIT});
