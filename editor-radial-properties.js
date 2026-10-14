@@ -172,7 +172,12 @@
         const cap=this.wheel.querySelector('.radial-center-caption');
         if(cap)cap.textContent=ctx.type==='axes'?'Document':ctx.type==='multiple'? 'Selectie':ctx.type==='group'?'Groep':ctx.type==='linked'?'Constructie':ctx.type==='text'?'Tekst':'Object';
       }
-      if(this.detailMode)this.applyFilter(this.detailMode);
+      if(this.detailMode){
+        this.applyFilter(this.detailMode);
+        // Re-evaluate icon and tooltip states after existing commands change
+        // visibility, locking, grouping or the active selection.
+        if(this.detailMode==='actions')this.renderQuickActions();
+      }
     }
     defaultAnchor(){
       const rect=this.app.nodes.canvasWrap.getBoundingClientRect();
