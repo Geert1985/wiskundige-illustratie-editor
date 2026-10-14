@@ -52,7 +52,7 @@
   if(contextualWorkflows[kind])return [];
   const plans=[];
   const pointRoles=d.sourceRoles.length===2&&d.sourceRoles.every(r=>r==='point');
-  if(pointRoles&&contextualCompletes[kind]==='endpoints'){
+  if(pointRoles&&contextualCompletes[kind]==='endpoints'&&o.type==='line'){
    const refs=referenceOptions(o).point||[];
    const start=refs.find(ref=>ref.objectId===o.id&&ref.part==='start');
    const end=refs.find(ref=>ref.objectId===o.id&&ref.part==='end');
