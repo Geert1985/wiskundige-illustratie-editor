@@ -1,5 +1,9 @@
 # UI-RADIAL-7A/B — Puntobject pilot
 
+<!-- DOC-RADIAL-1: historie en voorrang, 2026-10-14 -->
+> **HISTORISCH DOCUMENT — geen actuele implementatieopdracht.** Dit bestand beschrijft de ontwerp- of uitvoeringsfase op de genoemde datum/branch. Voor het **huidige radiaalmenu** zijn [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md), [AGENTS.md](../AGENTS.md) en [roadmap v2.8.0](DEVELOPMENT-ROADMAP.md) leidend. Latere gebruikersbesluiten hebben de eerdere keuze voor een vaste rechter eigenschappenbalk en een automatisch eigenschappenicoon vervangen: nu rechtsklik, compacte zesdelige ring, zwevende inspector en contractgestuurde constructies. Bronplan- en startfunctieafspraken uit oudere versies zijn vervangen door `ConstructionService.contextualPlans` en `EditorApp.startContextConstruction`. Overige wiskundige/historische observaties blijven referenties voor hun eigen fase. Oudere testresultaten of statussen zijn **geen actuele regressie-PASS** en de branch is nog niet naar `main` gemerged.
+
+
 **Datum:** 2026-10-14  
 **Basis:** \`codex/ui-radial-wheel-preview-design\` (UI-RADIAL-6, compact 322 px)  
 **Branch:** \`codex/ui-radial-7-point-context-constructions\`  
