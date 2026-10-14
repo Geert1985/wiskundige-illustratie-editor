@@ -550,8 +550,14 @@
     }
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
-      const sources=this.constructionSourcesAt(point,event,state.sources);
+      if(state.radialPlacement){this.radialPathPlacement(point,event,state);return;}
+      let sources=this.constructionSourcesAt(point,event,state.sources);
       if(!sources){this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}
+      // The selected object may fill a later role (e.g. circle as the second
+      // source of a line-circle intersection). Insert it immediately when its
+      // role is reached; the shared geometry validator still owns validity.
+      if(state.radialPrefill&&sources.length===state.radialPrefill.index)
+        sources=[...sources,state.radialPrefill.source];
       const previousSources=state.sources.slice();state.sources=sources;if(['circleSectorRegion','circleSegmentRegion'].includes(kind)&&sources.length===MI.ConstructionService.kinds[kind])state.extent=this.regionExtent||(event.shiftKey?'major':'directed');
       if(kind==='lineBetweenPoints'&&sources.length===2) {
         const firstObject=this.engine.get(sources[0].objectId),secondObject=this.engine.get(sources[1].objectId),first=MI.ConstructionService.point(firstObject,sources[0]),second=MI.ConstructionService.point(secondObject,sources[1]);
@@ -594,6 +600,99 @@
       this.status('Startpunt '+(o.name||pointId)+' vastgelegd. '+this.constructionHint(kind,1));
       this.invalidate();
       return true;
+    }
+    // UI-RADIAL-8 — circular and linear construction adapter.
+    // Reuses the existing ConstructionService contract and construction.create
+    // command; never produces an unlinked geometric copy of the source.
+    startConstructionFromObject(toolId,objectId,sourceIndex=0,options={}){
+      if(typeof toolId!=='string'||!toolId.startsWith('construct:'))return false;
+      const kind=toolId.slice(10),source=this.engine.get(objectId);
+      if(!source||!['circle','line','straight','ray','vector'].includes(source.type)||
+          this.selectedIds.length!==1||this.selectedIds[0]!==objectId||
+          !this.canvasSelectable(source)||!this.toolCatalog.getTool(toolId)||
+          !this.toolAllowed(toolId)||!Number.isInteger(sourceIndex)||
+          (this.runtime&&!this.capabilities(objectId).sourceTools.includes(toolId))){
+        this.status('Deze constructie is niet beschikbaar voor het geselecteerde object.');
+        return false;
+      }
+      const contract=MI.ConstructionService.contract(kind);
+      if(sourceIndex<0||sourceIndex>=contract.sourceRoles.length)return false;
+      // A line segment can supply its two endpoints to the existing point/
+      // point midpoint and perpendicular-bisector recipes as a single action.
+      const endpointPair=options.endpoints===true&&source.type==='line'&&
+        sourceIndex===0&&['midpoint','perpendicularBisector'].includes(kind);
+      const ref={objectId};
+      if(!endpointPair&&!MI.ConstructionService.referencesForRole(
+          source,contract.sourceRoles[sourceIndex],kind)
+          .some(candidate=>candidate.objectId===objectId&&!candidate.part&&!candidate.index)){
+        return false;
+      }
+      const selectionBefore=this.selectedIds.slice();
+      const sources=endpointPair?[{objectId,part:'start'},{objectId,part:'end'}]:[ref];
+      if(endpointPair||(contract.sourceRoles.length===1&&
+          !MI.ConstructionService.pathKind(kind))){
+        try{
+          this.changeDocument(()=>{
+            this.selectedIds=this.execute('construction.create',{toolId,sources}).result.map(o=>o.id);
+          });
+          this.status('Gekoppelde constructie toegevoegd.');
+          this.invalidate();
+          return true;
+        }catch(error){this.status(error.message);this.invalidate();return false;}
+      }
+      this.setTool(toolId);
+      if(this.tool!==toolId)return false;
+      this.interaction={
+        mode:'construction',sources:sourceIndex===0?sources:[],
+        ...(sourceIndex>0?{radialPrefill:{index:sourceIndex,source:ref}}:{}),
+        ...(MI.ConstructionService.pathKind(kind)?{radialPlacement:true}:{}),
+        selectionIdsBefore:selectionBefore,pointerId:null
+      };
+      const prompt=MI.ConstructionService.pathKind(kind)
+        ?'Klik op de lijn of cirkelrand om het punt te plaatsen.'
+        :this.constructionHint(kind,sourceIndex===0?1:0);
+      this.status((source.name||objectId)+' is vastgelegd. '+prompt);
+      this.invalidate();
+      return true;
+    }
+    // A path-dependent point needs an explicit second click to choose its
+    // parameter. The selected geometric source is already known.
+    radialPathPlacement(point,event,state){
+      const kind=this.tool.slice(10),ref=state.sources?.[0],source=this.engine.get(ref?.objectId);
+      if(!source||!MI.ConstructionService.pathKind(kind)){
+        this.status('De bron van deze constructie is niet beschikbaar.');return;
+      }
+      const screen=this.transform().mathToScreen(point);
+      let distance=Infinity;
+      if(kind==='pointOnCircle'&&source.type==='circle'){
+        const edge=this.transform().mathToScreen({x:source.cx+source.r,y:source.cy});
+        const center=this.transform().mathToScreen({x:source.cx,y:source.cy});
+        distance=Math.abs(Math.hypot(screen.x-center.x,screen.y-center.y)-
+          Math.hypot(edge.x-center.x,edge.y-center.y));
+      }else if(kind==='pointOnSegment'){
+        const line=MI.ConstructionService.line(source,ref);
+        const a=this.transform().mathToScreen({x:line.x1,y:line.y1});
+        const b=this.transform().mathToScreen({x:line.x2,y:line.y2});
+        const dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy;
+        const t=length?Math.max(0,Math.min(1,
+          ((screen.x-a.x)*dx+(screen.y-a.y)*dy)/length)):0;
+        distance=Math.hypot(screen.x-a.x-t*dx,screen.y-a.y-t*dy);
+      }
+      if(distance>12){
+        this.status('Klik binnen 12 pixels van de geselecteerde lijn of cirkelrand.');
+        return;
+      }
+      const parameter=MI.ConstructionService.projectParameter(kind,source,ref,point);
+      try{
+        this.changeDocument(()=>{
+          this.selectedIds=this.execute('construction.create',{
+            toolId:this.tool,sources:state.sources,parameter
+          }).result.map(o=>o.id);
+        });
+        this.interaction=null;this.tool='select';
+        this.status('Afhankelijk punt toegevoegd.');
+      }catch(error){this.status(error.message);}
+      this.invalidate();
     }
     begin(state, event) {
       this.clearHover();
