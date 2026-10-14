@@ -528,14 +528,14 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   transform:rotate(var(--radial-counter-angle));transform-origin:center;
   pointer-events:none;color:#f9ca63;
 }
-.radial-segment-icon{width:47px;height:47px;display:grid;place-items:center;pointer-events:none}
+.radial-segment-icon{width:39px;height:39px;display:grid;place-items:center;pointer-events:none}
 .radial-segment-icon svg{
-  display:block;width:43px;height:43px;
+  display:block;width:35px;height:35px;
   fill:none;stroke:currentColor;stroke-width:1.65;
   stroke-linecap:round;stroke-linejoin:round;overflow:visible;
 }
 .radial-segment-text{
-  color:#f5f7f9;font-size:17px;line-height:1.15;
+  color:#f5f7f9;font-size:16px;line-height:1.15;
   font-weight:700;text-align:center;white-space:nowrap;
   text-shadow:0 1px 2px #071824bb;
 }
@@ -553,7 +553,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   position:absolute;top:69px;left:9px;right:9px;
   display:block;text-align:center;
   color:#f6c95d;letter-spacing:.16em;
-  font-size:12px;font-weight:700;line-height:1.4;
+  font-size:14px;font-weight:700;line-height:1.4;
   text-shadow:0 1px 2px #09121b;
 }
 .radial-center-input{
@@ -563,7 +563,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   height:43px;min-height:0;margin:0;padding:6px 8px;
   border:2px solid #355568;border-radius:9px;
   background:linear-gradient(#071923,#0a1e2a);
-  color:#fff;font:700 17px/1.2 "Source Sans 3",system-ui,sans-serif;
+  color:#fff;font:700 18px/1.2 "Source Sans 3",system-ui,sans-serif;
   text-align:center;text-overflow:ellipsis;
   box-shadow:inset 0 1px 6px #0005;
 }
