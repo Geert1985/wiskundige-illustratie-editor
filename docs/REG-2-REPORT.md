@@ -1,5 +1,9 @@
 # REG-2 — Implementatie- en testrapport
 
+<!-- DOC-RADIAL-1: historical source note (2026-10-14) -->
+> **Historisch REG-2-implementatie-/testrapport.** Zinnen zoals “UI-R1 niet gestart” waren juist ten tijde van `codex/reg-2-dynamic-regions`, maar zijn **niet** de actuele status van `codex/ui-radial-7-point-context-constructions`. Zie [roadmap v2.8.0](DEVELOPMENT-ROADMAP.md) en [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md). De hieronder vastgelegde REG-2-Node/Edge-tests bewijzen alleen de toen geteste REG-2-code, **niet** de ongeteste UI-RADIAL-7–9-aanpassingen.
+
+
 **Status:** gerichte correctieronde uitgevoerd op `codex/reg-2-dynamic-regions`; klaar voor nieuwe onafhankelijke code-review
 **Basis:** `main` op `0575365c16962238a14f27fe4cc76ab6c57b0594`  
 **Contract:** `docs/REG-1-CONTRACT.md` v1.1.0
