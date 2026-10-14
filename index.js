@@ -158,6 +158,7 @@
     canSnap(id){return MI.DocumentLayers.visible(this.model.layers||[],id);}
     group(members,name) { return this.model.createGroup(members,name); }
     ungroup(ids) { return this.model.ungroup(ids); }
+    renameGroup(id,name) { return this.model.renameGroup(id,name); }
     groupMembers(id) { return MI.PersistentGroups.members(this.model.groups,id); }
     add(object) { return this.model.add(object); }
     update(id, patch) { return this.model.update(id, patch); }
