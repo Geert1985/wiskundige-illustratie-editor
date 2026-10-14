@@ -62,3 +62,16 @@
 5. Assetversies in `editor.html` zijn verhoogd zodat de browser nieuwe CSS, editor- en radiaalmenucode ophaalt.
 
 **Nog niet gevalideerd:** browserhandelingen en geautomatiseerde tests, inclusief contextmenu-interactie in Edge, categoriewissels, mobiele bediening en fullscreen. Alleen GitHub-bestanden en branchverschillen zijn gecontroleerd; er is geen merge naar `main`.
+
+
+## UI-RADIAL-3 — vaste positie, enkelvoudige acties en browsercontextmenu (14 oktober 2026)
+
+**Implementatiebranch:** `codex/ui-radial-context-properties`. Deze wijziging volgt op gebruikersfeedback met een screenshot waarop de actieknoppen dubbel zichtbaar waren.
+
+- **Radiaalmenu blijft op zijn positie:** pointer-up boven het geopende wiel of het zwevende eigenschappenvenster wijzigt de bewaarde ankerpositie niet meer. Een categoriewissel toont alleen andere details.
+- **Verplaatsing uitsluitend bewust:** boven in het midden van het wiel staat een sleepgreep (`radial-drag-handle`). Sleep met muis/touch of verplaats met de pijltjestoetsen terwijl de greep focus heeft (Shift = grotere stappen). De positie verandert alleen door deze bediening of wanneer een andere selectie het menu opnieuw initialiseert.
+- **Geen dubbele actie-iconen:** de tijdelijke, grote `radial-quick-actions`-rij met duplicaatcommando's is volledig verwijderd uit module, HTML en CSS. `Acties` toont alleen de reeds bestaande compacte, geautoriseerde inspector-acties; de overige eigenschappencategorieën blijven gescheiden.
+- **Browsermenu op geselecteerde objecten:** `contextmenu` wordt nu in de capturefase van het document onderschept wanneer de gebeurtenis op de selecteerbare canvasruimte of het radiaalmenu terechtkomt. Daardoor maakt het geen verschil dat het radiaalmenu bij de voorafgaande pointer-up boven de oorspronkelijke SVG-objecten verschijnt. Rechts-sleep-kaderselectie blijft eigendom van de bestaande interactieruntime.
+- **Cache:** CSS- en radiaalmodules in `editor.html` gebruiken de nieuwe `ui-radial-3` cachetoken.
+
+**Niet uitgevoerd:** Node-tests, Edge/browsertests, build- of syntaxchecks, overeenkomstig de eerdere wens om geen tests uit te voeren. Alleen statische bron- en GitHub-versiecontrole. Handmatige acceptatie: selecteer een object, rechtsklik herhaaldelijk, wissel alle categorieën en controleer vaste positie; sleep de greep; controleer fullscreen, toetsenbord, werkelijke SVG-hit targets en rechts-sleep-kaderselectie. Geen merge naar `main`.
