@@ -20,7 +20,9 @@ test('UI-LEFT-1 defaults independent navigation groups to collapsed and searchab
 });
 
 test('UI-LEFT-1 leaves tool IDs and fullscreen catalog unaffected, scopes hidden results to sidebar',()=>{
-  assert.equal((html.match(/data-tool="[^"]+"/g)||[]).length,40);
+  const allIds=[...html.matchAll(/data-tool="([^"]+)"/g)].map(match=>match[1]);
+  assert.equal(new Set(allIds).size,allIds.length);
+  assert.equal(allIds.filter(id=>id!=='select').length,40);
   assert.match(script,/root\.querySelectorAll\(':scope > \[data-tool-category\]'\)/);
   assert.match(script,/entry\.querySelectorAll\('\[data-tool\]'\)/);
   assert.match(script,/beforeSearch/);
