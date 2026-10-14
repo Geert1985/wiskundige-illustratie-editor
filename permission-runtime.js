@@ -89,7 +89,7 @@
   function commandOf(operation,payload,revision){return {schema:1,operation,payload,expectedDocumentRevision:revision};}
   const payloadKeys={
     'layer.create':['name'],'layer.assign':['ids','layerId'],'layer.rename':['id','name'],'layer.setVisibility':['id','value'],'layer.reorder':['ids'],'layer.delete':['id'],
-    'group.create':['members','name'],'group.ungroup':['ids'],
+    'group.create':['members','name'],'group.ungroup':['ids'],'group.rename':['id','name'],
     'object.select':['ids','source'],'object.translate':['ids','delta'],'object.setGeometry':['id','fields'],'object.setProperties':['ids','fields'],'object.patchBatch':['updates'],
     'object.create':['toolId','object'],'text.commit':['target','content','legacyStylePatch','migrateLegacy'],'text.restoreStatic':['id'],'linear.draw':['shape','x1','y1','x2','y2'],'construction.setParameter':['id','value'],'construction.setExtent':['id','extent'],'construction.setInputs':['id','sources'],'construction.detach':['ids'],'construction.create':['toolId','sources','parameter','extent'],'object.duplicate':['ids','delta'],'object.delete':['ids'],'circleDistribution.set':['pointId','count','startAngle'],'circleDistribution.delete':['id','cascadeDependents'],
     'parameter.set':['parameterId','value'],'history.undo':[],'history.redo':[],'document.reset':[],'document.exportSVG':[],'document.exportJSON':[],
@@ -125,7 +125,7 @@
   }
   function authorizeCommand(s,input) {
     const c=normalize(s,input),p=c.payload,op=c.operation,direct=new Set(),e=newKernel(s);let result=null,view=null,selection=null,historyAction=null,relatedCommandId=null;
-    if(!s.author&&['document.setAngleMeasurement','document.setMeasurement','document.replace','document.clear','policy.configure','document.draftSave','document.draftResume','object.setLock','object.setVisibility','group.create','group.ungroup','layer.create','layer.assign','layer.rename','layer.setVisibility','layer.reorder','layer.delete','construction.detach','construction.setExtent','construction.setInputs','construction.setParameter','circleDistribution.set','circleDistribution.delete'].includes(op))fail('MODE_DENIED');
+    if(!s.author&&['document.setAngleMeasurement','document.setMeasurement','document.replace','document.clear','policy.configure','document.draftSave','document.draftResume','object.setLock','object.setVisibility','group.create','group.ungroup','group.rename','layer.create','layer.assign','layer.rename','layer.setVisibility','layer.reorder','layer.delete','construction.detach','construction.setExtent','construction.setInputs','construction.setParameter','circleDistribution.set','circleDistribution.delete'].includes(op))fail('MODE_DENIED');
     const docGrant=k=>{if(!s.author&&!s.policy.document[k])fail('PERMISSION_DENIED');};
     if(op==='construction.setParameter'){const o=requireObject(s,p.id,{visible:false,unlocked:true});if(!MI.ConstructionService.pathKind(o.construction?.kind))fail('INVALID_COMMAND');number(p.value);direct.add(o.id);result=e.update(o.id,{construction:{...o.construction,parameter:MI.ConstructionService.normaliseParameter(o.construction.kind,p.value)}});}
     else if(op==='construction.setExtent'){const o=requireObject(s,p.id,{visible:false,unlocked:true});if(!['circleSectorRegion','circleSegmentRegion'].includes(o.construction?.kind)||!['directed','minor','major'].includes(p.extent))fail('INVALID_COMMAND');direct.add(o.id);result=e.update(o.id,{construction:{...o.construction,extent:p.extent}});}
@@ -141,6 +141,7 @@
     else if(op==='layer.delete'){e.removeLayer(identifier(p.id));}
     else if(op==='group.create'){const refs=idsOf(s,p.members);result=e.group(refs,p.name);}
     else if(op==='group.ungroup'){result=e.ungroup(idsOf(s,p.ids));}
+    else if(op==='group.rename'){result=e.renameGroup(identifier(p.id),p.name);}
     else if(op==='object.select') {if(!Array.isArray(p.ids)||p.ids.some(id=>typeof id!=='string')||!['canvas','list'].includes(p.source))fail('INVALID_COMMAND');selection=[...new Set(p.ids.flatMap(id=>s.kernel.get(id)?MI.PersistentGroups.members(s.kernel.model.groups,MI.PersistentGroups.top(s.kernel.model.groups,id)):[]))].filter(id=>groupSelectable(s,id,p.source));}
     else if(op==='object.translate') {
       const ids=idsOf(s,p.ids);try{MI.PersistentGroups.roots(s.kernel.model.groups,ids);}catch(_){fail('INCOMPLETE_GROUP');}keys(p.delta,['x','y']);number(p.delta.x);number(p.delta.y);const objects=ids.map(id=>requireObject(s,id,{unlocked:true})),roots=objects.filter(o=>!o.construction),rootIds=new Set(roots.map(o=>o.id));
