@@ -557,3 +557,40 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
  .radial-wheel {transform:translate(-50%,-50%) scale(.82); transform-origin:center;}
  .radial-tool-instructions {max-height:24%;}
 }
+
+
+/* UI-RADIAL-2 — compacte icoonacties met toegankelijke labels en tooltips. */
+.radial-quick-actions {
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  justify-items:center;
+  gap:9px;
+}
+.radial-quick-actions button.radial-quick-action {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:43px;
+  min-width:43px;
+  height:43px;
+  padding:8px;
+  border-radius:9px;
+  cursor:pointer;
+}
+.radial-quick-actions button.radial-quick-action svg {
+  display:block;
+  width:23px;
+  height:23px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.7;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  pointer-events:none;
+}
+.radial-quick-actions button.radial-quick-action:focus-visible {
+  outline:2px solid #f0cb66;
+  outline-offset:2px;
+}
+.radial-quick-actions button.radial-quick-action[data-radial-quick="delete"] {
+  color:#ffb4b4;
+}
