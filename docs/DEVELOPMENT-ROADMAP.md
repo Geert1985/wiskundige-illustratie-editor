@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.0 (DOC-RADIAL-1 architecture/status consolidation, 2026-10-14)
+Version: 2.8.1 (UI-RADIAL-10 region presentation and construction-scroll refinement, 2026-10-14)
 Status: **current working-branch overview**: UI-RADIAL-1–9 are implemented on `codex/ui-radial-7-point-context-constructions`, manually reviewed in stages by the user, not merged to `main`, and not automatically retested in this development sequence. REG-2 and the sidebar/layer integration are present in the feature-branch lineage; this is NOT a claim of `main` integration or full release verification. Previous gates and historical statuses below refer to their original dated snapshots. Read the v2.8.0 addendum and `docs/UI-RADIAL-9-CONTRACT-DRIVEN.md` before following older UI-R1–R3 planning.
 Date: 2026-10-14
 
@@ -947,3 +947,17 @@ De normatieve numerieke, geometrische, schema-, permission- en exportgates staan
 UI-RADIAL-9 vraagt **geen automatische uitbreiding** naar nieuwe constructies of schemawijzigingen. Wanneer nieuwe objecten of bronsoorten worden geïmplementeerd: model en broncontract → catalogus → `contextualPlans` → bestaande starter/commando en rechten → gerichte verificatie volgens gebruikersopdracht. Een toekomstige merge naar `main` moet als afzonderlijke beslissing worden behandeld.
 
 **Behouden oudere plannen:** M7/M11–M13 en K4/T5 voor functies/matrices (v2.7.0) blijven ongewijzigd gepland. Dit addendum verandert geen historische testresultaten of eerdere beslissingen.
+
+
+## Roadmap v2.8.1 — UI-RADIAL-10: constructielijst en regiolabels (2026-10-14)
+
+**Implementatie:** featurebranch `codex/ui-radial-7-point-context-constructions`, **niet** naar `main` gemerged. Technisch verslag: [UI-RADIAL-10 — scroll, kleur en regiolabel](UI-RADIAL-10-REGION-LABEL-AND-SCROLL.md). Dit is een vervolg op UI-RADIAL-9, zonder nieuwe geometrische engine, objecttypes of afhankelijkheidschema's.
+
+| Werkpunt | Branchstatus | Handmatige gebruikersacceptatie | Tests |
+|---|---|---|---|
+| Contextuele constructielijst valt onder beeld | Paneelhoogte wordt geklemd op beschikbare canvas-/viewporthoogte; zichtbare scroll en sticky heading | **Open** voor UI-RADIAL-10 | **Niet uitgevoerd** |
+| Vulkleur cirkelsector/-segment | Bestaande kleurbediening richt zich voor regio standaard op `style.fill`; rand afzonderlijk; `fill='none'` wordt geëerbiedigd | **Open** | **Niet uitgevoerd** |
+| Oppervlakteprecisie | Regioslider 0–3 met effectieve standaard 2, labelupdate via bestaande properties | **Open** | **Niet uitgevoerd** |
+| Labelpositie oppervlakte | Het gewone selecteerbare/versleepbare `object-label` gebruikt `labelOffsetX/Y`; oude `areaDisplay.position`-waarden blijven voor laden/weergave ondersteund maar verschijnen niet meer als instelling | **Open** | **Niet uitgevoerd** |
+
+**Vaste ontwerpeis:** alle berekende regiolabels gebruiken de gedeelde labeldragcontroller en behoud van positie bij dynamische bronwijzigingen; bouw geen aparte regio-labeldragcode. Voor toekomstig regio- of labelwerk [AGENTS.md](../AGENTS.md), [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en het nieuwe [UI-RADIAL-10-verslag](UI-RADIAL-10-REGION-LABEL-AND-SCROLL.md) raadplegen. Automatische regressietests en gebruikersbeoordeling van deze wijzigingen moeten apart worden gerapporteerd. Historische eerdere statusregels worden niet terugwerkend gewijzigd.
