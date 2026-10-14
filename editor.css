@@ -559,7 +559,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 .radial-center-input{
   position:absolute;top:110px;left:50%;
   transform:translateX(-50%);
-  width:159px;max-width:calc(100% - 22px);
+  width:143px;max-width:calc(100% - 26px);
   height:43px;min-height:0;margin:0;padding:6px 8px;
   border:2px solid #355568;border-radius:9px;
   background:linear-gradient(#071923,#0a1e2a);
