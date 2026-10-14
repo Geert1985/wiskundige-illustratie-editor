@@ -1,5 +1,9 @@
 # Gereedschapspaneel — herstructurering
 
+<!-- DOC-RADIAL-1: historical source note (2026-10-14) -->
+> **Historisch implementatie-/testrapport (eerdere branch).** De beschreven categorieën, hoekenlocaties en tests horen bij de toenmalige `codex/tool-panel-reorganization`-mijlpaal. De actuele gereedschaps-/lagen-tabbladen, hoekgereedschappen onder **Vrije objecten**, contractgestuurde radiale constructies en het rechtsklikmenu staan in de [roadmap v2.8.0](DEVELOPMENT-ROADMAP.md), [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md). **Eerdere PASS-rapporten zijn geen automatisch testbewijs voor de nieuwe radiaalbranch.**
+
+
 Versie: 1.0.0
 Datum: 2026-10-12
 Branch: `codex/tool-panel-reorganization`
