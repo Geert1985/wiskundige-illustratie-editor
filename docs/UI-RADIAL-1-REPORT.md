@@ -49,3 +49,16 @@
 - [ ] Echte Edge/browser-regressies, Node-tests, JSON/SVG/PNG-roundtrips en security/restricted-flow.
 
 **Belangrijk:** er zijn **geen** tests, build, syntaxischeck of runtimecontroles uitgevoerd. De branch is bedoeld voor visuele gebruikersinspectie; compatibiliteit en volledige functionele pariteit zijn nog niet geverifieerd.
+
+
+## UI-RADIAL-2 — correcties na gebruikersfeedback (14 oktober 2026)
+
+**Branch:** `codex/ui-radial-context-properties` · **uitvoering:** bronwijzigingen gepusht; geen tests uitgevoerd zoals eerder gevraagd.
+
+1. De losse actieknoppen in het detailpaneel zijn vervangen door compacte SVG-iconen met begrijpelijke `title`-tooltips en `aria-label`-namen. De bestaande `data-radial-quick`-acties en permissieroutes worden onveranderd aangeroepen.
+2. Een categoriewissel voert altijd `renderQuickActions()` uit. De actiecontainer wordt bij iedere andere categorie expliciet geleegd en verborgen, zodat actie-iconen niet achterblijven; bij updates binnen de acties worden de iconen en labels opnieuw bepaald.
+3. Het browser-eigen contextmenu wordt op het canvas in selectiemodus met `preventDefault()` onderdrukt; de bestaande rechts-sleep-kaderselectie en het contextuele radiaalmenu blijven afzonderlijke interacties.
+4. `angle` en `rightAngle` zijn van **Meten & analyseren** naar **Vrije objecten** verhuisd. `Hoek (statisch)` heet voortaan **Hoek**. De nu lege subgroep **Hoeken tekenen en meten** is verwijderd. Gereedschap-ID's en bestaande commando's blijven identiek, en de fullscreencatalogus wordt uit dezelfde DOM afgeleid.
+5. Assetversies in `editor.html` zijn verhoogd zodat de browser nieuwe CSS, editor- en radiaalmenucode ophaalt.
+
+**Nog niet gevalideerd:** browserhandelingen en geautomatiseerde tests, inclusief contextmenu-interactie in Edge, categoriewissels, mobiele bediening en fullscreen. Alleen GitHub-bestanden en branchverschillen zijn gecontroleerd; er is geen merge naar `main`.
