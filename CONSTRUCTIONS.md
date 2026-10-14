@@ -1,5 +1,20 @@
 # Linked geometric constructions
 
+> **Geldigheid:** de hieronder volgende basisconstructies, meetprincipes en selectieregels zijn deels **historische beschrijvingen**. De actuele menustructuur en het radiale voorinvulcontract op featurebranch `codex/ui-radial-7-point-context-constructions` zijn vastgelegd in [UI-RADIAL-9](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md), [AGENTS.md](AGENTS.md) en [roadmap v2.8.0](docs/DEVELOPMENT-ROADMAP.md). De huidige code blijft de bron voor de daadwerkelijk beschikbare gereedschappen. Geen claim van merge naar `main` of uitgevoerde regressietests.
+
+## Actuele contextuele constructies (aanvulling 2026-10-14)
+
+- `ConstructionService.contract(kind)` definieert bronrollen; `referenceOptions`/`referencesForRole` bepalen welke **gehele objecten of objectonderdelen** daarvoor geschikt zijn.
+- `ConstructionService.contextualPlans(object,kind)` retourneert `prefill`, `complete` en `placement`-plannen inclusief bronreferenties. De definitieve validatie en geometrische constructie blijven in dezelfde `ConstructionService`/command-keten.
+- `RadialProperties.contextConstructions()` leest de normale `ToolCatalog` en filtert volgens bronrollen, implementatiestatus en permissies; geen harde objecttype-whitelist.
+- `EditorApp.startContextConstruction(toolId,objectId,planKey)` is de enige contextuele starter; hij controleert bronnen en rechten opnieuw bij uitvoering. Dit geldt ook voor vooraf ingevulde tweede/later bronrollen.
+- Voor het middenpunt en de middelloodlijn gebruikt een **lijnstuk** expliciet begin-/eindpuntreferenties. Regels voor volledige veelhoekranden/hoekpunten, alternatieve plannen en nieuwe parameterkrommen vergen expliciete contractuitbreiding; leid ze niet willekeurig af.
+- **Gereedschapsinterface:** tabbladen **Gereedschappen** / **Lagen en objecten**, met de acht hoofdcategorieën uit de README. **Hoek** en **Rechte hoek** vallen onder **Vrije objecten**. In het radiaalmenu zijn categorieën voor geschikte enkelvoudige selecties **Constructie, Uiterlijk, Geometrie, Relaties, Acties, Alles**; labelzichtbaarheid is een actie.
+- Alleen **rechtsklikken** opent het compacte, verplaatsbare zesdelige wiel; `Alles` toont de volledige inspector in een **zwevend paneel** en er is geen permanente rechter eigenschappenbalk.
+
+**Validatie/status:** gebruikersfeedback bevestigt UI-RADIAL-7/8/9 in de praktijk; de assistent heeft voor deze reeks geen automatische tests uitgevoerd. Geen merge naar `main`.
+
+
 Six tools create ordinary rendered point/straight/ray objects with explicit construction references. Select sources by clicking existing geometry:
 
 - Middenpunt: two points/endpoints/vertices; a click in a segment or polygon side constructs its midpoint immediately.
@@ -28,7 +43,7 @@ For a triangle or polygon, clicking a vertex with Bissectrice constructs the bis
 
 ## Tool categories and whole-figure measurements
 
-Selecteren stays outside the four tool accordions. Basisobjecten is initially open; Figuren, Meten and Constructies start closed. Native details/name grouping allows at most one open category. The central render updates the active tool suffix even when that category is collapsed. Category state is transient; no extra editor listeners or document fields are needed.
+**Historische toolindeling (vervangen door de bovenstaande actuele indeling):** Selecteren stays outside the four tool accordions. Basisobjecten is initially open; Figuren, Meten and Constructies start closed. Native details/name grouping allows at most one open category. The central render updates the active tool suffix even when that category is collapsed. Category state is transient; no extra editor listeners or document fields are needed.
 
 Meten includes Omtrek and Oppervlakte. Click inside/on a circle or polygon (including triangles); a 12-CSS-pixel boundary tolerance is accepted. A directly clicked figure wins when overlapping figures are painted; other candidates follow deterministic distance/ID ordering. The tool creates one linked text object, construction kind perimeter/area, with the figure's objectId as its sole source. Source geometry changes recompute the value automatically. Labels can be dragged, styled, resized, hidden and undone without detaching the reference. Text/coordinates are computed and are not editable as free text.
 

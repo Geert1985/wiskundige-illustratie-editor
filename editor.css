@@ -308,3 +308,463 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   background:#ffe398;
   color:#222;
 }
+
+
+/* UI-LEFT-1 — readable, scroll-safe navigation. Earlier rules stay intact. */
+@media (min-width:1151px) {
+  .workspace { grid-template-columns:340px minmax(0,1fr) 280px; }
+}
+@media (min-width:1000px) and (max-width:1150px) {
+  .workspace { grid-template-columns:320px minmax(0,1fr) 260px; }
+}
+@media (min-width:760px) and (max-width:999px) {
+  .workspace { grid-template-columns:310px minmax(0,1fr); }
+}
+@media (max-width:759px) {
+  .sidebar { width:min(340px,calc(100vw - 12px)); }
+}
+.sidebar { min-width:0; }
+.sidebar-section > summary { font-size:17px; font-weight:700; line-height:1.4; overflow-wrap:anywhere; }
+.sidebar .tool-menu > details > summary { font-size:15px; font-weight:700; line-height:1.45; display:flex; flex-wrap:wrap; gap:4px 7px; overflow-wrap:anywhere; }
+.sidebar .tool-menu [data-active-tool] { font-size:12px; line-height:1.45; min-width:0; max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+.sidebar .tool-grid { grid-template-columns:minmax(0,1fr); }
+.sidebar .tool-grid > .tool, .sidebar .tool-grid > .tool-split { min-width:0; max-width:100%; }
+.sidebar .tool-grid .tool { min-width:0; width:100%; height:auto; min-height:42px; text-align:left; }
+.sidebar .tool-grid .tool span, .sidebar .tool-split > [data-split-main] span {
+  font-size:14px; line-height:1.4; min-width:0; max-width:100%;
+  white-space:normal; overflow-wrap:anywhere;
+}
+.sidebar .tool-subgroup { margin:8px 0 4px; min-width:0; }
+.sidebar .tool-subgroup-toggle {
+  display:flex; align-items:center; gap:8px; width:100%; min-width:0;
+  padding:10px 9px; border:1px solid #405361; border-radius:7px;
+  background:#1b2b36; color:#e6edf2; font-size:14px; font-weight:700;
+  line-height:1.45; text-align:left; white-space:normal; overflow-wrap:anywhere;
+}
+.sidebar .tool-subgroup-toggle::before {
+  content:"▸"; flex:0 0 auto; font-size:13px; color:var(--accent);
+}
+.sidebar .tool-subgroup-toggle[aria-expanded="true"]::before { content:"▾"; }
+.sidebar .tool-subgroup > .tool-grid { padding:8px 0 10px 8px; }
+.sidebar .tool-subgroup > .tool-grid[hidden] { display:none !important; }
+.sidebar .tool-search-box { margin:0 0 12px; }
+.sidebar .tool-search-box label { display:block; margin:2px 0 5px; color:#dce5eb; font-size:13px; font-weight:600; }
+.sidebar #toolSearch { width:100%; min-width:0; height:40px; margin:0; padding:8px 10px; background:#0e202a; border:1px solid #577083; color:#edf1f3; font-size:14px; border-radius:7px; }
+.sidebar #toolSearch::placeholder { color:#aebec8; }
+.sidebar #toolSearchFeedback { padding:7px 2px 0; font-size:13px; color:#c4d1db; }
+#toolGrid [data-search-hidden="true"] { display:none !important; }
+.sidebar .planned-tools h3 { font-size:13px; line-height:1.5; }
+.sidebar .tool-placeholder { font-size:13px; }
+
+
+/* UI-TABS-1 — tabs stay fixed; only the selected pane scrolls. */
+.sidebar {
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  overflow:hidden;
+}
+.sidebar-tabs {
+  flex:0 0 auto;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:5px;
+  background:#17242d;
+  padding:10px 0 8px;
+  border-bottom:1px solid var(--border);
+  position:relative;
+  z-index:3;
+}
+.sidebar-tabs > [role="tab"] {
+  min-width:0;
+  min-height:45px;
+  padding:8px 6px;
+  border-radius:7px 7px 0 0;
+  font-size:14px;
+  font-weight:700;
+  line-height:1.3;
+  background:#1c2b36;
+  color:#cbd6de;
+  border:1px solid #304857;
+  border-bottom:2px solid transparent;
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+.sidebar-tabs > [role="tab"][aria-selected="true"] {
+  color:var(--accent);
+  background:#263640;
+  border-bottom-color:var(--accent);
+}
+.sidebar-tab-panel {
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  scrollbar-width:thin;
+  scrollbar-color:#42515c transparent;
+}
+.sidebar-tab-panel[hidden] { display:none!important; }
+#sidebarToolsPanel > .section-content { min-height:100%; padding:0 2px 16px; }
+#sidebarToolsPanel .tool-search-box {
+  position:sticky;
+  top:0;
+  z-index:15;
+  margin:0 0 12px;
+  padding:12px 0 10px;
+  background:#17242d;
+  border-bottom:1px solid #30404c;
+}
+#sidebarLayersPanel { padding:6px 2px 18px; }
+#sidebarLayersPanel > #layersSection {
+  display:block;
+  height:auto;
+  min-height:0;
+  padding:0;
+  border:0;
+  margin:0;
+}
+#sidebarLayersPanel > #layersSection > .section-content {
+  max-height:none!important;
+  height:auto;
+  overflow:visible;
+  padding:0 2px 8px;
+}
+#sidebarLayersPanel .layer-section {
+  transition: border-color .12s, background-color .12s;
+}
+#sidebarLayersPanel .layer-drop-target {
+  border-color:var(--accent);
+  background:#293e43;
+  box-shadow:inset 0 0 0 2px var(--accent);
+}
+#sidebarLayersPanel [data-drag-object] { cursor:grab; }
+#sidebarLayersPanel [data-drag-object]:active { cursor:grabbing; }
+#sidebarLayersPanel .object-dragging { opacity:.45; }
+@media(max-width:759px) {
+  .tools-open .sidebar { display:flex; }
+  .sidebar-tabs > [role="tab"] { font-size:13px; }
+}
+
+
+/* UI-RADIAL-4 — integrated approved preview: sculpted navy/gold wheel.
+ * Scalable SVG segment skins, upright icons, actual HTML button semantics,
+ * and the existing floating inspector/authorized command handlers.
+ */
+.workspace{grid-template-columns:340px minmax(0,1fr)!important}
+@media(min-width:1000px) and (max-width:1150px){
+  .workspace{grid-template-columns:320px minmax(0,1fr)!important}
+}
+@media(min-width:760px) and (max-width:999px){
+  .workspace{grid-template-columns:310px minmax(0,1fr)!important}
+}
+@media(max-width:759px){
+  .workspace{grid-template-columns:minmax(0,1fr)!important}
+}
+#propertiesToggle{display:none!important}
+.radial-wheel[hidden],.radial-detail-pane[hidden],
+.radial-tool-instructions[hidden]{display:none!important}
+/* The wheel always uses the same 460×460 design coordinates. At small
+   viewports JS scales this complete component, rather than distorting cards. */
+.radial-wheel{
+  --radial-scale:1;
+  position:absolute;z-index:42;width:460px;height:460px;
+  transform:translate(-50%,-50%) scale(var(--radial-scale));
+  transform-origin:center;isolation:isolate;pointer-events:none;
+  font-family:"Source Sans 3",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.radial-disc{
+  display:block;position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;filter:drop-shadow(0 12px 14px #10212c41);
+}
+/* Rounded sculpted SVG cards are genuine button targets. The card rotation
+   follows the ring, but a counter-rotation keeps symbols and labels horizontal. */
+.radial-segment{
+  position:absolute;left:50%;top:50%;
+  width:210px;height:140px;margin:0;padding:0;
+  display:block;min-height:0;min-width:0;
+  transform:translate(-50%,-50%) rotate(var(--radial-angle)) translateY(-158px);
+  background:none!important;border:0!important;border-radius:0;
+  color:#f9ca63;box-shadow:none!important;
+  cursor:pointer;pointer-events:auto;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.radial-segment-skin{
+  position:absolute;inset:0;width:100%;height:100%;overflow:visible;
+  pointer-events:none;
+  filter:drop-shadow(0 9px 6px #091b2766);
+  transition:filter .16s ease;
+}
+.radial-segment-silhouette{
+  fill:#172f3f;stroke:#364e5d;stroke-width:3.3;
+  stroke-linejoin:round;
+  transition:fill .16s ease,stroke .16s ease;
+}
+.radial-segment-primary .radial-segment-silhouette{stroke:#e9c25b;stroke-width:4}
+.radial-segment[aria-pressed="true"] .radial-segment-silhouette{
+  fill:#244657;stroke:#f8d575;
+}
+.radial-segment:hover .radial-segment-silhouette,
+.radial-segment:focus-visible .radial-segment-silhouette{
+  fill:#2a4b5c;stroke:#f9d575;
+}
+.radial-segment:hover .radial-segment-skin,
+.radial-segment:focus-visible .radial-segment-skin{
+  filter:drop-shadow(0 11px 10px #061b2980) drop-shadow(0 0 4px #e6bb4c99)
+}
+.radial-segment:focus-visible{outline:none!important}
+.radial-segment-content{
+  position:absolute;left:15px;top:23px;width:180px;height:94px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+  transform:rotate(var(--radial-counter-angle));transform-origin:center;
+  pointer-events:none;color:#f9ca63;
+}
+.radial-segment-icon{width:39px;height:39px;display:grid;place-items:center;pointer-events:none}
+.radial-segment-icon svg{
+  display:block;width:35px;height:35px;
+  fill:none;stroke:currentColor;stroke-width:1.65;
+  stroke-linecap:round;stroke-linejoin:round;overflow:visible;
+}
+.radial-segment-text{
+  color:#f5f7f9;font-size:16px;line-height:1.15;
+  font-weight:700;text-align:center;white-space:nowrap;
+  text-shadow:0 1px 2px #071824bb;
+}
+/* Golden-outlined center is always above the radial plates. */
+.radial-center{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  display:block;width:192px;height:192px;padding:0;
+  border:3px solid #f2c85f;border-radius:50%;
+  background:linear-gradient(150deg,#1d3c4e 0%,#102a39 43%,#0a202d 100%);
+  color:#fff;pointer-events:auto;
+  box-shadow:0 12px 24px #0b213c52,inset 0 4px 12px #23415288;
+}
+.radial-center-caption{
+  position:absolute;top:69px;left:9px;right:9px;
+  display:block;text-align:center;
+  color:#f6c95d;letter-spacing:.16em;
+  font-size:14px;font-weight:700;line-height:1.4;
+  text-shadow:0 1px 2px #09121b;
+}
+.radial-center-input{
+  position:absolute;top:110px;left:50%;
+  transform:translateX(-50%);
+  width:143px;max-width:calc(100% - 26px);
+  height:43px;min-height:0;margin:0;padding:6px 8px;
+  border:2px solid #355568;border-radius:9px;
+  background:linear-gradient(#071923,#0a1e2a);
+  color:#fff;font:700 18px/1.2 "Source Sans 3",system-ui,sans-serif;
+  text-align:center;text-overflow:ellipsis;
+  box-shadow:inset 0 1px 6px #0005;
+}
+.radial-center-input:focus-visible{outline:2px solid #f4ce75;outline-offset:2px}
+.radial-center-input[readonly]{cursor:default;opacity:.96}
+.radial-drag-handle{
+  position:absolute;top:16px;left:50%;
+  transform:translateX(-50%);
+  width:52px;height:33px;padding:4px 10px;
+  display:grid;place-items:center;
+  border:0;border-radius:8px;
+  background:linear-gradient(#234154,#142d3d);
+  color:#647e95;cursor:grab;
+  touch-action:none;user-select:none;
+  box-shadow:0 3px 6px #04182244;
+}
+.radial-grip-dots{
+  display:grid;grid-template-columns:repeat(3,8px);
+  grid-template-rows:repeat(2,8px);gap:4px 5px;
+  pointer-events:none;
+}
+.radial-grip-dot{
+  display:block;width:8px;height:8px;border-radius:50%;
+  background:#68849a;box-shadow:inset 0 1px 2px #112231;
+}
+.radial-drag-handle:hover .radial-grip-dot,
+.radial-drag-handle:focus-visible .radial-grip-dot{background:#f3ca69}
+.radial-drag-handle:focus-visible{
+  outline:2px solid #f2ca6a;outline-offset:2px;
+}
+.radial-is-dragging .radial-drag-handle{cursor:grabbing}
+
+/* Reused original inspector, now only a floating detail card. */
+.radial-detail-pane{
+  position:absolute;z-index:43;max-width:calc(100% - 16px);
+  max-height:min(78vh,calc(100% - 88px));min-height:120px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  padding:12px 14px 15px;border-radius:14px;border:1px solid #c79f4a;
+  background:linear-gradient(135deg,#1b3140,#0e222f);color:#e9f1f6;
+  box-shadow:0 14px 40px #07151ab8;scrollbar-width:auto;scrollbar-color:#7995a6 #152c3a;
+}
+.radial-detail-heading{
+  position:sticky;top:-12px;margin:-12px -14px 12px;z-index:2;
+  display:flex;justify-content:space-between;align-items:center;
+  min-height:47px;padding:7px 12px 7px 15px;background:#203b4c;
+  border-bottom:1px solid #536879;color:#f1d279;font-weight:700;
+}
+.radial-detail-heading .panel-close{
+  display:inline-flex!important;align-items:center;justify-content:center;
+  padding:3px;width:30px;height:30px;background:#364b58;color:#fff;
+  border:1px solid #72838f;border-radius:7px;
+}
+.radial-detail-pane .selection-panel,.radial-detail-pane .selection-empty{font-size:13px}
+.radial-detail-pane .selection-panel input,.radial-detail-pane .selection-panel select{
+  width:100%;min-height:31px;padding:6px;border:1px solid #445d6d;
+  background:#11212a;color:#eef4f7;border-radius:6px;
+}
+.radial-detail-pane .selection-panel input[type=checkbox]{width:auto;min-height:0;accent-color:#edc567}
+.radial-detail-pane .selection-panel label{display:block;margin:9px 0;color:#dce5eb;font-size:12px}
+.radial-detail-pane .selection-panel label.style-toggle{display:flex;align-items:center;gap:8px}
+.radial-detail-pane .selection-panel details{border-bottom:1px solid #435564;padding:6px 0 10px}
+.radial-detail-pane .selection-panel details>summary{cursor:pointer;padding:7px 0;color:#f0d27a;font-weight:600}
+.radial-detail-pane .selection-panel .object-style{border:0;padding:0;margin:4px 0}
+.radial-detail-pane .selection-panel .object-style legend{display:none}
+.radial-detail-pane .inspector-color-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0}
+.radial-detail-pane .inspector-color{min-width:40px;min-height:32px}
+.radial-detail-pane .stroke-slider{display:flex;gap:8px;align-items:center}
+.radial-detail-pane .stroke-slider input[type=range]{flex:1;min-height:0;padding:0}
+.radial-detail-pane .stroke-slider output{font-size:11px;white-space:nowrap}
+.radial-detail-pane .object-actions{display:flex;justify-content:flex-start;gap:6px;flex-wrap:wrap}
+.radial-detail-pane .object-actions button{width:30px;height:30px;padding:5px}
+.radial-detail-pane .object-actions svg{width:18px;height:18px}
+.radial-detail-pane .object-heading{padding:0 0 9px;margin:0 0 8px;border-bottom:1px solid #53616d}
+.radial-detail-pane .object-name-input{width:100%;font-weight:700}
+.radial-detail-pane #selectionPanel>[hidden]{display:none!important}
+/* The guidance formerly housed in the right sidebar remains readable. */
+.radial-tool-instructions{
+  position:absolute;z-index:6;top:70px;left:12px;
+  width:min(330px,calc(100% - 24px));max-height:38%;overflow:auto;
+  background:#142733eb;color:#ecf1f3;box-shadow:0 4px 16px #08192455;
+  margin:0;padding:10px;border-left:3px solid #e2bd5a;
+}
+.radial-tool-instructions .active-step{color:#efd58e}
+.canvas-area>#status.canvas-status{left:14px;right:auto;bottom:9px;z-index:5}
+.canvas-fullscreen .radial-wheel,.canvas-fullscreen .radial-detail-pane{position:absolute}
+@media(max-width:760px){
+  .radial-detail-pane{
+    left:8px!important;right:8px!important;width:auto!important;
+    top:auto!important;bottom:9px;max-height:44%;
+  }
+  .radial-tool-instructions{max-height:24%}
+}
+
+
+/* UI-RADIAL-7 — point-only pilot: no duplicate property sections, reusable
+   full-size inspector forms, and selectable existing construction recipes. */
+.radial-detail-pane .radial-construction-options[hidden],
+.radial-detail-pane #selectionPanel[hidden]{
+  display:none!important;
+}
+.radial-construction-options{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:7px;
+  padding:1px 0 4px;
+}
+.radial-construction-lead,
+.radial-construction-empty{
+  margin:0 0 5px;
+  color:#dbe8f0;
+  font-size:12px;
+  line-height:1.4;
+}
+.radial-construction-empty{
+  color:#f0cc72;
+}
+.radial-construction-tool{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  width:100%;
+  min-height:62px;
+  text-align:left;
+  gap:11px;
+  padding:10px 11px;
+  border:1px solid #536d7d;
+  border-radius:9px;
+  background:linear-gradient(120deg,#244154,#1a3242);
+  color:#f6f8fa;
+  cursor:pointer;
+}
+.radial-construction-tool:hover,
+.radial-construction-tool:focus-visible{
+  background:#31546b;
+  border-color:#edc665;
+  outline:2px solid #edc665;
+  outline-offset:1px;
+}
+.radial-construction-icon{
+  flex:0 0 29px;
+  height:29px;
+  display:grid;
+  place-items:center;
+  color:#f3cc6b;
+}
+.radial-construction-icon svg{
+  width:26px;
+  height:26px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.radial-construction-description{
+  display:flex;
+  flex:1 1 auto;
+  min-width:0;
+  flex-direction:column;
+  gap:4px;
+  line-height:1.25;
+}
+.radial-construction-description strong{
+  color:#f5f7fa;
+  font-size:13px;
+  font-weight:700;
+}
+.radial-construction-description small{
+  color:#cedce5;
+  font-size:11px;
+  line-height:1.3;
+}
+/* Actions remain in the shared small icon toolbar. The redundant name field
+   from the old inspector heading is hidden specifically in point Actions. */
+.radial-detail-pane[data-radial-context="point"][data-radial-filter="actions"] #selectionPanel .object-heading>div:first-child{
+  display:none;
+}
+.radial-detail-pane[data-radial-context="point"][data-radial-filter="actions"] #selectionPanel .object-heading{
+  margin:0;
+  padding:0;
+  border:0;
+}
+
+
+/* UI-RADIAL-10 — bounded, discoverably scrollable contextual construction list.
+   The title stays visible while long construction lists scroll inside the pane. */
+.radial-detail-pane[data-radial-filter="construct"]{
+  scrollbar-gutter:stable;
+}
+.radial-detail-pane[data-radial-filter="construct"] .radial-construction-options{
+  min-height:0;
+}
+.radial-detail-pane .selection-panel .region-precision-slider{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.radial-detail-pane .selection-panel .region-precision-slider input[type=range]{
+  flex:1 1 auto;
+  width:auto;
+  min-width:0;
+  height:25px;
+  min-height:0;
+  padding:0;
+  cursor:pointer;
+  accent-color:#f0c85e;
+}
+.radial-detail-pane .selection-panel .region-precision-slider output{
+  flex:0 0 16px;
+  color:#f0d27a;
+  text-align:center;
+  font-variant-numeric:tabular-nums;
+}

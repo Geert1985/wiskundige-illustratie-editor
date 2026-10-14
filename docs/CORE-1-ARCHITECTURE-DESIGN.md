@@ -1,9 +1,31 @@
 # CORE-1 — Herbruikbare geometrie-, eigenschappen- en gereedschapsarchitectuur
 
-Versie: 1.1.0
-Status: actualisatie op actuele GitHub `main`; documentatie-only, geen productiecode of tests gewijzigd/uitgevoerd
+Versie: 1.2.0 — DOC-RADIAL-1 aanvulling op historische CORE-1 audit (2026-10-14)
+Status: CORE-1-basisanalyse blijft een historische `main`-momentopname; de v1.2.0-aanvulling beschrijft de **huidige featurebrancharchitectuur** UI-RADIAL-9. Alleen documentatie aangepast; geen productiecode of tests door DOC-RADIAL-1.
 Basis: GitHub `main` op `f4039842c44885d739b624d9d67bbfdd75d2394e`; omvat M6b `b5e693f`, G-TRI1, UI-T1 en de bestaande `MI.ToolCatalog`
-Normatieve context: [geometrie- en UI-architectuur v1.0.1](GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md), [uitvoeringsplan v1.0.1](CODEX-EXECUTION-PLAN-TOOLS-RADIAL-REGIONS-TRIANGLE-v1.0.0.md).
+Normatieve context **voor huidig radiaalmenu**: [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md). De [geometrie-/UI-architectuur uit 2026-10-13](GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md) en het [historische uitvoeringsplan](CODEX-EXECUTION-PLAN-TOOLS-RADIAL-REGIONS-TRIANGLE-v1.0.0.md) blijven referenties voor de oorspronkelijke CORE-1-context, maar zijn niet langer normatief voor de huidige radiale interactie.
+
+## DOC-RADIAL-1 — Actuele architectuurlaag (2026-10-14, voorrang voor radiale functies)
+
+Dit document begon als **CORE-1-ontwerp/audit** op `main` bij commit `f403984`; die oorspronkelijke observaties en toekomstige API-voorstellen worden hieronder bewust niet herschreven. Het volgende is de daadwerkelijk geïmplementeerde **featurebranchlaag** op `codex/ui-radial-7-point-context-constructions`, niet een bewering over `main`.
+
+| Verantwoordelijkheid | Huidige eigenaar/contract op featurebranch |
+|---|---|
+| Getypeerde bronrollen en matching | `ConstructionService.contract(kind).sourceRoles`, `referenceOptions` en `referencesForRole` |
+| Contextueel bronplan | `ConstructionService.contextualPlans(object,kind)` retourneert een geldige `prefill`, `complete` of `placement`-mogelijkheid met bronreferenties en index; speciale flows zijn expliciet uitgesloten |
+| Werkende gereedschappen | Eén `ToolCatalog` voor sidebar/fullscreen/radiale constructielijst; alleen `implemented` |
+| Radiale UI | `editor-radial-properties.js`: selectiepresentation, categorieën, plannen als knoppen, geen eigen constructiegeometrie of objecttype-whitelist |
+| Uitvoering | `EditorApp.startContextConstruction(toolId,objectId,planKey)` met hercontrole van keuze/rechten, daarna bestaande `constructionClick` en `construction.create` |
+| Rechten, revisies, opslag | Bestaande `PermissionRuntime`, commandvalidering, documentmodel, dependency graph, undo/redo, SVG/PNG |
+| Eigenschappen en layout | Zwevende inspector via bestaande edit-commando's; géén permanente rechter kolom. Compact rechtsklikmenu met zes segmenten en sleepgreep |
+
+**Betekenis voor nieuwe objecten:** voeg model-/source-role-ondersteuning toe in de normale geometrische services en registreer nieuwe tools in de bestaande catalogus; breid alleen het gedeelde service- of interactiecontract uit als een nieuwe bronrol, objectonderdeel of parameterplaatsing dat noodzakelijk maakt. Voeg **niet** voor elk objecttype een aparte radiale toolmapping of starter toe.
+
+**Voor oudere tekst hieronder:** passages zoals `Toekomstig radiaalmenu`, `rechter inspector blijft staan`, of `UI-R1/R2 zijn nog niet gestart` slaan uitsluitend op de oude audit-/ontwerpstatus; de v1.2.0-aanvulling en UI-RADIAL-9 hebben voor de huidige implementatie voorrang. Eigenschappenvelden en capabilityregels mogen later verder gecentraliseerd worden, maar de bestaande radiale UI is al functioneel; doe geen brede refactor zonder opdracht.
+
+**Validatiestatus:** gebruiker bevestigde UI-RADIAL-7/8/9 in de browser functioneel; automatische regressietests zijn in deze uitvoeringsreeks op verzoek niet gedraaid. UI-RADIAL-1–9 zijn niet naar `main` gemerged. Zie roadmap v2.8.0 voor statusadministratie.
+
+---
 
 ## 1. Doel en grens
 

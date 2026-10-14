@@ -38,7 +38,7 @@
       this.syncFullscreen(true);
       try{await this.document.documentElement.requestFullscreen?.();}catch(_){/* Canvas still fills the browser viewport when native fullscreen is unavailable. */}
     }
-    selectAxes() { this.closeDialogs(true);this.cancel();this.flushEdits();this.selectedIds=[];this.inspectorTarget='axes';this.axisMenuOpen=true;this.document.body?.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');this.invalidate(); }
+    selectAxes() { this.closeDialogs(true);this.cancel();this.flushEdits();this.selectedIds=[];this.inspectorTarget='axes';this.axisMenuOpen=true;this.document.body?.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.invalidate();this.radialProperties?.openForAxes(); }
     setNavigation(mode) { this.setTool('select');this.navigationMode=mode==='pan'?'pan':'select';this.clearHover();this.invalidate(); }
     setPresentationFlag(path,value) {
       if(!MI.PRESENTATION_FLAGS.includes(path)||typeof value!=='boolean')throw new MI.PermissionError('INVALID_COMMAND');
@@ -50,7 +50,7 @@
     }
     commonInspector() {
       const objects=this.selectedObjects(),esc=MI.escapeXml,fields=[['style.stroke','Lijnkleur','text'],['style.fill','Vulkleur','text'],['style.strokeWidth','Lijndikte','number'],['style.dash','Lijnpatroon','text'],['style.opacity','Dekking (%)','number']];
-      const html=fields.filter(([path])=>objects.every(o=>path==='style.fill'?['point','circle','polygon','text'].includes(o.type):['style.stroke','style.strokeWidth','style.dash'].includes(path)?o.type!=='text':true)).map(([path,label,type])=>{
+      const html=fields.filter(([path])=>objects.every(o=>path==='style.fill'?['point','circle','polygon','region','text'].includes(o.type):['style.stroke','style.strokeWidth','style.dash'].includes(path)?o.type!=='text':true)).map(([path,label,type])=>{
         const values=objects.map(o=>path.split('.').reduce((v,k)=>v?.[k],o)),same=values.every(v=>v===values[0]),value=same?(path==='style.opacity'?values[0]*100:values[0]):'';
         const enabled=this.allowed('object.setProperties',{ids:this.selectedIds,fields:[{path,value:values[0]}]});
         return '<label>'+label+'<input data-common="'+path+'" type="'+type+'" value="'+esc(value)+'" placeholder="Verschillend"'+(path==='style.opacity'?' min="0" max="100"':path==='style.strokeWidth'?' min="0" step="0.5"':'')+(!enabled?' disabled':'')+'></label>';
@@ -97,8 +97,9 @@
       for(const [id,operation] of [['newBtn','document.reset'],['saveBtn','document.draftSave'],['loadBtn','document.replace'],['exportJsonBtn','document.exportJSON'],['exportSvgBtn','document.exportSVG'],['exportPngBtn','document.exportSVG']])if(this.nodes[id])this.nodes[id].disabled=!this.allowed(operation,operation==='document.replace'?{document:{}}:{});
       for(const [id,path] of [['titleInput','title'],['descriptionInput','description']])this.nodes[id].disabled=!this.allowed('document.setMeta',{fields:[{path,value:this.nodes[id].value}]});
       const object=this.engine.get(this.selectedId),caps=object&&this.capabilities(object.id);
-      for(const control of this.nodes.selectionPanel.querySelectorAll('[data-edit], [data-style], [data-style-color], [data-fill-object]')) {
+      for(const control of this.nodes.selectionPanel.querySelectorAll('[data-edit], [data-style], [data-style-color], [data-fill-object], [data-region-display]')) {
         let path=control.dataset.style?'style.'+(control.dataset.style==='fillEnabled'?'fill':control.dataset.style):control.dataset.vertex!=null?'vertices['+control.dataset.vertex+'].'+control.dataset.edit:control.dataset.edit;
+        if(control.dataset.regionDisplay)path=control.dataset.regionDisplay.startsWith('position.')?'areaDisplay.position':'areaDisplay.'+control.dataset.regionDisplay;
         if(control.dataset.styleColor)path=object?.type==='text'?'style.fill':'style.stroke';if(control.dataset.fillObject)path='style.fill';
         control.disabled=!caps || ![...(caps.geometryFields||[]),...(caps.propertyFields||[])].includes(path);
       }
@@ -127,7 +128,7 @@
     }
     get selectedId() { return this.selectedIds[this.selectedIds.length-1] || null; }
     set selectedId(id) { this.selectedIds=id ? this.groupLeaves(id) : [];this.openFullscreenObjectProperties(); }
-    openFullscreenObjectProperties(){if(this.canvasFullscreen&&this.tool==='select'&&this.selectedIds.length===1&&['point','angle','text'].includes(this.engine.get(this.selectedIds[0])?.type)){this.document.body?.classList.add('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','true');}}
+    openFullscreenObjectProperties(){this.radialProperties?.sync();}
     selectedObjects() { return this.selectedIds.map(id=>this.engine.get(id)).filter(Boolean); }
     groupIndex() {
       const groups=this.engine.model.groups||[],objects=this.engine.model.objects;
@@ -180,6 +181,19 @@
         const position=this.transform()?.mathToScreen({x:selectedPathPoint.x,y:selectedPathPoint.y});
         if(position&&Math.hypot(position.x-event.clientX,position.y-event.clientY)<=8)return {object:selectedPathPoint,kind:'object'};
       }
+      // Points can be visually small or partially obscured by nearby SVG.
+      // Expand the hit radius, without hijacking draggable labels/endpoints.
+      if(this.tool==='select'&&this.navigationMode!=='pan'&&
+          !target?.closest?.('.object-label,.fzi-polygon-vertex,.fzi-line-endpoint')){
+        const t=this.transform();let nearest=null,nearestDistance=11;
+        for(const candidate of this.engine.model.objects){
+          if(candidate.type!=='point'||!this.canvasSelectable(candidate))continue;
+          const position=t?.mathToScreen({x:candidate.x,y:candidate.y});
+          const distance=position?Math.hypot(position.x-event.clientX,position.y-event.clientY):Infinity;
+          if(distance<nearestDistance){nearest=candidate;nearestDistance=distance;}
+        }
+        if(nearest)return {object:nearest,kind:'object'};
+      }
       const paintedObject=target?.closest?.('[data-object-id]'),painted=paintedObject&&n.canvas.contains(paintedObject)&&this.engine.get(paintedObject.getAttribute('data-object-id'));
       if(painted&&MI.LinearGeometry.isLinear(painted)) {
         let nearest=null,nearestDistance=8;
@@ -200,6 +214,14 @@
       if(this.canvasSelectable(object))return {object};
       const hit=point&&this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8});
       if(hit&&this.canvasSelectable(hit.object))return hit;
+      // Give thin circular and linear strokes a slightly wider pickup area
+      // in selection mode, without changing explicit label/endpoint handles.
+      if(point&&this.tool==='select'&&this.navigationMode!=='pan'&&
+          !target?.closest?.('.object-label,.fzi-polygon-vertex,.fzi-line-endpoint')){
+        const nearby=this.engine.selectAt(point.x,point.y,{transform,tolerancePx:11});
+        if(nearby&&['circle','line','straight','ray','vector'].includes(nearby.object?.type)&&
+            this.canvasSelectable(nearby.object))return nearby;
+      }
       return null;
     }
     cursorFor(hit) {
@@ -340,7 +362,14 @@
       this.on(n.redoBtn, "click", () => this.travelHistory(true));
       this.on(n.canvasWrap, "pointerdown", e => this.pointerDown(e));
       this.on(n.canvasWrap,'pointerleave',()=>{if(!this.interaction)this.clearHover();});
-      this.on(n.canvasWrap, 'contextmenu', e => { if(this.suppressMarqueeMenu || (this.interaction?.mode==='marquee' && this.interaction.active)) { e.preventDefault(); this.suppressMarqueeMenu=false; } });
+      this.on(n.canvasWrap, 'contextmenu', e => {
+        // The select canvas owns right-click: open the contextual radial menu,
+        // never a simultaneous native browser menu. Preserve right-drag marquee.
+        if((this.tool==='select'&&this.navigationMode!=='pan')||this.suppressMarqueeMenu||(this.interaction?.mode==='marquee'&&this.interaction.active)){
+          e.preventDefault();
+          this.suppressMarqueeMenu=false;
+        }
+      });
       this.on(this.window, "pointermove", e => this.pointerMove(e));
       this.on(this.window, "pointerup", e => this.pointerUp(e));
       this.on(this.window, "pointercancel", e => { if (this.interaction && e.pointerId === this.interaction.pointerId) this.cancel(); });
@@ -368,11 +397,19 @@
       this.on(this.document,"click",e=>{if(this.splitMenuOpen&&!e.target.closest('.tool-split'))this.closeSplitMenu();if(n.fileMenu?.open && !e.target.closest('#fileMenu'))this.closeFileMenu();if(e.target.closest('#fileMenu button'))this.closeFileMenu();});
       this.on(n.selectionPanel, "input", e => {
         const distributionControl=e.target.closest('[data-circle-distribution]');if(distributionControl){if(!this.circleDistributionPreview)this.circleDistributionPreview={history:this.history.capture(),nextId:this.engine.model._nextId};const preview=this.circleDistributionPreview;this.engine.load(JSON.parse(preview.history.document));this.engine.model._nextId=preview.nextId;const object=this.engine.get(this.selectedId),prior=this.engine.model.circleDistributions.find(d=>d.pointIds.includes(object.id)),count=distributionControl.dataset.circleDistribution==='count'?distributionControl.valueAsNumber:(prior?.count||1),startAngle=distributionControl.dataset.circleDistribution==='startAngle'?distributionControl.valueAsNumber*Math.PI/180:(prior?.startAngle??2*Math.PI*(object.construction?.parameter||0));try{this.engine.setCircleDistribution(object.id,{count,startAngle});}catch(error){this.status(error.message);}const distributionCount=e.target.closest('[data-circle-distribution="count"]');if(distributionCount)distributionCount.parentElement.querySelector('output').textContent=distributionCount.value;this.renderCanvasPreview();return;}
-        const slider=e.target.closest('[data-style="strokeWidth"], [data-style="opacity"], [data-style="fontSize"]');
+        const regionPrecision=e.target.closest('[data-region-display="precision"]');
+         if(regionPrecision?.type==='range'){
+           const value=regionPrecision.parentElement.querySelector('output');
+           if(value)value.textContent=regionPrecision.value;
+         }
+         const slider=e.target.closest('[data-style="strokeWidth"], [data-style="opacity"], [data-style="fontSize"]');
         const pathSlider=e.target.closest('[data-path-parameter]');if(pathSlider?.hasAttribute?.('data-path-parameter')){pathSlider.parentElement.querySelector('output').textContent=Number((pathSlider.valueAsNumber*100).toFixed(1))+'%';}
         if(slider?.type==='range'){const value=slider.parentElement.querySelector('output');if(value)value.textContent=slider.value+(slider.dataset.style==='opacity'?'%':' px');}
       });
+      for(const node of [n.toolInstructions,n.fullscreenHint])this.on(node,"change",e=>{if(e.target.matches("[data-region-create-extent]")){this.regionExtent=e.target.value;this.renderInstructions();}});
       this.on(n.selectionPanel, "change", e => {
+        const extentControl=e.target.closest('[data-region-extent]');if(extentControl?.dataset?.regionExtent!=null&&this.selectedId){try{this.changeDocument(()=>this.execute('construction.setExtent',{id:this.selectedId,extent:extentControl.value}));}catch(error){this.status(error.message);}this.invalidate();return;}
+        const regionControl=e.target.closest('[data-region-display]');if(regionControl?.dataset.regionDisplay&&this.selectedId){const key=regionControl.dataset.regionDisplay,object=this.engine.get(this.selectedId),value=regionControl.type==='checkbox'?regionControl.checked:key==='precision'?(regionControl.value===''?null:regionControl.valueAsNumber):key==='position.dx'||key==='position.dy'?regionControl.valueAsNumber:regionControl.value;let fields;if(key==='position.mode')fields=[{path:'areaDisplay.position',value:value==='offset'?{mode:'offset',dx:object.areaDisplay.position.dx||0,dy:object.areaDisplay.position.dy||0}:{mode:'auto'}}];else if(key==='position.dx'||key==='position.dy')fields=[{path:'areaDisplay.position',value:{mode:'offset',dx:key==='position.dx'?value:object.areaDisplay.position.dx||0,dy:key==='position.dy'?value:object.areaDisplay.position.dy||0}}];else fields=[{path:'areaDisplay.'+key,value}];try{this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields}));}catch(error){this.status(error.message);}this.invalidate();return;}
         const distribution=e.target.closest('[data-circle-distribution]');if(distribution?.dataset.circleDistribution&&this.selectedId){const historyBefore=this.circleDistributionPreview?.history||this.history.capture();try{if(this.circleDistributionPreview){this.engine.load(JSON.parse(historyBefore.document));this.engine.model._nextId=this.circleDistributionPreview.nextId;}const object=this.engine.get(this.selectedId),prior=this.engine.model.circleDistributions.find(d=>d.pointIds.includes(object.id)),count=distribution.dataset.circleDistribution==='count'?distribution.valueAsNumber:(prior?.count||1),startAngle=distribution.dataset.circleDistribution==='startAngle'?distribution.valueAsNumber*Math.PI/180:(prior?.startAngle??2*Math.PI*(object.construction?.parameter||0));this.execute('circleDistribution.set',{pointId:object.id,count,startAngle});this.history.record(historyBefore);}catch(error){this.status(error.message);}this.circleDistributionPreview=null;this.invalidate();return;}
         const bindingInput=e.target.closest('[data-text-binding]');if(bindingInput?.dataset?.textBinding&&this.selectedId){const object=this.engine.get(this.selectedId),key=bindingInput.dataset.textBinding;let binding=object.textBinding?{...object.textBinding}:{schema:1,sourceId:'',property:'name',precision:null,prefix:'',suffix:''};if(key==='sourceId'){if(!bindingInput.value)binding=null;else{binding.sourceId=bindingInput.value;if(!MI.DynamicText.propertiesFor(this.engine.get(bindingInput.value)).includes(binding.property))binding.property='name';}}else binding[key]=key==='precision'?(bindingInput.value===''?null:Number(bindingInput.value)):bindingInput.value;try{this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields:[{path:'textBinding',value:binding}]}));}catch(error){this.status(error.message);this.invalidate();}return;}
         const angleDoc=e.target.closest('[data-angle-document]');if(angleDoc?.dataset?.angleDocument){try{const settings=MI.AngleMeasurements.document({...this.engine.model.meta.angleMeasurement||{schema:1,unit:'deg',precision:this.engine.model.meta.measurement?.precision??2},[angleDoc.dataset.angleDocument]:angleDoc.dataset.angleDocument==='precision'?angleDoc.valueAsNumber:angleDoc.value});this.changeDocument(()=>this.execute('document.setAngleMeasurement',{settings}));}catch(error){this.status(error.message);this.invalidate();}return;}
@@ -445,10 +482,12 @@
         if(event.type==='context-changed'||event.type==='disposed'){this.closeDialogs(true);}if(event.type==='context-changed'||event.type==='disposed'||this.interaction?.transaction){this.cancel();if(!this.toolAllowed(this.tool))this.tool='select';}
         this.selectedIds=this.selectedIds.filter(id=>this.capabilities(id).selectCanvas||this.capabilities(id).selectList);this.invalidate();
       }));
+      this.radialProperties=new MI.RadialProperties(this);
       this.invalidate();if(!this.runtime)this.savedDocument=JSON.stringify(this.engine.toJSON()); return this;
     }
     dispose() {
       this.closeDialogs(true); this.cancel(); this.flushEdits(); this.closeSplitMenu();this.closeCanvasTools();if(this.canvasFullscreen){this.syncFullscreen(false);if(this.document.fullscreenElement)this.document.exitFullscreen?.().catch(()=>{});}this.initialized = false; this.invalidateImport();
+      this.radialProperties?.dispose();this.radialProperties=null;
       for (const remove of this.listeners.splice(0)) remove();
       if (this.colorInput) this.colorInput.remove(); this.colorInput = null;
       this.engine.renderer.preview = null; this.feedback = null;
@@ -500,6 +539,7 @@
           if(role==='point')add(ref,distance(MI.ConstructionService.point(o,ref)));
           else if(role==='line'||role==='segment')add(ref,segment(o,ref));
           else if((role==='figure'||role==='triangle')&&o.type==='polygon')add(ref,MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
+          else if(role==='polygon'&&o.type==='polygon')add(ref,MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
           else {const radial=Math.hypot(point.x-o.cx,point.y-o.cy),edge=radial?{x:o.cx+(point.x-o.cx)*o.r/radial,y:o.cy+(point.y-o.cy)*o.r/radial}:{x:o.cx+o.r,y:o.cy};add(ref,role==='figure'&&radial<=o.r?0:distance(edge));}
         }
       }
@@ -523,9 +563,15 @@
     }
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
-      const sources=this.constructionSourcesAt(point,event,state.sources);
+      if(state.radialPlacement){this.radialPathPlacement(point,event,state);return;}
+      let sources=this.constructionSourcesAt(point,event,state.sources);
       if(!sources){this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}
-      const previousSources=state.sources.slice();state.sources=sources;
+      // The selected object may fill a later role (e.g. circle as the second
+      // source of a line-circle intersection). Insert it immediately when its
+      // role is reached; the shared geometry validator still owns validity.
+      if(state.radialPrefill&&sources.length===state.radialPrefill.index)
+        sources=[...sources,state.radialPrefill.source];
+      const previousSources=state.sources.slice();state.sources=sources;if(['circleSectorRegion','circleSegmentRegion'].includes(kind)&&sources.length===MI.ConstructionService.kinds[kind])state.extent=this.regionExtent||(event.shiftKey?'major':'directed');
       if(kind==='lineBetweenPoints'&&sources.length===2) {
         const firstObject=this.engine.get(sources[0].objectId),secondObject=this.engine.get(sources[1].objectId),first=MI.ConstructionService.point(firstObject,sources[0]),second=MI.ConstructionService.point(secondObject,sources[1]);
         if(sources[0].objectId===sources[1].objectId||Math.hypot(second.x-first.x,second.y-first.y)<=1e-9) {
@@ -538,11 +584,105 @@
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       if(kind==='angleDirections')state.sources=MI.ConstructionService.selectAngleArms(state.sources,state.anglePicks,new Map(this.engine.model.objects.map(o=>[o.id,o])));
       this.interaction=null;this.release(state);
-      try {let created=false;this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{})}).result.map(o=>o.id);created=true;});if(created){this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}else this.interaction={...state,sources:previousSources,pointerId:null};}
+      try {let created=false;this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{}),...(state.extent?{extent:state.extent}:{})}).result.map(o=>o.id);created=true;});if(created){this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}else this.interaction={...state,sources:previousSources,pointerId:null};}
       catch(error){this.status(error.message);}
       this.invalidate();
     }
-    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.tool = tool;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
+    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.regionExtent=undefined;this.tool = tool;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
+    // UI-RADIAL-9: generic adapter for any document object accepted by a
+    // registered construction contract. The service owns source matching;
+    // this controller only stages the existing create/interaction workflow.
+    startContextConstruction(toolId,objectId,planKey){
+      const kind=typeof toolId==='string'&&toolId.startsWith('construct:')?
+        toolId.slice(10):null;
+      const source=kind&&this.engine.get(objectId);
+      if(!source||this.selectedIds.length!==1||
+          this.selectedIds[0]!==objectId||!this.canvasSelectable(source)||
+          !this.toolCatalog.getTool(toolId)||!this.toolAllowed(toolId)||
+          (this.runtime&&!this.capabilities(objectId).sourceTools.includes(toolId))){
+        this.status('Deze constructie is niet beschikbaar voor het geselecteerde object.');
+        return false;
+      }
+      const plan=MI.ConstructionService.contextualPlans(source,kind)
+        .find(option=>option.key===planKey);
+      if(!plan){
+        this.status('De geselecteerde constructiebron past niet bij dit gereedschap.');
+        return false;
+      }
+      // Single-source measurements and compound predefined endpoint plans
+      // are already complete, so use the usual document command directly.
+      if(plan.mode==='complete'){
+        try{
+          this.changeDocument(()=>{
+            this.selectedIds=this.execute('construction.create',{
+              toolId,sources:plan.sources.map(ref=>({...ref}))
+            }).result.map(object=>object.id);
+          });
+          this.status('Gekoppelde constructie toegevoegd.');
+          this.invalidate();
+          return true;
+        }catch(error){
+          this.status(error.message);this.invalidate();return false;
+        }
+      }
+      const selectionBefore=this.selectedIds.slice();
+      this.setTool(toolId);
+      if(this.tool!==toolId)return false;
+      this.interaction={
+        mode:'construction',
+        sources:plan.sourceIndex===0?plan.sources.map(ref=>({...ref})):[],
+        ...(plan.sourceIndex>0?{
+          radialPrefill:{index:plan.sourceIndex,source:{...plan.sources[0]}}
+        }:{}),
+        ...(plan.mode==='placement'?{radialPlacement:true}:{}),
+        selectionIdsBefore:selectionBefore,pointerId:null
+      };
+      const hint=plan.mode==='placement'
+        ?'Klik op het bronobject om de puntpositie vast te leggen.'
+        :this.constructionHint(kind,plan.sourceIndex===0?1:0);
+      this.status((source.name||objectId)+' is vastgelegd. '+hint);
+      this.invalidate();
+      return true;
+    }
+    // A path-dependent point needs an explicit second click to choose its
+    // parameter. The selected geometric source is already known.
+    radialPathPlacement(point,event,state){
+      const kind=this.tool.slice(10),ref=state.sources?.[0],source=this.engine.get(ref?.objectId);
+      if(!source||!MI.ConstructionService.pathKind(kind)){
+        this.status('De bron van deze constructie is niet beschikbaar.');return;
+      }
+      const screen=this.transform().mathToScreen(point);
+      let distance=Infinity;
+      if(kind==='pointOnCircle'&&source.type==='circle'){
+        const edge=this.transform().mathToScreen({x:source.cx+source.r,y:source.cy});
+        const center=this.transform().mathToScreen({x:source.cx,y:source.cy});
+        distance=Math.abs(Math.hypot(screen.x-center.x,screen.y-center.y)-
+          Math.hypot(edge.x-center.x,edge.y-center.y));
+      }else if(kind==='pointOnSegment'){
+        const line=MI.ConstructionService.line(source,ref);
+        const a=this.transform().mathToScreen({x:line.x1,y:line.y1});
+        const b=this.transform().mathToScreen({x:line.x2,y:line.y2});
+        const dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy;
+        const t=length?Math.max(0,Math.min(1,
+          ((screen.x-a.x)*dx+(screen.y-a.y)*dy)/length)):0;
+        distance=Math.hypot(screen.x-a.x-t*dx,screen.y-a.y-t*dy);
+      }
+      if(distance>12){
+        this.status('Klik binnen 12 pixels van de geselecteerde lijn of cirkelrand.');
+        return;
+      }
+      const parameter=MI.ConstructionService.projectParameter(kind,source,ref,point);
+      try{
+        this.changeDocument(()=>{
+          this.selectedIds=this.execute('construction.create',{
+            toolId:this.tool,sources:state.sources,parameter
+          }).result.map(o=>o.id);
+        });
+        this.interaction=null;this.tool='select';
+        this.status('Afhankelijk punt toegevoegd.');
+      }catch(error){this.status(error.message);}
+      this.invalidate();
+    }
     begin(state, event) {
       this.clearHover();
       this.flushEdits();
@@ -864,7 +1004,7 @@
       this.closeDialogs(true); this.cancel(); this.flushEdits(); this.invalidateImport();
       let failure = null; if (this.services.draft) try { this.services.draft.clear(this.storage); } catch (e) { failure = e; }
       const r = this.engine.renderer;
-      this.execute("document.replace",{document:{ version: 2, type: "geometry", meta: {measurement:{...MI.MeasurementUnits.defaults},angleMeasurement:{schema:1,unit:'deg',precision:2}}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: true, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } }});
+      this.execute("document.replace",{document:{ version: 5, layerSchema:1, layers:[{id:"layer-1",name:"Basislaag",visible:true,members:[]}], type: "geometry", meta: {measurement:{...MI.MeasurementUnits.defaults},angleMeasurement:{schema:1,unit:'deg',precision:2}}, objects: [], presentation: { bounds: { ...DEFAULT_BOUNDS }, showAxes: r.showAxes, showGrid: true, showXAxis: true, showYAxis: true, showAxisLabels: true, showOrigin: true, coordinateSystem: "cartesian" } }});
       this.history.clear(); this.editBefore = null; this.selectedId = null; this.inspectorTarget="objects";this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status(failure ? "Concept kon niet worden gewist: " + failure.message : "Nieuwe illustratie gestart.");this.savedDocument=JSON.stringify(this.engine.toJSON());
     }
     loadDocument(data) { if(this.runtime)throw new MI.PermissionError("MODE_DENIED"); this.closeDialogs(true); this.cancel(); this.flushEdits(); this.execute("document.replace",{document:data}); this.invalidateImport(); this.history.clear(); this.editBefore = null; this.selectedId = null; this.inspectorTarget="objects";this.axisMenuOpen = false; this.hydrate(); this.invalidate(); this.status("Illustratie geladen.");this.savedDocument=JSON.stringify(this.engine.toJSON()); }
@@ -905,6 +1045,9 @@
     }
     openColor(id,property=null) {
       this.cancel(); this.flushEdits(); const object=this.engine.get(id); if(!object || object.locked || !this.colorInput) return;
+      // Region fill is the primary visible color. The inspector's separate
+      // Randkleur button still requests stroke explicitly.
+      if(property==null&&object.type==='region')property='fill';
       this.colorId=id; this.colorProperty=property;
       const none=this.document.getElementById('colorNone');if(none)none.hidden=property!=='fill';
       let color=property ? object.style[property] : this.services.color.value(object);
@@ -968,6 +1111,7 @@
       this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool && this.navigationMode!=="pan"));
       const navigationHeight=n.navigationTools?.parentElement?.offsetHeight;if(navigationHeight)this.document.documentElement?.style.setProperty("--navigation-height",navigationHeight+"px");
       this.restrictControls();this.renderSplitTools();this.renderCanvasTools();
+      this.radialProperties?.sync();
       n.crosshair.hidden = !this.interaction || this.interaction.mode !== "draw" || (this.feedback && this.feedback.snapped && r.showSnapPoints !== false);
       if (this.feedback && this.interaction && this.interaction.mode === "draw") { const p = this.transform().mathToScreen(this.feedback.point), rect = n.canvasWrap.getBoundingClientRect(); n.crosshair.style.left = p.x - rect.left + "px"; n.crosshair.style.top = p.y - rect.top + "px"; }
     }
@@ -977,7 +1121,7 @@
       const rows=[];
       const layers=this.engine.model.layers||[],esc=MI.escapeXml;
       const objectRow=object=>{
-        return '<div class="view-row'+(this.selectedIds.includes(object.id)?' view-row-selected':'')+'"><button class="view-name view-select-btn" type="button" data-select-object="'+MI.escapeXml(object.id)+'">'+MI.escapeXml(objectName(object))+'<span class="view-type">'+MI.escapeXml(object.id)+'</span></button><button class="eye-btn" title="Object tonen/verbergen" aria-label="Object tonen/verbergen" type="button" data-object-visibility="'+MI.escapeXml(object.id)+'">'+eyeIcon(object.visible!==false)+'</button></div>';
+        return '<div class="view-row'+(this.selectedIds.includes(object.id)?' view-row-selected':'')+'" '+(this.runtime?'':'draggable="true" data-drag-object="'+esc(object.id)+'"')+'><button class="view-name view-select-btn" type="button" data-select-object="'+MI.escapeXml(object.id)+'">'+MI.escapeXml(objectName(object))+'<span class="view-type">'+MI.escapeXml(object.id)+'</span></button><button class="eye-btn" title="Object tonen/verbergen" aria-label="Object tonen/verbergen" type="button" data-object-visibility="'+MI.escapeXml(object.id)+'">'+eyeIcon(object.visible!==false)+'</button></div>';
       };
       const groupsFor=layerId=>{for(const g of this.engine.model.groups||[])if(this.groupRoot(g.id)===g.id && (!layerId||MI.DocumentLayers.index(layers).owner.get(this.groupLeaves(g.id)[0])?.id===layerId)){const leaves=this.groupLeaves(g.id);rows.push('<div class="view-row'+(leaves.every(id=>this.selectedIds.includes(id))?' view-row-selected':'')+'"><button class="view-name view-select-btn" type="button" data-select-group="'+esc(g.id)+'"'+(this.runtime&&!leaves.every(id=>this.capabilities(id).selectList)?' disabled':'')+'>'+esc(g.name)+'<span class="view-type">'+leaves.length+' objecten &middot; '+esc(g.id)+'</span></button></div>');}};
 
@@ -991,8 +1135,8 @@
       }else{rows.push('<section data-unlayered><div class="unlayered-title">Objecten zonder lagen</div>');groupsFor(null);for(const object of this.engine.model.objects)rows.push(objectRow(object));rows.push('</section>');}
       if(!this.engine.model.objects.length)rows.push('<p class="help-text" data-empty-objects>Nog geen objecten. Kies een gereedschap om te tekenen.</p>');
       if(!this.runtime)rows.push('<div class="view-divider"></div><div class="view-row layer-add"><input type="text" data-layer-new-name aria-label="Naam nieuwe laag" maxlength="200" value="Nieuwe laag"><button type="button" class="secondary" data-layer-add aria-label="Laag toevoegen" title="Laag toevoegen">+</button></div>');
-      const host=this.nodes.viewList.parentElement,previousScroll=host?.scrollTop||0;this.nodes.viewList.innerHTML = rows.join("");
-      if(host){const section=this.nodes.layersSection,available=section?.getBoundingClientRect().height-(section?.querySelector('summary')?.getBoundingClientRect().height||40)-8;if(Number.isFinite(available) && available>0)host.style.maxHeight=Math.max(0,available)+'px';host.scrollTop=previousScroll;const key=JSON.stringify(this.selectedIds);if(key!==this.layerScrollSelectionKey){this.layerScrollSelectionKey=key;const selected=Array.from(this.nodes.viewList.querySelectorAll('[data-select-object]')).find(node=>node.dataset.selectObject===this.selectedId);if(selected){const row=selected.getBoundingClientRect(),bounds=host.getBoundingClientRect();if(row.bottom>bounds.bottom)host.scrollTop+=row.bottom-bounds.bottom+4;else if(row.top<bounds.top)host.scrollTop-=bounds.top-row.top+4;}}}
+      const host=this.document.getElementById('sidebarLayersPanel'),previousScroll=host?.scrollTop||0;this.nodes.viewList.innerHTML = rows.join("");
+      if(host){host.scrollTop=previousScroll;const key=JSON.stringify(this.selectedIds);if(key!==this.layerScrollSelectionKey){this.layerScrollSelectionKey=key;const selected=Array.from(this.nodes.viewList.querySelectorAll('[data-select-object]')).find(node=>node.dataset.selectObject===this.selectedId);if(selected){const row=selected.getBoundingClientRect(),bounds=host.getBoundingClientRect();if(row.bottom>bounds.bottom)host.scrollTop+=row.bottom-bounds.bottom+4;else if(row.top<bounds.top)host.scrollTop-=bounds.top-row.top+4;}}}
     }
     dynamicTextInspector(object){
       if(object.type!=='text'||object.construction||object.textContent||this.selectedIds.length!==1)return '';
@@ -1035,7 +1179,7 @@
       const pathParameter=!this.runtime&&MI.ConstructionService.pathKind(object.construction?.kind)?'<label>Positie op pad<input data-path-parameter type="range" min="0" max="'+(object.construction.kind==='pointOnCircle'?'.999':'1')+'" step=".001" value="'+object.construction.parameter+'"'+(object.locked?' disabled':'')+' aria-label="Positie op pad"><output>'+Number((object.construction.parameter*100).toFixed(1))+'%</output></label>':'';
       const distribution=this.distributionInspector(object);
       const actions=info+this.constructionInputs(object)+pathParameter+distribution+detach+assignment;
-      const kind=MI.escapeXml(({point:'Punt',line:'Lijnstuk',straight:'Rechte',ray:'Halfrechte',vector:'Vector',circle:'Cirkel',text:'Tekst',polygon:'Veelhoek',dimension:'Lengtemaat',angle:'Hoek'})[object.type]||object.type);
+      const kind=MI.escapeXml(({point:'Punt',line:'Lijnstuk',straight:'Rechte',ray:'Halfrechte',vector:'Vector',circle:'Cirkel',text:'Tekst',polygon:'Veelhoek',region:'Gebied',dimension:'Lengtemaat',angle:'Hoek'})[object.type]||object.type);
       const heading='<div class="object-heading"><div>'+(this.selectedIds.length>1?'<strong>'+this.selectedIds.length+' objecten geselecteerd</strong>':'<input class="object-name-input" type="text" data-edit="name" aria-label="Objectnaam" value="'+MI.escapeXml(object.name)+'"'+(object.locked?' disabled':'')+'>')+'<span class="object-kind">'+(this.selectedIds.length>1?'Multiselectie':kind)+'</span></div>'+toolbar+'</div>';
       if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object);return;}
       const displayNumber=value=>String(Number(Number(value).toFixed(2)));
@@ -1052,21 +1196,36 @@
       }
       html+='</details>';
       const style=object.style,esc=MI.escapeXml;
-      html+='<fieldset class="object-style"><legend>Stijl</legend><div class="inspector-color-row"><span>'+(object.type==='text'?'Tekstkleur':'Lijnkleur')+'</span><button type="button" class="secondary inspector-color" data-style-color="'+esc(object.id)+'" aria-label="'+(object.type==='text'?'Tekstkleur wijzigen':'Lijnkleur wijzigen')+'" title="Kleur wijzigen" style="--object-color:'+esc(object.type==='text'?style.fill:style.stroke)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
+      html+='<fieldset class="object-style"><legend>Stijl</legend><div class="inspector-color-row"><span>'+(object.type==='text'?'Tekstkleur':object.type==='region'?'Randkleur':'Lijnkleur')+'</span><button type="button" class="secondary inspector-color" data-style-color="'+esc(object.id)+'" aria-label="'+(object.type==='text'?'Tekstkleur wijzigen':'Lijnkleur wijzigen')+'" title="Kleur wijzigen" style="--object-color:'+esc(object.type==='text'?style.fill:style.stroke)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
       if(object.type==='text') html+='<label>Tekstgrootte<span class="stroke-slider"><input aria-label="Tekstgrootte" data-style="fontSize" type="range" min="1" max="'+Math.max(96,style.fontSize)+'" step="1" value="'+esc(style.fontSize)+'"><output>'+esc(style.fontSize)+' px</output></span></label>';
       else {
         html+='<label>Lijndikte<span class="stroke-slider"><input aria-label="Lijndikte" data-style="strokeWidth" type="range" min="0" max="'+Math.max(20,style.strokeWidth)+'" step="0.1" value="'+esc(style.strokeWidth)+'"><output>'+esc(style.strokeWidth)+' px</output></span></label>';
         const options=[['','Doorgetrokken'],['8 5','Gestreept'],['2 5','Gestippeld'],['8 4 2 4','Streep-punt']];
         if(!options.some(o=>o[0]===style.dash)) options.push([style.dash,'Eigen patroon']);
         html+='<div class="line-pattern-row"><span>Lijnpatroon</span><div class="line-patterns" role="group" aria-label="Lijnpatroon">'+options.map(([value,label])=>'<button type="button" class="secondary" data-style="dash" data-style-dash value="'+esc(value)+'" aria-label="'+label+'" title="'+label+'" aria-pressed="'+(style.dash===value)+'"><svg viewBox="0 0 60 14" aria-hidden="true"><line x1="3" y1="7" x2="57" y2="7" stroke="currentColor" stroke-width="2"'+(value?' stroke-dasharray="'+esc(value)+'"':'')+'/></svg></button>').join('')+'</div></div>';
-        if(['point','circle','polygon'].includes(object.type)) html+='<div class="inspector-color-row"><span>Vulkleur</span><button type="button" class="secondary inspector-color" data-fill-object="'+esc(object.id)+'" aria-label="Vulkleur wijzigen" title="Vulkleur wijzigen" style="--object-color:'+esc(style.fill==='none'?'transparent':style.fill)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
+        if(['point','circle','polygon','region'].includes(object.type)) html+='<div class="inspector-color-row"><span>Vulkleur</span><button type="button" class="secondary inspector-color" data-fill-object="'+esc(object.id)+'" aria-label="Vulkleur wijzigen" title="Vulkleur wijzigen" style="--object-color:'+esc(style.fill==='none'?'transparent':style.fill)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
       }
       html+='<label>Dekking<span class="stroke-slider"><input aria-label="Dekking" data-style="opacity" type="range" min="0" max="100" step="1" value="'+esc(style.opacity*100)+'"><output>'+esc(Math.round(style.opacity*100))+'%</output></span></label><p class="help-text">0% is onzichtbaar, 100% is volledig zichtbaar.</p></fieldset>';
       const split=html.indexOf('<details data-property-section="labels"'),appearance=html.indexOf('<fieldset');
       if(object.type==='text')html='<details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       else html='<details data-property-section="appearance" open><summary>Uiterlijk</summary>'+html.slice(appearance)+'</details><details data-property-section="geometry" open><summary>Object en geometrie</summary>'+html.slice(0,split)+'</details>'+html.slice(split,appearance);
       html=html.replace('<details data-property-section="labels" open><summary>Label en meting</summary></details>','');
-      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+html;
+      const regionDisplay=object.type==='region'?(()=>{
+        const d=object.areaDisplay;
+        // Null/legacy precision still has an effective default of 2 decimals;
+        // old documents with values >3 remain loadable, but the current UI
+        // intentionally exposes only the requested 0..3 range.
+        const precision=Math.min(3,Math.max(0,d.precision??2));
+        const extentControl=['circleSectorRegion','circleSegmentRegion'].includes(object.construction?.kind)&&!this.runtime
+          ?MI.ToolInstructions.extentControl(object.construction.extent,'data-region-extent',object.construction.kind):'';
+        const visible='<label class="style-toggle"><input type="checkbox" data-region-display="visible"'+(d.visible?' checked':'')+'>Oppervlakte weergeven</label>';
+        const mode='<label>Weergave<select data-region-display="mode"><option value="value"'+(d.mode==='value'?' selected':'')+'>Alleen waarde</option><option value="equation"'+(d.mode==='equation'?' selected':'')+'>A = waarde</option></select></label>';
+        const slider='<label>Precisie (decimalen)<span class="region-precision-slider"><input type="range" min="0" max="3" step="1" data-region-display="precision" aria-label="Precisie oppervlakte: aantal decimalen" value="'+precision+'"><output aria-live="polite">'+precision+'</output></span></label>';
+        const help='<p class="help-text">Versleep het oppervlaktelabel rechtstreeks op het canvas om het te verplaatsen.</p>';
+        const output='<output>'+MI.escapeXml(object.constructionValid===false?'Niet beschikbaar':MI.RegionGeometry.format(object.regionArea,d,this.engine.model.meta.measurement))+'</output>';
+        return extentControl+'<details data-property-section="region" open><summary>Oppervlakte</summary>'+visible+mode+slider+help+output+'</details>';
+      })():'';
+      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+regionDisplay+html;
     }
     async exportImage(kind){
       try{

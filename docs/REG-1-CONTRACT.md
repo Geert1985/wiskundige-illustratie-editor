@@ -1,13 +1,23 @@
 # REG-1 — Normatief contract voor dynamische gebieden
 
-**Contractversie:** 1.0.1
-**Datum:** 2026-10-13
-**Status:** ontwerp ter expliciete gebruikersgoedkeuring; geen productie-implementatie
+**Contractversie:** 1.1.0
+**Datum:** 2026-10-14
+**Status:** gerichte semantiek vastgesteld op expliciete gebruikersinstructie; implementatie op REG-2-branch ter review
 **Repositorybasis:** `main` op `f4039842c44885d739b624d9d67bbfdd75d2394e`
 **Afhankelijk:** CORE-1-architectuur v1.1.0
 **Volgende poort:** REG-2 mag uitsluitend starten na expliciete goedkeuring van dit contract.
 
 Dit contract specificeert drie zelfstandige, dynamisch gekoppelde gebiedsobjecten: een gebied op een bestaande eenvoudige veelhoek, een cirkelsector en een cirkelsegment. Het specificeert geen toolinterface, radiaalmenu of implementatie. De UI- en interactie-uitvoering blijft REG-2; UI-R1/UI-R2 blijven afzonderlijke milestones.
+
+### Wijziging v1.1.0 — gerichte standaardmodus
+
+Deze sectie vervangt uitsluitend de standaardkeuze en de ongerichte bronvolgorderegel hieronder; de beschreven `minor`-/`major`-semantiek blijft ongewijzigd van toepassing wanneer die modi expliciet zijn gekozen.
+
+Voor `circleSectorRegion` en `circleSegmentRegion` is `extent:'directed'` de standaard bij nieuwe creatie. Bron A is de beginrichting, bron B de eindrichting: `startAngle=α`, `θ=mod(β−α,2π)`. Het gekleurde gebied volgt de tegenwijzerzinse boog van A naar B. Omwisseling van A en B kiest het complementaire boogdeel. Bij 90°, 180°, 240° en 300° volgt de sweep precies die hoek; passage door 180° veroorzaakt geen zijdewisseling. Er wordt geen pointer-, frame- of bewegingsgeschiedenis gebruikt. Bij de 0°/360°-grens volgt de modulohoek; exact samenvallende richtingen betekenen 0° en `DEGENERATE_REGION`, nooit automatisch een volledige schijf. Een expliciete `major`-keuze bij samenvallende richtingen levert zoals voorheen een volledige schijf.
+
+`extent` blijft het enige receptveld voor deze keuze, met gesloten waarden `directed`, `minor`, `major`. De UI biedt Gerichte sector / Gerichte segmentboog, Altijd kleinste gebied en Altijd grootste gebied. Opgeslagen recepten vereisen een expliciete waarde; een ontbrekend veld bij import wordt afgewezen. Bestaande opgeslagen `minor`-/`major`-recepten worden niet gemigreerd en behouden exact hun originele betekenis. De commandstandaard geldt alleen bij nieuwe creatie. Versie 8, regionSchema 1 en constructionSchema 5 blijven behouden: objectvelden en bronrollen veranderen niet; oudere readers wijzen de onbekende `directed`-waarde atomair af via hun gesloten receptvalidator. Geen downgrade of automatische herschrijving naar `minor`/`major`.
+
+Oppervlakte, label, selectie en export volgen dezelfde sweep. De sectorboog ligt op de broncirkel, met twee zichtbare radiale begrenzingen; het segment wordt door de gerichte boog en koorde begrensd. Voor θ≤π gebruikt de segmentarea de kleine formule en voor θ>π de numeriek stabiele complementformule. Het wijzigen van `extent` blijft één command en undo-stap; restricted creatie vereist dezelfde tool- en bronrechten, wijzigen van een bestaand recept blijft author-only.
 
 ## 1. Normatieve grenzen en hergebruik
 
@@ -78,7 +88,7 @@ De toegestane constructievormen zijn strikt:
 { "kind": "circleSegmentRegion", "sources": [{"objectId":"circle-id"},{"objectId":"point-a"},{"objectId":"point-b"}], "extent": "major" }
 ```
 
-Onbekende sleutels, verkeerde bronvolgorde, onjuist aantal bronnen, een onbekende `extent` of ontbrekende regio-/constructieschema's worden atomair afgewezen. De twee puntbronnen zijn richtingsankers voor stralen vanuit het cirkelcentrum; zij hoeven niet op de cirkelomtrek te liggen. Het snijpunt van hun ray met de cirkel wordt exact berekend en is geen extra documentobject. Beide punten moeten een geldige niet-nulrichting vanaf het centrum geven. Omkeren van de puntreferenties verandert de regio niet; `extent` kiest expliciet de kleinere of complementaire regio. Bij gelijke richtingen is de minorvariant nul en dus degeneratief; de majorvariant is de volledige schijf.
+Onbekende sleutels, verkeerde bronvolgorde, onjuist aantal bronnen, een onbekende `extent` of ontbrekende regio-/constructieschema's worden atomair afgewezen. De twee puntbronnen zijn richtingsankers voor stralen vanuit het cirkelcentrum; zij hoeven niet op de cirkelomtrek te liggen. Het snijpunt van hun ray met de cirkel wordt exact berekend en is geen extra documentobject. Beide punten moeten een geldige niet-nulrichting vanaf het centrum geven. Voor de ongerichte minor-/major-modi verandert omkeren van de puntreferenties de regio niet; `extent` kiest expliciet de kleinere of complementaire regio. Bij gelijke richtingen is de minorvariant nul en dus degeneratief; de majorvariant is de volledige schijf.
 
 ## 3. Bronnen en geometrische semantiek
 
@@ -87,7 +97,7 @@ Onbekende sleutels, verkeerde bronvolgorde, onjuist aantal bronnen, een onbekend
 | Recept | Bronvolgorde en rol | Geldigheid |
 |---|---|---|
 | `polygonRegion` | 1. `polygon` | Bestaand geldig, eenvoudig polygonobject met 3–256 vertices; een vrije of G-TRI1-driehoek is geldig. |
-| `circleSectorRegion` | 1. `circle`, 2. `point`-richting A, 3. `point`-richting B | Cirkelradius `r > 0`; beide punten zijn bestaande hele point-objecten; centrum en beide richtingpunten leveren niet-nul vectoren. `extent` is `minor` of `major`. |
+| `circleSectorRegion` | 1. `circle`, 2. `point`-richting A, 3. `point`-richting B | Cirkelradius `r > 0`; beide punten zijn bestaande hele point-objecten; centrum en beide richtingpunten leveren niet-nul vectoren. `extent` is `directed`, `minor` of `major`. |
 | `circleSegmentRegion` | Zelfde als sector | Zelfde bronregels. |
 
 Alle referenties zijn hele objectreferenties `{objectId}`; polygon vertex-/edge-parts zijn hier geen zelfstandige bronnen. De bronobjecten moeten bestaan, actueel, beschikbaar en volgens de bestaande runtime voor het gevraagde `construct:*`-tool-ID leesbaar/gebruikt mogen worden. Een reeds afhankelijke bron blijft aan de bestaande construction DAG gekoppeld. Een bron mag niet dezelfde regio zijn of een downstream-afhankelijke cyclus vormen. `polygonRegion` kan een G-TRI1-driehoek gebruiken; zijn vertices volgen diens huidige drie puntbronnen transitief.
@@ -203,4 +213,4 @@ Node-tests bewijzen service-/schema-/numerieke contracts met onafhankelijk berek
 
 ## 9. Out of scope en resterende goedkeuring
 
-REG-1 definieert geen radiaalmenu, nieuwe property-inspector, plotter, Boolean-regio, holes, functiegebied, learner-facing editing, drag van een afgeleide regio of text-source binding voor region-area. UI-R1 gaat pas na REG-2 volgens de roadmap. Er zijn geen inhoudelijke sweep-/area- of schema-vragen meer opengelaten in dit voorstel. De gebruiker moet vóór implementatie expliciet goedkeuren: (a) de nieuwe `region`-type-/v8-/regionSchema1-/constructionSchema5-uitbreiding en (b) de restricted-rights-matrix in §6. Tot die goedkeuring is REG-2 geblokkeerd en is geen productiecode toegestaan.
+REG-1 definieert geen radiaalmenu, nieuwe property-inspector, plotter, Boolean-regio, holes, functiegebied, learner-facing editing, drag van een afgeleide regio of text-source binding voor region-area. UI-R1 gaat pas na REG-2 volgens de roadmap. Er zijn geen inhoudelijke sweep-/area- of schema-vragen meer opengelaten in dit voorstel. De gebruiker moet vóór implementatie expliciet goedkeuren: (a) de nieuwe `region`-type-/v8-/regionSchema1-/constructionSchema5-uitbreiding en (b) de restricted-rights-matrix in §6. De gebruikersinstructie in deze correctieronde machtigt de gerichte uitbreiding volgens v1.1.0; REG-2 stopt vóór merge voor onafhankelijke review.

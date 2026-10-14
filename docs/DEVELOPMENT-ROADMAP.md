@@ -1,8 +1,10 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.6.0 (SYNC-1 status and REG-1 contract, 2026-10-13)
-Status: T5a/full text workspace remain integrated as previously recorded. M6a, M6b, G-TRI1 and UI-T1 are integrated on `main` at `f403984`; their reports retain open manual acceptance. CORE-1 is updated against that code; REG-1 contract is proposed for approval. No REG-2 or UI-R1 implementation has started. Sequence: CORE-1 → REG-1 → REG-2 → UI-R1 → UI-R2.
-Date: 2026-10-13
+Version: 2.8.1 (UI-RADIAL-10 region presentation and construction-scroll refinement, 2026-10-14)
+Status: **current working-branch overview**: UI-RADIAL-1–9 are implemented on `codex/ui-radial-7-point-context-constructions`, manually reviewed in stages by the user, not merged to `main`, and not automatically retested in this development sequence. REG-2 and the sidebar/layer integration are present in the feature-branch lineage; this is NOT a claim of `main` integration or full release verification. Previous gates and historical statuses below refer to their original dated snapshots. Read the v2.8.0 addendum and `docs/UI-RADIAL-9-CONTRACT-DRIVEN.md` before following older UI-R1–R3 planning.
+Date: 2026-10-14
+
+> **Lees eerst:** [AGENTS.md](../AGENTS.md) en [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md). De oorspronkelijke gate- en roadmapteksten blijven als historische momentopname beschikbaar; v2.8.0 is de actuele status op de bovengenoemde ontwikkelbranch. De projectbrede roadmap en eerder goedgekeurde FUN-OBJ/MAT-OBJ-uitbreidingen blijven volledig behouden.
 
 ## Baseline
 User-reported 0A–0D PASS on chatgpt/math-illustration-stabilization, 0D HEAD 297b4d7c834fe0cd9f9b01bc3a43a7d592ef2713, 60/60 Node tests and Edge tests. Verify repository and user's manual acceptance before proceeding. User reports development has advanced beyond phase 0 and already includes bisectors, parallels, perpendiculars, tangents, area and circumference. Do not assume 0E is still pending; inspect actual HEAD and current backlog.
@@ -871,3 +873,91 @@ Deze actuele status vult de historische roadmap v2.5.0 aan; eerdere plannen, mil
 **Gereedschapsclassificatie:** categorie volgt primaire taak, niet de prefix van een ID of alleen het resultaatobjecttype. `Vrije objecten` bevat handmatig getekende primaire geometrie; `Constructies` bevat afgeleide meetkundige punten/lijnen/cirkels en de G-TRI1-driehoek; `Meten & analyseren` bevat meet-/analyseacties; `Gebieden & opvulling` bevat selecteerbare afhankelijke gevulde polygon-, sector- en segmentgebieden. Overige bestaande topgroepen behouden hun betekenis. Een actief catalogusitem vereist een bestaande stabiele tool-ID, passend command-ID en bestaande autorisatie. `planned` is inert en heeft geen `data-tool`, command-ID, focusstop of uitvoeractie. Bestaande ID's wijzigen niet; nieuwe REG-2-ID's zijn `construct:polygonRegion`, `construct:circleSectorRegion` en `construct:circleSegmentRegion`.
 
 De normatieve numerieke, geometrische, schema-, permission- en exportgates staan in REG-1 v1.0.1. Deze roadmapstatus start REG-2, UI-R1 of UI-R2 niet en markeert geen resterende handmatige acceptatie als voltooid.
+
+
+## Roadmap v2.7.0 — expliciete functie- en matrixobjecten (2026-10-14)
+
+**Status:** roadmap- en productcontractaanvulling; geen productiecode, schemas, commandtypes of tests gewijzigd. Bron voor deze aanvulling: de bestaande v2.6.0-roadmap op branch \`codex/reg-2-dynamic-regions\`, die bij het opstellen vier commits vóór op \`main\` lag. De status van REG-2 in de historische SYNC-1-sectie is een momentopname en wordt door deze documentatie niet achteraf herschreven. Deze uitbreiding vormt **geen** impliciete GO voor implementatie of merge.
+
+**Productbesluit:** functies en matrices mogen niet uitsluitend verborgen rekenresultaten of getekende SVG-vormen zijn. Ze moeten als **getypeerde, benoemde, herbruikbare wiskundige entiteiten** kunnen functioneren. Hun definitieve opslagvorm (top-level object, apart documentregister of gedeelde waardebron) wordt pas na een afzonderlijke architectuur-/permissieaudit gekozen. Vermijd twee onafhankelijke mathematische bronnen van waarheid.
+
+### FUN-OBJ — Herbruikbaar functieobject (plaatsing bij M11; analyse bij M12; interactie bij M13)
+
+| Werkpakket | Geplande scope | Afhankelijkheden/acceptatie | Status |
+|---|---|---|---|
+| **FUN-OBJ-1: contract** | Stabiele functie-ID en zichtbare naam; getypeerd voorschrift/AST; parameters; domein; geldigheid/undefined-regio's; koppeling met bestaande K2-functieservice en expression-engine | M11, K2 en bestaande T5a-parser/evaluator verifiëren; geen tweede interpreter, geen JavaScript-eval; eenheden, numerieke grenzen en versiebeheer expliciet definiëren | \`planned\` |
+| **FUN-OBJ-2: grafische representatie** | Functies \`y=f(x)\` als selecteerbare, stijlbare grafiek op het bestaande illustratorcanvas; kleur, lijndikte/patroon, zichtbaarheid, naamlabel, segmentatie/discontinuïteiten, viewport en eventueel asymptoten | M11a; robuuste adaptive sampling/clipping, geen koppeling van de functie-identiteit aan een tijdelijke SVG-path; SVG/PNG, hit-test, zoom, pan, beperkingen/rechten | \`planned\` |
+| **FUN-OBJ-3: afgeleide analyses** | Gekoppelde nulpunten, functiedoorsneden, extrema, raaklijn/afgeleide, integraalgrenzen en Riemannsom; behoud van dynamische bronreferenties | M12a–c; numerieke foutcontracten, degeneratie/geen oplossing, stale recalculations, dependency graph en Undo/Redo | \`planned\` |
+| **FUN-OBJ-4: parameterkoppeling** | Functieparameters koppelen aan bestaande/geplande sliders, interactieve lessen en getypeerde tekstwaarden | M13, M14, T5c en permissiemodel; geen direct DOM-to-model pad; export/replay deterministisch | \`planned\` |
+
+**Minimale zichtbare eigenschappen van een functie:** identiteit/naam (bv. \`f\`), voorschrift, domein, parameterdefinities, kleur, lijnpatroon/dikte, label, zichtbaarheid en document-/asreferentie. **Afgeleide/read-only** eigenschappen zoals functiewaarde op een punt, intercepts of asymptoten komen pas beschikbaar volgens het passende M12-contract. Parametrische/impliciete functies (M11b/c) gebruiken dezelfde gedeelde functie- en evaluatieprincipes maar vereisen eigen getypeerde varianten; forceer ze niet in de \`y=f(x)\`-vorm.
+
+### MAT-OBJ — Getypeerde matrixwaarde en visueel matrixobject (K4, M7, teksteditor)
+
+| Werkpakket | Geplande scope | Afhankelijkheden/acceptatie | Status |
+|---|---|---|---|
+| **MAT-OBJ-1: matrixwaarde** | Stabiele ID/naam, getypeerde dimensies \`m×n\`, celwaarden/expressies en expliciet numeriek/exact contract; validatie van afmetingen, overflow en singulariteit | K4; één centrale matrix-/vectoralgebraservice, compatibel met bestaande T5a/K1/K2 waardecontracten; geen tweede evaluator | \`planned\` |
+| **MAT-OBJ-2: rekenen** | Optellen, vermenigvuldigen, transponeren, determinant, inverse, RREF en waar van toepassing rang; gecontroleerde dimensie- en singulariteitsfouten | K4, numerieke golden tests/onafhankelijke orakels; veilige dimensie-/geheugenlimieten en versiebeheer | \`planned\` |
+| **MAT-OBJ-3: visuele editor** | Matrix als leesbaar én bewerkbaar object/waarde op het canvas via de bestaande tekstwerkruimte: cellen, haken, lettertype, stijl, schaal, labels en selectie | T1–T4 tekst-layout/export, toekomstige T5c bronbinding; geen tweede rich-text-editor, geen gecachte onafhankelijke matrixwaarheid | \`planned\` |
+| **MAT-OBJ-4: geometrische koppeling** | Typisch 2×2 voor lineaire vlaktransformaties; 3×3 homogene matrices voor affiene transformaties als afzonderlijk goedgekeurd contract; dynamische koppeling aan objecten | M7; expliciete conventie rij-/kolomvector, volgorde van vermenigvuldiging, affine versus projectieve semantiek, degeneratie en bronafhankelijkheid | \`planned\` |
+
+**Minimale eigenschappen:** naam, afmetingen, individuele elementen, weergavenotatie, precisie/exactheid waar ondersteund, label en stijleigenschappen. Een **matrixwaarde** is niet automatisch een geometrisch canvasobject. De editor toont een gecontroleerde visuele projectie van diezelfde waarde, bij voorkeur via de bestaande tekst-/formulelayout. Bij matrixgestuurde geometrie mag wijziging van een cel na geldige commit een afhankelijke transformatie opnieuw berekenen; matrixopslag en grafische weergave blijven gescheiden.
+
+### Overkoepelende ontwerp- en veiligheidsgates
+
+1. **Eén rekenwaarheid:** hergebruik \`expression-engine\`, bestaande typed source adapters en geplande K2/K4-services; geen aparte functieparser, vector-/matrixengine of grafiekcalculator.
+2. **Eén geometrische waarheid:** M7/M11/M12 integreren met bestaande model-/constructie-/transformatiecontracten, selectie, undo/redo, documentvalidatie en persistente IDs.
+3. **Schema- en permissiepoort vóór implementatie:** documentversie, bronnen/capabilities, restricted projections, author/course/assessment, locks, duplicatie, verwijdercascade, import, export en semantic replay moeten expliciet worden ontworpen en goedgekeurd.
+4. **Presentatie:** objecten en resultaten zijn bereikbaar via de bestaande inspector en later de contextuele radiale eigenschappenbediening; keyboard/touch/screenreader/fullscreen moeten werken; geen uitsluitend visuele representatie.
+5. **Numerieke veiligheid:** ongedefinieerde functies, discontinuïteiten, divergente evaluatie, dimensiemismatch, singuliere matrices, zeer grote getallen, schaal en eenheden hebben gedefinieerd fout- of invalid-beleid; geen stilzwijgende fictieve precisie.
+6. **Relevante tests:** onafhankelijke algebra- en functietests, bronafhankelijkheden, matrixtransformatie, Undo/Redo, duplicatie, import/legacy, restricted-permissies, deterministische SVG/PNG en real-browser regressies. Rapporteer werkelijk uitgevoerde tests; documentatie-only is niet hetzelfde als PASS.
+7. **Geregisseerde uitvoering:** FUN-OBJ en MAT-OBJ zijn **aanvullingen op** M7/M11/M12/M13 en K4/T5; ze vervangen geen bestaande milestone en geven geen toestemming voor implementatie. Neem ze mee bij de latere milestone-specificaties, in kleine afzonderlijk te accepteren pakketten.
+
+**Voorgestelde plaats in gereedschappen:** grafische functies onder **Functies & grafieken**; matrices als wiskundige waardebron via **Tekst & interactie** en calculator/K4, met **Matrixtransformaties** onder **Transformeren**. Geen duplicaat-ID of tweede eigenaar voor dezelfde matrixfunctie. Voor een functionele matrixeditor pas een afzonderlijk nieuw gereedschap toe na een catalogus-/UX-besluit.
+
+
+## Roadmap v2.8.0 — DOC-RADIAL-1: consolidatie van UI-RADIAL-1–9 (2026-10-14)
+
+**Type:** documentatie- en statusconsolidatie. Geen nieuwe geometrische productiecode, tests of permissiewijzigingen. **Actuele bron:** featurebranch `codex/ui-radial-7-point-context-constructions` na UI-RADIAL-9; `main` is hiermee niet impliciet bijgewerkt.
+
+### Actueel statusoverzicht (featurebranch, niet historisch herinterpreteren)
+
+| Werkpakket | Inhoud en actuele bron | Implementatie | Handmatige beoordeling | Automatische tests | Merge |
+|---|---|---|---|---|---|
+| UI-RADIAL-1–3 | Contextueel wiel, zwevende inspector in plaats van permanente rechterbalk, pointer-/contextafhandeling; [oorspronkelijk verslag](UI-RADIAL-1-REPORT.md) | Op featurebranch | Iteratief bijgestuurd | Niet uitgevoerd in dit UI-RADIAL-traject | Niet op `main` |
+| UI-RADIAL-4–6 | Compacte navy/gold-ring met zes gebogen segmenten (ongeveer 322 px), sleepgreep en goedgekeurde actieve indicator; [vormgevingsverslag](UI-RADIAL-4-REPORT.md) | Op featurebranch | Iteratief beoordeeld | Niet uitgevoerd | Niet op `main` |
+| UI-RADIAL-7A/B/C | Exclusieve puntcategorieën, contextuele puntconstructies, grotere aanklikzone, uitsluitend rechtsklik; [historisch pilotverslag](UI-RADIAL-7-POINT-PILOT.md) | Op featurebranch | Gebruiker bevestigt werking | Niet uitgevoerd | Niet op `main` |
+| UI-RADIAL-8 | Cirkel en lineaire objecten: gedeelde constructies, voorinvulling van latere bronnen, eindpuntpaar; [pilotverslag](UI-RADIAL-7-POINT-PILOT.md) | Op featurebranch | Gebruiker bevestigt werking | Niet uitgevoerd | Niet op `main` |
+| UI-RADIAL-9 | Generieke contractgestuurde bronplannen, één starter, ook driehoeken/veelhoeken via normale rollen; [actueel normatief contract](UI-RADIAL-9-CONTRACT-DRIVEN.md) | Op featurebranch | Gebruiker bevestigt werking | Niet uitgevoerd | Niet op `main` |
+| DOC-RADIAL-1 | Architectuurafspraken, statussen en Codex-bronvoorrang consolideren; [AGENTS.md](../AGENTS.md) en dit addendum | Documentatie-only | Nog niet apart afgetekend | Geen tests uitgevoerd | Niet op `main` |
+
+**Normatief:** [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md); [CORE-1](CORE-1-ARCHITECTURE-DESIGN.md) is de onderliggende geometrische architectuur. De vroegere UI-R1–R3-voorstellen en hun instructies om een permanente **rechter inspector** te behouden zijn **historische ontwerpbeslissingen**, vervangen door de later afzonderlijk goedgekeurde zwevende detailweergave.
+
+### Product- en architectuurafspraken die voortaan moeten blijven gelden
+
+1. Voor één geselecteerd object met geldige bronplannen: **Constructie, Uiterlijk, Geometrie, Relaties, Acties, Alles**. `Alles` blijft de volledige inspector; labelzichtbaarheid is een bestaande actie en er wordt geen extra Labels-categorie voor dergelijke objecten aangemaakt.
+2. Het radiaalmenu opent alleen met **rechtsklikken op de geometrie**. Normale linkermuisklikselectie en verslepen tonen geen los eigenschappenicoon; rechts-sleep kan kaderselectie blijven. Het compacte wiel wordt alleen via de greep verplaatst; categorieklikken houden het anker vast.
+3. **Niet de UI maar de constructieservice bepaalt toepasselijkheid**: `ConstructionService.contextualPlans(object,kind)` gebruikt bestaande bronrollen en referenties. `ToolCatalog` beperkt tot geïmplementeerde gereedschappen; permissies bepalen zichtbaarheid en uitvoering.
+4. **Eén startfunctie**, `EditorApp.startContextConstruction(toolId,objectId,planKey)`, gebruikt `prefill`, `complete` en `placement`. Alle modelmutaties blijven via bestaande geautoriseerde `construction.create`-commands en geschiedenis.
+5. Voor **nieuwe objecttypen** blijft implementatie van de nodige geometrische rol-/onderdeelreferenties, geldige toolregistratie en soms gespecialiseerde interactie vereist. Er mag geen radiale objecttype-whitelist opnieuw verschijnen. De bestaande keuze van maximaal één plan per gereedschap en uitzonderingen zoals cirkelverdeling/gerichte hoekarmen zijn expliciete grenzen, geen reeds opgeloste functionaliteit.
+6. Houd **gebruikersacceptatie en automatische verificatie gescheiden**. Gebruikersfeedback bevestigt dat de huidige radiale constructiewerkwijze functioneert; er is daarmee niet verklaard dat alle regressie-, toegangs-, mobiele of exportscenario's automatisch getest of gemerged zijn.
+
+### Vervolgpoort
+
+UI-RADIAL-9 vraagt **geen automatische uitbreiding** naar nieuwe constructies of schemawijzigingen. Wanneer nieuwe objecten of bronsoorten worden geïmplementeerd: model en broncontract → catalogus → `contextualPlans` → bestaande starter/commando en rechten → gerichte verificatie volgens gebruikersopdracht. Een toekomstige merge naar `main` moet als afzonderlijke beslissing worden behandeld.
+
+**Behouden oudere plannen:** M7/M11–M13 en K4/T5 voor functies/matrices (v2.7.0) blijven ongewijzigd gepland. Dit addendum verandert geen historische testresultaten of eerdere beslissingen.
+
+
+## Roadmap v2.8.1 — UI-RADIAL-10: constructielijst en regiolabels (2026-10-14)
+
+**Implementatie:** featurebranch `codex/ui-radial-7-point-context-constructions`, **niet** naar `main` gemerged. Technisch verslag: [UI-RADIAL-10 — scroll, kleur en regiolabel](UI-RADIAL-10-REGION-LABEL-AND-SCROLL.md). Dit is een vervolg op UI-RADIAL-9, zonder nieuwe geometrische engine, objecttypes of afhankelijkheidschema's.
+
+| Werkpunt | Branchstatus | Handmatige gebruikersacceptatie | Tests |
+|---|---|---|---|
+| Contextuele constructielijst valt onder beeld | Paneelhoogte wordt geklemd op beschikbare canvas-/viewporthoogte; zichtbare scroll en sticky heading | **Open** voor UI-RADIAL-10 | **Niet uitgevoerd** |
+| Vulkleur cirkelsector/-segment | Bestaande kleurbediening richt zich voor regio standaard op `style.fill`; rand afzonderlijk; `fill='none'` wordt geëerbiedigd | **Open** | **Niet uitgevoerd** |
+| Oppervlakteprecisie | Regioslider 0–3 met effectieve standaard 2, labelupdate via bestaande properties | **Open** | **Niet uitgevoerd** |
+| Labelpositie oppervlakte | Het gewone selecteerbare/versleepbare `object-label` gebruikt `labelOffsetX/Y`; oude `areaDisplay.position`-waarden blijven voor laden/weergave ondersteund maar verschijnen niet meer als instelling | **Open** | **Niet uitgevoerd** |
+
+**Vaste ontwerpeis:** alle berekende regiolabels gebruiken de gedeelde labeldragcontroller en behoud van positie bij dynamische bronwijzigingen; bouw geen aparte regio-labeldragcode. Voor toekomstig regio- of labelwerk [AGENTS.md](../AGENTS.md), [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en het nieuwe [UI-RADIAL-10-verslag](UI-RADIAL-10-REGION-LABEL-AND-SCROLL.md) raadplegen. Automatische regressietests en gebruikersbeoordeling van deze wijzigingen moeten apart worden gerapporteerd. Historische eerdere statusregels worden niet terugwerkend gewijzigd.

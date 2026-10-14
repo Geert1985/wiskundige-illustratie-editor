@@ -1,5 +1,7 @@
 # Wiskundige illustratie-editor
 
+> **Actuele werkinstructies (14 oktober 2026, DOC-RADIAL-1):** Deze README bevat ook historische architectuur- en starterinformatie. Controleer de uitgecheckte branch; de huidige contextuele eigenschappen-/constructiebediening is op `codex/ui-radial-7-point-context-constructions` geïmplementeerd, **niet automatisch op `main`**. Zie [AGENTS.md](AGENTS.md), [UI-RADIAL-9](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md) en [roadmap v2.8.0](docs/DEVELOPMENT-ROADMAP.md). Gebruiker bevestigt werking, maar automatische Node-/Edge-tests zijn in deze reeks niet uitgevoerd.
+
 Zelfstandig project: https://github.com/Geert1985/wiskundige-illustratie-editor
 
 ## Starten
@@ -167,4 +169,4 @@ Measurements, right-angle marks and multiple selection: see [MEASUREMENTS-GROUPS
 
 Linked geometric construction tools: see [CONSTRUCTIONS.md](CONSTRUCTIONS.md). Load construction-service.js after geometry helpers and before index.js; it is required by the model's mutation paths.
 
-Tool menu: collapsible Basisobjecten, Figuren, Meten and Constructies. Meten includes linked whole-circle/polygon Omtrek and Oppervlakte labels; see CONSTRUCTIONS.md.
+**Actuele toolinterface (featurebranch):** de linkerbalk heeft tabbladen **Gereedschappen** en **Lagen en objecten**. Gereedschappen worden in acht categorieën met subgroepen aangeboden: **Vrije objecten**, **Constructies**, **Meten & analyseren**, **Gebieden & opvulling**, **Transformeren**, **Functies & grafieken**, **Tekst & interactie** en **Verzamelingen** (niet alle geplande tools zijn actief). Actieve constructies en onderliggende geometrische rollen worden via de gedeelde `ToolCatalog` en `ConstructionService` beheerd. Het **contextuele radiaalmenu** opent door rechtsklikken op geometrie en gebruikt `contextualPlans` + `startContextConstruction`; de permanente rechter inspector is vervangen door zwevende eigenschappenvensters. De eerste vijf hoofdgroepen zijn niet noodzakelijk volledig geïmplementeerd. Zie [CONSTRUCTIONS.md](CONSTRUCTIONS.md) en [het huidige UI-RADIAL-9-contract](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md).

@@ -9,7 +9,7 @@
   const NS = global.FZI = global.FZI || {};
   const MI = NS.MathIllustration = NS.MathIllustration || {};
   const MODEL_VERSION = 2;
-  const TYPES = new Set(["point", "line", "circle", "text", "straight", "ray", "vector", "polygon", "dimension", "angle"]);
+  const TYPES = new Set(["point", "line", "circle", "text", "straight", "ray", "vector", "polygon", "dimension", "angle", "region"]);
   const LINEAR = new Set(['line', 'straight', 'ray', 'vector', 'dimension']);
   const TEXT_LIMITS = Object.freeze({ codePoints: 20000, runs: 2048, paragraphs: 128, bytes: 1048576 });
   const TEXT_MARKS = new Set(['bold','italic','underline','strike','script','fontId','fontSize','color']);
@@ -104,9 +104,15 @@
   MI.DynamicText=Object.freeze({settings:textBinding,propertiesFor:textPropertiesFor,value:dynamicText});
   function validateImportedObject(input, options={}) {
     if (!record(input) || !TYPES.has(input.type)) throw new Error("Onbekend illustratie-object: " + (input && input.type));
+    if('areaDisplay' in input&&input.type!=='region')throw new Error('Oppervlakteweergave is alleen geldig voor een gebied.');
     if (!((typeof input.id === "string" && input.id.trim() !== "") || (typeof input.id === "number" && Number.isFinite(input.id)))) throw new Error("Elk illustratie-object heeft een geldige id nodig.");
     const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
     if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices, options);
+    if(input.type==='region'){
+      if(!input.construction||!['polygonRegion','circleSectorRegion','circleSegmentRegion'].includes(input.construction.kind)||Object.keys(input).some(k=>['vertices','regionGeometry','regionArea','regionStatus','x','y','cx','cy','r'].includes(k)))throw Error('Ongeldig regio-object.');
+      if(Object.keys(input).some(k=>!['type','id','name','label','visible','locked','showLabel','labelDx','labelDy','labelOffsetX','labelOffsetY','style','construction','areaDisplay','layerId','constructionValid'].includes(k)))throw Error('Onbekend regio-objectveld.');
+      if('areaDisplay'in input)MI.RegionGeometry.areaDisplay(input.areaDisplay);
+    }
     if (input.type === "angle") MI.MeasurementGeometry.validateAngle(input.vertices,input.angleMark || "arc");
     if('textBinding' in input){if(input.type!=='text'||input.construction||input.textContent)throw Error('Dynamische tekst vereist een vrij tekstobject zonder rich text.');textBinding(input.textBinding);if(input.textBinding?.sourceId===String(input.id))throw Error('Tekst kan niet naar zichzelf verwijzen.');}
     if('textContent' in input){if(input.type!=='text'||input.construction||'textBinding' in input)throw Error('Gestructureerde tekst vereist een vrij, niet-gebonden tekstobject.');validateTextContent(input.textContent);}
@@ -135,6 +141,7 @@
     const base = { stroke: "#222", strokeWidth: 2, fill: "none", opacity: 1, dash: "" };
     if (type === "point") return Object.assign(base, { fill: "#222", radius: 4 });
     if (type === "text") return Object.assign(base, { fill: "#222", stroke: "none", fontSize: 16, fontFamily: "Source Sans 3, sans-serif", anchor: "start" });
+    if (type === "region") return Object.assign(base, { fill: "#f4c84a", opacity: 0.35 });
     return base;
   }
   function normaliseStyle(type, style) {
@@ -180,6 +187,7 @@
     if (type === "circle") { object.cx = finite(input.cx, 0); object.cy = finite(input.cy, 0); object.r = Math.max(0, finite(input.r, 1)); if (input.label != null) object.label = String(input.label); }
     if (type === "text") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); object.text = String(input.text == null ? "" : input.text); object.rotation = finite(input.rotation, 0); if(input.textContent){object.textContent=validateTextContent(input.textContent);object.text=MI.TextContent.plain(object.textContent);} }
     if (type === 'polygon') object.vertices = MI.PolygonGeometry.validate(object.vertices, validationOptions);
+    if(type==='region')object.areaDisplay=MI.RegionGeometry.areaDisplay(input.areaDisplay);
     if (type === 'angle') { object.angleMark = input.angleMark || 'arc'; object.vertices = MI.MeasurementGeometry.validateAngle(object.vertices, object.angleMark); }
     return object;
   }
@@ -221,6 +229,7 @@
       if ('style' in patch && !record(patch.style)) throw new Error('Ongeldige objectstijl.');
       const triangleCenterSource = this.#objects.some(object => MI.ConstructionService.triangleCenterKinds.includes(object.construction?.kind) && object.construction.sources.some(ref => ref.objectId === current.id && ref.part == null && ref.index == null));
       const nextData = { ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style };
+      delete nextData.regionGeometry;delete nextData.regionArea;delete nextData.regionStatus;
       const next = freeze(normaliseObject(nextData, triangleCenterSource && nextData.type === 'polygon' && nextData.vertices?.length === 3 ? {allowDegenerateTriangle:true} : {}));
       const objects = this.#objects.slice(); objects[index] = next;MI.MathSource.checkDocument(objects);MI.TextValues.checkDocument(objects); this.#objects = freeze(MI.ConstructionService.resolve(objects,this.#circleDistributions)); return this.get(id);
     }
@@ -245,6 +254,12 @@
       if ('groups' in this._extra || 'groupSchema' in this._extra) throw Error('Legacy groepsgegevens moeten eerst expliciet worden gemigreerd.');
       const counter=this._nextId;
       try {const group={id:this._generateId('group'),name,members};const groups=MI.PersistentGroups.validate([...this.#groups,group],this.#objects);if(this.#layers.length)MI.DocumentLayers.validate(this.#layers,this.#objects,groups);this.#groups=freeze(groups);return clone(groups.at(-1));}catch(error){this._nextId=counter;throw error;}
+    }
+    renameGroup(id,name) {
+      if(typeof id!=='string'||!this.#groups.some(g=>g.id===id))throw Error('Groep niet gevonden.');
+      if(typeof name!=='string'||!name.trim()||name.length>200)throw Error('Ongeldige groepsnaam.');
+      this.#groups=freeze(MI.PersistentGroups.validate(this.#groups.map(g=>g.id===id?{...g,name:name.trim()}:g),this.#objects));
+      return this.#groups.find(g=>g.id===id);
     }
     createLayer(name) {
       if('layers' in this._extra || 'layerSchema' in this._extra)throw Error('Legacy laaggegevens moeten eerst expliciet worden gemigreerd.');
@@ -291,11 +306,11 @@
     get(id) { const object = this.#objects.find(o => o.id === id); return object ? clone(object) : null; }
     all() { return clone(MI.DocumentLayers.ordered(this.objects,this.#layers)); }
     clear() { this.#objects = Object.freeze([]); this.#groups=Object.freeze([]); this.#layers=Object.freeze([]);this.#circleDistributions=Object.freeze([]); }
-    toJSON() { const hasDistributions=this.#circleDistributions.length>0,hasRichText=this.#objects.some(o=>o.textContent),version=hasRichText?7:hasDistributions?6:this.#layers.length?5:this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION;return { ...clone(this._extra), type: this.type, version, ...(hasRichText?{textSchema:Math.max(...this.#objects.filter(o=>o.textContent).map(o=>o.textContent.schema))}:{}), ...(this.#layers.length?{layerSchema:1,layers:clone(this.#layers)}:{}), ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(hasDistributions?{circleDistributionSchema:1,circleDistributions:clone(this.#circleDistributions)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:this.#objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))?4:this.#objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))?3:this.#objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))?2:1}:{}), meta: clone(this.meta), objects: clone(this.objects), ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
+    toJSON() { const hasDistributions=this.#circleDistributions.length>0,hasRichText=this.#objects.some(o=>o.textContent),hasRegions=this.#objects.some(o=>o.type==='region'),hasRegionRecipes=this.#objects.some(o=>['polygonRegion','circleSectorRegion','circleSegmentRegion'].includes(o.construction?.kind)),version=hasRegions?8:hasRichText?7:hasDistributions?6:this.#layers.length?5:this.#groups.length?4:this.#objects.some(o=>o.construction)?3:MODEL_VERSION,objects=clone(this.objects).map(o=>{delete o.regionGeometry;delete o.regionArea;delete o.regionStatus;return o;});return { ...clone(this._extra), type: this.type, version, ...(hasRegions?{regionSchema:1}:{}), ...(hasRichText?{textSchema:Math.max(...this.#objects.filter(o=>o.textContent).map(o=>o.textContent.schema))}:{}), ...(this.#layers.length?{layerSchema:1,layers:clone(this.#layers)}:{}), ...(this.#groups.length?{groupSchema:1,groups:clone(this.#groups)}:{}), ...(hasDistributions?{circleDistributionSchema:1,circleDistributions:clone(this.#circleDistributions)}:{}), ...(this.#objects.some(o=>o.construction)?{constructionSchema:hasRegionRecipes?5:this.#objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))?4:this.#objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))?3:this.#objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))?2:1}:{}), meta: clone(this.meta), objects, ...(this.presentation == null ? {} : { presentation: clone(this.presentation) }) }; }
     load(data) {
       if (!record(data) || !Array.isArray(data.objects)) throw new Error("Ongeldig illustratiemodel: objects-array vereist.");
       const version = data.version == null ? 1 : Number(data.version);
-      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || version>7 || (version===6&&(data.circleDistributionSchema!==1||!Array.isArray(data.circleDistributions))) || (version===7&&![1,2,3].includes(data.textSchema))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
+      if ((data.version != null && !numeric(data.version)) || !Number.isInteger(version) || version < 1 || version>8 || (version===6&&(data.circleDistributionSchema!==1||!Array.isArray(data.circleDistributions))) || (version===7&&![1,2,3].includes(data.textSchema))) throw new Error("Niet-ondersteunde illustratiemodelversie.");
       if (data.type != null && data.type !== "geometry") throw new Error("Niet-ondersteund documenttype.");
       if (data.meta != null && !record(data.meta)) throw new Error("Ongeldige documentmetadata.");
       const meta = clone(data.meta || {}), presentation = normalisePresentation(data.presentation);
@@ -303,7 +318,7 @@
       ["title", "description"].forEach(key => {
         if (meta[key] != null && typeof meta[key] !== "string") throw new Error("Ongeldige documentmetadata: " + key);
       });
-      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version>=5?["layers","layerSchema"]:[]), ...(version>=6?["circleDistributionSchema","circleDistributions"]:[]), ...(version>=7?["textSchema"]:[])].includes(key))));
+      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version>=5?["layers","layerSchema"]:[]), ...(version>=6?["circleDistributionSchema","circleDistributions"]:[]), ...(version>=7?["textSchema"]:[]), ...(version>=8?["regionSchema"]:[])].includes(key))));
       const seen = new Set();
       const triangleSourceIds = new Set(data.objects.filter(input => MI.ConstructionService.triangleCenterKinds.includes(input?.construction?.kind)).flatMap(input => Array.isArray(input?.construction?.sources) ? input.construction.sources.filter(ref => ref && ref.part == null && ref.index == null && typeof ref.objectId === 'string').map(ref => ref.objectId) : []));
       const constructedTriangleIds = new Set(data.objects.filter(input => input?.construction?.kind === 'triangleFromPoints' && input.type === 'polygon').map(input => String(input.id)));
@@ -323,18 +338,22 @@
         if (Number.isSafeInteger(suffix) && suffix < Number.MAX_SAFE_INTEGER - 1) nextId = Math.max(nextId, suffix + 1);
         return object;
       });
-      if(objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))&&data.constructionSchema!==4)throw Error('Hoekarmen vereisen constructieschema 4.');
-      if(objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))&&![3,4].includes(data.constructionSchema))throw Error('Asreferenties vereisen constructieschema 3.');
-      if(objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))&&![2,3,4].includes(data.constructionSchema))throw Error('Deze gekoppelde geometrie vereist constructieschema 2.');
+      const hasRegion=objects.some(o=>o.type==='region'),hasRegionRecipe=objects.some(o=>['polygonRegion','circleSectorRegion','circleSegmentRegion'].includes(o.construction?.kind));
+      if(hasRegion&&(version!==8||data.regionSchema!==1||!hasRegionRecipe))throw Error('Regio-objecten vereisen documentversie 8, regionSchema 1 en een regiorecept.');
+      if(!hasRegion&&(data.regionSchema!=null||version===8))throw Error('regionSchema 1 is alleen toegestaan met regio-objecten.');
+      if(objects.some(o=>o.construction?.sources.some(r=>r.arm!=null))&&data.constructionSchema!==4&&data.constructionSchema!==5)throw Error('Hoekarmen vereisen constructieschema 4 of hoger.');
+      if(objects.some(o=>o.construction?.sources.some(MI.AxisReferences.isAxis))&&![3,4,5].includes(data.constructionSchema))throw Error('Asreferenties vereisen constructieschema 3 of hoger.');
+      if(objects.some(o=>o.construction&&MI.ConstructionService.schema2(o.construction.kind))&&![2,3,4,5].includes(data.constructionSchema))throw Error('Deze gekoppelde geometrie vereist constructieschema 2.');
+      if(hasRegionRecipe&&data.constructionSchema!==5||!hasRegionRecipe&&data.constructionSchema===5)throw Error('Regiorecepten vereisen constructieschema 5.');
       const distributions=[],distIds=new Set();if(version===6||data.circleDistributionSchema!=null||data.circleDistributions!=null){if(!Array.isArray(data.circleDistributions)||data.circleDistributionSchema!==1||(version===6&&!data.circleDistributions.length))throw Error('Ongeldige cirkelpuntenverdeling.');const pointIds=new Set();for(const d of data.circleDistributions){if(!record(d)||Object.keys(d).some(k=>!['id','circleId','count','startAngle','pointIds'].includes(k))||typeof d.id!=='string'||!d.id.trim()||typeof d.circleId!=='string'||!d.circleId.trim()||!Number.isSafeInteger(d.count)||d.count<1||d.count>MI.RegularGeometry.MAX_COUNT||!Number.isFinite(d.startAngle)||d.startAngle<0||d.startAngle>=2*Math.PI||!Array.isArray(d.pointIds)||d.pointIds.length!==d.count||new Set(d.pointIds).size!==d.count||distIds.has(d.id)||seen.has(d.id))throw Error('Ongeldige cirkelpuntenverdeling.');distIds.add(d.id);seen.add(d.id);const dsuffix=Number(d.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(dsuffix)&&dsuffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,dsuffix+1);const circle=objects.find(o=>o.id===d.circleId);if(!circle||circle.type!=='circle')throw Error('Puntenverdeling verwijst naar een ongeldige cirkel.');d.pointIds.forEach((id,index)=>{const p=objects.find(o=>o.id===id),c=p?.construction;if(!p||p.type!=='point'||!c||c.kind!=='distributedPointOnCircle'||c.distributionId!==d.id||c.index!==index||Object.keys(c).some(k=>!['kind','sources','distributionId','index'].includes(k))||c.sources.length!==1||Object.keys(c.sources[0]).some(k=>k!=='objectId')||c.sources[0].objectId!==d.circleId||pointIds.has(id))throw Error('Puntenverdeling en puntconstructie komen niet overeen.');pointIds.add(id);});distributions.push(clone(d));}if(objects.some(o=>o.construction?.kind==='distributedPointOnCircle'&&!pointIds.has(o.id)))throw Error('Los distributiepunt zonder register gevonden.');}
       else if(objects.some(o=>o.construction?.kind==='distributedPointOnCircle'))throw Error('Distributiepunten vereisen documentschema 6.');
       MI.MathSource.checkDocument(objects);MI.TextValues.checkDocument(objects);
       const resolved = MI.ConstructionService.resolve(objects,distributions);
-      if(version>=4 && objects.some(o=>o.construction) && ![1,2,3,4].includes(data.constructionSchema))throw Error("Constructieschema vereist.");
+      if(version>=4 && objects.some(o=>o.construction) && ![1,2,3,4,5].includes(data.constructionSchema))throw Error("Constructieschema vereist.");
       if(version>=4 && data.groups!=null && data.groupSchema!==1)throw Error("Groepsschema vereist.");
       const groups=version>=4&&data.groups!=null?MI.PersistentGroups.validate(data.groups,resolved):[];
       if(version===5&&(!Array.isArray(data.layers)||data.layerSchema!==1))throw Error('Laagschema vereist.');if(version>=5&&data.layers!=null&&data.layerSchema!==1)throw Error('Laagschema vereist.');const layers=version>=5&&data.layers!=null?MI.DocumentLayers.validate(data.layers,resolved,groups):[];
-      if(version===7){if(!objects.some(o=>o.textContent)||objects.some(o=>o.textContent&&o.textContent.schema>data.textSchema)||objects.some(o=>o.textContent&&o.textBinding))throw Error('Documentversie 7 vereist geldige gestructureerde tekst en textSchema.');if(data.groups!=null&&data.groupSchema!==1||data.layers!=null&&data.layerSchema!==1)throw Error('Organisatieschema vereist voor documentversie 7.');}
+      if(version===7||version===8&&objects.some(o=>o.textContent)){if(![1,2,3].includes(data.textSchema)||!objects.some(o=>o.textContent)||objects.some(o=>o.textContent&&o.textContent.schema>data.textSchema)||objects.some(o=>o.textContent&&o.textBinding))throw Error('Documentversie 7 of 8 vereist geldige gestructureerde tekst en textSchema.');if(data.groups!=null&&data.groupSchema!==1||data.layers!=null&&data.layerSchema!==1)throw Error('Organisatieschema vereist voor documentversie 7 of 8.');}
       if(version<7&&(data.textSchema!=null||objects.some(o=>o.textContent)))throw Error('Gestructureerde tekst vereist documentversie 7.');
       for(const group of [...groups,...layers]){if(distIds.has(group.id))throw Error('Document-ID is niet uniek.');}
       for(const group of [...groups,...layers]){const suffix=Number(group.id.match(/-(\d+)$/)?.[1]||0);if(Number.isSafeInteger(suffix)&&suffix<Number.MAX_SAFE_INTEGER-1)nextId=Math.max(nextId,suffix+1);}
