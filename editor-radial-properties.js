@@ -374,47 +374,33 @@
     // types and multi-selection keep the previous radial behaviour untouched.
     // UI-RADIAL-8: supported single-object contexts only. The previous
     // point implementation remains the first branch of the shared catalog.
+    // UI-RADIAL-9: the editor does not classify geometry by object.type.
+    // The central construction service supplies admissible source plans.
+    singleSourceContext(ctx=this.context()){
+      const source=ctx?.objects?.length===1?ctx.objects[0]:null;
+      return !!source&&ctx.type!=='group'&&ctx.type!=='multiple'&&
+        ctx.type!=='axes'&&this.app.selectedIds.length===1&&
+        this.app.selectedIds[0]===source.id&&this.app.canvasSelectable(source);
+    }
     constructionContext(ctx=this.context()){
-      const o=ctx?.objects?.length===1?ctx.objects[0]:null;
-      return !!o&&['point','circle','line','straight','ray','vector'].includes(o.type)&&
-        ['object','linked'].includes(ctx.type)&&this.app.selectedIds.length===1&&
-        this.app.selectedIds[0]===o.id;
+      return this.contextConstructions(ctx).length>0;
     }
     pointContext(ctx=this.context()){
-      return this.constructionContext(ctx)&&ctx.objects[0].type==='point';
+      return this.singleSourceContext(ctx)&&ctx.objects[0].type==='point';
     }
     contextConstructions(ctx=this.context()){
-      if(!this.constructionContext(ctx))return [];
+      if(!this.singleSourceContext(ctx))return [];
       const source=ctx.objects[0],app=this.app;
-      if(!app.canvasSelectable(source))return [];
       const entries=app.toolCatalog.list('sidebar').flatMap(category=>category.entries)
         .filter(entry=>entry.status==='implemented'&&entry.id.startsWith('construct:'))
         .filter(entry=>app.toolAllowed(entry.id)&&
           (!app.runtime||app.capabilities(source.id).sourceTools.includes(entry.id)));
       const out=[];
       for(const entry of entries){
-        const kind=entry.id.slice(10),contract=MI.ConstructionService.contract(kind);
-        // The normal point experience deliberately stays first-source only.
-        if(source.type==='point'){
-          if(contract.sourceRoles.length<=1||contract.sourceRoles[0]!=='point')continue;
-          if(MI.ConstructionService.referencesForRole(source,'point',kind)
-            .some(ref=>ref.objectId===source.id&&ref.part==null))
-            out.push({entry,sourceIndex:0,endpoints:false});
-          continue;
-        }
-        // Multi-point distribution has its own distribution transaction. A
-        // standalone construction.create would lack the required group data.
-        // Directed-angle picking requires an explicit first-arm direction.
-        if(['distributedPointOnCircle','angleDirections'].includes(kind))continue;
-        if(source.type==='line'&&['midpoint','perpendicularBisector'].includes(kind)){
-          out.push({entry,sourceIndex:0,endpoints:true});
-          continue;
-        }
-        const sourceIndex=contract.sourceRoles.findIndex(role=>
-          MI.ConstructionService.referencesForRole(source,role,kind)
-            .some(ref=>ref.objectId===source.id&&ref.part==null&&ref.index==null));
-        if(sourceIndex<0)continue;
-        out.push({entry,sourceIndex,endpoints:false});
+        const plans=MI.ConstructionService.contextualPlans(source,entry.id.slice(10));
+        // Keep one discoverable entry for each construction. A composite
+        // endpoint recipe takes precedence when defined by the service.
+        if(plans.length)out.push({entry,plan:plans[0]});
       }
       return out;
     }
@@ -426,7 +412,6 @@
       }
       const ctx=this.context(),items=this.contextConstructions(ctx);
       panel.hidden=false;panel.replaceChildren();
-      const object=ctx.objects[0],isPoint=object.type==='point';
       panel.append(text('p','radial-construction-lead',
         (ctx.name||ctx.id)+' is als constructiebron geselecteerd. Kies een gereedschap:',this.doc));
       if(!items.length){
@@ -434,13 +419,11 @@
           'Geen toegestane constructies voor dit object.',this.doc));
         return;
       }
-      for(const item of items){
-        const {entry,sourceIndex,endpoints}=item;
+      for(const {entry,plan} of items){
         const button=this.doc.createElement('button');
         button.type='button';button.className='radial-construction-tool';
         button.dataset.radialConstruct=entry.id;
-        button.dataset.radialSourceIndex=String(sourceIndex);
-        if(endpoints)button.dataset.radialEndpoints='true';
+        button.dataset.radialPlan=plan.key;
         button.setAttribute('aria-label',entry.label);
         const ico=text('span','radial-construction-icon','',this.doc);
         const template=this.doc.createElement('template');
@@ -449,15 +432,15 @@
         if(drawing)ico.append(drawing.cloneNode(true));
         const info=text('span','radial-construction-description','',this.doc);
         info.append(text('strong','',entry.label,this.doc));
-        const kind=entry.id.slice(10),contract=MI.ConstructionService.contract(kind);
+        const kind=entry.id.slice(10);
         let hint;
-        if(endpoints)hint='Gebruikt direct de twee eindpunten van het lijnstuk.';
-        else if(MI.ConstructionService.pathKind(kind))
-          hint='Klik daarna op de lijn of cirkelrand voor de puntpositie.';
-        else if(contract.sourceRoles.length===1)hint='Direct uit de geselecteerde bron berekenen.';
-        else hint=MI.ToolInstructions.constructionHint(kind,sourceIndex===0?1:0)||
-          'Kies het volgende bronobject.';
-        if(!isPoint&&sourceIndex>0)hint+=' De selectie wordt daarna automatisch ingevuld.';
+        if(plan.key==='endpoints')hint='Gebruikt direct de twee eindpunten als bronnen.';
+        else if(plan.mode==='placement')
+          hint='Klik daarna op het bronobject om de puntpositie vast te leggen.';
+        else if(plan.mode==='complete')hint='Direct uit de geselecteerde bron berekenen.';
+        else hint=MI.ToolInstructions.constructionHint(kind,plan.sourceIndex===0?1:0)||
+          'Selecteer de volgende constructiebron.';
+        if(plan.sourceIndex>0)hint+=' De huidige selectie wordt daarna automatisch ingevuld.';
         info.append(text('small','',hint,this.doc));
         button.append(ico,info);panel.append(button);
       }
@@ -465,18 +448,12 @@
     startContextConstruction(button){
       const ctx=this.context();
       if(!this.constructionContext(ctx))return;
-      const toolId=button.dataset.radialConstruct,sourceIndex=Number(button.dataset.radialSourceIndex);
-      const endpoints=button.dataset.radialEndpoints==='true';
-      const allowed=this.contextConstructions(ctx).some(item=>
-        item.entry.id===toolId&&item.sourceIndex===sourceIndex&&item.endpoints===endpoints);
-      if(!allowed)return;
+      const toolId=button.dataset.radialConstruct,planKey=button.dataset.radialPlan;
+      if(!this.contextConstructions(ctx).some(item=>
+        item.entry.id===toolId&&item.plan.key===planKey))return;
       const sourceId=ctx.objects[0].id;
       this.close();
-      if(this.pointContext(ctx)){
-        this.app.startConstructionFromPoint(toolId,sourceId);
-      }else{
-        this.app.startConstructionFromObject(toolId,sourceId,sourceIndex,{endpoints});
-      }
+      this.app.startContextConstruction(toolId,sourceId,planKey);
     }
     applyContextFilter(filter){
       const object=this.context().objects[0],isPoint=object.type==='point';
