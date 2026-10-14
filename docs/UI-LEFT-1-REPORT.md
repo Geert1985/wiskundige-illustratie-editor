@@ -36,3 +36,11 @@
 - ‘Negenpuntscirkel’ en ‘Punt op cirkel’ zijn vindbaar; geen zoekresultaat geeft een heldere melding.
 - Wissen van zoekterm herstelt handmatig opengeklapte subgroepen; standaard zoekactie verandert document, geschiedenis en eigenschappen niet.
 - Split-menu's, fullscreen-gereedschapscatalogus en permissiegedrag blijven ongewijzigd.
+
+## Wijziging op verzoek: alle gereedschapsknoppen rechtstreeks zichtbaar (2026-10-14)
+
+De zeven bestaande split-tool-groepen zijn in de linkerkolom vervangen door hun afzonderlijke gereedschapsknoppen. In `Vrije objecten` verschijnen nu rechtstreeks **Punt, Lijnstuk, Rechte, Halfrechte, Vector, Driehoek, Veelhoek en Cirkel**. Hetzelfde principe geldt voor punt- en lijnconstructies en meet-/hoekgereedschappen.
+
+De bestaande `data-tool`-ID's en de opbouw van de catalogus voor de fullscreen-chooser blijven behouden; de actieve tool wordt nog steeds via het bestaande `setTool`-pad gekozen. De zoekfunctie filtert nu afzonderlijke gereedschapsknoppen in plaats van split-menu-containers.
+
+**Verzoek gebruiker:** geen tests uitvoeren. Daarom zijn voor deze wijziging geen Node-, browser- of handmatige tests uitgevoerd. Bestaande tests die de oude split-menu-interface veronderstellen, moeten vóór een toekomstige test-/mergegate nog aan de nieuwe UI worden aangepast. De featurebranch is niet naar `main` gemerged.
