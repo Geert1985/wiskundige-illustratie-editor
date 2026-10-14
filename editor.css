@@ -308,3 +308,50 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   background:#ffe398;
   color:#222;
 }
+
+
+/* UI-LEFT-1 — readable, scroll-safe navigation. Earlier rules stay intact. */
+@media (min-width:1151px) {
+  .workspace { grid-template-columns:340px minmax(0,1fr) 280px; }
+}
+@media (min-width:1000px) and (max-width:1150px) {
+  .workspace { grid-template-columns:320px minmax(0,1fr) 260px; }
+}
+@media (min-width:760px) and (max-width:999px) {
+  .workspace { grid-template-columns:310px minmax(0,1fr); }
+}
+@media (max-width:759px) {
+  .sidebar { width:min(340px,calc(100vw - 12px)); }
+}
+.sidebar { min-width:0; }
+.sidebar-section > summary { font-size:17px; font-weight:700; line-height:1.4; overflow-wrap:anywhere; }
+.sidebar .tool-menu > details > summary { font-size:15px; font-weight:700; line-height:1.45; display:flex; flex-wrap:wrap; gap:4px 7px; overflow-wrap:anywhere; }
+.sidebar .tool-menu [data-active-tool] { font-size:12px; line-height:1.45; min-width:0; max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+.sidebar .tool-grid { grid-template-columns:minmax(0,1fr); }
+.sidebar .tool-grid > .tool, .sidebar .tool-grid > .tool-split { min-width:0; max-width:100%; }
+.sidebar .tool-grid .tool { min-width:0; width:100%; height:auto; min-height:42px; text-align:left; }
+.sidebar .tool-grid .tool span, .sidebar .tool-split > [data-split-main] span {
+  font-size:14px; line-height:1.4; min-width:0; max-width:100%;
+  white-space:normal; overflow-wrap:anywhere;
+}
+.sidebar .tool-subgroup { margin:8px 0 4px; min-width:0; }
+.sidebar .tool-subgroup-toggle {
+  display:flex; align-items:center; gap:8px; width:100%; min-width:0;
+  padding:10px 9px; border:1px solid #405361; border-radius:7px;
+  background:#1b2b36; color:#e6edf2; font-size:14px; font-weight:700;
+  line-height:1.45; text-align:left; white-space:normal; overflow-wrap:anywhere;
+}
+.sidebar .tool-subgroup-toggle::before {
+  content:"▸"; flex:0 0 auto; font-size:13px; color:var(--accent);
+}
+.sidebar .tool-subgroup-toggle[aria-expanded="true"]::before { content:"▾"; }
+.sidebar .tool-subgroup > .tool-grid { padding:8px 0 10px 8px; }
+.sidebar .tool-subgroup > .tool-grid[hidden] { display:none !important; }
+.sidebar .tool-search-box { margin:0 0 12px; }
+.sidebar .tool-search-box label { display:block; margin:2px 0 5px; color:#dce5eb; font-size:13px; font-weight:600; }
+.sidebar #toolSearch { width:100%; min-width:0; height:40px; margin:0; padding:8px 10px; background:#0e202a; border:1px solid #577083; color:#edf1f3; font-size:14px; border-radius:7px; }
+.sidebar #toolSearch::placeholder { color:#aebec8; }
+.sidebar #toolSearchFeedback { padding:7px 2px 0; font-size:13px; color:#c4d1db; }
+#toolGrid [data-search-hidden="true"] { display:none !important; }
+.sidebar .planned-tools h3 { font-size:13px; line-height:1.5; }
+.sidebar .tool-placeholder { font-size:13px; }
