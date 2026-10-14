@@ -32,6 +32,14 @@
 - **Labelpositie:** de oppervlakte van een regio is geen apart besturingsmechanisme. `renderer.renderLabel`, `.object-label`, `data-label-id`, de bestaande muiscontroller en de normale `labelOffsetX/Y`-eigenschappen verzorgen selectie, versleping, permissies en Undo/Redo. **Geen Labelpositie-dropdown/offsetvelden** voor regiogebieden opnieuw introduceren. Behoud oude opgeslagen offsets bij import voor visuele compatibiliteit.
 - **Status:** UI-RADIAL-10 is op ontwikkelbranch geïmplementeerd, niet naar `main` gemerged, en de nieuwe fixes zijn nog niet handmatig beoordeeld of geautomatiseerd getest.
 
+## UI-TOOLBAR-1 — Geschiedenis en consistente iconen (2026-10-14)
+
+- **Document Ongedaan/Opnieuw:** uitsluitend als twee icoonknoppen in de lichte werkvlakbalk, niet in de hoofdtitelbalk. IDs `undoBtn`/`redoBtn`, documenthistory, sneltoetsen en disabled-state behouden.
+- **Teksteditor Ongedaan/Opnieuw:** als twee icoonknoppen in de rijke tekstopmaakbalk **direct na Rechts uitlijnen**, niet in de teksteditortitelbalk. IDs `richUndo`/`richRedo`, afzonderlijke rich-texthistory en sneltoetsen behouden.
+- **Titel:** `Wiskundige Illustratie Editor`. Knop **Opslaan** toont diskette-SVG; beide **Meer**-menu's hebben een passend driepuntjes-SVG en gelijke titelbalktypografie; **Toevoegen** in teksteditor gebruikt een plusteken-SVG.
+- De knoppen blijven toegankelijk (`aria-label`, tooltip, focus) en gebruiken **inline SVG**, gedeelde CSS en bestaande handlers; voeg geen dubbele/parallelle undo-implementatie toe. Zie [UI-TOOLBAR-1](docs/UI-TOOLBAR-1-HISTORY-AND-ICONS.md).
+- **Status:** op featurebranch geïmplementeerd, handmatige acceptatie en geautomatiseerde tests voor deze wijziging nog open, niet naar `main` gemerged.
+
 ## Nieuwe gereedschappen en objecttypen — ontwikkelchecklist
 
 1. Registreer het object en de geometrische/constructiesemantiek in de **bestaande** model-/servicecontracten.
