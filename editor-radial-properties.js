@@ -503,6 +503,7 @@
     }
     applyFilter(filter){
       if(!this.panel||this.detail.hidden)return;
+      this.detail.dataset.radialContext=this.pointContext()?'point':'other';
       if(this.pointContext()){this.applyPointFilter(filter);return;}
       this.panel.hidden=false;this.pointConstructPanel.hidden=true;
       const axesRoot=this.panel.querySelector('.axis-settings');
