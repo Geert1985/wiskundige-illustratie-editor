@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.3 (UI-COLOR-1 palette refinement, 2026-10-14)
+Version: 2.8.4 (UI-PANEL-1 shared contextual property design, 2026-10-14)
 Status: **current working-branch overview**: UI-RADIAL-1–9 are implemented on `codex/ui-radial-7-point-context-constructions`, manually reviewed in stages by the user, not merged to `main`, and not automatically retested in this development sequence. REG-2 and the sidebar/layer integration are present in the feature-branch lineage; this is NOT a claim of `main` integration or full release verification. Previous gates and historical statuses below refer to their original dated snapshots. Read the v2.8.0 addendum and `docs/UI-RADIAL-9-CONTRACT-DRIVEN.md` before following older UI-R1–R3 planning.
 Date: 2026-10-14
 
@@ -989,3 +989,13 @@ UI-RADIAL-9 vraagt **geen automatische uitbreiding** naar nieuwe constructies of
 - **Geen nieuwe kleurenengine:** `EditorColor`, de bestaande `object.setProperties`-paden en de gedeelde dialoog blijven de eigenaars. De teksteditor deelt het bijgewerkte presetpalet.
 
 **Validatie:** statische code-/GitHub-verificatie; gebruiker moet nieuwe kleurkiezer en geschiedenisgedrag nog in browser beoordelen.
+
+## Roadmap v2.8.4 — UI-PANEL-1: uniforme eigenschappenpanelen (2026-10-14)
+
+**Status:** geïmplementeerd op `codex/ui-radial-7-point-context-constructions`; niet naar `main` gemerged, gebruikersacceptatie en browserregressie nog open. Normatief ontwerp: [UI-PANEL-1 — gedeelde vormgeving](UI-PANEL-1-UNIFIED-PROPERTY-DESIGN.md).
+
+De goedgekeurde **Geometrie**-preview wordt de **visuele standaard** voor alle eigenschappenpanelen: Uiterlijk, Relaties, Acties, Metingen, Labels, Alles, regio-eigenschappen en andere bestaande `data-property-section`-secties. Dezelfde navy/gold-kaarten, SVG-sectieiconen, chevrons, invoervelden, informatievakken, sliders en focusstates worden centraal toegepast. De bestaande compacte afmetingen, viewport-veilige scroll en native `details/summary`-interactie blijven behouden.
+
+**Architectuur:** één gescopeerd CSS-systeem onder `.radial-detail-pane`, en één idempotente `RadialProperties.decoratePropertySections()`-presentatiehelper die de bestaande `SEGMENT_ICONS` hergebruikt. Geen duplicatie van object-specifieke propertypanels, geen nieuwe model-/commandopaden, geen aanpassing van bestaande permissies of Undo/Redo.
+
+**Validatie:** GitHub-broncontrole uitgevoerd; handmatige toetsing op verschillende objecttypes, fullscreen, kleine vensters en keyboardnavigatie vereist; geen automatische/browsertests uitgevoerd.
