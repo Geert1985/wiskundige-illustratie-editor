@@ -277,6 +277,7 @@
         node.setAttribute('aria-label',label);
         node.setAttribute('aria-pressed',String(this.detailMode===action));
         node.style.setProperty('--radial-angle',(360*i/items.length)+'deg');
+        node.style.setProperty('--radial-counter-angle',(-360*i/items.length)+'deg');
         if(i===0)node.classList.add('radial-segment-primary');
 
         const frame=this.doc.createElementNS(SVG_NS,'svg');
