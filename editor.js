@@ -341,7 +341,14 @@
       this.on(n.redoBtn, "click", () => this.travelHistory(true));
       this.on(n.canvasWrap, "pointerdown", e => this.pointerDown(e));
       this.on(n.canvasWrap,'pointerleave',()=>{if(!this.interaction)this.clearHover();});
-      this.on(n.canvasWrap, 'contextmenu', e => { if(this.suppressMarqueeMenu || (this.interaction?.mode==='marquee' && this.interaction.active)) { e.preventDefault(); this.suppressMarqueeMenu=false; } });
+      this.on(n.canvasWrap, 'contextmenu', e => {
+        // The select canvas owns right-click: open the contextual radial menu,
+        // never a simultaneous native browser menu. Preserve right-drag marquee.
+        if((this.tool==='select'&&this.navigationMode!=='pan')||this.suppressMarqueeMenu||(this.interaction?.mode==='marquee'&&this.interaction.active)){
+          e.preventDefault();
+          this.suppressMarqueeMenu=false;
+        }
+      });
       this.on(this.window, "pointermove", e => this.pointerMove(e));
       this.on(this.window, "pointerup", e => this.pointerUp(e));
       this.on(this.window, "pointercancel", e => { if (this.interaction && e.pointerId === this.interaction.pointerId) this.cancel(); });
