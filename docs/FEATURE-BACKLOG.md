@@ -1,8 +1,10 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.8.0
-Status: reconciled to GitHub `main` f403984 on 2026-10-13. M6a/M6b, G-TRI1 and UI-T1 are integrated; their reports retain open manual acceptance. CORE-1 is updated, REG-1 contract awaits explicit approval, and REG-2/UI-R1/UI-R2 have not started.
-Date: 2026-10-13
+Version: 1.9.0 (DOC-RADIAL-1 status consolidation, 2026-10-14)
+Status: **historical `main` baseline** f403984 on 2026-10-13, plus current featurebranch addendum 2026-10-14. UI-RADIAL-1–9 are now implemented on `codex/ui-radial-7-point-context-constructions` with positive staged user feedback, no assistant-run automated tests in this UI branch sequence, and no merge to `main`. REG-2 is in its feature-branch lineage. Earlier tasks and snapshots below are preserved for historical traceability; use UI-RADIAL-9/roadmap v2.8.0 for current radial behavior.
+Date: 2026-10-14
+
+> **Actuele bron voor de radiale UI:** [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md), [AGENTS.md](../AGENTS.md), [roadmap v2.8.0](DEVELOPMENT-ROADMAP.md). UI-R1–R3/REG-2-historische werkvolgorde is geen actuele startopdracht voor reeds uitgevoerde featurebranchstappen.
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
 
@@ -207,3 +209,21 @@ Dit statusblok actualiseert de planningssnapshot hierboven zonder oorspronkelijk
 **Actuele prioriteit:** CORE-1 → REG-1 → REG-2 → UI-R1 → UI-R2. UI-T1, G-TRI1, M6a en M6b zijn geïntegreerde basis, maar open handmatige acceptatie wordt niet als PASS of formele milestone-acceptatie voorgesteld.
 
 **Definitieve toolclassificatie:** classificeer op primaire gebruikersintentie. Handmatig tekenen van punt/lijn/cirkel/driehoek/polygoon hoort bij `Vrije objecten`; dynamische afgeleide constructies bij `Constructies`; maat-/meet-/analyseacties bij `Meten & analyseren`; gevulde afhankelijke gebiedsobjecten bij `Gebieden & opvulling`. Een `construct:`-prefix dwingt een item dus niet naar `Constructies`. `MI.ToolCatalog` blijft de ene gedeelde bron voor sidebar en fullscreen. Bestaande IDs en commandroutes worden niet hernoemd; uitsluitend nieuwe REG-2-items krijgen `construct:polygonRegion`, `construct:circleSectorRegion`, `construct:circleSegmentRegion`. Geïmplementeerde items hebben stabiele tool-/command-ID's en bestaande autorisatie; geplande items blijven inert zonder ID, knop of focusactie.
+
+
+## Backlog v1.9.0 — DOC-RADIAL-1, actuele radialestatus (2026-10-14)
+
+**Geldigheid:** de hieronder samengevatte UI-RADIAL-status geldt uitsluitend voor ontwikkelbranch `codex/ui-radial-7-point-context-constructions`; `main` is niet gewijzigd door DOC-RADIAL-1. Eerder in dit bestand opgenomen statusregels van 2026-10-13 blijven historische snapshots en mogen niet worden opgevat als de actuele ontwikkelstand.
+
+| Onderdeel | Productstatus op featurebranch | Nog te verifiëren |
+|---|---|---|
+| UI-RADIAL-1–3 | Geïmplementeerd: wiel, rechtsklik, zwevende inspector, geen permanente rechterkolom | Toegankelijkheid/fullscreen/regressie niet automatisch getoetst in deze reeks |
+| UI-RADIAL-4–6 | Geïmplementeerd: compacte (~322px) navy/gold zesdelige cirkel met centrale naam en sleepgreep; gebruikersfeedback verwerkt | Visuele varianten/touch/regressie |
+| UI-RADIAL-7A/B/C | Geïmplementeerd: puntconstructies, exclusieve eigenschappen, 11px puntselectietolerantie; gebruiker bevestigt werking | Brede Node/Edge-regressie |
+| UI-RADIAL-8 | Geïmplementeerd: cirkel en lineaire objecten, automatisch ingevulde eerste/latere bronrollen; gebruiker bevestigt werking | Brede Node/Edge-regressie |
+| UI-RADIAL-9 | Geïmplementeerd: generieke `ConstructionService.contextualPlans`, gedeelde `EditorApp.startContextConstruction`; gebruiker bevestigt werking | Speciale objectonderdelen, afwijkende plaatsingsinteracties en automatisering zijn nog aparte cases |
+| DOC-RADIAL-1 | Documentatie-only: Codex-instructies en normatief contract geconsolideerd | Documentreview door gebruiker; geen tests nodig/uitgevoerd voor document-only |
+
+**Nieuwe objecten:** niet als afzonderlijke radiale typecases hardcoden. Beschikbaarheid volgt uit model-/broncontract + geïmplementeerde ToolCatalog-entry + rechten. Uitzonderingen (`distributedPointOnCircle`, `angleDirections`), subobjectreferenties, meerdere plannen voor hetzelfde gereedschap en nieuwe kromme-plaatsingsprojecties zijn **niet automatisch opgelost** door UI-RADIAL-9 en blijven voor een afzonderlijke expliciete opdracht.
+
+**Geen fictieve verificatie:** gebruikersacceptatie is niet gelijk aan volledige regressie-PASS; deze radialetransitie is niet naar `main` gemerged. Nieuwe verzoeken gebruiken de reguliere gates uit AGENTS/roadmap.
