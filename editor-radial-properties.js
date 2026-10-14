@@ -77,11 +77,22 @@
       // Explicit drag handle only: clicking another radial segment must never
       // move the wheel. Store positions in viewport coordinates.
       this.listen(this.wheel,'pointerdown',e=>{
-        if(e.button!==0||!e.target.closest('[data-radial-drag]')||!this.opened)return;
+        const grip=e.target.closest('[data-radial-drag]');
+        if(e.button!==0||!grip||!this.opened)return;
         e.preventDefault();e.stopPropagation();
         this.drag={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,
           anchor:{...(this.anchor||this.defaultAnchor())}};
+        grip.setPointerCapture?.(e.pointerId);
         this.wheel.classList.add('radial-is-dragging');
+      });
+      this.listen(this.wheel,'keydown',e=>{
+        if(!e.target.closest('[data-radial-drag]'))return;
+        const delta={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
+        if(!delta)return;
+        e.preventDefault();e.stopPropagation();
+        const anchor=this.anchor||this.defaultAnchor(),step=e.shiftKey?36:12;
+        this.anchor={x:anchor.x+delta[0]*step,y:anchor.y+delta[1]*step};
+        this.place();
       });
       this.listen(this.win,'pointermove',e=>{
         if(!this.drag||e.pointerId!==this.drag.pointerId)return;
