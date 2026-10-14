@@ -638,8 +638,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 }
 .radial-tool-instructions .active-step{color:#efd58e}
 .canvas-area>#status.canvas-status{left:14px;right:auto;bottom:9px;z-index:5}
-.canvas-fullscreen .radial-wheel,.canvas-fullscreen .radial-detail-pane,
-{position:absolute}
+.canvas-fullscreen .radial-wheel,.canvas-fullscreen .radial-detail-pane{position:absolute}
 @media(max-width:760px){
   .radial-detail-pane{
     left:8px!important;right:8px!important;width:auto!important;
