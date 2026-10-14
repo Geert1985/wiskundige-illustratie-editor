@@ -353,7 +353,7 @@
       this.on(n.richColorMenu,'keydown',event=>{if(event.key==='Escape'){event.preventDefault();event.stopPropagation();n.richColorMenu.hidden=true;n.richColor.setAttribute('aria-expanded','false');n.richColor.focus();}});
       this.on(n.textDialog,'click',event=>{const align=event.target.closest('[data-rich-align]');if(align)this.richTextEditor?.setAlign(align.dataset.richAlign);});
       this.on(n.richUndo,'click',()=>this.richTextEditor?.undo());this.on(n.richRedo,'click',()=>this.richTextEditor?.redo());
-      this.on(n.colorForm, "submit", e => { e.preventDefault(); if (this.validColor()) { this.setColor(this.colorId, this.colorInput.value); this.closeColor(); } });
+      this.on(n.colorForm, "submit", e => { e.preventDefault(); if (this.validColor()) { if(this.colorPickerChosen!=='none')this.setColor(this.colorId, this.colorInput.value); this.closeColor(); } });
       this.on(n.colorCancel, "click", () => this.closeColor(true));
       this.on(n.colorDialog, "cancel", e => { e.preventDefault(); this.closeColor(true); });
       this.on(n.colorPalette, "click", e => { const button = e.target.closest("[data-color]"); if (button) { this.colorInput.value = button.dataset.color; this.updateColorPicker(button.dataset.color); this.setColor(this.colorId, this.colorInput.value); } });
@@ -543,6 +543,7 @@
       }
       if(label)label.textContent=value==='none'?'Geen vulling':value;
       if(initial)return;
+      this.colorPickerChosen=value;
       const native=doc.getElementById('colorNative');
       if(native&&value!=='none')native.value=value.toLowerCase();
       const palette=this.nodes.colorPalette;
@@ -1090,6 +1091,8 @@
       this.colorId=id; this.colorProperty=property;
       const none=this.document.getElementById('colorNone');if(none)none.hidden=property!=='fill';
       let color=property ? object.style[property] : this.services.color.value(object);
+      // A missing fill value uses the renderer's default, not transparency.
+      if(color==null)color=property==='fill'?'#f4c84a':'#222222';
       if(/^#[0-9a-f]{3}$/i.test(color)) color='#'+color.slice(1).split('').map(c=>c+c).join('');
       this.colorInput.value=/^#[0-9a-f]{6}$/i.test(color) ? color : '#222222';
       this.updateColorPicker(color,{initial:true});
