@@ -458,7 +458,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   .workspace { grid-template-columns:minmax(0,1fr) !important; }
 }
 #propertiesToggle { display:none !important; }
-.radial-trigger[hidden],.radial-wheel[hidden],.radial-detail-pane[hidden],.radial-quick-actions[hidden],
+.radial-trigger[hidden],.radial-wheel[hidden],.radial-detail-pane[hidden],
 .radial-tool-instructions[hidden] { display:none !important; }
 .radial-trigger {
   position:absolute; z-index:35; display:grid; place-items:center;
@@ -540,10 +540,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 .radial-detail-pane .object-actions svg {width:18px; height:18px;}
 .radial-detail-pane .object-heading {padding:0 0 9px; margin:0 0 8px; border-bottom:1px solid #53616d;}
 .radial-detail-pane .object-name-input {width:100%; font-weight:700;}
-.radial-quick-actions {display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin:0 0 11px;}
-.radial-quick-actions button {padding:9px 6px; border-radius:7px; font-size:12px; background:#2b4555; color:#edf4f7; border:1px solid #5a7181;}
-.radial-quick-actions button:hover {background:#405d6b;}
-.radial-detail-pane #selectionPanel > [hidden],.radial-detail-pane .radial-quick-actions[hidden] {display:none!important;}
+.radial-detail-pane #selectionPanel > [hidden] {display:none!important;}
 .radial-tool-instructions {
   position:absolute; z-index:6; top:70px; left:12px; width:min(330px,calc(100% - 24px));
   max-height:38%; overflow:auto; background:#142733eb; color:#ecf1f3;
@@ -558,39 +555,32 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
  .radial-tool-instructions {max-height:24%;}
 }
 
-
-/* UI-RADIAL-2 — compacte icoonacties met toegankelijke labels en tooltips. */
-.radial-quick-actions {
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  justify-items:center;
-  gap:9px;
-}
-.radial-quick-actions button.radial-quick-action {
-  display:inline-flex;
+/* UI-RADIAL-3 — only the deliberate handle moves the menu. */
+.radial-drag-handle {
+  position:absolute;
+  top:4px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
   align-items:center;
   justify-content:center;
-  width:43px;
-  min-width:43px;
-  height:43px;
-  padding:8px;
-  border-radius:9px;
-  cursor:pointer;
+  width:40px;
+  height:21px;
+  padding:0;
+  border:1px solid #7b805d;
+  border-radius:8px;
+  background:#294453;
+  color:#f1cf77;
+  font-size:18px;
+  line-height:1;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
 }
-.radial-quick-actions button.radial-quick-action svg {
-  display:block;
-  width:23px;
-  height:23px;
-  fill:none;
-  stroke:currentColor;
-  stroke-width:1.7;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-  pointer-events:none;
+.radial-drag-handle:hover,.radial-drag-handle:focus-visible {
+  background:#446071;
+  border-color:#f1cf77;
+  outline:2px solid #f1cf77;
+  outline-offset:1px;
 }
-.radial-quick-actions button.radial-quick-action:focus-visible {
-  outline:2px solid #f0cb66;
-  outline-offset:2px;
-}
-.radial-quick-actions button.radial-quick-action[data-radial-quick="delete"] {
-  color:#ffb4b4;
-}
+.radial-is-dragging .radial-drag-handle { cursor:grabbing; }
