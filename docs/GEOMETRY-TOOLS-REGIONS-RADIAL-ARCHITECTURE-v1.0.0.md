@@ -1,4 +1,8 @@
 # From Zero 2 Infinity — Geometrie, gereedschappen en radiaal eigenschappenmenu
+
+<!-- DOC-RADIAL-1: historie en voorrang, 2026-10-14 -->
+> **HISTORISCH DOCUMENT — geen actuele implementatieopdracht.** Dit bestand beschrijft de ontwerp- of uitvoeringsfase op de genoemde datum/branch. Voor het **huidige radiaalmenu** zijn [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md), [AGENTS.md](../AGENTS.md) en [roadmap v2.8.0](DEVELOPMENT-ROADMAP.md) leidend. Latere gebruikersbesluiten hebben de eerdere keuze voor een vaste rechter eigenschappenbalk en een automatisch eigenschappenicoon vervangen: nu rechtsklik, compacte zesdelige ring, zwevende inspector en contractgestuurde constructies. Bronplan- en startfunctieafspraken uit oudere versies zijn vervangen door `ConstructionService.contextualPlans` en `EditorApp.startContextConstruction`. Overige wiskundige/historische observaties blijven referenties voor hun eigen fase. Oudere testresultaten of statussen zijn **geen actuele regressie-PASS** en de branch is nog niet naar `main` gemerged.
+
 Versie: 1.0.1 — 2026-10-13
 Status: **ontwerp en implementatiecontract ter goedkeuring; geen productie-implementatie in deze wijziging**
 Bron: GitHub main op SYNC-0 SHA `54b2f55027b69c39875f7ea4a5ebe8b16f1d2bde` (roadmap v2.5.0, backlog v1.7.0). Gereedschapspaneelherstructurering én M6a-centra zijn al op main geïntegreerd. Hun historische rapporten en contracten blijven referenties; hun oude pre-implementatiestatus is achterhaald.
