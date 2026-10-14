@@ -30,6 +30,54 @@
  const schema2=kind=>MI.AngleMeasurements.isLinked(kind)||pathKind(kind)||['distributedPointOnCircle','lineBetweenPoints','rayOrigin','lineIntersection','lineCircleIntersection','circleCircleIntersection','circleByCenterPoint','centroid','circumcenter','orthocenter','incenter','incircle','eulerLine','ninePointCircle','triangleFromPoints'].includes(kind);
  function normaliseParameter(kind,value=0){if(!pathKind(kind)){if(value!==0)failure('INVALID_PARAMETER','Deze constructie heeft geen padparameter.');return undefined;}if(typeof value!=='number'||!Number.isFinite(value))failure('INVALID_PARAMETER','De padpositie moet eindig zijn.');if(kind==='pointOnSegment')return Math.max(0,Math.min(1,value));const t=value%1;return t<0?t+1:t===0?0:t;}
  function referencesForRole(o,role,kind){const refs=referenceOptions(o),candidates=role==='segment'?refs.line.filter(ref=>accepts(o,ref,'segment')):refs[role]||[];return kind==='triangleFromPoints'?candidates.filter(ref=>role==='point'&&o.type==='point'&&ref.part==null&&ref.index==null):candidates;}
+ // Contextual construction matching is owned by the construction service,
+ // rather than by a radial UI whitelist of object.type strings. A newly
+ // supported object becomes discoverable as soon as its role references and
+ // an implemented tool are registered in the normal service/catalog.
+ const contextualWorkflows=Object.freeze({
+  // Separate creation transaction; cannot be created through construction.create.
+  distributedPointOnCircle:'external',
+  // The current pointer workflow must capture directed arm orientation.
+  angleDirections:'directed-arms'
+ });
+ const contextualCompletes=Object.freeze({
+  // A segment's two explicitly named endpoints supply a single meaningful
+  // pair of point roles; arbitrary polygon vertex pairs are ambiguous.
+  midpoint:'endpoints',
+  perpendicularBisector:'endpoints'
+ });
+ function contextualPlans(o,kind){
+  if(!o||typeof o.id!=='string'||!o.id)return [];
+  const d=contract(kind);
+  if(contextualWorkflows[kind])return [];
+  const plans=[];
+  const pointRoles=d.sourceRoles.length===2&&d.sourceRoles.every(r=>r==='point');
+  if(pointRoles&&contextualCompletes[kind]==='endpoints'){
+   const refs=referenceOptions(o).point||[];
+   const start=refs.find(ref=>ref.objectId===o.id&&ref.part==='start');
+   const end=refs.find(ref=>ref.objectId===o.id&&ref.part==='end');
+   if(start&&end)plans.push(Object.freeze({
+    key:'endpoints',mode:'complete',sourceIndex:0,
+    sources:Object.freeze([{...start},{...end}])
+   }));
+  }
+  for(let index=0;index<d.sourceRoles.length;index++){
+   const role=d.sourceRoles[index];
+   const ref=referencesForRole(o,role,kind).find(ref=>
+    ref.objectId===o.id&&ref.part==null&&ref.index==null);
+   if(!ref)continue;
+   // Parameter-bearing linked points require a placement click. Other
+   // single-role constructs are complete as soon as their source is known.
+   const mode=pathKind(kind)?'placement':
+    d.sourceRoles.length===1?'complete':'prefill';
+   if(mode==='placement'&&index!==0)continue;
+   plans.push(Object.freeze({
+    key:'whole:'+index,mode,sourceIndex:index,
+    sources:Object.freeze([{...ref}])
+   }));
+  }
+  return Object.freeze(plans);
+ }
  function projectParameter(kind,o,ref,p){if(kind==='pointOnCircle')return normaliseParameter(kind,Math.atan2(p.y-o.cy,p.x-o.cx)/(2*Math.PI));const l=line(o,ref),dx=l.x2-l.x1,dy=l.y2-l.y1,n=dx*dx+dy*dy;return normaliseParameter(kind,n?((p.x-l.x1)*dx+(p.y-l.y1)*dy)/n:0);}
  function validateReferences(c,objects){validate(c);const d=contract(c.kind);if(c.kind==='triangleFromPoints'&&new Set(c.sources.map(ref=>ref.objectId)).size!==3)failure('INVALID_REFERENCE','Kies drie verschillende punten.');c.sources.forEach((ref,i)=>{if(isAxis(ref)){validateAxis(ref);if(d.sourceRoles[i]!=='line'||!supportsAxis(c.kind,i))failure('INVALID_REFERENCE','Dit gereedschap ondersteunt geen asbron voor deze bronrol.');return;}const o=objects.get(ref.objectId);if(!o)failure('MISSING_REFERENCE','Constructiebron ontbreekt: '+ref.objectId);if(c.kind==='triangleFromPoints'&&(ref.part!=null||ref.index!=null||o.type!=='point'))failure('INVALID_REFERENCE','Deze driehoekconstructie vereist drie bestaande Punt-objecten.');if(ref.arm!=null&&(c.kind!=='angleDirections'||!(ref.part==='edge'||['line','straight','dimension'].includes(o.type))))failure('INVALID_REFERENCE','Deze bron ondersteunt geen hoekarm.');if(!accepts(o,ref,d.sourceRoles[i]))failure('INVALID_REFERENCE','Deze bron of dit onderdeel past niet bij de constructie.');});}
  function referenceOptions(o){const refs={point:[],line:[],circle:[],figure:[],polygon:[]};if(!o)return freeze(refs);const whole={objectId:o.id};if(o.type==='point')refs.point.push(whole);if(MI.LinearGeometry.isLinear(o)){refs.point.push({objectId:o.id,part:'start'},{objectId:o.id,part:'end'});refs.line.push(whole);if(o.type==='ray')refs.ray=[whole];}if(['polygon','angle'].includes(o.type))o.vertices.forEach((p,index)=>{refs.point.push({objectId:o.id,part:'vertex',index});if(o.type==='polygon')refs.line.push({objectId:o.id,part:'edge',index});});if(o.type==='circle')refs.circle.push(whole);if(o.type==='polygon')refs.polygon.push(whole);if(['circle','polygon'].includes(o.type))refs.figure.push(whole);if(accepts(o,whole,'triangle'))refs.triangle=[whole];return freeze(refs);}
@@ -230,5 +278,5 @@
   return input.map(o=>map.get(o.id));
  }
  function descendants(objects,ids){const removed=new Set(ids);let changed=true;while(changed){changed=false;for(const o of objects)if(!removed.has(o.id)&&o.construction&&o.construction.sources.some(s=>removed.has(s.objectId))){removed.add(o.id);changed=true;}}return removed;}
- MI.ConstructionService=Object.freeze({kinds:Object.freeze(kinds),definitions,triangleCenterKinds:Object.freeze([...TRIANGLE_CENTER_KINDS]),triangleInvariantStatus,triangleShapeStatus,contract,referenceOptions,referencesForRole,pathKind,schema2,normaliseParameter,projectParameter,validateReferences,validateUpdate,evaluate,describe,validate,point,line,calculate,resolve,descendants,tangentOnCircle,selectAngleArms});
+ MI.ConstructionService=Object.freeze({kinds:Object.freeze(kinds),definitions,triangleCenterKinds:Object.freeze([...TRIANGLE_CENTER_KINDS]),triangleInvariantStatus,triangleShapeStatus,contract,referenceOptions,referencesForRole,contextualPlans,pathKind,schema2,normaliseParameter,projectParameter,validateReferences,validateUpdate,evaluate,describe,validate,point,line,calculate,resolve,descendants,tangentOnCircle,selectAngleArms});
 })(window);
