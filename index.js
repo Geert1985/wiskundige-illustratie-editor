@@ -59,6 +59,7 @@
   }
 
   function hitDistance(object, x, y) {
+    if(object.type==='ellipse')return MI.EllipseGeometry.nearest(object,{x,y})?.distance??Infinity;
     if(object.type === "angle") return Math.min(...MI.MeasurementGeometry.edges(object).map(edge=>linearDistance(edge,{x,y})));
     if(object.type === 'region')return regionHit(object,{x,y});
     if (object.type === "polygon") return MI.PolygonGeometry.contains(object.vertices,{x,y}) ? 0 : Math.min(...MI.PolygonGeometry.edges(object).map(edge=>linearDistance(edge,{x,y})));
@@ -79,6 +80,7 @@
 
   function screenHit(object, point, transform) {
     const map = (x, y) => transform.mathToScreen({ x, y });
+    if(object.type==='ellipse')return MI.EllipseGeometry.nearest(object,point,p=>transform.mathToScreen(p))?.distance??Infinity;
     if(object.type === 'angle') return Math.min(...MI.MeasurementGeometry.edges(object).map(edge=>linearDistance(edge,point,transform)));
     if(object.type === 'region')return regionHit(object,point,transform);
     if (object.type === 'polygon') return MI.PolygonGeometry.contains(object.vertices.map(p=>map(p.x,p.y)), point) ? 0 : Math.min(...MI.PolygonGeometry.edges(object).map(edge=>linearDistance(edge,point,transform)));

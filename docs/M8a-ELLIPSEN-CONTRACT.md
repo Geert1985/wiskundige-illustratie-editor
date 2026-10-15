@@ -184,6 +184,8 @@ Duplicatie van een geldige gekoppelde ellips maakt standaard een zelfstandige el
 - SVG en offline PNG moeten overeenkomen met de canvasgeometrie en mogen geen ongeldige path-attributen of stale geometry bevatten. Bewaar een vaste renderbudget- en foutgrens.
 - M8a introduceert geen algemene ellips-lijn/ellips-ellipsintersectie. De bestaande snappers mogen dit niet onterecht claimen.
 
+M8a-1 rendering/selectie-addendum: `EllipseGeometry.nearest` berekent contourafstand na een optionele affiene mapping, via hoofdassen en maximaal 96 bisectiestappen. Bij een meerduidige centrum-/asprojectie wordt deterministisch de positieve tweede hoofdas gekozen; voor een cirkelcentrum de positieve eerste hoofdas in de meetruimte. Puntselectie blijft voor ellipsen contourgericht, ook bij vulling. Marqueeselectie gebruikt analytische extrema voor volledige insluiting en contourkruisingen voor kruissectie; een klein kader geheel in het lege interieur selecteert de ellips niet. `ellipse-contour` is een virtuele snapkandidaat met dezelfde prioriteit als cirkelcentrum (3), voor raster (4) en na bestaande punten, snijpunten en eindpunten. De dichtstbijzijnde positie en CSS-pixelafstand bepalen de kandidaat; geen opgeslagen samples of nieuwe intersectietypen. De renderer bewaart de volledige numerieke precisie van de halve assen en gebruikt een clipgroep rond de geroteerde contour; labels blijven via het bestaande labelpad lopen.
+
 ### 4.4 Autorisatie
 
 Twee nieuwe ToolCatalog/command-IDs (namen voorlopig):

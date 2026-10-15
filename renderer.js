@@ -176,7 +176,7 @@
     renderLabel(object, label, defaultDx, defaultDy, line) {
       let x, y;
       if (line) { x = this.mapX((object.x1 + object.x2) / 2); y = this.mapY((object.y1 + object.y2) / 2); }
-      else if (object.type === "circle") { x = this.mapX(object.cx); y = this.mapY(object.cy); }
+      else if (["circle","ellipse"].includes(object.type)) { x = this.mapX(object.cx); y = this.mapY(object.cy); }
       else { x = this.mapX(object.x); y = this.mapY(object.y); }
       const style = object.style || {};
       const labelColor = style.stroke && style.stroke !== "none" ? style.stroke : (style.fill || "#222");
@@ -240,6 +240,14 @@
       if (['straight', 'ray', 'vector'].includes(object.type)) {
         svg = this.renderDirected({...object,style},clipBounds);
         if (svg && object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6, true);
+      }
+      if(object.type==='ellipse'){
+        const resolved=MI.EllipseGeometry.fromDefinition(object);if(resolved.reasonCode!=='VALID')return '';
+        const cx=this.mapX(object.cx),cy=this.mapY(object.cy),rx=object.a*this.scale(),ry=object.b*this.scale(),angle=-Math.atan2(resolved.geometry.u.y,resolved.geometry.u.x)*180/Math.PI;
+        const clipId='ellipse-clip-'+Array.from(String(object.id)).map(ch=>ch.codePointAt(0).toString(16)).join('-');
+        const left=this.mapX(clipBounds.xMin),top=this.mapY(clipBounds.yMax),width=(clipBounds.xMax-clipBounds.xMin)*this.scale(),height=(clipBounds.yMax-clipBounds.yMin)*this.scale();
+        svg='<defs><clipPath id="'+clipId+'" clipPathUnits="userSpaceOnUse"><rect x="'+number(left)+'" y="'+number(top)+'" width="'+number(width)+'" height="'+number(height)+'"/></clipPath></defs><g clip-path="url(#'+clipId+')"><ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" transform="rotate('+angle+' '+cx+' '+cy+')" '+strokeAttrs(style)+' fill="'+esc(style.fill??'none')+'"/></g>';
+        if(object.showLabel)svg+=this.renderLabel(object,object.name||object.label||object.id,8,-8);
       }
       if (object.type === "circle") {
         const cx = this.mapX(object.cx), cy = this.mapY(object.cy), r = object.r * this.scale();

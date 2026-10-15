@@ -66,5 +66,54 @@
     return {geometry,area:Number.isFinite(area)&&area>0?area:null,areaStatus:Number.isFinite(area)&&area>0?'VALID':'NUMERIC_UNDERFLOW',reasonCode:'VALID'};
   }
 
-  MI.EllipseGeometry=Object.freeze({resolve,assertCreatable,fromDefinition,limit:LIMIT});
+  // Euclidean closest point, optionally measured after an affine screen mapping.
+  // Principal axes reduce the transformed ellipse to a canonical first-quadrant
+  // problem. Its stationary equation has one interior root for x,y > 0.
+  function nearest(definition,query,map=p=>p){
+    const result=fromDefinition(definition);if(result.reasonCode!=='VALID'||!finitePoint(query))return null;
+    const g=result.geometry,center=map(g.center),pa=map({x:g.center.x+g.a*g.u.x,y:g.center.y+g.a*g.u.y}),pb=map({x:g.center.x+g.b*g.v.x,y:g.center.y+g.b*g.v.y});
+    if(![center,pa,pb].every(finitePoint))return null;
+    const U={x:pa.x-center.x,y:pa.y-center.y},V={x:pb.x-center.x,y:pb.y-center.y};
+    const scale=Math.max(Math.hypot(U.x,U.y),Math.hypot(V.x,V.y));if(!(scale>0)||!Number.isFinite(scale))return null;
+    const u={x:U.x/scale,y:U.y/scale},v={x:V.x/scale,y:V.y/scale};
+    const theta=.5*Math.atan2(2*(u.x*u.y+v.x*v.y),u.x*u.x+v.x*v.x-u.y*u.y-v.y*v.y);
+    const ex={x:Math.cos(theta),y:Math.sin(theta)},ey={x:-Math.sin(theta),y:Math.cos(theta)};
+    const dot=(a,b)=>a.x*b.x+a.y*b.y,det=u.x*v.y-u.y*v.x;
+    const major=Math.hypot(dot(u,ex),dot(v,ex)),minor=Math.abs(det)/major;
+    if(!(minor>0)||!Number.isFinite(major))return null;
+    const d={x:(query.x-center.x)/scale,y:(query.y-center.y)/scale},qx=dot(d,ex),qy=dot(d,ey),x=Math.abs(qx),y=Math.abs(qy),A=major,B=Math.min(major,minor);
+    if(!finitePoint(d))return null;
+    let cs,sn,iterations=0;
+    if(A===B){const length=Math.hypot(x,y);cs=length?x/length:1;sn=length?y/length:0;}
+    else if(y===0){cs=Math.min(1,A*x/((A-B)*(A+B)));sn=Math.sqrt(Math.max(0,(1-cs)*(1+cs)));}
+    else if(x===0){cs=0;sn=1;}
+    else {
+      // Normalize products to avoid overflow for queries far from a tiny ellipse.
+      const size=Math.max(A,B,x,y),a=A/size,b=B/size,X=x/size,Y=y/size;
+      let low=0,high=Math.PI/2;
+      for(let i=0;i<96;i++){iterations++;const t=(low+high)/2,c=Math.cos(t),s=Math.sin(t),f=(b*b-a*a)*s*c+a*X*s-b*Y*c;if(f>0)high=t;else low=t;}
+      const t=(low+high)/2;cs=Math.cos(t);sn=Math.sin(t);
+    }
+    cs*=qx<0?-1:1;sn*=qy<0?-1:1;
+    const right={x:dot(u,ex)/major,y:dot(v,ex)/major},orientation=det<0?-1:1;
+    const cp=right.x*cs-orientation*right.y*sn,sp=right.y*cs+orientation*right.x*sn;
+    const parameter=((Math.atan2(sp,cp)/TAU)%1+1)%1,point=g.pointAt(parameter),screenPoint=map(point);
+    if(!finitePoint(point)||!finitePoint(screenPoint))return null;
+    const distance=Math.hypot(query.x-screenPoint.x,query.y-screenPoint.y);if(!Number.isFinite(distance))return null;
+    return {point,screenPoint,parameter,distance,iterations};
+  }
+
+  function rectangleHit(definition,rect,mode,map=p=>p){
+    const g=fromDefinition(definition).geometry;if(!g||!rect||!['left','right','top','bottom'].every(k=>Number.isFinite(rect[k])))return false;
+    const C=map(g.center),P=map({x:g.center.x+g.a*g.u.x,y:g.center.y+g.a*g.u.y}),Q=map({x:g.center.x+g.b*g.v.x,y:g.center.y+g.b*g.v.y});if(![C,P,Q].every(finitePoint))return false;
+    const U={x:P.x-C.x,y:P.y-C.y},V={x:Q.x-C.x,y:Q.y-C.y},ex=Math.hypot(U.x,V.x),ey=Math.hypot(U.y,V.y),eps=1e-8;
+    const contained=C.x-ex>=rect.left-eps&&C.x+ex<=rect.right+eps&&C.y-ey>=rect.top-eps&&C.y+ey<=rect.bottom+eps;
+    if(mode==='contain'||contained)return contained;
+    if(C.x+ex<rect.left||C.x-ex>rect.right||C.y+ey<rect.top||C.y-ey>rect.bottom)return false;
+    const scale=Math.max(ex,ey),ux=U.x/scale,uy=U.y/scale,vx=V.x/scale,vy=V.y/scale,det=ux*vy-uy*vx;if(!det)return false;
+    const corners=[{x:rect.left,y:rect.top},{x:rect.right,y:rect.top},{x:rect.right,y:rect.bottom},{x:rect.left,y:rect.bottom}].map(p=>{const dx=(p.x-C.x)/scale,dy=(p.y-C.y)/scale;return {x:(dx*vy-dy*vx)/det,y:(ux*dy-uy*dx)/det};});
+    return corners.some((p,i)=>{const q=corners[(i+1)%4],dx=q.x-p.x,dy=q.y-p.y,length=dx*dx+dy*dy,t=length?Math.max(0,Math.min(1,-(p.x*dx+p.y*dy)/length)):0;return Math.hypot(p.x+t*dx,p.y+t*dy)<=1+eps&&Math.max(Math.hypot(p.x,p.y),Math.hypot(q.x,q.y))>=1-eps;});
+  }
+
+  MI.EllipseGeometry=Object.freeze({resolve,assertCreatable,fromDefinition,nearest,rectangleHit,limit:LIMIT});
 })(window);

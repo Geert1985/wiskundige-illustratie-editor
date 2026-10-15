@@ -63,6 +63,7 @@
       return polygonHit(textGeometry[o.id],r,mode);
     }
     if(o.type==='point')return finite(o) && inside(t.mathToScreen(o),r);
+    if(o.type==='ellipse')return MI.EllipseGeometry.rectangleHit(o,r,mode,p=>t.mathToScreen(p));
     if(o.type==='circle') {
       const c={x:o.cx,y:o.cy};if(!finite(c)||!Number.isFinite(o.r)||o.r<=0)return false;
       const center=t.mathToScreen(c),px=t.mathToScreen({x:c.x+o.r,y:c.y}),py=t.mathToScreen({x:c.x,y:c.y+o.r});
