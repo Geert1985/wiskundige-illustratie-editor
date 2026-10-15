@@ -20,6 +20,7 @@ function runtime(files = ['model.js', 'renderer.js', 'index.js'], additions = {}
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'linear-geometry.js'), 'utf8'), context);
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'measurement-geometry.js'), 'utf8'), context);
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'region-geometry.js'), 'utf8'), context);
+    if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'ellipse-geometry.js'), 'utf8'), context);
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'construction-service.js'), 'utf8'), context);
     if (file === 'editor.js') vm.runInContext(fs.readFileSync(path.join(root, 'editor-bootstrap.js'), 'utf8'), context);
     if (file === 'index.js') for (const service of ['editor-history.js', 'coordinate-transform.js', 'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js', 'permission-runtime.js']) {

@@ -166,7 +166,13 @@ Voorgestelde recepten (contractnamen voorlopig):
 - Oude readers die v9, `ellipseSchema:1` of constructionSchema 6 niet begrijpen, moeten atomair weigeren; geen impliciete downgrade naar polygonen of SVG-paden.
 - Legacydocumenten v1–v8 behouden betekenis en blijven leesbaar. Restricted export leidt versie/schemas af uit **alleen geprojecteerde**, toegestane objecten en recepten.
 
-De combinatie *ellips + REG-2-regio + rijke tekst + asreferenties + lagen* is een verplichte integratietest. Documentversie 9 en schema 6 zijn hier **een ontwerpvoorstel**, geen bestaand productiecontract; eventuele afwijking vereist aparte expliciete review.
+De combinatie *ellips + REG-2-regio + rijke tekst + asreferenties + lagen* is een verplichte integratietest. Documentversie 9 en schema 6 zijn het M8a-implementatiecontract.
+
+#### M8a-1 addendum — zelfstandige ellipsen en duplicatie
+
+Een `ellipse` kan óf gekoppeld zijn via `ellipseByFociAndSum`, óf zelfstandig zijn gedefinieerd. Een gekoppelde ellips bewaart uitsluitend de twee puntbronnen en positieve `sumDistance`; de actuele contourvelden zijn berekend en worden niet in JSON opgeslagen. Een zelfstandige ellips bewaart definitieparameters `cx`, `cy`, `a`, `b` en `rotation`, waarbij `a ≥ b > 0` en `rotation` de richting van de halve lange as is. Dit zijn primaire definitiegegevens, geen cache of gefingeerde bronpunten.
+
+Duplicatie van een geldige gekoppelde ellips maakt standaard een zelfstandige ellips met dezelfde vorm en de bestaande duplicatie-offset toegepast op het centrum. Daarmee blijven de oorspronkelijke brandpuntbronnen onafhankelijk. Ontkoppelen bewaart de actuele opgeloste geometrie als zelfstandige definitie en is alleen toegestaan voor geldige, ontgrendelde ellipsen, conform de bestaande detach-regels. Een ongeldige gekoppelde ellips kan niet worden gedupliceerd of ontkoppeld. Beide vormen gebruiken documentversie 9 en `ellipseSchema:1`; het constructieschema 6 is vereist voor de gekoppelde vorm.
 
 ### 4.3 Renderer, selectie, snap en export
 
