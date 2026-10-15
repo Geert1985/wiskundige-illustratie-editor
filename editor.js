@@ -1203,7 +1203,7 @@
       this.renderPresentation(true);
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
       const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput','measurementSetting','pointProjection','angleSetting','angleDocument','textBinding'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
-      this.renderInstructions();this.renderViewList(); this.renderInspector(object);this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
+      this.renderInstructions();this.renderViewList(); this.renderInspector(object);this.organizeGeometryInspector();this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
       if(focusKey.length && focusIds===JSON.stringify(this.selectedIds)){const replacement=Array.from(n.selectionPanel.querySelectorAll('input,select')).find(el=>focusKey.every(([k,v])=>el.dataset[k]===v));if(replacement && !replacement.disabled){replacement.focus?.({preventScroll:true});if(caret!=null && replacement.type==='text')replacement.setSelectionRange?.(caret,caret);}}
       if(n.zoomPercent)n.zoomPercent.textContent=Math.round(this.engine.renderer.scale()/((this.engine.renderer.width-2*this.engine.renderer.padding)/10)*100)+"%";
       if(n.panBtn){n.panBtn.classList.toggle("active",this.navigationMode==="pan");n.panBtn.disabled=!this.allowed("view.pan",{bounds:{...r.bounds}});}for(const node of [n.zoomInBtn,n.zoomOutBtn,n.resetViewBtn])if(node)node.disabled=!this.allowed("view.zoom",{bounds:{...r.bounds}});
@@ -1346,6 +1346,34 @@
         return extentControl+'<details data-property-section="region" open><summary>Oppervlakte</summary>'+visible+mode+slider+help+output+'</details>';
       })():'';
       panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+regionDisplay+this.ellipseInspector(object)+html;
+    }
+    organizeGeometryInspector(){
+      if(this.inspectorTarget!=='objects'||this.selectedIds.length!==1)return;
+      const panel=this.nodes.selectionPanel;
+      const groups=[
+        {id:'object-geometry',title:'Object en geometrie',sections:['geometry','point-projections','circle-distribution','ellipse-geometry']},
+        {id:'measurements',title:'Metingen',sections:['labels','angle-measurement','region']}
+      ];
+      for(const group of groups){
+        let wrapper=panel.querySelector(':scope > details[data-property-section="'+group.id+'"]');
+        if(!wrapper){wrapper=this.document.createElement('details');wrapper.dataset.propertySection=group.id;wrapper.open=true;const summary=this.document.createElement('summary');summary.textContent=group.title;wrapper.append(summary);}
+        else wrapper.querySelector(':scope > summary').textContent=group.title;
+        for(const section of group.sections){
+          const node=Array.from(panel.children).find(child=>child.dataset?.propertySection===section);
+          if(node){
+            if(section==='geometry'&&node.children.length===1){node.remove();continue;}
+            if(section==='geometry')node.querySelector(':scope > summary').textContent='Definitieparameters';
+            if(section==='labels')node.querySelector(':scope > summary').textContent='Objectlabel en maat';
+            wrapper.append(node);
+          }
+        }
+        if(wrapper.children.length>1){
+          const anchor=group.id==='measurements'
+            ?panel.querySelector(':scope > details[data-property-section="object-geometry"]')||panel.querySelector(':scope > .object-heading')
+            :panel.querySelector(':scope > .object-heading');
+          if(anchor)anchor.after(wrapper);else panel.prepend(wrapper);
+        }else wrapper.remove();
+      }
     }
     async exportImage(kind){
       try{

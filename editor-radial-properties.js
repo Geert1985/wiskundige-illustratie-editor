@@ -8,11 +8,11 @@
   if(!MI)return;
 
   const SECTIONS={
-    geometry:['geometry','point-projections','circle-distribution'],
+    geometry:['object-geometry','measurements'],
     appearance:['appearance','common'],
-    measurement:['labels','angle-measurement','region'],
+    measurement:['measurements'],
     relations:['relations','dynamic-text'],
-    labels:['labels','point-projections','common'],
+    labels:['measurements','object-geometry','common'],
     axes:['axes'],
     grid:['grid'],
     units:['units'],
@@ -76,7 +76,7 @@
   // UI-PANEL-1: one section-icon vocabulary for every floating inspector.
   // Presentation only: no change to details state, model fields or commands.
   const PROPERTY_ICONS=Object.freeze({
-    'point-projections':'axes',geometry:'geometry',appearance:'appearance',
+    'point-projections':'axes',geometry:'geometry','object-geometry':'geometry',measurements:'measurement',appearance:'appearance',
     relations:'relations',labels:'labels',region:'measurement',
     'angle-measurement':'angleUnits','circle-distribution':'geometry',
     'dynamic-text':'editText',common:'appearance',axes:'axes',
@@ -594,15 +594,10 @@
       this.app.startContextConstruction(toolId,sourceId,planKey);
     }
     applyContextFilter(filter){
-      const object=this.context().objects[0],isPoint=object.type==='point';
+      const object=this.context().objects[0];
       this.panel.hidden=filter==='construct';
       this.pointConstructPanel.hidden=filter!=='construct';
       if(filter==='construct'){this.renderContextConstructions();return;}
-      const measurementSection=this.panel.querySelector('[data-property-section="labels"]');
-      if(measurementSection&&!isPoint){
-        const summary=measurementSection.querySelector('summary');
-        if(summary)summary.textContent=filter==='geometry'?'Metingen':'Label en meting';
-      }
       for(const el of this.panel.children){
         const section=el.dataset?.propertySection;
         if(el.classList.contains('object-heading')){
@@ -610,10 +605,8 @@
           continue;
         }
         if(filter==='all'){el.hidden=false;continue;}
-        if(filter==='geometry')el.hidden=!([
-          'geometry','point-projections','circle-distribution',
-          ...(!isPoint?['labels']:[])
-        ].includes(section));
+        if(filter==='geometry')el.hidden=!(['object-geometry','measurements'].includes(section));
+        else if(filter==='measurement')el.hidden=section!=='measurements';
         else if(filter==='appearance')el.hidden=section!=='appearance';
         else if(filter==='relations')el.hidden=section!=='relations';
         else el.hidden=true;
@@ -668,6 +661,11 @@
         const section=el.dataset.propertySection;
         if(filter==='appearance'&&el.classList.contains('object-style')){el.hidden=false;continue;}
         el.hidden=!(sectionNames&&sectionNames.includes(section));
+      }
+      if(filter==='labels')for(const wrapper of this.panel.querySelectorAll(':scope > details[data-property-section="object-geometry"], :scope > details[data-property-section="measurements"]')){
+        for(const child of wrapper.querySelectorAll(':scope > details[data-property-section]'))
+          child.hidden=!['labels','point-projections'].includes(child.dataset.propertySection);
+        wrapper.hidden=!wrapper.querySelector(':scope > details[data-property-section="labels"], :scope > details[data-property-section="point-projections"]');
       }
     }
     rename(name){
