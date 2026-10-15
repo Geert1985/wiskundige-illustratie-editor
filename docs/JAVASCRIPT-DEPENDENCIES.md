@@ -1,42 +1,65 @@
 # JavaScript-afhankelijkheden en klassieke scriptvolgorde
 
-**Status:** R4 inventarisatie
+**Status:** bijgewerkt voor STAB-1 op 15 oktober 2026
 **Applicatie-entrypoint:** `editor.html`
-**Runtimevorm:** synchrone klassieke scripts; geen `type="module"` en geen bundler.
+**Runtimevorm:** 49 synchrone klassieke scripts; geen `type="module"` en geen bundler.
+**Gedeelde cacheversie:** `stab-1-20261015` voor alle 49 lokale JavaScript-URL’s.
 
 ## Contract
 
-`editor.html` laadt 25 lokale scripts synchroon in de hieronder vermelde volgorde. Zij publiceren hun services onder `window.FZI.MathIllustration` (in de broncode meestal afgekort tot `MI`). `tests/architecture.test.cjs` legt de inventaris en de laadvoorwaarden vast. Nieuwe, verwijderde of verplaatste scripts en gewijzigde exports moeten de inventaris en deze tabel bewust bijwerken.
+De volgorde hieronder is de feitelijk geladen volgorde in `editor.html` en wordt gecontroleerd door `tests/architecture.test.cjs`. De tabel registreert de door die test bewaakte namespace-exports en evaluatievoorgangers. UI-side-effectmodules die geen namespace-service publiceren staan expliciet als zodanig vermeld. Runtime-aanroepen na het laden zijn geen evaluatieafhankelijkheid.
 
-De tabel noemt per module de belangrijkste exports, services die zij gebruikt en de expliciete `load after`-voorwaarden. “Gebruikt” omvat runtime-aanroepen die pas plaatsvinden nadat alle scripts geladen zijn. De `after`-relatie is alleen voor evaluatie-/initialisatieafhankelijkheden: een runtime-aanroep is op zichzelf geen reden om een script eerder te laden.
-
-| Volgorde | Script | Belangrijkste exports | Belangrijkste gebruikte services | Laden na |
-| ---: | --- | --- | --- | --- |
-| 1 | `model.js` | `IllustrationModel`, `normaliseObject`, modeltypen en flags, `DynamicText`, `PointProjections` | Geen applicatiemodules | — |
-| 2 | `persistent-groups.js` | `PersistentGroups` | Model | `model.js` |
-| 3 | `document-layers.js` | `DocumentLayers` | Model, persistente groepen | `model.js`, `persistent-groups.js` |
-| 4 | `polygon-geometry.js` | `PolygonGeometry` | Model | `model.js` |
-| 5 | `linear-geometry.js` | `LinearGeometry` | Model | `model.js` |
-| 6 | `measurement-geometry.js` | `AngleMeasurements`, `MeasurementUnits`, `MeasurementGeometry` | Model, lineaire en polygoongeometrie | `model.js`, `polygon-geometry.js`, `linear-geometry.js` |
-| 7 | `construction-service.js` | `AxisReferences`, `ConstructionService` | Model, geometrie en meetregels | `model.js`, `polygon-geometry.js`, `linear-geometry.js`, `measurement-geometry.js` |
-| 8 | `renderer.js` | `SvgRenderer`, `escapeXml` | Model, lagen, geometrie, metingen en constructieregels | Alle hiervoor genoemde diensten die voor renderberekening nodig zijn |
-| 9 | `index.js` | `Engine`, `distancePointToSegment`, `CONSTRUCTION_COLOR` | Model, groepen, lagen, geometrie, metingen, constructies en renderer | Services 1–8 |
-| 10 | `semantic-sequence.js` | `SemanticSequence` | Engine; autorisatiecommando's worden bij uitvoering opgezocht | `index.js` |
-| 11 | `coordinate-transform.js` | `CoordinateTransform` | Renderer/viewport-geometrie | `renderer.js` |
-| 12 | `snap-service.js` | `SnapService` en snaphelpers | Engine, coördinatentransformatie, constructie-, meet- en lineaire geometrie | `index.js`, `coordinate-transform.js`, `construction-service.js`, `measurement-geometry.js`, `linear-geometry.js` |
-| 13 | `interaction-resolver.js` | `InteractionResolver` | Engine, snapping, metingen en polygoongeometrie | `index.js`, `snap-service.js`, `measurement-geometry.js`, `polygon-geometry.js` |
-| 14 | `rectangle-selection.js` | `RectangleSelection` | Lineaire, meet- en polygoongeometrie; coördinatentransformatie | `linear-geometry.js`, `measurement-geometry.js`, `polygon-geometry.js`, `coordinate-transform.js` |
-| 15 | `permission-runtime.js` | `PermissionError`, `PermissionPolicy`, `PermissionEvaluator`, `RuntimeSession`, `PermissionFields`, `AuthorCommands` | Engine, constructies, metingen, lagen en groepen | `index.js`, `construction-service.js`, `measurement-geometry.js`, `document-layers.js`, `persistent-groups.js` |
-| 16 | `editor-startup.js` | `DraftStore` | Modelnormalisatie | `model.js` |
-| 17 | `editor-adaptive-grid.js` | Rasterstaphelpers | Renderer/viewportschaal | `renderer.js` |
-| 18 | `editor-label-drag.js` | `LabelOffsets` | Lineaire geometrie | `linear-geometry.js` |
-| 19 | `editor-enhancements.js` | `EditorOverlays`, `SnapFeedback` | Lineaire geometrie; SVG-presentation | `linear-geometry.js` |
-| 20 | `editor-color.js` | `EditorColor` | Model-/presentatievlaggen | `model.js` |
-| 21 | `editor-axis-settings.js` | `AxisSettings` | Renderer en assenpresentatie | `renderer.js` |
-| 22 | `editor-history.js` | `EditorHistory`, `RuntimeHistory` | Engine en permission runtime | `index.js`, `permission-runtime.js` |
-| 23 | `editor-tool-instructions.js` | `ToolInstructions` | Escaping/renderhelpers; EditorApp wordt als argument aangeleverd | `renderer.js` |
-| 24 | `editor.js` | `EditorApp` | Alle model-, engine-, render-, interactie-, permissie- en UI-services | Scripts 1–23 |
-| 25 | `editor-bootstrap.js` | `bootstrapEditor`, actieve editor/engine-referenties, restricted bootstrap | `EditorApp` en alle door bootstrap geïnjecteerde services | `editor.js` |
+| Volgorde | Script | Namespace-exports / rol | Laden na |
+| ---: | --- | --- | --- |
+| 1 | `regular-geometry.js` | `RegularGeometry` | — |
+| 2 | `math-source.js` | `MathSource` | — |
+| 3 | `text-values.js` | `TextValues` | — |
+| 4 | `text-dependencies.js` | `TextDependencies` | `text-values.js` |
+| 5 | `model.js` | `PointProjections`, `DynamicText`, `TextContent`, `MODEL_VERSION`, `OBJECT_TYPES`, `LINEAR_OBJECT_TYPES`, `IllustrationModel`, `normaliseObject`, `PRESENTATION_FLAGS` | `regular-geometry.js`, `math-source.js`, `text-values.js` |
+| 6 | `rich-text-editor-loader.js` | `RichTextEditor` | `model.js` |
+| 7 | `font-assets.js` | `TextFontData` | `model.js` |
+| 8 | `text-fonts.js` | `TextFonts` | `font-assets.js` |
+| 9 | `persistent-groups.js` | `PersistentGroups` | `model.js` |
+| 10 | `document-layers.js` | `DocumentLayers` | `model.js`, `persistent-groups.js` |
+| 11 | `polygon-geometry.js` | `PolygonGeometry` | `model.js` |
+| 12 | `linear-geometry.js` | `LinearGeometry` | `model.js` |
+| 13 | `measurement-geometry.js` | `AngleMeasurements`, `MeasurementUnits`, `MeasurementGeometry` | `model.js`, `polygon-geometry.js`, `linear-geometry.js` |
+| 14 | `region-geometry.js` | `RegionGeometry` | `model.js`, `polygon-geometry.js`, `measurement-geometry.js` |
+| 15 | `construction-service.js` | `AxisReferences`, `ConstructionService` | `model.js`, `polygon-geometry.js`, `linear-geometry.js`, `measurement-geometry.js`, `region-geometry.js` |
+| 16 | `math-fragments.js` | `MathFragments` | `math-source.js`, `model.js` |
+| 17 | `text-metrics.js` | `TextMetrics` | `model.js` |
+| 18 | `rich-text-renderer.js` | `RichTextRenderer` | `math-fragments.js`, `text-metrics.js`, `model.js` |
+| 19 | `text-math-input.js` | `TextMathInput` | `math-source.js`, `math-fragments.js` |
+| 20 | `text-formula-editor.js` | `TextFormulaEditor` | `math-source.js`, `math-fragments.js` |
+| 21 | `text-dynamic-value-editor.js` | `TextDynamicValueEditor` | `text-values.js` |
+| 22 | `text-symbol-catalog.js` | `TextSymbolCatalog` | — |
+| 23 | `text-insert-panel.js` | `TextInsertPanel` | `math-fragments.js`, `text-symbol-catalog.js`, `text-math-input.js`, `text-formula-editor.js`, `text-dynamic-value-editor.js` |
+| 24 | `renderer.js` | `SvgRenderer`, `escapeXml` | `model.js`, `document-layers.js`, `polygon-geometry.js`, `linear-geometry.js`, `measurement-geometry.js`, `region-geometry.js`, `construction-service.js` |
+| 25 | `index.js` | `CONSTRUCTION_COLOR`, `Engine`, `distancePointToSegment` | `model.js`, `persistent-groups.js`, `document-layers.js`, `polygon-geometry.js`, `linear-geometry.js`, `measurement-geometry.js`, `region-geometry.js`, `construction-service.js`, `renderer.js` |
+| 26 | `semantic-sequence.js` | `SemanticSequence` | `index.js` |
+| 27 | `coordinate-transform.js` | `CoordinateTransform` | `renderer.js` |
+| 28 | `snap-service.js` | `SnapService`, `getSnapCandidates`, `snapPoint`, `publishSnapResult` | `index.js`, `coordinate-transform.js`, `construction-service.js`, `measurement-geometry.js`, `linear-geometry.js` |
+| 29 | `interaction-resolver.js` | `InteractionResolver` | `index.js`, `snap-service.js`, `measurement-geometry.js`, `polygon-geometry.js` |
+| 30 | `rectangle-selection.js` | `RectangleSelection` | `linear-geometry.js`, `measurement-geometry.js`, `polygon-geometry.js`, `coordinate-transform.js` |
+| 31 | `text-content-diff.js` | `TextContentDiff` | `model.js` |
+| 32 | `permission-runtime.js` | `PermissionError`, `PermissionPolicy`, `PermissionEvaluator`, `RuntimeSession`, `PermissionFields`, `AuthorCommands` | `index.js`, `construction-service.js`, `measurement-geometry.js`, `region-geometry.js`, `document-layers.js`, `persistent-groups.js` |
+| 33 | `editor-startup.js` | `DraftStore` | `model.js` |
+| 34 | `editor-adaptive-grid.js` | `adaptiveGridStep`, `adaptiveGridMinStep`, `adaptiveGridMaxScale` | `renderer.js` |
+| 35 | `editor-label-drag.js` | `LabelOffsets` | `linear-geometry.js` |
+| 36 | `editor-enhancements.js` | `EditorOverlays`, `SnapFeedback` | `linear-geometry.js` |
+| 37 | `editor-color.js` | `EditorColor` | `model.js` |
+| 38 | `text-editor-ux.js` | `TextEditorUX` | `editor-color.js` |
+| 39 | `editor-axis-settings.js` | `AxisSettings` | `renderer.js` |
+| 40 | `editor-history.js` | `EditorHistory`, `RuntimeHistory` | `index.js`, `permission-runtime.js` |
+| 41 | `editor-tool-instructions.js` | `ToolInstructions` | `renderer.js` |
+| 42 | `export-service.js` | `ExportService` | `index.js`, `math-fragments.js` |
+| 43 | `text-workspace.js` | `TextWorkspace` | `model.js` |
+| 44 | `tool-catalog.js` | `ToolCatalog` | — |
+| 45 | `editor-radial-properties.js` | `RadialProperties` | `tool-catalog.js`, `editor-tool-instructions.js`, `permission-runtime.js` |
+| 46 | `editor.js` | `EditorApp` | `modulesBeforeEditor()` |
+| 47 | `editor-tool-search.js` | Side-effectmodule; geen namespace-export | `editor.js` |
+| 48 | `editor-sidebar-tabs.js` | Side-effectmodule; geen namespace-export | `editor.js`, `document-layers.js`, `persistent-groups.js` |
+| 49 | `editor-bootstrap.js` | `bootstrapEditor`, `editor`, `activeEngine`, `bootstrapRestrictedEditor` | `editor.js` |
 
 ## Globale services en runtimekoppelingen
 

@@ -3,7 +3,7 @@ const {choose}=require('./browser-tool-menu.cjs');
 module.exports=async page=>{
  const originalViewport=page.viewportSize();await page.setViewportSize({width:1280,height:900});await page.reload();
  const ids=await page.locator('#toolGrid [data-tool]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tool));
- assert.equal(ids.length,40);assert.equal(new Set(ids).size,40);
+ assert.equal(ids.length,41);assert.equal(new Set(ids).size,41);
  const snapshot=()=>page.evaluate(()=>{const a=FZI.MathIllustration.editor;return {document:a.engine.toJSON(),tool:a.tool,selected:a.selectedIds,interaction:a.interaction,history:a.history.entries,cursor:a.history.cursor,status:a.nodes.status.textContent,storage:Object.entries(localStorage)};});
  await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[]}));
  const documentBefore=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
@@ -26,8 +26,8 @@ module.exports=async page=>{
  await page.keyboard.press('Escape');assert.equal(await page.locator('#canvasToolsMenu').isVisible(),false);await page.locator('#canvasFullscreenBtn').click();
  // The existing preference key is reused for static angles; no new preference storage is introduced.
  await page.evaluate(()=>localStorage.setItem('fzi-math-illustration-linear-tool','rightAngle'));await page.reload();
- assert.equal(await page.locator('#angleShapeToolMain').getAttribute('data-choice'),'rightAngle');
- assert.equal(await page.locator('#linearToolMain').getAttribute('data-choice'),'line');
+  assert.equal(await page.locator('#toolGrid [data-tool="rightAngle"]').count(),1);
+  assert.equal(await page.locator('#toolGrid [data-tool="line"]').count(),1);
  await page.evaluate(()=>localStorage.removeItem('fzi-math-illustration-linear-tool'));
  for(const [name,width,height] of [['desktop',1280,900],['tablet',768,900],['mobile',390,844]]){
   await page.setViewportSize({width,height});await page.reload();if(await page.locator('#toolsToggle').isVisible())await page.locator('#toolsToggle').click();
@@ -38,5 +38,5 @@ module.exports=async page=>{
   await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-'+name+'.png')});
  }
  await page.setViewportSize(originalViewport);await page.reload();await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-overview.png')});
- return {allTools:40,categories:8,plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
+ return {allTools:41,categories:8,plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
 };

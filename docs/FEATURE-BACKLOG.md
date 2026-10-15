@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.9.3 (M7-VEC-FUND definitief benoemd en goedgekeurd, 2026-10-15)
-Status: UI-RADIAL/REG-2 staan sinds merge PR #12 op `main` (referentiecommit `63ab45acc7`). Dit is geen nieuwe Node-/Edge-test of afzonderlijke gebruikersacceptatie. De bestaande historische tijdlijn hieronder blijft intact.
+Version: 1.10.0 (STAB-1 actual-main reconciliation, 2026-10-15)
+Status: `main` staat op `ccacb0d` na PR #13 (UI-RADIAL-11/12), boven op PR #12 (UI-RADIAL/REG-2). STAB-1 verifieert deze actuele basis; de audit op `8603355` en historische tijdlijn hieronder blijven gedateerde context, geen resultaten van de huidige test-run.
 Date: 2026-10-15
 
 > **Normatieve ontwerpen:** [M8a — Ellipsen v1.0.0](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn door de gebruiker **goedgekeurd als ontwerp**, niet geïmplementeerd. [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md) definiëren huidige UI- en servicegrenzen; zie [roadmap](DEVELOPMENT-ROADMAP.md) voor status. [M7-VEC-FUND — Vectorfundament v1.0.0](M7-VEC-FUND-CONTRACT.md) is **formeel goedgekeurd als ontwerp**, niet geïmplementeerd. Het oude vectorlabel `M7a` is vervangen; de bestaande M7a–c-transformatiegroep behoudt de naam. Historische verwijzingen naar M7b/M7f als vervolgwerk zijn nog geen definitieve hernummering of Codex-GO.
@@ -227,3 +227,15 @@ Dit statusblok actualiseert de planningssnapshot hierboven zonder oorspronkelijk
 **Nieuwe objecten:** niet als afzonderlijke radiale typecases hardcoden. Beschikbaarheid volgt uit model-/broncontract + geïmplementeerde ToolCatalog-entry + rechten. Uitzonderingen (`distributedPointOnCircle`, `angleDirections`), subobjectreferenties, meerdere plannen voor hetzelfde gereedschap en nieuwe kromme-plaatsingsprojecties zijn **niet automatisch opgelost** door UI-RADIAL-9 en blijven voor een afzonderlijke expliciete opdracht.
 
 **Geen fictieve verificatie:** gebruikersacceptatie is niet gelijk aan volledige regressie-PASS; deze radialetransitie is niet naar `main` gemerged. Nieuwe verzoeken gebruiken de reguliere gates uit AGENTS/roadmap.
+
+## Backlog v1.10.0 — STAB-1 actual-main audit reconciliation (2026-10-15)
+
+| Item | Current status on STAB-1 base `ccacb0d` | Remaining gate |
+|---|---|---|
+| UI-RADIAL-9/10, REG-2 | Integrated by PR #12 | STAB-1 regression evidence and separate manual acceptance; do not repeat feature work |
+| UI-RADIAL-11/12 | Integrated by PR #13 | Include radial geometry, accessible states, hub controls, and viewport checks in regression |
+| UI-TABS/layer drag | Current tabbed sidebar and layer drag are in main | Verify keyboard, grouped drag, locks, restricted sessions, history and responsive behavior |
+| UI-COLOR-1 | Twelve-color shared palette and visible “Geen vulling” action are in main | Verify modal lifecycle, fill/stroke separation, undo/redo, SVG and restricted controls |
+| STAB-1 | Active integration branch from `ccacb0d` | See [STAB-1 report](STAB-1-IMPLEMENTATION-AND-TEST-REPORT.md); no merge to main |
+
+The 15 October read-only audit examined `8603355`, before PR #13 and the later `ccacb0d` tip. Its architecture findings remain useful; its statements about current file counts, missing focused UI tests, and predicted failures are not current-run results. STAB-1 rechecked them against `ccacb0d` and records actual Node/Edge executions in the report.

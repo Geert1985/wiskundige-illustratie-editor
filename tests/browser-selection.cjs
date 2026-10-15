@@ -20,6 +20,7 @@ module.exports = async page => {
   await page.keyboard.press('Escape'); await page.mouse.up();
   // A sidebar object selection must enter select mode, also after drawing many shapes.
   await require('./browser-tool-menu.cjs').choose(page,'[data-tool="point"]');
+  await page.locator('#sidebarLayersTab').click();
   await page.locator('[data-select-object="circle"]').click();
   assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.tool), 'select');
   const current = await page.evaluate(() => FZI.MathIllustration.editor.transform().mathToScreen({ x: -1, y: -1 }));

@@ -1,6 +1,7 @@
 const assert=require('node:assert/strict');
 module.exports=async page=>{
  const saved=()=>page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
+ const showProperties=async(id,filter='all')=>page.evaluate(({id,filter})=>{const a=FZI.MathIllustration.editor;a.selectObject(id);a.radialProperties.openAt({x:innerWidth/2,y:innerHeight/2},false);a.radialProperties.choose(filter);},{id,filter});
  await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[
   {id:'poly',type:'polygon',vertices:[{x:-2,y:-1},{x:0,y:-1},{x:0,y:1},{x:-2,y:1}]},
   {id:'circle',type:'circle',cx:2,cy:0,r:2},
@@ -68,13 +69,13 @@ module.exports=async page=>{
   await click({x:-2,y:0});await click({x:2,y:0});await click({x:0,y:-2});
   let doc=await saved(),r=doc.objects.find(o=>o.type==='region');assert.ok(r);assert.equal(r.construction.extent,'minor');
   assert.ok(Math.abs(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).regionArea,r.id)-(kind==='circleSectorRegion'?Math.PI:Math.PI-2))<1e-12);
-  await page.evaluate(id=>FZI.MathIllustration.editor.selectObject(id),r.id);
+  await showProperties(r.id,'all');
   await page.locator('[data-region-extent]').selectOption('directed');
   assert.equal((await saved()).objects.find(o=>o.id===r.id).construction.extent,'directed');
   assert.ok(Math.abs(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).regionArea,r.id)-(kind==='circleSectorRegion'?3*Math.PI:3*Math.PI+2))<1e-12);
-  await page.locator('#undoBtn').click();assert.equal((await saved()).objects.find(o=>o.id===r.id).construction.extent,'minor');
-  await page.locator('#redoBtn').click();assert.equal((await saved()).objects.find(o=>o.id===r.id).construction.extent,'directed');
-  await page.locator('[data-region-extent]').selectOption('minor');
+  await page.evaluate(()=>FZI.MathIllustration.editor.travelHistory(false));assert.equal((await saved()).objects.find(o=>o.id===r.id).construction.extent,'minor');
+  await page.evaluate(()=>FZI.MathIllustration.editor.travelHistory(true));assert.equal((await saved()).objects.find(o=>o.id===r.id).construction.extent,'directed');
+  await showProperties(r.id,'all');await page.locator('[data-region-extent]').selectOption('minor');
   const pixels=await page.evaluate(async({id,kind})=>{
    const a=FZI.MathIllustration.editor,e=a.engine;e.renderer.showGrid=false;e.renderer.showAxes=false;
    for(const o of e.model.objects)if(o.id!==id)e.update(o.id,{visible:false});

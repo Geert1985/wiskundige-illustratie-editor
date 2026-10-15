@@ -22,6 +22,6 @@ test('text editor no longer defines UI width slider mapping; document width sche
 
 test('text palette is the same immutable palette source for geometry and rich text',()=>{
  const MI=setup(),palette=MI.EditorColor.palette;
- assert.deepEqual(Array.from(palette,color=>color.value),['#222222','#e63946','#f4a261','#e9c46a','#2a9d8f','#457b9d','#8b5cf6']);
+ assert.deepEqual(Array.from(palette,color=>color.value),['#222222','#64748b','#e63946','#f4a261','#e9c46a','#2a9d8f','#457b9d','#8b5cf6','#f8fafc','#f6cf65','#06b6d4','#db2777']);
  assert.ok(Object.isFrozen(palette));assert.ok(palette.every(Object.isFrozen));
 });

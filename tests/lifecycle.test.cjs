@@ -45,17 +45,19 @@ function appRuntime() {
   for (const file of ['editor-color.js', 'text-editor-ux.js']) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
   vm.runInContext(fs.readFileSync(path.join(root, 'editor-tool-instructions.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(root, 'tool-catalog.js'), 'utf8'), context, { filename: 'tool-catalog.js' });
-  MI.RadialProperties=class { sync() {} dispose() {} close() {} openForAxes() {} };
+  vm.runInContext(fs.readFileSync(path.join(root, 'editor-radial-properties.js'), 'utf8'), context, { filename: 'editor-radial-properties.js' });
+  // This fixture exercises canvas lifecycle only; the radial view is covered by browser tests.
+  MI.RadialProperties=class { constructor() {} sync() {} openForAxes() {} dispose() {} };
   vm.runInContext(fs.readFileSync(path.join(root, 'editor.js'), 'utf8'), context);
   const events = new Map();
-  function target() { return { value: '', style: { setProperty() {} }, dataset: {}, attributes: {}, events: new Map(), classList: { add() {}, remove() {}, toggle() {} },
+  function target() { return { value: '', style: { setProperty() {} }, dataset: {}, attributes: {}, events: new Map(), classList: { add() {}, remove() {}, toggle() {} }, insertBefore() {},
     setAttribute(name, value) { this.attributes[name] = String(value); }, getAttribute(name) { return this.attributes[name] ?? null; },
     addEventListener(type, fn) { (this.events.get(type) || (this.events.set(type, new Set()), this.events.get(type))).add(fn); },
     removeEventListener(type, fn) { this.events.get(type)?.delete(fn); },
     querySelector: () => null, querySelectorAll: () => [], focus() {}, getBoundingClientRect: () => ({ left: 0, top: 0 }), contains: () => true,
     setPointerCapture(id) { this.capture = id; }, hasPointerCapture(id) { return this.capture === id; }, releasePointerCapture() { this.capture = null; } }; }
   const nodes = new Map(), win = target();
-  const doc = { getElementById(id) { if (!nodes.has(id)) nodes.set(id, target()); return nodes.get(id); }, querySelectorAll: () => [], addEventListener() {}, removeEventListener() {}, activeElement: { tagName: 'BODY' } };
+  const doc = { getElementById(id) { if (!nodes.has(id)) nodes.set(id, target()); return nodes.get(id); }, createElement: () => target(), querySelector: () => null, querySelectorAll: () => [], addEventListener() {}, removeEventListener() {}, activeElement: { tagName: 'BODY' } };
   doc.getElementById('canvas').querySelector = selector => selector === 'svg' ? { getScreenCTM: () => ({ a: .5, d: .5, b: 0, c: 0, e: 0, f: 0 }), querySelector: () => null } : null;
   const engine = new MI.Engine({ objects: [{ id: 'p', type: 'point', x: 0, y: 0, showLabel: true }, { id: 'l', type: 'line', x1: 0, y1: 1, x2: 1, y2: 1, showLabel: true }] });
   const dialog=doc.getElementById('textDialog');
@@ -176,7 +178,7 @@ test('M1 all cancellation paths restore original selection and release capture',
 test('M1 right click retains context menu and drawing tools never start marquee',()=>{
   const h=appRuntime();let blocked=false;const p=h.app.transform().mathToScreen({x:0,y:0});
   h.emit(h.doc.getElementById('canvasWrap'),'pointerdown',{button:2,clientX:p.x,clientY:p.y});h.emit(h.win,'pointerup',{clientX:p.x,clientY:p.y});
-  h.emit(h.doc.getElementById('canvasWrap'),'contextmenu',{preventDefault(){blocked=true;}});assert.equal(blocked,false);
+  h.emit(h.doc.getElementById('canvasWrap'),'contextmenu',{preventDefault(){blocked=true;}});assert.equal(blocked,true);
   h.app.setTool('line');h.emit(h.doc.getElementById('canvasWrap'),'pointerdown',{button:2,clientX:p.x,clientY:p.y});assert.equal(h.app.interaction,null);
 });
 test('M1 keyboard rectangle uses same resolver and does not intercept text entry',()=>{

@@ -54,10 +54,10 @@ const modules = [
   { file: 'export-service.js', provides: ['ExportService'], after: ['index.js','math-fragments.js'] },
   { file: 'text-workspace.js', provides: ['TextWorkspace'], after: ['model.js'] },
   { file: 'tool-catalog.js', provides: ['ToolCatalog'], after: [] },
-  { file: 'editor-radial-properties.js', provides: ['RadialProperties'], after: ['tool-catalog.js','construction-service.js','editor-tool-instructions.js'] },
+  { file: 'editor-radial-properties.js', provides: ['RadialProperties'], after: ['tool-catalog.js','construction-service.js','editor-tool-instructions.js','permission-runtime.js'] },
   { file: 'editor.js', provides: ['EditorApp'], after: modulesBeforeEditor() },
   { file: 'editor-tool-search.js', provides: [], after: ['editor.js'] },
-  { file: 'editor-sidebar-tabs.js', provides: [], after: ['editor.js'] },
+  { file: 'editor-sidebar-tabs.js', provides: [], after: ['editor.js','document-layers.js','persistent-groups.js'] },
   { file: 'editor-bootstrap.js', provides: ['bootstrapEditor', 'editor', 'activeEngine', 'bootstrapRestrictedEditor'], after: ['editor.js'] },
 ];
 

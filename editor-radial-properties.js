@@ -110,12 +110,13 @@
       this.detail=this.doc.getElementById('propertiesSidebar');
       this.panel=app.nodes.selectionPanel;
       this.closeBtn=app.nodes.propertiesClose;
+      this.bound=[];
       this.pointConstructPanel=this.doc.createElement('section');
       this.pointConstructPanel.className='radial-construction-options';
       this.pointConstructPanel.hidden=true;
       this.detail?.insertBefore(this.pointConstructPanel,this.panel);
       if(!this.area||!this.wheel||!this.detail||!this.panel)return;
-      this.bound=[];this.anchor=null;this.identity='';this.opened=false;this.detailMode=null;this.drag=null;
+      this.anchor=null;this.identity='';this.opened=false;this.detailMode=null;this.drag=null;
       this.menuType='';
       this.renderWheel();
       this.listen(this.closeBtn,'click',e=>{e.stopPropagation();this.closeDetail();this.wheel.querySelector('.radial-center-input')?.focus();});

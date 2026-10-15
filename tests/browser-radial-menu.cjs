@@ -93,7 +93,7 @@ module.exports = async page => {
       width:input.getBoundingClientRect().width,controlWidth:control.getBoundingClientRect().width,
       buttonBackground:buttonStyle.backgroundColor};
   });
-  assert.match(geometry.background,/^(transparent|rgba\\(0, 0, 0, 0\\))$/,
+  assert.match(geometry.background,/^(transparent|rgba\(0, 0, 0, 0\))$/,
     'the name input must not paint an opaque rectangular backdrop');
   assert.equal(geometry.border,'0px','the name input has no rectangular border');
   assert.ok(geometry.inputBottom+3<geometry.controlTop,

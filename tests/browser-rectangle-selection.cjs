@@ -42,9 +42,9 @@ module.exports=async page=>{
     if(action==='Escape')await page.keyboard.press('Escape');else await page.evaluate(action=>{const app=FZI.MathIllustration.editor;if(action==='dispose'){app.dispose();app.init();}else if(action==='new')app.newDocument();else if(action==='capture'){document.getElementById('canvasWrap').releasePointerCapture(app.interaction.pointerId);}else if(action==='blur')window.dispatchEvent(new Event('blur'));else window.dispatchEvent(new PointerEvent('pointercancel',{pointerId:app.interaction.pointerId}));},action);
     await page.mouse.up({button:'right'});assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.interaction),null,action);assert.deepEqual(await ids(),action==='new'?[]:['l'],action);if(action==='new')await load();
   }
-  // Native right click retains its contextmenu, while real mouseup outside commits.
+  // The editor suppresses the native menu on the select canvas; right-drag still commits outside it.
   await page.evaluate(()=>{window.m1Click=null;document.getElementById('canvasWrap').addEventListener('contextmenu',e=>window.m1Click=e.defaultPrevented,{once:true});});
-  const a=await screen({x:-.5,y:.5});await page.mouse.click(a.x,a.y,{button:'right'});assert.equal(await page.evaluate(()=>window.m1Click),false);
+  const a=await screen({x:-.5,y:.5});await page.mouse.click(a.x,a.y,{button:'right'});assert.equal(await page.evaluate(()=>window.m1Click),true);
   await page.mouse.move(a.x,a.y);await page.mouse.down({button:'right'});await page.mouse.move(1270,880);await page.mouse.up({button:'right'});assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.interaction),null);assert.ok((await ids()).includes('p'));
   // Keyboard route: same resolver, no pointer event or geometry mutation.
   await load();await page.locator('#canvasWrap').click({position:{x:10,y:10}});await page.keyboard.press('k');assert.equal(await page.locator('[data-selection-cursor]').count(),1);await page.keyboard.press('ArrowLeft');await page.keyboard.press('ArrowUp');await page.keyboard.press('Enter');for(let i=0;i<2;i++){await page.keyboard.press('ArrowRight');await page.keyboard.press('ArrowDown');}await page.keyboard.press('Enter');assert.deepEqual(await ids(),['p']);

@@ -6,9 +6,10 @@ module.exports=async page=>{
     {id:'t',type:'text',x:0,y:2,text:'Tekstgrootte',style:{extension:{keep:true}}}
   ]}));
   const doc=()=>page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
+  async function select(id,filter='appearance'){await page.evaluate(({id,filter})=>{const a=FZI.MathIllustration.editor;a.selectObject(id);a.radialProperties.openAt({x:innerWidth/2,y:innerHeight/2},false);a.radialProperties.choose(filter);},{id,filter});}
   async function edit(key,value) {const input=page.locator(`[data-style="${key}"]`);if(await input.getAttribute('type')==='range'){await input.evaluate((el,v)=>{el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));},String(value));}else{await input.fill(String(value));await input.press('Tab');}}
-  async function roundtrip(action) {const before=await doc();await action();const after=await doc();assert.notDeepEqual(after,before);await page.locator('#undoBtn').click();assert.deepEqual(await doc(),before);await page.locator('#redoBtn').click();assert.deepEqual(await doc(),after);}
-  await page.locator('[data-select-object="l"]').click();
+  async function roundtrip(action) {const before=await doc();await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.radialProperties.openAt({x:innerWidth/2,y:innerHeight/2},false);a.radialProperties.choose('appearance');});await action();const after=await doc();assert.notDeepEqual(after,before);await page.evaluate(()=>FZI.MathIllustration.editor.travelHistory(false));assert.deepEqual(await doc(),before);await page.evaluate(()=>FZI.MathIllustration.editor.travelHistory(true));assert.deepEqual(await doc(),after);}
+  await select('l');
   assert.equal(await page.locator('[data-style-dash][aria-pressed=true]').getAttribute('value'),'3 7');
   assert.equal(await page.locator('[data-style="strokeWidth"]').getAttribute('type'),'range');
   assert.equal(await page.locator('[data-style-color]').textContent(),'');
@@ -19,7 +20,7 @@ module.exports=async page=>{
   assert.equal(await page.locator('[data-object-id="l"] line').getAttribute('stroke-width'),'4');assert.equal(await page.locator('[data-object-id="l"] line').getAttribute('stroke-dasharray'),'8 5');
   assert.equal((await doc()).objects.find(o=>o.id==='l').style.extension.keep,true);
   for(const id of ['p','c','poly']) {
-    await page.locator(`[data-select-object="${id}"]`).click();
+    await select(id);
 
     const stroke=(await doc()).objects.find(o=>o.id===id).style.stroke;
     await roundtrip(async()=>{await page.locator('[data-fill-object]').click();await page.locator('[data-editor-color]').fill('#abcdef');await page.locator('#colorApply').click();});
@@ -30,9 +31,9 @@ module.exports=async page=>{
     await roundtrip(async()=>{await page.locator('[data-fill-object]').click();await page.locator('#colorNone').click();});
     assert.equal((await doc()).objects.find(o=>o.id===id).style.fill,'none');
   }
-  await page.locator('[data-select-object="t"]').click();assert.equal(await page.locator('[data-style="strokeWidth"]').count(),0);
+  await select('t');assert.equal(await page.locator('[data-style="strokeWidth"]').count(),0);
   assert.equal(await page.locator('#selectionPanel [data-style="fontSize"]').count(),0);
-  async function textSize(value){await page.locator('[data-select-object="t"]').click();await page.locator('[data-rich-text-edit]').click();await page.locator('#textDialog').waitFor({state:'visible'});await page.evaluate(()=>{const view=FZI.MathIllustration.editor.richTextEditor.view,Selection=view.state.selection.constructor;view.dispatch(view.state.tr.setSelection(Selection.create(view.state.doc,1,view.state.doc.content.size-1)));});await page.locator('#richFontSize').selectOption(String(value));await page.locator('#textForm button[type="submit"]').click();}
+  async function textSize(value){await select('t','editText');await page.locator('#textDialog').waitFor({state:'visible'});await page.evaluate(()=>{const view=FZI.MathIllustration.editor.richTextEditor.view,Selection=view.state.selection.constructor;view.dispatch(view.state.tr.setSelection(Selection.create(view.state.doc,1,view.state.doc.content.size-1)));});await page.locator('#richFontSize').selectOption(String(value));await page.locator('#textForm button[type="submit"]').click();}
   const textOpacity=value=>page.evaluate(value=>{const app=FZI.MathIllustration.editor;app.changeDocument(()=>app.engine.update('t',{style:{opacity:value}}));},value);
   await roundtrip(()=>textSize(80/3));await roundtrip(()=>textOpacity(.5));
   assert.equal((await doc()).objects.find(o=>o.id==='t').textContent.paragraphs[0].runs[0].marks.fontSize,80/3);assert.equal(await page.locator('[data-object-id="t"]').getAttribute('opacity'),'0.5');
