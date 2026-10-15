@@ -99,6 +99,16 @@ test('selected partial group expands to all leaves without touching unrelated ob
   assert.deepEqual(s.model.layers[1].members,['d','a','b','c']);
 });
 
+test('a multi-selection from different layers moves into one destination layer',()=>{
+  const s=setup({selectedIds:['a','d']});
+  s.drag('a','top');
+  assert.equal(s.operations.length,1);
+  assert.deepEqual(Array.from(s.operations[0].payload.ids),['a','d']);
+  assert.deepEqual(s.model.layers[0].members,['b','c']);
+  assert.deepEqual(s.model.layers[1].members,['a','d']);
+  assert.deepEqual(s.app.selectedIds,['a','d']);
+});
+
 test('dropping a selection onto its current layer is a no-op',()=>{
   const s=setup();
   s.drag('b','base');
