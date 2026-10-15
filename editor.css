@@ -578,7 +578,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   fill:#34586a;
 }
 #radialPropertiesWheel input.radial-center-input{
-  position:absolute;z-index:1;top:110px;left:50%;
+  position:absolute;z-index:1;top:99px;left:50%;
   display:block;box-sizing:border-box;transform:translateX(-50%);
   width:162px;max-width:calc(100% - 26px);
   height:31px;min-height:0;min-width:0;
@@ -593,18 +593,18 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 }
 #radialPropertiesWheel input.radial-center-input[readonly]{cursor:default;opacity:.96}
 #radialPropertiesWheel button.radial-center-control{
-  position:absolute;z-index:2;top:147px;
-  width:74px;height:32px;min-height:0;min-width:0;
+  position:absolute;z-index:2;top:145px;
+  width:66px;height:37px;min-height:0;min-width:0;
   margin:0;padding:1px 0;
   display:grid;place-items:center;
   color:#eef4f8;background:transparent;
   border:0;border-radius:0;box-shadow:none;
   cursor:pointer;touch-action:manipulation;
 }
-#radialPropertiesWheel button.radial-center-control-label{left:21px}
+#radialPropertiesWheel button.radial-center-control-label{left:29px}
 #radialPropertiesWheel button.radial-center-control-lock{left:97px}
 #radialPropertiesWheel .radial-center-control svg{
-  display:block;width:27px;height:27px;
+  display:block;width:24px;height:24px;
   fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round;
   pointer-events:none;
