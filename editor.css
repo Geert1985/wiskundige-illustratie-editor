@@ -582,7 +582,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 }
 #radialPropertiesWheel input.radial-center-input[readonly]{cursor:default;opacity:.96}
 #radialPropertiesWheel button.radial-center-control{
-  position:absolute;z-index:2;top:156px;
+  position:absolute;z-index:2;top:153px;
   width:52px;height:28px;min-height:0;min-width:0;
   margin:0;padding:1px 0;
   display:grid;place-items:center;
