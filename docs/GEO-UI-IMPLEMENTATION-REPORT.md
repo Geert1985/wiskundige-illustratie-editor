@@ -15,7 +15,13 @@ De bestaande inspecteursecties worden in het eenobjectpaneel onder twee afzonder
 
 ## GEO-UI-2 — Meetsemantiek
 
-Nog niet uitgevoerd.
+Rechten en halfrechten hebben geen eindige lengte: ze krijgen geen maatbediening meer in de inspecteur en de renderer tekent hun oude `showMeasurement`-waarde niet langer als maatlabel. De legacywaarde blijft bij import/export behouden. Een expliciete formatteringsaanroep voor deze objecten meldt `geen eindige lengte`. Vectorlabels duiden de reeds bestaande eindpunt-afgeleide norm aan als `(norm)`.
+
+Hoekweergave blijft aangesloten op de bestaande `AngleMeasurements`-document- en objectinstellingen; lengte- en oppervlakteformattering blijven de bestaande documenteenheid/schaal respectievelijk schaal² gebruiken. `M7-VEC-FUND` is op de basisbranch alleen een ontwerpcontract. Daarom zijn vectorcomponenten, richting en zin niet toegevoegd; er is geen tweede vectorsysteem gebouwd.
+
+**Gewijzigd:** `editor.js`, `measurement-geometry.js`, `renderer.js`.  
+**Compatibiliteit:** legacy `showMeasurement` op rechten/halfrechten blijft opgeslagen maar wordt niet langer als eindige maat geïnterpreteerd.  
+**Controle:** code-inspectie en `git diff --check`; geen tests, browsercontrole of build uitgevoerd.
 
 ## GEO-UI-3 — Onafhankelijke metingen en maatlabels
 

@@ -294,7 +294,7 @@
       }
       if(object.type==='angle'&&MI.AngleMeasurements.isLinked(object.construction?.kind))svg='';
       if(object.measurementLabelOnly && ['dimension','angle'].includes(object.type)) svg='';
-      if(object.type==='angle'||object.type==='dimension'||(object.showMeasurement && (MI.LinearGeometry.isLinear(object)||object.type==='circle'))) svg+=this.renderMeasurement({...object,style});
+      if(object.type==='angle'||object.type==='dimension'||(object.showMeasurement && (['line','vector'].includes(object.type)||object.type==='circle'))) svg+=this.renderMeasurement({...object,style});
       return '<g data-object-id="' + esc(object.id) + '" data-object-type="' + esc(object.type) + '" aria-label="' + esc(object.name || object.id) + '"'+(opacity!==1?' opacity="'+esc(number(opacity))+'"':'')+'>' + svg + '</g>';
     }
     renderPolygonMeasurements(preview) {

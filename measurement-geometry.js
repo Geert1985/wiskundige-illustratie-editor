@@ -16,6 +16,7 @@
   }
   function value(o) {
     if(o.type==='circle')return o.r;
+    if(o.type==='straight'||o.type==='ray')return null;
     if(o.type!=='angle')return Math.hypot(o.x2-o.x1,o.y2-o.y1);
     const [a,v,b]=o.vertices,ax=a.x-v.x,ay=a.y-v.y,bx=b.x-v.x,by=b.y-v.y;
     const al=Math.hypot(ax,ay),bl=Math.hypot(bx,by),signed=Math.atan2((ax/al)*(by/bl)-(ay/al)*(bx/bl),(ax/al)*(bx/bl)+(ay/al)*(by/bl))*180/Math.PI;return o.angleSettings?.mode==='directed'?(signed<0?signed+360:signed===0?0:signed):Math.abs(signed);
@@ -42,5 +43,5 @@
   function convert(config,unit){const v=settings(config);if(typeof unit!=='string'||!Object.prototype.hasOwnProperty.call(unitFactors,unit))throw Error('Onbekende eenheid.');return settings({...v,unit,scale:unitFactors[unit]&&unitFactors[v.unit]?v.scale*unitFactors[v.unit]/unitFactors[unit]:v.scale});}
   function figureValue(o,kind){if(o.type==='circle')return kind==='area'?Math.PI*o.r*o.r:2*Math.PI*o.r;const vs=o.vertices;if(kind==='perimeter')return vs.reduce((sum,p,i)=>{const q=vs[(i+1)%vs.length];return sum+Math.hypot(q.x-p.x,q.y-p.y);},0);return Math.abs(vs.reduce((sum,p,i)=>{const q=vs[(i+1)%vs.length];return sum+(p.x-vs[0].x)*(q.y-vs[0].y)-(q.x-vs[0].x)*(p.y-vs[0].y);},0))/2;}
   MI.MeasurementUnits=Object.freeze({defaults,settings,format,convert,figureValue});
-  MI.MeasurementGeometry={validateAngle,value,rightPoint,anchors,translate,edges,label:(o,config,angleDocument)=>o.measurementMode==='text'?String(o.measurementText||''):o.type==='angle'?angleLabel(o,config,angleDocument):format(value(o),'length',config)+(o.type==='circle'?' (r)':'')};
+  MI.MeasurementGeometry={validateAngle,value,rightPoint,anchors,translate,edges,label:(o,config,angleDocument)=>o.type==='straight'||o.type==='ray'?'geen eindige lengte':o.measurementMode==='text'?String(o.measurementText||''):o.type==='angle'?angleLabel(o,config,angleDocument):format(value(o),'length',config)+(o.type==='circle'?' (r)':o.type==='vector'?' (norm)':'')};
 })(window);
