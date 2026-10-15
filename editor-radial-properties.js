@@ -87,9 +87,11 @@
   // UI-RADIAL-11: one reusable Bezier silhouette, an inset bevel and a
   // restrained top-edge sheen for all six petals (210 x 140 design units).
   // Keep these paths shared: category-specific geometry causes uneven gaps.
-  const SEGMENT_SHAPE='M37 12 C73 -2 137 -2 173 12 C188 18 198 33 193 50 L176 111 C172 124 162 128 150 124 C121 116 89 116 60 124 C48 128 38 124 34 111 L17 50 C12 33 22 18 37 12 Z';
-  const SEGMENT_INSET='M41 19 C76 7 134 7 169 19 C181 24 189 34 186 47 L169 108 C167 115 161 119 152 117 C122 109 88 109 58 117 C49 119 43 115 41 108 L24 47 C21 34 29 24 41 19 Z';
-  const SEGMENT_SHEEN='M42 18 C76 6 134 6 168 18';
+  // UI-RADIAL-12: the same six petals now use a slightly narrower outline
+  // to maintain a visible gap between adjacent categories at 70% zoom.
+  const SEGMENT_SHAPE='M43 12 C77 -2 133 -2 167 12 C181 18 191 33 186 50 L170 111 C167 124 157 128 146 124 C120 116 90 116 64 124 C53 128 43 124 40 111 L24 50 C19 33 29 18 43 12 Z';
+  const SEGMENT_INSET='M47 19 C79 7 131 7 163 19 C174 24 181 34 178 47 L162 108 C160 115 155 119 147 117 C120 109 90 109 63 117 C55 119 50 115 48 108 L32 47 C29 34 36 24 47 19 Z';
+  const SEGMENT_SHEEN='M48 18 C79 6 131 6 162 18';
   // UI-RADIAL-8 — one six-segment wheel for points, circles and linear geometry.
   const CONTEXT_CONTENT=[
     ['construct','Constructie','⌘'],['appearance','Uiterlijk','◉'],
@@ -416,10 +418,11 @@
       lower.setAttribute('class','radial-center-lower-skin');
       lower.setAttribute('aria-hidden','true');
       lower.innerHTML=
-        // Curves share an exact boundary: no overlapping name and button skins.
-        '<path class="radial-center-name-shape" d="M7 107 C50 126 142 126 185 107 L181 138 C143 158 49 158 11 138 Z"/>'+
-        '<path class="radial-center-control-left" d="M11 138 C30 148 58 153 96 153 L96 188 C60 186 34 171 21 151 Z"/>'+
-        '<path class="radial-center-control-right" d="M96 153 C134 153 162 148 181 138 L171 151 C158 171 132 186 96 188 Z"/>';
+        // Three separate bounded paths; the lower wedges are symmetric,
+        // leave room for the icons, and stay within the 192px hub.
+        '<path class="radial-center-name-shape" d="M8 105 C48 123 144 123 184 105 Q188 104 186 113 L182 132 Q182 136 178 137 C138 150 54 150 14 137 Q10 135 10 132 L6 113 Q4 104 8 105 Z"/>'+
+        '<path class="radial-center-control-left" d="M16 141 C38 151 67 154 96 154 L96 187 C62 185 35 166 16 141 Z"/>'+
+        '<path class="radial-center-control-right" d="M96 154 C125 154 154 151 176 141 C157 166 130 185 96 187 Z"/>';
       hub.append(lower);
       const labelButton=this.doc.createElement('button');
       labelButton.type='button';labelButton.className='radial-center-control radial-center-control-label';

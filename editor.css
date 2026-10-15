@@ -477,7 +477,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   display:block;position:absolute;inset:0;width:100%;height:100%;
   pointer-events:none;filter:drop-shadow(0 12px 14px #10212c41);
 }
-/* UI-RADIAL-11 — six matching petals, shared Bezier geometry and
+/* UI-RADIAL-11/12 — six matching petals, shared Bezier geometry and
    accessible HTML buttons. Only the outer petals are styled here; the
    approved inner hub and its interactions are intentionally untouched. */
 .radial-segment{
@@ -559,19 +559,18 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   font-size:14px;font-weight:700;line-height:1.4;
   text-shadow:0 1px 2px #09121b;
 }
-/* The black name band and two lower wedges follow the inner circle.
-   Hit targets are real buttons, never SVG paths. The input must override the
-   global input[type="text"] rule (0,1,1 specificity), which otherwise paints
-   a rectangular black background over the curved SVG band. */
+/* UI-RADIAL-12: independent gold-trimmed name band and lower wedge buttons.
+   Native controls remain above the shapes; no rectangular HTML field chrome.
+   The input specificity beats the global input[type="text"] background. */
 .radial-center-lower-skin{
   position:absolute;inset:0;width:100%;height:100%;
   pointer-events:none;
 }
 .radial-center-name-shape{
-  fill:#070d12;stroke:#456276;stroke-width:1.5;
+  fill:#070d12;stroke:#f0c662;stroke-width:1.55;stroke-linejoin:round;
 }
 .radial-center-control-left,.radial-center-control-right{
-  fill:#1e3c4e;stroke:#dfba59;stroke-width:1.35;
+  fill:#1e3c4e;stroke:#dfba59;stroke-width:1.55;stroke-linejoin:round;
   transition:fill .16s ease;
 }
 .radial-center:has(.radial-center-control-label:is(:hover,:focus-visible)) .radial-center-control-left,
@@ -579,9 +578,9 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   fill:#34586a;
 }
 #radialPropertiesWheel input.radial-center-input{
-  position:absolute;z-index:1;top:118px;left:50%;
+  position:absolute;z-index:1;top:110px;left:50%;
   display:block;box-sizing:border-box;transform:translateX(-50%);
-  width:158px;max-width:calc(100% - 26px);
+  width:162px;max-width:calc(100% - 26px);
   height:31px;min-height:0;min-width:0;
   margin:0;padding:0 7px;
   border:0;border-radius:0;background:transparent;background-image:none;
@@ -594,19 +593,19 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 }
 #radialPropertiesWheel input.radial-center-input[readonly]{cursor:default;opacity:.96}
 #radialPropertiesWheel button.radial-center-control{
-  position:absolute;z-index:2;top:153px;
-  width:52px;height:28px;min-height:0;min-width:0;
+  position:absolute;z-index:2;top:147px;
+  width:74px;height:32px;min-height:0;min-width:0;
   margin:0;padding:1px 0;
   display:grid;place-items:center;
   color:#eef4f8;background:transparent;
   border:0;border-radius:0;box-shadow:none;
   cursor:pointer;touch-action:manipulation;
 }
-#radialPropertiesWheel button.radial-center-control-label{left:36px}
-#radialPropertiesWheel button.radial-center-control-lock{left:104px}
+#radialPropertiesWheel button.radial-center-control-label{left:21px}
+#radialPropertiesWheel button.radial-center-control-lock{left:97px}
 #radialPropertiesWheel .radial-center-control svg{
-  display:block;width:23px;height:23px;
-  fill:none;stroke:currentColor;stroke-width:1.8;
+  display:block;width:27px;height:27px;
+  fill:none;stroke:currentColor;stroke-width:2;
   stroke-linecap:round;stroke-linejoin:round;
   pointer-events:none;
 }

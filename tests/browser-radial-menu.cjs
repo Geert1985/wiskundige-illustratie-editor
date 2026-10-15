@@ -33,6 +33,10 @@ module.exports = async page => {
   });
   assert.equal(new Set(outer.map(item=>item.contour)).size,1,
     'all categories must share precisely the same Bezier geometry');
+  const petalWidth=await wheel.locator('.radial-segment-silhouette').first()
+    .evaluate(shape=>shape.getBBox().width);
+  assert.ok(petalWidth<=168,
+    'outer petals should be narrow enough to leave a visible gap');
   assert.equal(new Set(outer.flatMap(item=>item.servers)).size,12,
     'surface and gold rim gradient IDs must be unique');
   assert.ok(outer.every(item=>item.servers.length===2 &&
@@ -65,6 +69,9 @@ module.exports = async page => {
   });
   assert.ok(bounds.input.left>bounds.hub.left && bounds.input.right<bounds.hub.right,
     'object name remains entirely within the center disc');
+  assert.equal(await hub.locator('.radial-center-name-shape').count(),1);
+  assert.equal(await hub.locator('.radial-center-control-left').count(),1);
+  assert.equal(await hub.locator('.radial-center-control-right').count(),1);
   const geometry=await page.evaluate(() => {
     const input=document.querySelector('#radialPropertiesWheel input.radial-center-input');
     const control=document.querySelector('#radialPropertiesWheel button.radial-center-control-label');
@@ -82,6 +89,18 @@ module.exports = async page => {
     'label and lock hit targets sit strictly below the name input');
   assert.ok(geometry.controlWidth<geometry.width*.6,
     'lower buttons must occupy separate halves of the hub');
+  const wedges=await page.evaluate(()=>{
+    const hub=document.querySelector('.radial-center').getBoundingClientRect();
+    return [...document.querySelectorAll('[data-radial-toggle]')].map(button=>{
+      const rect=button.getBoundingClientRect();
+      return {left:rect.left,right:rect.right,top:rect.top,bottom:rect.bottom,
+        centerX:(rect.left+rect.right)/2,hubCenterX:(hub.left+hub.right)/2};
+    });
+  });
+  assert.equal(wedges.length,2);
+  assert.ok(wedges[0].right<=wedges[1].left,'button hit targets cannot overlap');
+  assert.ok(wedges[0].centerX<wedges[0].hubCenterX &&
+    wedges[1].centerX>wedges[1].hubCenterX,'icons belong to different semicircles');
   assert.equal(await input.inputValue(),'point-3');
   await label.click();
   assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.get('point-3').showLabel),true);
