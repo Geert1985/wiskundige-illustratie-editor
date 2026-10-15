@@ -713,7 +713,7 @@
         selectionIdsBefore:selectionBefore,pointerId:null
       };
       const hint=plan.mode==='placement'
-        ?'Klik op het bronobject om de puntpositie vast te leggen.'
+        ?(kind==='pointOnEllipse'?'Klik nabij de ellipscontour om de puntpositie vast te leggen.':'Klik op het bronobject om de puntpositie vast te leggen.')
         :this.constructionHint(kind,plan.sourceIndex===0?1:0);
       this.status((source.name||objectId)+' is vastgelegd. '+hint);
       this.invalidate();
