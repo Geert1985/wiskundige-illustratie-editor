@@ -71,8 +71,22 @@ module.exports=async page=>{
   await page.evaluate(id=>{const a=FZI.MathIllustration.editor;a.execute('object.setLock',{ids:[id],value:true});a.selectObject(id);a.radialProperties.showDetail('all');},contextualId);
   assert.equal(await page.locator('[data-path-parameter]').isDisabled(),true);
   await page.locator('#saveBtn').click();const saved=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());await page.reload();await page.waitForFunction(()=>!!FZI.MathIllustration.editor);assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON()),saved);
-  const exports=await page.evaluate(async()=>{const a=FZI.MathIllustration.editor,svg=await FZI.MathIllustration.ExportService.svg(a.engine,{document}),png=await FZI.MathIllustration.ExportService.png(svg,{width:a.engine.renderer.width,height:a.engine.renderer.height,document});return {svg:svg.includes('ellipse'),pngType:png.type,pngBytes:png.size};});
-  assert.equal(exports.svg,true);assert.equal(exports.pngType,'image/png');assert.ok(exports.pngBytes>0);
+  // Verify the linked point itself, not merely the source ellipse, in SVG and rendered PNG pixels.
+  const exports=await page.evaluate(async id=>{
+    const a=FZI.MathIllustration.editor,point=a.engine.get(id),svg=await FZI.MathIllustration.ExportService.svg(a.engine,{document}),parsed=new DOMParser().parseFromString(svg,'image/svg+xml');
+    const group=Array.from(parsed.querySelectorAll('g[data-object-id]')).find(node=>node.getAttribute('data-object-id')===id),circle=group?.querySelector('circle');
+    const x=Number(circle?.getAttribute('cx')),y=Number(circle?.getAttribute('cy')),positionCorrect=!!circle&&Math.abs(x-a.engine.renderer.mapX(point.x))<1e-6&&Math.abs(y-a.engine.renderer.mapY(point.y))<1e-6;
+    const settings={width:a.engine.renderer.width,height:a.engine.renderer.height,document},png=await FZI.MathIllustration.ExportService.png(svg,settings);
+    let pointPixelsChanged=false;
+    if(group&&circle){group.remove();const withoutPoint=new XMLSerializer().serializeToString(parsed.documentElement),control=await FZI.MathIllustration.ExportService.png(withoutPoint,settings);
+      const sample=async blob=>{const bitmap=await createImageBitmap(blob),canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;const context=canvas.getContext('2d'),sx=Math.max(0,Math.min(canvas.width-7,Math.round(x)-3)),sy=Math.max(0,Math.min(canvas.height-7,Math.round(y)-3));context.drawImage(bitmap,0,0);bitmap.close();return Array.from(context.getImageData(sx,sy,7,7).data);};
+      const [withPoint,without]=await Promise.all([sample(png),sample(control)]);pointPixelsChanged=withPoint.some((value,i)=>value!==without[i]);
+    }
+    return {ellipseInSvg:svg.includes('data-object-type="ellipse"'),pointInSvg:!!group,positionCorrect,pointPixelsChanged,pngType:png.type,pngBytes:png.size};
+  },contextualId);
+  assert.equal(exports.ellipseInSvg,true);assert.equal(exports.pointInSvg,true);assert.equal(exports.positionCorrect,true,'SVG circle must match the linked model point');
+  assert.equal(exports.pointPixelsChanged,true,'removing the linked point must change PNG pixels around its position');
+  assert.equal(exports.pngType,'image/png');assert.ok(exports.pngBytes>0);
   const options=fixture('course'),restrictedTool='construct:pointOnEllipse';options.initialDocument={version:9,ellipseSchema:1,type:'geometry',meta:{title:'',description:''},objects:[{id:'E',type:'ellipse',cx:0,cy:0,a:5,b:4,rotation:.2}]};options.policy.parameters={};options.policy.allowedTools=[restrictedTool];options.policy.initialObjectRules={E:{read:true,display:true,selectCanvas:true,selectList:true,sourceTools:[restrictedTool]}};options.policy.createdObjectRules.point={read:true,display:true,selectCanvas:true,selectList:true,translate:true,delete:true,snap:true};
   await page.evaluate(o=>{window.__ellipseId='E';window.__pointRestricted=FZI.MathIllustration.RuntimeSession.create(o);window.__pointPolicy=o.policy;FZI.MathIllustration.bootstrapRestrictedEditor({runtimeSession:window.__pointRestricted.session});},options);
   const restrictedToolButton=page.locator(`[data-canvas-tool="${restrictedTool}"]`);await page.locator('#canvasToolsBtn').click();await restrictedToolButton.waitFor({state:'visible'});assert.equal(await restrictedToolButton.isDisabled(),false);await restrictedToolButton.click();
