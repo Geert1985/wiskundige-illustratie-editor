@@ -37,6 +37,7 @@
   let highlighted=null;
   const clear=()=>{
     if(highlighted)highlighted.classList.remove('layer-drop-target');
+    list.querySelectorAll('.object-dragging').forEach(row=>row.classList.remove('object-dragging'));
     highlighted=null;
     dragged=null;
   };
@@ -46,10 +47,22 @@
     if(!row||!app||app.runtime){event.preventDefault();return;}
     const id=row.dataset.dragObject,object=app.engine.get(id);
     if(!object){event.preventDefault();return;}
-    dragged={id};
+    // Dragging an already selected object transfers the entire selection.
+    // An unselected object keeps the existing single-object/group behaviour.
+    // Resolve complete group roots before transferring to keep groups atomic.
+    const model=app.engine.model,MI=global.FZI.MathIllustration;
+    const selected=app.selectedIds.includes(id)?app.selectedIds:[id];
+    const roots=new Set(selected.map(objectId=>MI.PersistentGroups.top(model.groups||[],objectId)));
+    const members=new Set([...roots].flatMap(root=>MI.PersistentGroups.members(model.groups||[],root)));
+    const ids=MI.DocumentLayers.ordered(model.objects,model.layers)
+      .filter(item=>members.has(item.id)).map(item=>item.id);
+    if(!ids.length){event.preventDefault();return;}
+    dragged={ids};
     event.dataTransfer.effectAllowed='move';
     event.dataTransfer.setData('text/plain',id);
-    row.classList.add('object-dragging');
+    list.querySelectorAll('[data-drag-object]').forEach(item=>{
+      if(members.has(item.dataset.dragObject))item.classList.add('object-dragging');
+    });
   });
   list.addEventListener('dragover',event=>{
     const target=event.target.closest?.('[data-layer-row]');
@@ -69,27 +82,23 @@
     event.preventDefault();
     const target=event.target.closest?.('[data-layer-row]');
     const app=global.FZI?.MathIllustration?.editor;
-    const id=dragged.id;
+    const ids=dragged.ids;
     clear();
-    if(!target||!app||app.runtime||!app.engine.get(id))return;
+    if(!target||!app||app.runtime||!ids.length||ids.some(id=>!app.engine.get(id)))return;
     const layerId=target.dataset.layerRow;
     const model=app.engine.model;
-    if(!model.layers.some(layer=>layer.id===layerId))return;
-    const groups=model.groups||[];
-    const root=global.FZI.MathIllustration.PersistentGroups.top(groups,id);
-    const ids=global.FZI.MathIllustration.PersistentGroups.members(groups,root);
+    const destination=model.layers.find(layer=>layer.id===layerId);
+    if(!destination)return;
     const owner=global.FZI.MathIllustration.DocumentLayers.index(model.layers).owner;
     if(ids.every(objectId=>owner.get(objectId)?.id===layerId))return;
     try{
+      // One authorized mutation = one undo/redo step for the whole selection.
       app.changeDocument(()=>app.execute('layer.assign',{ids,layerId}));
-      app.status((ids.length>1?'Groep':'Object')+' verplaatst naar '+model.layers.find(layer=>layer.id===layerId).name+'.');
+      app.status((ids.length===1?'1 object':ids.length+' objecten')+' verplaatst naar '+destination.name+'.');
     }catch(error){
       app.status('Verplaatsen naar laag mislukt: '+error.message);
       app.invalidate();
     }
   });
-  list.addEventListener('dragend',()=>{
-    list.querySelectorAll('.object-dragging').forEach(row=>row.classList.remove('object-dragging'));
-    clear();
-  });
+  list.addEventListener('dragend',clear);
 })(window);
