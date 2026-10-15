@@ -91,6 +91,6 @@ test('UI-RADIAL-11 styles use SVG gradients, preserve accessible HTML buttons an
   assert.match(css,/#radialPropertiesWheel input\.radial-center-input\{/);
   assert.match(script,/node\.type='button';node\.className='radial-segment'/);
   assert.match(script,/node\.setAttribute\('aria-label',label\)/);
-  assert.match(html,/editor-radial-properties\.js\?v=radialmenu-4/);
-  assert.match(html,/editor\.css\?v=radialmenu-4/);
+  assert.match(html,/editor-radial-properties\.js\?v=radialmenu-5/);
+  assert.match(html,/editor\.css\?v=radialmenu-5/);
 });
