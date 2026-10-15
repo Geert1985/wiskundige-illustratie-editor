@@ -18,7 +18,7 @@ test('UI-LEFT-1 exposes the tools/layers tabs and searchable standalone tools',(
 test('UI-LEFT-1 leaves tool IDs and fullscreen catalog unaffected, scopes hidden results to sidebar',()=>{
   const allIds=[...html.matchAll(/data-tool="([^"]+)"/g)].map(match=>match[1]);
   assert.equal(new Set(allIds).size,allIds.length);
-  assert.equal(allIds.filter(id=>id!=='select').length,40);
+  assert.equal(allIds.filter(id=>id!=='select').length,41);
   assert.match(script,/root\.querySelectorAll\(':scope > \[data-tool-category\]'\)/);
   assert.match(script,/\.tool-grid > \.tool/);
   assert.match(script,/beforeSearch/);

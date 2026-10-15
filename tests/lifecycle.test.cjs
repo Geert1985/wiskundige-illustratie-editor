@@ -196,7 +196,7 @@ test('legacy style patches preserve fields/history; text inspector delegates to 
   assert.doesNotMatch(doc.getElementById('selectionPanel').innerHTML,/data-style="fontSize"/);
   assert.match(doc.getElementById('selectionPanel').innerHTML,/data-rich-text-edit/);
   // Legacy patch/history compatibility remains tested even though text has no duplicate UI.
-  const input={dataset:{style:'fontSize'},type:'number',valueAsNumber:30};input.closest=()=>input;
+  const input={dataset:{style:'fontSize'},type:'number',valueAsNumber:30};input.closest=selector=>selector.includes('[data-style]')?input:null;
   emit(doc.getElementById('selectionPanel'),'change',{target:input});assert.equal(engine.get(o.id).style.fontSize,30);assert.equal(engine.get(o.id).style.extension.keep,true);
   app.travelHistory();assert.equal(engine.get(o.id).style.fontSize,16);app.travelHistory(true);assert.equal(engine.get(o.id).style.fontSize,30);
   input.valueAsNumber=0;emit(doc.getElementById('selectionPanel'),'change',{target:input});assert.equal(engine.get(o.id).style.fontSize,30);
