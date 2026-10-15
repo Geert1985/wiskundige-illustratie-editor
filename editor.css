@@ -570,18 +570,21 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   fill:#070d12;stroke:#f0c662;stroke-width:1.55;stroke-linejoin:round;
 }
 .radial-center-control-left,.radial-center-control-right{
-  fill:#1e3c4e;stroke:#dfba59;stroke-width:1.55;stroke-linejoin:round;
+  fill:#1e3c4e;stroke:none;
   transition:fill .16s ease;
+}
+.radial-center-divider{
+  fill:none;stroke:#dfba59;stroke-width:1.55;stroke-linecap:round;
 }
 .radial-center:has(.radial-center-control-label:is(:hover,:focus-visible)) .radial-center-control-left,
 .radial-center:has(.radial-center-control-lock:is(:hover,:focus-visible)) .radial-center-control-right{
   fill:#34586a;
 }
 #radialPropertiesWheel input.radial-center-input{
-  position:absolute;z-index:1;top:99px;left:50%;
+  position:absolute;z-index:1;top:101px;left:50%;
   display:block;box-sizing:border-box;transform:translateX(-50%);
   width:162px;max-width:calc(100% - 26px);
-  height:31px;min-height:0;min-width:0;
+  height:25px;min-height:0;min-width:0;
   margin:0;padding:0 7px;
   border:0;border-radius:0;background:transparent;background-image:none;
   box-shadow:none;resize:none;
@@ -593,16 +596,16 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 }
 #radialPropertiesWheel input.radial-center-input[readonly]{cursor:default;opacity:.96}
 #radialPropertiesWheel button.radial-center-control{
-  position:absolute;z-index:2;top:145px;
-  width:66px;height:37px;min-height:0;min-width:0;
+  position:absolute;z-index:2;top:143px;
+  width:54px;height:33px;min-height:0;min-width:0;
   margin:0;padding:1px 0;
   display:grid;place-items:center;
   color:#eef4f8;background:transparent;
   border:0;border-radius:0;box-shadow:none;
   cursor:pointer;touch-action:manipulation;
 }
-#radialPropertiesWheel button.radial-center-control-label{left:29px}
-#radialPropertiesWheel button.radial-center-control-lock{left:97px}
+#radialPropertiesWheel button.radial-center-control-label{left:38px}
+#radialPropertiesWheel button.radial-center-control-lock{left:100px}
 #radialPropertiesWheel .radial-center-control svg{
   display:block;width:24px;height:24px;
   fill:none;stroke:currentColor;stroke-width:2;
