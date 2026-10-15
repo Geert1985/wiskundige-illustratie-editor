@@ -477,56 +477,68 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   display:block;position:absolute;inset:0;width:100%;height:100%;
   pointer-events:none;filter:drop-shadow(0 12px 14px #10212c41);
 }
-/* Rounded sculpted SVG cards are genuine button targets. The card rotation
-   follows the ring, but a counter-rotation keeps symbols and labels horizontal. */
+/* UI-RADIAL-11 — six matching petals, shared Bezier geometry and
+   accessible HTML buttons. Only the outer petals are styled here; the
+   approved inner hub and its interactions are intentionally untouched. */
 .radial-segment{
   position:absolute;left:50%;top:50%;
   width:210px;height:140px;margin:0;padding:0;
   display:block;min-height:0;min-width:0;
   transform:translate(-50%,-50%) rotate(var(--radial-angle)) translateY(-158px);
   background:none!important;border:0!important;border-radius:0;
-  color:#f9ca63;box-shadow:none!important;
+  color:#f6cd70;box-shadow:none!important;
   cursor:pointer;pointer-events:auto;touch-action:manipulation;
   -webkit-tap-highlight-color:transparent;
 }
 .radial-segment-skin{
   position:absolute;inset:0;width:100%;height:100%;overflow:visible;
   pointer-events:none;
-  filter:drop-shadow(0 9px 6px #091b2766);
-  transition:filter .16s ease;
+  filter:drop-shadow(0 8px 6px #081b2a70);
+  transition:filter .18s ease;
 }
+/* The native path's fill and stroke reference a unique SVG paint server.
+   Never set CSS fill/stroke here: doing so would override those gradients. */
 .radial-segment-silhouette{
-  fill:#172f3f;stroke:#364e5d;stroke-width:3.3;
-  stroke-linejoin:round;
-  transition:fill .16s ease,stroke .16s ease;
+  stroke-width:2.5;stroke-linejoin:round;
+  transition:stroke-width .18s ease;
 }
-.radial-segment-primary .radial-segment-silhouette{stroke:#e9c25b;stroke-width:4}
-.radial-segment[aria-pressed="true"] .radial-segment-silhouette{
-  fill:#244657;stroke:#f8d575;
+.radial-segment-stop-top{stop-color:#29495d;transition:stop-color .18s ease}
+.radial-segment-stop-mid{stop-color:#19364a;transition:stop-color .18s ease}
+.radial-segment-stop-bottom{stop-color:#0b2536;transition:stop-color .18s ease}
+.radial-segment-inset{
+  fill:none;stroke:#bfd7dd48;stroke-width:1.2;
+  pointer-events:none;
 }
-.radial-segment:hover .radial-segment-silhouette,
-.radial-segment:focus-visible .radial-segment-silhouette{
-  fill:#2a4b5c;stroke:#f9d575;
+.radial-segment-sheen{
+  fill:none;stroke:#faf1d552;stroke-width:1.2;
+  stroke-linecap:round;pointer-events:none;
 }
-.radial-segment:hover .radial-segment-skin,
-.radial-segment:focus-visible .radial-segment-skin{
-  filter:drop-shadow(0 11px 10px #061b2980) drop-shadow(0 0 4px #e6bb4c99)
+.radial-segment-primary .radial-segment-silhouette{stroke-width:2.9}
+.radial-segment[aria-pressed="true"] .radial-segment-silhouette{stroke-width:3.2}
+.radial-segment[aria-pressed="true"] .radial-segment-inset{stroke:#f9d57988}
+.radial-segment:is(:hover,:focus-visible,[aria-pressed="true"]) .radial-segment-stop-top{stop-color:#335c6f}
+.radial-segment:is(:hover,:focus-visible,[aria-pressed="true"]) .radial-segment-stop-mid{stop-color:#21485a}
+.radial-segment:is(:hover,:focus-visible,[aria-pressed="true"]) .radial-segment-stop-bottom{stop-color:#15394b}
+.radial-segment:is(:hover,:focus-visible,[aria-pressed="true"]) .radial-segment-skin{
+  filter:drop-shadow(0 9px 8px #061a29a0) drop-shadow(0 0 3px #f8cd6580);
 }
 .radial-segment:focus-visible{outline:none!important}
 .radial-segment-content{
-  position:absolute;left:15px;top:23px;width:180px;height:94px;
+  position:absolute;left:16px;top:21px;width:178px;height:94px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
   transform:rotate(var(--radial-counter-angle));transform-origin:center;
-  pointer-events:none;color:#f9ca63;
+  pointer-events:none;color:#f6cd70;
 }
-.radial-segment-icon{width:39px;height:39px;display:grid;place-items:center;pointer-events:none}
+.radial-segment-icon{
+  width:39px;height:39px;display:grid;place-items:center;pointer-events:none;
+}
 .radial-segment-icon svg{
-  display:block;width:35px;height:35px;
-  fill:none;stroke:currentColor;stroke-width:1.65;
+  display:block;width:36px;height:36px;
+  fill:none;stroke:currentColor;stroke-width:1.75;
   stroke-linecap:round;stroke-linejoin:round;overflow:visible;
 }
 .radial-segment-text{
-  color:#f5f7f9;font-size:16px;line-height:1.15;
+  color:#f6f8fa;font-size:16.5px;line-height:1.15;
   font-weight:700;text-align:center;white-space:nowrap;
   text-shadow:0 1px 2px #071824bb;
 }

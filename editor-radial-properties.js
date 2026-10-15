@@ -84,7 +84,12 @@
   });
 
   const SVG_NS='http://www.w3.org/2000/svg';
-  const SEGMENT_SHAPE='M39 10 Q105 -1 171 10 Q201 14 191 48 L175 112 Q170 133 148 122 Q105 110 62 122 Q40 133 35 112 L19 48 Q9 14 39 10 Z';
+  // UI-RADIAL-11: one reusable Bezier silhouette, an inset bevel and a
+  // restrained top-edge sheen for all six petals (210 x 140 design units).
+  // Keep these paths shared: category-specific geometry causes uneven gaps.
+  const SEGMENT_SHAPE='M37 12 C73 -2 137 -2 173 12 C188 18 198 33 193 50 L176 111 C172 124 162 128 150 124 C121 116 89 116 60 124 C48 128 38 124 34 111 L17 50 C12 33 22 18 37 12 Z';
+  const SEGMENT_INSET='M41 19 C76 7 134 7 169 19 C181 24 189 34 186 47 L169 108 C167 115 161 119 152 117 C122 109 88 109 58 117 C49 119 43 115 41 108 L24 47 C21 34 29 24 41 19 Z';
+  const SEGMENT_SHEEN='M42 18 C76 6 134 6 168 18';
   // UI-RADIAL-8 — one six-segment wheel for points, circles and linear geometry.
   const CONTEXT_CONTENT=[
     ['construct','Constructie','⌘'],['appearance','Uiterlijk','◉'],
@@ -350,9 +355,33 @@
         frame.setAttribute('viewBox','0 0 210 140');
         frame.setAttribute('class','radial-segment-skin');
         frame.setAttribute('aria-hidden','true');
+        // Per-segment gradient ids prevent duplicate SVG paint servers and
+        // preserve hover/selected colors without duplicating geometry.
+        const surface='fziRadialPetalSurface'+i,rim='fziRadialPetalRim'+i;
+        const defs=this.doc.createElementNS(SVG_NS,'defs');
+        defs.innerHTML='<linearGradient id="'+surface+'" x1="0" y1="0" x2="0" y2="1">'
+          +'<stop class="radial-segment-stop-top" offset="0%"/>'
+          +'<stop class="radial-segment-stop-mid" offset="48%"/>'
+          +'<stop class="radial-segment-stop-bottom" offset="100%"/>'
+          +'</linearGradient>'
+          +'<linearGradient id="'+rim+'" x1="0" y1="0" x2="1" y2="1">'
+          +'<stop offset="0%" stop-color="#f6d787"/>'
+          +'<stop offset="50%" stop-color="#c7963e"/>'
+          +'<stop offset="100%" stop-color="#f8d16a"/>'
+          +'</linearGradient>';
+        frame.append(defs);
         const shape=this.doc.createElementNS(SVG_NS,'path');
-        shape.setAttribute('d',SEGMENT_SHAPE);shape.setAttribute('class','radial-segment-silhouette');
-        frame.append(shape);
+        shape.setAttribute('d',SEGMENT_SHAPE);
+        shape.setAttribute('class','radial-segment-silhouette');
+        shape.setAttribute('fill','url(#'+surface+')');
+        shape.setAttribute('stroke','url(#'+rim+')');
+        const inset=this.doc.createElementNS(SVG_NS,'path');
+        inset.setAttribute('d',SEGMENT_INSET);
+        inset.setAttribute('class','radial-segment-inset');
+        const sheen=this.doc.createElementNS(SVG_NS,'path');
+        sheen.setAttribute('d',SEGMENT_SHEEN);
+        sheen.setAttribute('class','radial-segment-sheen');
+        frame.append(shape,inset,sheen);
         // Counter-rotation keeps the icon and text upright while the sculpted
         // segment itself rotates around the hub.
         const face=text('span','radial-segment-content','',this.doc);
