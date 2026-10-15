@@ -1,6 +1,6 @@
-# Illustration documents — version 2
+# Illustration documents — versioned formats through v8 (historical v2 specification retained)
 
-The editor imports legacy version 1 and exports version 2. A missing version is treated as legacy version 1. Future versions, unsupported document/object types and malformed known fields are rejected before replacing existing state. Older engines intentionally reject version 2 instead of silently dropping newer data.
+**Current status (2026-10-15, `main` at `63ab45acc7`):** the editor supports document versions **1–8** and exports the lowest applicable version for the features present (version 8 when region objects are present). The detailed original version-2 rules below are **historical**. A missing version still denotes legacy version 1. Unsupported future versions and malformed objects are rejected atomically. M8a and M8b are approved **designs only**, not implemented document schema revisions. See [M8a](docs/M8a-ELLIPSEN-CONTRACT.md) and [M8b](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md).
 
 ## Schema and atomic loading
 
@@ -98,3 +98,10 @@ Documents containing at least one `textContent` fragment use version 7 and `text
 ## T4 fixed rich-text width and export
 
 v7/textSchema 1–3 unchanged. textContent.width is null for automatic width or a positive SVG-pixel width (same coordinate system as font sizes), maximum 1000000. It is formatting, not geometry/content/reference data. No new persisted fragment or raster cache; legacy rich text with null width keeps its compatibility layout. Long ordinary words wrap by grapheme; math/source atoms remain whole and may overflow. PNG native-font bitmaps are private export intermediates only. See docs/T4-CONTRACT.md and docs/T4-REPORT.md. calculatedValue/schema 4 remains future T5c design, not accepted by the current reader.
+
+
+## Region documents — version 8 (current production model)
+
+The current `region` object type declares document `version:8` and `regionSchema:1`. Recipes `polygonRegion`, `circleSectorRegion` and `circleSegmentRegion` require `constructionSchema:5`; mixed documents can also contain compatible rich text, circle-point distributions, layers and groups with their own declared schemas. Derived region contour and area values are recomputed and are not stored as independent authoritative geometry. Import verifies schema combinations and resolves constructions before committing document state. See [REG-1](docs/REG-1-CONTRACT.md) and [REG-2 report](docs/REG-2-REPORT.md).
+
+**Not yet supported:** M8a proposes an `ellipse` object and document v9 with `ellipseSchema:1`/`constructionSchema:6`; M8b proposes another linked-`polygon` recipe whose version must be determined after M8a. No proposed version or schema is active until explicitly implemented, migration-tested and accepted.

@@ -1,6 +1,6 @@
 # Wiskundige illustratie-editor
 
-> **Actuele werkinstructies (14 oktober 2026, DOC-RADIAL-1):** Deze README bevat ook historische architectuur- en starterinformatie. Controleer de uitgecheckte branch; de huidige contextuele eigenschappen-/constructiebediening is op `codex/ui-radial-7-point-context-constructions` geïmplementeerd, **niet automatisch op `main`**. Zie [AGENTS.md](AGENTS.md), [UI-RADIAL-9](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md) en [roadmap v2.8.0](docs/DEVELOPMENT-ROADMAP.md). Gebruiker bevestigt werking, maar automatische Node-/Edge-tests zijn in deze reeks niet uitgevoerd.
+> **Actuele werkinstructies (15 oktober 2026):** de radiale contextuele constructies, REG-2 en bijbehorende UI-wijzigingen zijn via PR #12 in `main` geïntegreerd (referentie `63ab45acc7`). Een merge bewijst niet automatisch een nieuwe volledige regressietest of alle gebruikersacceptaties. Zie [AGENTS.md](AGENTS.md), [UI-RADIAL-9](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md) en [roadmap v2.8.5](docs/DEVELOPMENT-ROADMAP.md). **Goedgekeurde, nog niet geïmplementeerde ontwerpen:** [M8a Ellipsen](docs/M8a-ELLIPSEN-CONTRACT.md) en [M8b Parallellogrammen](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md).
 
 Zelfstandig project: https://github.com/Geert1985/wiskundige-illustratie-editor
 
