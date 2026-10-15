@@ -420,9 +420,9 @@
       lower.innerHTML=
         // Three separate bounded paths; the lower wedges are symmetric,
         // leave room for the icons, and stay within the 192px hub.
-        '<path class="radial-center-name-shape" d="M8 105 C48 123 144 123 184 105 Q188 104 186 113 L182 132 Q182 136 178 137 C138 150 54 150 14 137 Q10 135 10 132 L6 113 Q4 104 8 105 Z"/>'+
-        '<path class="radial-center-control-left" d="M16 141 C38 151 67 154 96 154 L96 187 C62 185 35 166 16 141 Z"/>'+
-        '<path class="radial-center-control-right" d="M96 154 C125 154 154 151 176 141 C157 166 130 185 96 187 Z"/>';
+        '<path class="radial-center-name-shape" d="M8 96 C50 111 142 111 184 96 L182 124 C137 140 55 140 10 124 Z"/>'+
+        '<path class="radial-center-control-left" d="M12 129 C36 138 64 143 96 143 L96 187 C59 185 29 164 12 129 Z"/>'+
+        '<path class="radial-center-control-right" d="M96 143 C128 143 156 138 180 129 C163 164 133 185 96 187 Z"/>';
       hub.append(lower);
       const labelButton=this.doc.createElement('button');
       labelButton.type='button';labelButton.className='radial-center-control radial-center-control-label';
