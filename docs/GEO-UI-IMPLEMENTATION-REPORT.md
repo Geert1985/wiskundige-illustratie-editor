@@ -25,4 +25,11 @@ Hoekweergave blijft aangesloten op de bestaande `AngleMeasurements`-document- en
 
 ## GEO-UI-3 — Onafhankelijke metingen en maatlabels
 
-Nog niet uitgevoerd.
+Geïmplementeerd voor lijnstukken/lengtematen, hoeken, cirkels, veelhoeken (ook driehoeken), ellipsen en regiogebieden. Cirkels krijgen straal, diameter, omtrek en oppervlakte; veelhoeken krijgen afzonderlijke zijden, binnenhoeken, omtrek en oppervlakte; ellipsen krijgen halve en volledige assen, excentriciteit en oppervlakte. Elke nieuwe onafhankelijke meetsoort heeft eigen zichtbaarheid, precisie, berekende/vrije tekstweergave en labeloffset. Regio-oppervlakken behouden hun bestaande zichtbaarheid/precisie/weergave en gebruiken het afzonderlijke `areaDisplay.position`-anker. Labeloffsets staan in documentcoördinaten, worden behouden bij uit/aan en kunnen via **Labelpositie herstellen** worden teruggezet. Meetlabels zijn per bronobject en meetsoort identificeerbaar, selecteerbaar en versleepbaar.
+
+Het canonieke veld `measurements` doorloopt bestaande modelvalidatie, geautoriseerde `object.setProperties`, runtime-permissies, documenthistorie en renderer/export. De eerste opgeslagen instellingen voor deze nieuwe meetsoorten activeren documentversie 10 met `measurementSchema:1`; oudere documenten blijven zonder migratie op hun bestaande schema en behouden de oude betekenis van `showMeasurement`, `measurementMode`, `measurementText` en `areaDisplay`. Dupliceren kopieert instellingen en offsets. Ongeldige afhankelijke objecten verbergen hun maatlabels tot de constructie herstelt; paneelwaarde blijft **Niet beschikbaar**.
+
+**Niet uitgevoerd:** componenten/norm/richting voor vectoren wachten op het afzonderlijke, niet geïmplementeerde **M7-VEC-FUND**-fundament.
+
+**Gewijzigd:** `DOCUMENT-FORMAT.md`, `editor.js`, `measurement-geometry.js`, `model.js`, `permission-runtime.js`, `renderer.js`.
+**Controle:** code-inspectie en `git diff --check`; geen tests, browsertests of builds uitgevoerd.

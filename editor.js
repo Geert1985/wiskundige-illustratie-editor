@@ -97,9 +97,10 @@
       for(const [id,operation] of [['newBtn','document.reset'],['saveBtn','document.draftSave'],['loadBtn','document.replace'],['exportJsonBtn','document.exportJSON'],['exportSvgBtn','document.exportSVG'],['exportPngBtn','document.exportSVG']])if(this.nodes[id])this.nodes[id].disabled=!this.allowed(operation,operation==='document.replace'?{document:{}}:{});
       for(const [id,path] of [['titleInput','title'],['descriptionInput','description']])this.nodes[id].disabled=!this.allowed('document.setMeta',{fields:[{path,value:this.nodes[id].value}]});
       const object=this.engine.get(this.selectedId),caps=object&&this.capabilities(object.id);
-      for(const control of this.nodes.selectionPanel.querySelectorAll('[data-edit], [data-style], [data-style-color], [data-fill-object], [data-region-display]')) {
+      for(const control of this.nodes.selectionPanel.querySelectorAll('[data-edit], [data-style], [data-style-color], [data-fill-object], [data-region-display], [data-measurement-control]')) {
         let path=control.dataset.style?'style.'+(control.dataset.style==='fillEnabled'?'fill':control.dataset.style):control.dataset.vertex!=null?'vertices['+control.dataset.vertex+'].'+control.dataset.edit:control.dataset.edit;
         if(control.dataset.regionDisplay)path=control.dataset.regionDisplay.startsWith('position.')?'areaDisplay.position':'areaDisplay.'+control.dataset.regionDisplay;
+        if(control.dataset.measurementControl!=null)path='measurements';
         if(control.dataset.styleColor)path=object?.type==='text'?'style.fill':'style.stroke';if(control.dataset.fillObject)path='style.fill';
         control.disabled=!caps || ![...(caps.geometryFields||[]),...(caps.propertyFields||[])].includes(path);
       }
@@ -414,6 +415,7 @@
       for(const node of [n.toolInstructions,n.fullscreenHint])this.on(node,"change",e=>{if(e.target.matches("[data-region-create-extent]")){this.regionExtent=e.target.value;this.renderInstructions();}});
       this.on(n.selectionPanel, "change", e => {
         const ellipseSum=e.target.closest('[data-ellipse-sum]');if(ellipseSum&&this.selectedId){const object=this.engine.get(this.selectedId),scale=this.engine.model.meta.measurement?.scale||1;try{if(!object||object.type!=='ellipse'||object.construction?.kind!=='ellipseByFociAndSum')throw Error('Alleen de afstandsom van een gekoppelde ellips kan hier worden gewijzigd.');this.changeDocument(()=>this.execute('construction.setSumDistance',{id:object.id,sumDistance:ellipseSum.valueAsNumber/scale}));}catch(error){this.status(error.message);this.invalidate();}return;}
+        const individual=e.target.closest('[data-measurement-control]');if(individual&&this.selectedId){try{const object=this.engine.get(this.selectedId),key=individual.dataset.measurementKey,field=individual.dataset.measurementField,settings=object.measurements?MI.MeasurementGeometry.measurementSettings(object.measurements,object):MI.MeasurementGeometry.defaultMeasurementSettings(object);if(!settings.values[key])throw Error('Onbekende meetsoort.');settings.values[key][field]=field==='visible'?individual.checked:field==='precision'?(individual.value===''?null:individual.valueAsNumber):individual.value;this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields:[{path:'measurements',value:settings}]}));}catch(error){this.status(error.message);this.invalidate();}return;}
         const extentControl=e.target.closest('[data-region-extent]');if(extentControl?.dataset?.regionExtent!=null&&this.selectedId){try{this.changeDocument(()=>this.execute('construction.setExtent',{id:this.selectedId,extent:extentControl.value}));}catch(error){this.status(error.message);}this.invalidate();return;}
         const regionControl=e.target.closest('[data-region-display]');if(regionControl?.dataset.regionDisplay&&this.selectedId){const key=regionControl.dataset.regionDisplay,object=this.engine.get(this.selectedId),value=regionControl.type==='checkbox'?regionControl.checked:key==='precision'?(regionControl.value===''?null:regionControl.valueAsNumber):key==='position.dx'||key==='position.dy'?regionControl.valueAsNumber:regionControl.value;let fields;if(key==='position.mode')fields=[{path:'areaDisplay.position',value:value==='offset'?{mode:'offset',dx:object.areaDisplay.position.dx||0,dy:object.areaDisplay.position.dy||0}:{mode:'auto'}}];else if(key==='position.dx'||key==='position.dy')fields=[{path:'areaDisplay.position',value:{mode:'offset',dx:key==='position.dx'?value:object.areaDisplay.position.dx||0,dy:key==='position.dy'?value:object.areaDisplay.position.dy||0}}];else fields=[{path:'areaDisplay.'+key,value}];try{this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields}));}catch(error){this.status(error.message);}this.invalidate();return;}
         const distribution=e.target.closest('[data-circle-distribution]');if(distribution?.dataset.circleDistribution&&this.selectedId){const historyBefore=this.circleDistributionPreview?.history||this.history.capture();try{if(this.circleDistributionPreview){this.engine.load(JSON.parse(historyBefore.document));this.engine.model._nextId=this.circleDistributionPreview.nextId;}const object=this.engine.get(this.selectedId),prior=this.engine.model.circleDistributions.find(d=>d.pointIds.includes(object.id)),count=distribution.dataset.circleDistribution==='count'?distribution.valueAsNumber:(prior?.count||1),startAngle=distribution.dataset.circleDistribution==='startAngle'?distribution.valueAsNumber*Math.PI/180:(prior?.startAngle??2*Math.PI*(object.construction?.parameter||0));this.execute('circleDistribution.set',{pointId:object.id,count,startAngle});this.history.record(historyBefore);}catch(error){this.status(error.message);}this.circleDistributionPreview=null;this.invalidate();return;}
@@ -442,9 +444,12 @@
         this.invalidate();
       });
       this.on(n.selectionPanel, "click", e => {
+        if(e.target.closest('[data-region-label-reset]')){try{const object=this.engine.get(this.selectedId);this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields:[{path:'areaDisplay.position',value:{mode:'auto'}}]}));}catch(error){this.status(error.message);this.invalidate();}return;}
+        const resetMeasurement=e.target.closest('[data-measurement-reset]');if(resetMeasurement&&this.selectedId){try{const object=this.engine.get(this.selectedId),key=resetMeasurement.dataset.measurementReset,settings=object.measurements?MI.MeasurementGeometry.measurementSettings(object.measurements,object):MI.MeasurementGeometry.defaultMeasurementSettings(object);settings.values[key].dx=0;settings.values[key].dy=0;this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields:[{path:'measurements',value:settings}]}));}catch(error){this.status(error.message);this.invalidate();}return;}
         const symbolButton=e.target.closest('[data-measurement-symbol]');
         if(symbolButton){
-          const input=n.selectionPanel.querySelector('[data-edit="measurementText"]');
+          const measurementKey=symbolButton.dataset.measurementSymbolKey;
+          const input=measurementKey?Array.from(n.selectionPanel.querySelectorAll('[data-measurement-control][data-measurement-field="text"]')).find(node=>node.dataset.measurementKey===measurementKey):n.selectionPanel.querySelector('[data-edit="measurementText"]');
           if(!input||input.disabled||!this.selectedId||!this.editableSelection())return;
           const symbol=symbolButton.dataset.measurementSymbol;
           const start=input.selectionStart??input.value.length,end=input.selectionEnd??start;
@@ -898,9 +903,11 @@
       }
       const label = event.target && event.target.closest && event.target.closest(".object-label"), handle = event.target && event.target.closest && event.target.closest(".fzi-line-endpoint");
       if (this.tool === "select" && (label || handle) && !(label && this.selectedIds.length>1 && this.selectedIds.includes(label.getAttribute('data-label-id')))) {
-        const id = (label || handle).getAttribute(label ? "data-label-id" : "data-line-id"), object = this.engine.get(id);
-        if (!this.canvasSelectable(object) || object.locked || (handle && object.construction) || (this.runtime && (label?!["labelOffsetX","labelOffsetY"].every(k=>this.capabilities(id).propertyFields.includes(k)):![handle.getAttribute("data-endpoint")==="start"?"x1":"x2",handle.getAttribute("data-endpoint")==="start"?"y1":"y2"].every(k=>this.capabilities(id).geometryFields.includes(k))))) return;
-        this.begin({ mode: label ? "label" : "endpoint", id, original: clone(object), endpoint: handle && handle.getAttribute("data-endpoint"), offset: this.labelOffset(object), resolved: null }, event);
+        const id = (label || handle).getAttribute(label ? "data-label-id" : "data-line-id"), object = this.engine.get(id),measurementKey=label?.getAttribute('data-measurement-kind'),measurementMode=!!measurementKey;
+        const measurementProperty=object?.type==='region'?'areaDisplay.position':'measurements',measurementAllowed=!this.runtime||this.capabilities(id).propertyFields.includes(measurementProperty),labelAllowed=!this.runtime||["labelOffsetX","labelOffsetY"].every(k=>this.capabilities(id).propertyFields.includes(k));
+        if (!this.canvasSelectable(object) || object.locked || (handle && object.construction) || (this.runtime && (label?(measurementMode?!measurementAllowed:!labelAllowed):![handle.getAttribute("data-endpoint")==="start"?"x1":"x2",handle.getAttribute("data-endpoint")==="start"?"y1":"y2"].every(k=>this.capabilities(id).geometryFields.includes(k))))) return;
+        const measurementConfig=measurementMode&&object.type!=='region'?(object.measurements?MI.MeasurementGeometry.measurementSettings(object.measurements,object):MI.MeasurementGeometry.defaultMeasurementSettings(object)):null,regionPosition=object.type==='region'&&object.areaDisplay?.position?.mode==='offset'?object.areaDisplay.position:{dx:0,dy:0},offset=measurementMode?object.type==='region'?{x:regionPosition.dx||0,y:regionPosition.dy||0}:{x:measurementConfig.values[measurementKey]?.dx||0,y:measurementConfig.values[measurementKey]?.dy||0}:this.labelOffset(object);
+        this.begin({ mode: measurementMode?'measurement-label':label ? "label" : "endpoint", id, original: clone(object), endpoint: handle && handle.getAttribute("data-endpoint"),measurementKey,offset, resolved: null }, event);
         this.selectedId = id; this.invalidate(); return;
       }
       if (this.tool === "point" || this.tool === "text") {
@@ -964,9 +971,10 @@
       if(state.mode==='marquee'){this.updateRectangle({x:event.clientX,y:event.clientY});return;}
       const point = this.pointer(event); if (!point) return;
       const delta = state.transform.screenDelta(event.clientX - state.startScreen.x, event.clientY - state.startScreen.y); if (!delta) return;
-      if(this.runtime && ['label','endpoint','vertex','group','object','pan'].includes(state.mode)) {
+      if(this.runtime && ['label','measurement-label','endpoint','vertex','group','object','pan'].includes(state.mode)) {
         let operation,payload;
         if(state.mode==='label'){operation='object.setProperties';payload={ids:[state.id],fields:[{path:'labelOffsetX',value:state.offset.x+delta.x},{path:'labelOffsetY',value:state.offset.y+delta.y}]};}
+        else if(state.mode==='measurement-label'){operation='object.setProperties';if(state.original.type==='region')payload={ids:[state.id],fields:[{path:'areaDisplay.position',value:{mode:'offset',dx:state.offset.x+delta.x,dy:state.offset.y+delta.y}}]};else{const settings=state.original.measurements?MI.MeasurementGeometry.measurementSettings(state.original.measurements,state.original):MI.MeasurementGeometry.defaultMeasurementSettings(state.original);settings.values[state.measurementKey].dx=state.offset.x+delta.x;settings.values[state.measurementKey].dy=state.offset.y+delta.y;payload={ids:[state.id],fields:[{path:'measurements',value:settings}]};}}
         else if(state.mode==='pan'){operation='view.pan';payload={bounds:{xMin:state.bounds.xMin-delta.x,xMax:state.bounds.xMax-delta.x,yMin:state.bounds.yMin-delta.y,yMax:state.bounds.yMax-delta.y}};}
         else if(['endpoint','vertex'].includes(state.mode)) {
           state.resolved=state.mode==='endpoint'?this.services.resolver.endpoint(this.engine,state.original,state.endpoint,point,{transform:this.transform()}):this.services.resolver.polygonVertex(this.engine,state.original,state.vertex,point,{transform:this.transform()});
@@ -989,6 +997,7 @@
        }
       if (state.mode === "draw") { state.lastRawPoint = point; this.resolveDraw(); }
       if (state.mode === "label") this.updateObject(state.id, { labelOffsetX: state.offset.x + delta.x, labelOffsetY: state.offset.y + delta.y });
+      if(state.mode==='measurement-label'){if(state.original.type==='region'){const current=this.engine.get(state.id);this.updateObject(state.id,{areaDisplay:{...current.areaDisplay,position:{mode:'offset',dx:state.offset.x+delta.x,dy:state.offset.y+delta.y}}});}else{const current=this.engine.get(state.id),settings=current.measurements?MI.MeasurementGeometry.measurementSettings(current.measurements,state.original):MI.MeasurementGeometry.defaultMeasurementSettings(state.original);settings.values[state.measurementKey].dx=state.offset.x+delta.x;settings.values[state.measurementKey].dy=state.offset.y+delta.y;this.updateObject(state.id,{measurements:settings});}}
       if (state.mode === "endpoint") { state.resolved = this.services.resolver.endpoint(this.engine, state.original, state.endpoint, point, { transform: this.transform() }); this.feedback = state.resolved.result; }
       if(state.mode==='vertex') { state.resolved=this.services.resolver.polygonVertex(this.engine,state.original,state.vertex,point,{transform:this.transform()}); this.feedback=state.resolved.result; }
       if(state.mode==='group') { state.resolved=this.services.resolver.translateGroup(this.engine,state.originals,delta,{transform:this.transform()});try{const desired=MI.MeasurementGeometry.anchors({...state.originals[0],...state.resolved.patches[0].patch})[0],current=MI.MeasurementGeometry.anchors(this.engine.get(state.originals[0].id))[0];this.execute('object.translate',{ids:this.selectedIds,delta:{x:desired.x-current.x,y:desired.y-current.y}});this.feedback=state.resolved.result;}catch(error){this.status(error.message);} }
@@ -1012,7 +1021,7 @@
       const state = this.interaction; if (!state) return;
       this.interaction = null; this.release(state); this.engine.renderer.preview = null; this.feedback = null;
       if(this.runtime && state.transaction) {try {if(state.rejected)this.runtime.cancel(state.transaction);else this.runtime.commit(state.transaction,state.finalPayload);}catch(error){this.status(error.message);}this.invalidate();return;}
-      if(this.runtime && ['object','group','label','endpoint','vertex','pan'].includes(state.mode)){this.invalidate();return;}
+      if(this.runtime && ['object','group','label','measurement-label','endpoint','vertex','pan'].includes(state.mode)){this.invalidate();return;}
       if(state.mode==='marquee'){this.suppressMarqueeMenu=!state.keyboard && state.active;this.invalidate();return;}
       if (state.mode === "draw") {
         if (state.resolved && state.resolved.length >= .05) {
@@ -1034,7 +1043,7 @@
       const state = this.interaction; this.interaction = null;
       if (state) {
         if(this.runtime && state.transaction)try{this.runtime.cancel(state.transaction);}catch(_){}
-        if (!this.runtime && (state.mode === "object" || state.mode === "label") && this.engine.get(state.id)) this.engine.update(state.id, state.mode==="label"?{labelOffsetX:state.original.labelOffsetX,labelOffsetY:state.original.labelOffsetY}:state.original);
+        if (!this.runtime && (state.mode === "object" || state.mode === "label"||state.mode==='measurement-label') && this.engine.get(state.id)) this.engine.update(state.id, state.mode==="label"?{labelOffsetX:state.original.labelOffsetX,labelOffsetY:state.original.labelOffsetY}:state.original);
         if(!this.runtime && state.mode==='pathPoint')this.execute('construction.setParameter',{id:state.id,value:state.original.construction.parameter});
          if(!this.runtime && state.mode==='circleDistributionPoint')this.execute('circleDistribution.set',{pointId:state.id,count:state.count,startAngle:state.startAngle});
         if (!this.runtime && state.mode === "pan") this.engine.renderer.setBounds(state.bounds);
@@ -1202,7 +1211,7 @@
       const {objects,svg,object}=this.renderCanvas();
       this.renderPresentation(true);
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
-      const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput','measurementSetting','pointProjection','angleSetting','angleDocument','textBinding'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
+      const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput','measurementSetting','measurementControl','pointProjection','angleSetting','angleDocument','textBinding'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
       this.renderInstructions();this.renderViewList(); this.renderInspector(object);this.organizeGeometryInspector();this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
       if(focusKey.length && focusIds===JSON.stringify(this.selectedIds)){const replacement=Array.from(n.selectionPanel.querySelectorAll('input,select')).find(el=>focusKey.every(([k,v])=>el.dataset[k]===v));if(replacement && !replacement.disabled){replacement.focus?.({preventScroll:true});if(caret!=null && replacement.type==='text')replacement.setSelectionRange?.(caret,caret);}}
       if(n.zoomPercent)n.zoomPercent.textContent=Math.round(this.engine.renderer.scale()/((this.engine.renderer.width-2*this.engine.renderer.padding)/10)*100)+"%";
@@ -1301,7 +1310,7 @@
       const actions=info+this.constructionInputs(object)+pathParameter+distribution+detach+assignment;
       const kind=MI.escapeXml(({point:'Punt',line:'Lijnstuk',straight:'Rechte',ray:'Halfrechte',vector:'Vector',circle:'Cirkel',text:'Tekst',polygon:'Veelhoek',region:'Gebied',dimension:'Lengtemaat',angle:'Hoek'})[object.type]||object.type);
       const heading='<div class="object-heading"><div>'+(this.selectedIds.length>1?'<strong>'+this.selectedIds.length+' objecten geselecteerd</strong>':'<input class="object-name-input" type="text" data-edit="name" aria-label="Objectnaam" value="'+MI.escapeXml(object.name)+'"'+(object.locked?' disabled':'')+'>')+'<span class="object-kind">'+(this.selectedIds.length>1?'Multiselectie':kind)+'</span></div>'+toolbar+'</div>';
-      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+this.ellipseInspector(object);return;}
+      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+this.ellipseInspector(object)+this.independentMeasurementInspector(object);return;}
       const displayNumber=value=>String(Number(Number(value).toFixed(2)));
       let html = '';
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
@@ -1309,7 +1318,7 @@
       if(!object.construction&&(object.type==='polygon' || object.type==='angle')) object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.01" value="'+displayNumber(p[key])+'"></label>'; });
       if (object.type === "text" && !object.construction && !object.textBinding && !object.textContent) html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
       html+='<details data-property-section="labels" open><summary>Label en meting</summary>';
-      if(['line','vector','circle','angle','dimension'].includes(object.type)) {
+      if(['line','vector','circle','angle','dimension'].includes(object.type)&&!object.measurements) {
         if(object.type==='dimension') html+='<label class="style-toggle"><input type="checkbox" data-edit="measurementLabelOnly"'+(object.measurementLabelOnly?' checked':'')+'>Alleen meetlabel tonen</label>';
         if(!['dimension','angle'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-edit="showMeasurement"'+(object.showMeasurement?' checked':'')+'>Maat tonen</label>';
         if(object.showMeasurement || ['dimension','angle'].includes(object.type)) {const mode=object.measurementMode||'computed';html+='<label>Maatweergave<select data-edit="measurementMode"><option value="computed"'+(mode==='computed'?' selected':'')+'>Berekende waarde</option><option value="text"'+(mode==='text'?' selected':'')+'>Vrije tekst</option></select></label>';if(mode==='text')html+='<label>Maattekst<input data-edit="measurementText" value="'+MI.escapeXml(object.measurementText||'')+'"></label><div class="measurement-symbol-picker" role="group" aria-label="Symbool invoegen in maattekst">'+['α','β','γ','δ','θ','π','°'].map(symbol=>'<button type="button" class="secondary" data-measurement-symbol="'+symbol+'" aria-label="Symbool '+symbol+' invoegen" title="'+symbol+'">'+symbol+'</button>').join('')+'</div>';else html+='<p data-measurement-value>'+MI.escapeXml(object.constructionValid===false?'niet beschikbaar':MI.MeasurementGeometry.label(object,this.engine.model.meta.measurement,this.engine.model.meta.angleMeasurement))+'</p>';}
@@ -1342,17 +1351,31 @@
         const mode='<label>Weergave<select data-region-display="mode"><option value="value"'+(d.mode==='value'?' selected':'')+'>Alleen waarde</option><option value="equation"'+(d.mode==='equation'?' selected':'')+'>A = waarde</option></select></label>';
         const slider='<label>Precisie (decimalen)<span class="region-precision-slider"><input type="range" min="0" max="3" step="1" data-region-display="precision" aria-label="Precisie oppervlakte: aantal decimalen" value="'+precision+'"><output aria-live="polite">'+precision+'</output></span></label>';
         const help='<p class="help-text">Versleep het oppervlaktelabel rechtstreeks op het canvas om het te verplaatsen.</p>';
+        const reset='<button type="button" class="secondary" data-region-label-reset'+(object.locked||!this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'areaDisplay.position',value:{mode:'auto'}}]})?' disabled':'')+'>Labelpositie herstellen</button>';
         const output='<output>'+MI.escapeXml(object.constructionValid===false?'Niet beschikbaar':MI.RegionGeometry.format(object.regionArea,d,this.engine.model.meta.measurement))+'</output>';
-        return extentControl+'<details data-property-section="region" open><summary>Oppervlakte</summary>'+visible+mode+slider+help+output+'</details>';
+        return extentControl+'<details data-property-section="region" open><summary>Oppervlakte</summary>'+visible+mode+slider+help+reset+output+'</details>';
       })():'';
-      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+regionDisplay+this.ellipseInspector(object)+html;
+      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+regionDisplay+this.ellipseInspector(object)+this.independentMeasurementInspector(object)+html;
+    }
+    independentMeasurementInspector(object){
+      const keys=MI.MeasurementGeometry.measurementKeys(object);
+      if(!keys.length||this.selectedIds.length!==1)return '';
+      const meta=this.engine.model.meta.measurement||MI.MeasurementUnits.defaults,config=object.measurements?MI.MeasurementGeometry.measurementSettings(object.measurements,object):MI.MeasurementGeometry.defaultMeasurementSettings(object),allowed=!object.locked&&this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'measurements',value:config}]}),disabled=allowed?'':' disabled',esc=MI.escapeXml;
+      const rows=keys.map(key=>{
+        const entry=config.values[key]||{visible:false,precision:null,mode:'computed',text:'',dx:0,dy:0},title=key.startsWith('side:')?'Zijde '+(Number(key.slice(5))+1):key.startsWith('angle:')?'Hoek '+(Number(key.slice(6))+1):({radius:'Straal',diameter:'Diameter',circumference:'Omtrek',area:'Oppervlakte',semiMajor:'Grote halve as',semiMinor:'Kleine halve as',majorAxis:'Grote as',minorAxis:'Kleine as',eccentricity:'Excentriciteit',perimeter:'Omtrek',length:'Lengte',angle:'Hoek'}[key]||key),computedConfig={...config,values:{...config.values,[key]:{...entry,mode:'computed'}}},value=MI.MeasurementGeometry.measurementLabel(object,key,computedConfig,meta,this.engine.model.meta.angleMeasurement);
+        const mode='<label>Weergave<select data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="mode"'+disabled+'><option value="computed"'+(entry.mode==='computed'?' selected':'')+'>Berekende waarde</option><option value="text"'+(entry.mode==='text'?' selected':'')+'>Vrije tekst</option></select></label>';
+        const precision='<label>Precisie<input type="number" min="0" max="10" step="1" placeholder="Documentstandaard" value="'+(entry.precision??'')+'" data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="precision"'+disabled+'></label>';
+        const freeText=entry.mode==='text'?'<label>Maattekst<input type="text" maxlength="2000" value="'+esc(entry.text)+'" data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="text"'+disabled+'></label><div class="measurement-symbol-picker" role="group" aria-label="Symbool invoegen in '+esc(title)+'">'+['α','β','γ','δ','θ','π','°'].map(symbol=>'<button type="button" class="secondary" data-measurement-symbol="'+symbol+'" data-measurement-symbol-key="'+esc(key)+'" aria-label="'+symbol+' invoegen" title="'+symbol+'"'+disabled+'>'+symbol+'</button>').join('')+'</div>':'';
+        return '<div class="measurement-entry"><label class="style-toggle"><input type="checkbox" data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="visible"'+(entry.visible?' checked':'')+disabled+'>'+esc(title)+' tonen</label><output>'+esc(value)+'</output><details><summary>Notatie en labelpositie</summary>'+mode+precision+freeText+'<button type="button" class="secondary" data-measurement-reset="'+esc(key)+'"'+disabled+'>Labelpositie herstellen</button></details></div>';
+      }).join('');
+      return '<details data-property-section="individual-measurements" open><summary>Afzonderlijke metingen</summary>'+rows+'</details>';
     }
     organizeGeometryInspector(){
       if(this.inspectorTarget!=='objects'||this.selectedIds.length!==1)return;
       const panel=this.nodes.selectionPanel;
       const groups=[
         {id:'object-geometry',title:'Object en geometrie',sections:['geometry','point-projections','circle-distribution','ellipse-geometry']},
-        {id:'measurements',title:'Metingen',sections:['labels','angle-measurement','region']}
+        {id:'measurements',title:'Metingen',sections:['labels','angle-measurement','region','individual-measurements']}
       ];
       for(const group of groups){
         let wrapper=panel.querySelector(':scope > details[data-property-section="'+group.id+'"]');

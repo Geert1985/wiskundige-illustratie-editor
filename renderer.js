@@ -269,13 +269,8 @@
         else {const c=g.center,r=g.radius,a=g.startAngle,b=a+g.sweep,x1=this.mapX(c.x+r*Math.cos(a)),y1=this.mapY(c.y+r*Math.sin(a)),x2=this.mapX(c.x+r*Math.cos(b)),y2=this.mapY(c.y+r*Math.sin(b)),large=g.sweep>Math.PI?1:0,arc=' A '+number(r*this.scale())+' '+number(r*this.scale())+' 0 '+large+' 0 '+number(x2)+' '+number(y2);const d=g.kind==='sector'?'M '+number(this.mapX(c.x))+' '+number(this.mapY(c.y))+' L '+number(x1)+' '+number(y1)+arc+' Z':'M '+number(x1)+' '+number(y1)+arc+' L '+number(x1)+' '+number(y1)+' Z';svg='<path data-region-contour d="'+d+'"'+base+'/>';}
         if(object.areaDisplay?.visible&&Number.isFinite(object.regionArea)){
           const d=object.areaDisplay,anchor=g.anchor||g.center;
-          // Preserve coordinates from old files, but use the *normal*
-          // labelOffsetX/Y and interactive .object-label path for all new drags.
-          const legacy=d.position?.mode==='offset'?d.position:{dx:0,dy:0};
           const label=MI.RegionGeometry.format(object.regionArea,d,this.measurement);
-          svg+='<g data-region-area-label>'+this.renderLabel({
-            ...object,type:'text',x:anchor.x+legacy.dx,y:anchor.y+legacy.dy
-          },label,6,-6)+'</g>';
+          svg+='<g data-region-area-label>'+this.renderRegionAreaLabel(object,label,anchor)+'</g>';
         }
       }
       if(object.type==='angle') {
@@ -294,8 +289,20 @@
       }
       if(object.type==='angle'&&MI.AngleMeasurements.isLinked(object.construction?.kind))svg='';
       if(object.measurementLabelOnly && ['dimension','angle'].includes(object.type)) svg='';
-      if(object.type==='angle'||object.type==='dimension'||(object.showMeasurement && (['line','vector'].includes(object.type)||object.type==='circle'))) svg+=this.renderMeasurement({...object,style});
+      if(!object.measurements&&(object.type==='angle'||object.type==='dimension'||(object.showMeasurement && (['line','vector'].includes(object.type)||object.type==='circle')))) svg+=this.renderMeasurement({...object,style});
+      if(object.measurements&&object.constructionValid!==false)svg+=this.renderIndependentMeasurements(object);
       return '<g data-object-id="' + esc(object.id) + '" data-object-type="' + esc(object.type) + '" aria-label="' + esc(object.name || object.id) + '"'+(opacity!==1?' opacity="'+esc(number(opacity))+'"':'')+'>' + svg + '</g>';
+    }
+    renderIndependentMeasurements(object){
+      let config;try{config=MI.MeasurementGeometry.measurementSettings(object.measurements,object);}catch(_){return '';}
+      return MI.MeasurementGeometry.measurementKeys(object).filter(key=>config.values[key]?.visible).map(key=>{
+        const entry=config.values[key],anchor=MI.MeasurementGeometry.measurementAnchor(object,key),label=MI.MeasurementGeometry.measurementLabel(object,key,config,this.measurement,this.angleMeasurement),x=this.mapX(anchor.x+entry.dx)+6,y=this.mapY(anchor.y+entry.dy)-6,style=object.style||{},color=style.stroke&&style.stroke!=='none'?style.stroke:(style.fill||'#222');
+        return '<text class="object-label" data-label-id="'+esc(object.id)+'" data-measurement-kind="'+esc(key)+'" aria-label="'+esc(label)+'" x="'+number(x)+'" y="'+number(y)+'" fill="'+esc(color)+'" font-size="14" font-family="&quot;Source Sans 3&quot;, sans-serif">'+esc(label)+'</text>';
+      }).join('');
+    }
+    renderRegionAreaLabel(object,label,anchor){
+      const position=object.areaDisplay?.position?.mode==='offset'?object.areaDisplay.position:{dx:0,dy:0},legacyDx=Number.isFinite(Number(object.labelDx))?Number(object.labelDx):6,legacyDy=Number.isFinite(Number(object.labelDy))?Number(object.labelDy):-6,offsetX=object.labelOffsetX==null?0:Number(object.labelOffsetX),offsetY=object.labelOffsetY==null?0:Number(object.labelOffsetY),x=this.mapX(anchor.x+position.dx+offsetX)+legacyDx,y=this.mapY(anchor.y+position.dy+offsetY)+legacyDy,style=object.style||{},color=style.stroke&&style.stroke!=='none'?style.stroke:(style.fill||'#222');
+      return '<text class="object-label" data-label-id="'+esc(object.id)+'" data-measurement-kind="area" aria-label="'+esc(label)+'" x="'+number(x)+'" y="'+number(y)+'" fill="'+esc(color)+'" font-size="14" font-family="&quot;Source Sans 3&quot;, sans-serif">'+esc(label)+'</text>';
     }
     renderPolygonMeasurements(preview) {
       if(!preview.showMeasurements || preview.vertices.length<2)return '';
