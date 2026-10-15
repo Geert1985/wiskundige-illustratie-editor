@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.8 (STAB-1 integratie- en regressiecontrole, 2026-10-15)
-Status: actuele gecontroleerde basis `main` = `ccacb0d` (PR #13, UI-RADIAL-11/12) boven op PR #12. STAB-1 brengt de auditbevindingen op deze nieuwste basis opnieuw in kaart; zie het STAB-1-rapport voor uitgevoerde tests, regressiefixes en de eindstatus. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
+Version: 2.8.9 (M8a-2 branchimplementatie, 2026-10-15)
+Status: gecontroleerde integratiebasis `origin/main` = `000399af` (M8a-1/STAB-1, PR #15); M8a-2 wordt afzonderlijk uitgewerkt op `codex/m8a-2-point-on-ellipse` en is nog niet naar `main` geïntegreerd. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-15
 
 > **Lees eerst:** [AGENTS.md](../AGENTS.md), [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en de nieuwste toevoegingen hieronder. De volledige eerdere M1–M20-backlog, FUN-OBJ/MAT-OBJ-voorstellen en historische tests blijven behouden.
@@ -10,18 +10,18 @@ Date: 2026-10-15
 
 | Traject | Ontwerpstatus | Implementatie-/acceptatiestatus |
 |---|---|---|
-| **M8a — Ellipsen** | **Goedgekeurd**: [contract v1.0.0](M8a-ELLIPSEN-CONTRACT.md) | M8a-D voltooid; op `Codex/M8a`: geometrische kern, model/constructies en command-/permissielaag van M8a-1 geïmplementeerd en gericht getest. SVG-rendering, contourselectie en snapping zijn gericht in Node/Edge getest; zie [renderverslag](M8a-1-RENDER-SELECTION.md). Driestapsinteractie en eigenschappen zijn nu ook aangesloten en gericht in Edge getest, met expliciete previewmetingen en een pointerpreviewpad zonder volledige canvasredraw; zie [interactie- en eigenschappenverslag](M8a-1-INTERACTION-PROPERTIES.md). Volledige regressie, definitieve SVG/PNG-exportacceptatie en volledige M8a-1-acceptatie blijven open. M8a-2 en merge naar `main` blijven buiten deze stap. |
+| **M8a — Ellipsen** | **Goedgekeurd**: [contract v1.0.0](M8a-ELLIPSEN-CONTRACT.md) | M8a-1 is op `main` via PR #15 geïntegreerd; de volledige M8a-acceptatie en handmatige SVG/PNG-eindcontrole blijven open. M8a-2 **Punt op ellips** is geïmplementeerd op `codex/m8a-2-point-on-ellipse`: getypeerd recept, sidebar/fullscreen/radiaal gereedschap, parametrische contourplaatsing en sleep, restricted projectie, Undo/Redo, opslag/export en previewmeting. Gerichte en volledige Node/Edge-uitkomsten en het technische oordeel staan in [M8a-2-verslag](M8a-2-POINT-ON-ELLIPSE-IMPLEMENTATION.md). Nog niet gemerged; handmatige acceptatie en gebruikersbesluit over integratie blijven open. |
 | **M8b — Parallellogrammen** | **Goedgekeurd**: [contract v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) | M8b-ontwerp voltooid; M8b-0 preflight, M8b-1 constructie, M8b-2 maten/UI en M8b-3 regressie/acceptatie **nog niet geïmplementeerd**; standaard na M8a-1-acceptatie |
 | **M7-VEC-FUND — Vectorfundament** | **Ontwerp v1.0.0 goedgekeurd** op 15 oktober 2026: [contract](M7-VEC-FUND-CONTRACT.md). Historisch label `M7a` vervalt uitsluitend voor vectorfundament. | **Niet geïmplementeerd.** Read-only preflight vereist; afzonderlijke GO nodig voor productiecode, tests en branchwerk. `tasks-146` en `tasks-147` behoren inhoudelijk tot dit traject. |
 | **Parabolen/hyperbolen** | Architectuurvoorstel besproken in *WIE - Kegelsneden* | Nog **geen** afzonderlijk goedgekeurde ontwerpcontracten of implementatieopdrachten |
 | **UI-RADIAL/REG-2** | Bestaande contracten en implementaties | Gemerged op `main` via PR #12; nieuw volledig regressie- en handmatig acceptatiebewijs niet uit deze docs-update afleidbaar |
-| **STAB-1** | Integratie-/regressiecontrole gepland | Afzonderlijke afronding/goedkeuring en eventuele nieuwe testresultaten nog te verifiëren |
+| **STAB-1** | Integratie-/regressiecontrole | Opgenomen in de goedgekeurde basis `main` via PR #15; latere featurebranches krijgen hun eigen regressieresultaten |
 
-**Schema-grens:** de huidige code op de geverifieerde basis ondersteunt document v8, `regionSchema:1` en `constructionSchema:5`. Op `Codex/M8a` zijn v9/`ellipseSchema:1`/`constructionSchema:6` voor ellipsen geïmplementeerd met gerichte roundtrip- en restricted-projectietests; dit is nog geen main-integratie of volledige M8a-acceptatie. M8b's uitbreiding blijft een ontwerpbesluit.
+**Schema-grens:** `origin/main` bevat document v9, `ellipseSchema:1` en `constructionSchema:6` uit M8a-1. M8a-2 gebruikt dezelfde grens; er is geen nieuwe schema- of documentversie toegevoegd. M8b's uitbreiding blijft een ontwerpbesluit.
 
 **Nummerbeleid M7 (besloten voor vectorfundament, 15 oktober 2026):** **M7-VEC-FUND** is de definitieve unieke identifier voor [Vectorfundament v1.0.0](M7-VEC-FUND-CONTRACT.md). Het oudere vectorlabel `M7a` is uitsluitend een historisch synoniem en wordt niet meer voor deze milestone gebruikt. **M7a–c — Starre transformaties** (`tasks-118`–`tasks-123`) behouden hun bestaande nummering. De oorspronkelijke tekst noemt `M7b` voor translatie en `M7f` voor vectoralgebra; de uiteindelijke namen en volgorde van die vervolgtrajecten vereisen nog aparte besluitvorming. De bestaande taakrefs blijven behouden; contractgoedkeuring is geen implementatie-GO.
 
-**Deze wijziging is documentatie-only:** geen productiecode, Node-/Edge-/browseruitvoering of nieuw test-PASS.
+**Historische notitie bij roadmap v2.8.8:** die toenmalige wijziging was documentatie-only; deze v2.8.9-update registreert de branchimplementatie en bijbehorende teststatus.
 
 ## Baseline
 User-reported 0A–0D PASS on chatgpt/math-illustration-stabilization, 0D HEAD 297b4d7c834fe0cd9f9b01bc3a43a7d592ef2713, 60/60 Node tests and Edge tests. Verify repository and user's manual acceptance before proceeding. User reports development has advanced beyond phase 0 and already includes bisectors, parallels, perpendiculars, tangents, area and circumference. Do not assume 0E is still pending; inspect actual HEAD and current backlog.
