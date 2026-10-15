@@ -387,9 +387,10 @@
       lower.setAttribute('class','radial-center-lower-skin');
       lower.setAttribute('aria-hidden','true');
       lower.innerHTML=
-        '<path class="radial-center-name-shape" d="M15 111 Q96 142 177 111 L178 143 Q96 174 14 143 Z"/>'+
-        '<path class="radial-center-control-left" d="M15 146 Q54 163 96 159 L96 186 Q60 183 28 165 Z"/>'+
-        '<path class="radial-center-control-right" d="M96 159 Q138 163 177 146 L164 165 Q132 183 96 186 Z"/>';
+        // Curves share an exact boundary: no overlapping name and button skins.
+        '<path class="radial-center-name-shape" d="M7 107 C50 126 142 126 185 107 L181 138 C143 158 49 158 11 138 Z"/>'+
+        '<path class="radial-center-control-left" d="M11 138 C30 148 58 153 96 153 L96 188 C60 186 34 171 21 151 Z"/>'+
+        '<path class="radial-center-control-right" d="M96 153 C134 153 162 148 181 138 L171 151 C158 171 132 186 96 188 Z"/>';
       hub.append(lower);
       const labelButton=this.doc.createElement('button');
       labelButton.type='button';labelButton.className='radial-center-control radial-center-control-label';

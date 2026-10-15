@@ -23,6 +23,23 @@ module.exports = async page => {
   });
   assert.ok(bounds.input.left>bounds.hub.left && bounds.input.right<bounds.hub.right,
     'object name remains entirely within the center disc');
+  const geometry=await page.evaluate(() => {
+    const input=document.querySelector('#radialPropertiesWheel input.radial-center-input');
+    const control=document.querySelector('#radialPropertiesWheel button.radial-center-control-label');
+    const style=getComputedStyle(input),buttonStyle=getComputedStyle(control);
+    return {background:style.backgroundColor,border:style.borderTopWidth,
+      inputBottom:input.getBoundingClientRect().bottom,
+      controlTop:control.getBoundingClientRect().top,
+      width:input.getBoundingClientRect().width,controlWidth:control.getBoundingClientRect().width,
+      buttonBackground:buttonStyle.backgroundColor};
+  });
+  assert.match(geometry.background,/^(transparent|rgba\\(0, 0, 0, 0\\))$/,
+    'the name input must not paint an opaque rectangular backdrop');
+  assert.equal(geometry.border,'0px','the name input has no rectangular border');
+  assert.ok(geometry.inputBottom+3<geometry.controlTop,
+    'label and lock hit targets sit strictly below the name input');
+  assert.ok(geometry.controlWidth<geometry.width*.6,
+    'lower buttons must occupy separate halves of the hub');
   assert.equal(await input.inputValue(),'point-3');
   await label.click();
   assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.engine.get('point-3').showLabel),true);

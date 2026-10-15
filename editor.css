@@ -548,7 +548,9 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   text-shadow:0 1px 2px #09121b;
 }
 /* The black name band and two lower wedges follow the inner circle.
-   Hit targets are real buttons, never SVG paths. */
+   Hit targets are real buttons, never SVG paths. The input must override the
+   global input[type="text"] rule (0,1,1 specificity), which otherwise paints
+   a rectangular black background over the curved SVG band. */
 .radial-center-lower-skin{
   position:absolute;inset:0;width:100%;height:100%;
   pointer-events:none;
@@ -564,36 +566,43 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 .radial-center:has(.radial-center-control-lock:is(:hover,:focus-visible)) .radial-center-control-right{
   fill:#34586a;
 }
-.radial-center-input{
-  position:absolute;z-index:1;top:122px;left:50%;
-  transform:translateX(-50%);
-  width:162px;max-width:calc(100% - 30px);
-  height:34px;min-height:0;margin:0;padding:2px 6px;
-  border:0;border-radius:14px;background:transparent;
+#radialPropertiesWheel input.radial-center-input{
+  position:absolute;z-index:1;top:118px;left:50%;
+  display:block;box-sizing:border-box;transform:translateX(-50%);
+  width:158px;max-width:calc(100% - 26px);
+  height:31px;min-height:0;min-width:0;
+  margin:0;padding:0 7px;
+  border:0;border-radius:0;background:transparent;background-image:none;
+  box-shadow:none;resize:none;
   color:#fff;font:700 18px/1.2 "Source Sans 3",system-ui,sans-serif;
   text-align:center;text-overflow:ellipsis;
 }
-.radial-center-input:focus-visible{outline:2px solid #f4ce75;outline-offset:-2px}
-.radial-center-input[readonly]{cursor:default;opacity:.96}
-.radial-center-control{
+#radialPropertiesWheel input.radial-center-input:focus-visible{
+  outline:2px solid #f4ce75;outline-offset:-2px;border-radius:6px;
+}
+#radialPropertiesWheel input.radial-center-input[readonly]{cursor:default;opacity:.96}
+#radialPropertiesWheel button.radial-center-control{
   position:absolute;z-index:2;top:156px;
-  width:76px;height:29px;min-height:0;min-width:0;margin:0;padding:3px;
+  width:52px;height:28px;min-height:0;min-width:0;
+  margin:0;padding:1px 0;
   display:grid;place-items:center;
-  color:#eef4f8;background:transparent!important;
-  border:0!important;border-radius:0;box-shadow:none!important;
+  color:#eef4f8;background:transparent;
+  border:0;border-radius:0;box-shadow:none;
   cursor:pointer;touch-action:manipulation;
 }
-.radial-center-control-label{left:20px}
-.radial-center-control-lock{left:96px}
-.radial-center-control svg{
+#radialPropertiesWheel button.radial-center-control-label{left:36px}
+#radialPropertiesWheel button.radial-center-control-lock{left:104px}
+#radialPropertiesWheel .radial-center-control svg{
   display:block;width:23px;height:23px;
   fill:none;stroke:currentColor;stroke-width:1.8;
   stroke-linecap:round;stroke-linejoin:round;
   pointer-events:none;
 }
-.radial-center-control[aria-pressed="true"]{color:#f4cb64}
-.radial-center-control:disabled{cursor:not-allowed;opacity:.42}
-.radial-center-control:focus-visible{outline:2px solid #f4ce75;outline-offset:-4px}
+#radialPropertiesWheel button.radial-center-control[aria-pressed="true"]{color:#f4cb64}
+#radialPropertiesWheel button.radial-center-control:disabled{cursor:not-allowed;opacity:.42}
+#radialPropertiesWheel button.radial-center-control:focus-visible{
+  outline:2px solid #f4ce75;outline-offset:-3px;border-radius:5px;
+}
 .radial-drag-handle{
   position:absolute;top:16px;left:50%;
   transform:translateX(-50%);
