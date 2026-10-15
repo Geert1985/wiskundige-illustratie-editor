@@ -1,6 +1,6 @@
 # AGENTS.md — Wiskundige Illustratie Editor (WIE)
 
-**Versie:** 1.0.2 · **Datum:** 2026-10-15 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
+**Versie:** 1.0.3 · **Datum:** 2026-10-15 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
 **Doel:** persistente instructies voor Codex en andere code-assistenten, zonder eerder goedgekeurde implementaties onbedoeld terug te draaien.
 
 ## Eerst lezen en bronvoorrang
@@ -60,7 +60,7 @@
 
 - **M8a Ellipsen:** [v1.0.0](docs/M8a-ELLIPSEN-CONTRACT.md) goedgekeurd als ontwerp. `ellipse`, nieuwe constructierecepten en document v9/`ellipseSchema:1` zijn **niet** aanwezig op deze codebasis. Eerst een read-only Codex-preflight, daarna pas afzonderlijke gebruikers-GO voor M8a-1.
 - **M8b Parallellogrammen:** [v1.0.0](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md) goedgekeurd als ontwerp. Eén dynamisch vier-vertex-`polygon` op basis van twee bestaande punten, zijlengte en gerichte hoek. Eerst aparte preflight, daarna GO; M8a-implementatie en schema's opnieuw beoordelen.
-- **M7a Vectorfundament:** [oorspronkelijk contract v1.0.0](docs/M7a-VECTORFUNDAMENT-CONTRACT.md) gepubliceerd als **ontwerp ter goedkeuring**, zonder nieuwe implementatie-autorisatie. De aanduiding “M7a” conflicteert met de bestaande groep M7a–c voor starre transformaties; “M7b” voor translatie overlapt eveneens met die groep. **Geen** stille hernummering. Gebruik voorlopig `M7-VEC-FUND` als documentalias totdat de gebruiker de definitieve mijlpaalindeling goedkeurt.
+- **M7-VEC-FUND — Vectorfundament:** [contract v1.0.0](docs/M7-VEC-FUND-CONTRACT.md) op 15 oktober 2026 **goedgekeurd als ontwerp**; identifier **M7-VEC-FUND definitief vastgesteld**. Het historische vectorlabel `M7a` vervalt; de bestaande **M7a–c — Starre transformaties** blijven ongewijzigd. `M7b` en `M7f` in het oorspronkelijke contract zijn historische labels voor toekomstige werkzaamheden, geen autorisatie of definitieve toewijzing. **Niet geïmplementeerd**: vóór Codex-productiecode eerst read-only preflight en aparte gebruikers-GO; geen automatische merge.
 - **Main-integratie:** PR #12 op `main` sinds commit `63ab45acc7`. Voorheen beschreven featurebranchstatus is historisch; nieuwe volledige regressie/individuele acceptatie blijft apart.
 - **Voorrang:** documentgoedkeuring betekent **geen** implementatieautorisatie, en schema-voorstellen zijn geen geïmplementeerde documentversies.
 

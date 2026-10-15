@@ -1,6 +1,6 @@
 # CORE-1 — Herbruikbare geometrie-, eigenschappen- en gereedschapsarchitectuur
 
-Versie: 1.2.1 — main-integratieaddendum op historische CORE-1 audit (2026-10-15)
+Versie: 1.2.2 — M7-VEC-FUND-ontwerpverwijzing toegevoegd (2026-10-15)
 Status: CORE-1-basisanalyse en het branchcheckpoint blijven historisch; UI-RADIAL-9/REG-2 zijn met PR #12 naar `main` gemerged (referentie `63ab45acc7`). Deze documentatieaanvulling heeft geen productiecode of tests aangepast.
 Basis: GitHub `main` op `f4039842c44885d739b624d9d67bbfdd75d2394e`; omvat M6b `b5e693f`, G-TRI1, UI-T1 en de bestaande `MI.ToolCatalog`
 Normatieve context **voor huidig radiaalmenu**: [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md). De [geometrie-/UI-architectuur uit 2026-10-13](GEOMETRY-TOOLS-REGIONS-RADIAL-ARCHITECTURE-v1.0.0.md) en het [historische uitvoeringsplan](CODEX-EXECUTION-PLAN-TOOLS-RADIAL-REGIONS-TRIANGLE-v1.0.0.md) blijven referenties voor de oorspronkelijke CORE-1-context, maar zijn niet langer normatief voor de huidige radiale interactie.
@@ -9,7 +9,7 @@ Normatieve context **voor huidig radiaalmenu**: [UI-RADIAL-9-CONTRACT-DRIVEN.md]
 
 De oorspronkelijke CORE-1-secties waren gecontroleerd op `main` bij `f403984`; de DOC-RADIAL-1-aanvulling beschreef de toenmalige ontwikkelbranch. Deze historische teksten blijven voor herleidbaarheid staan. **Sinds PR #12** bevindt de gedeelde contextuele constructiearchitectuur zich ook op `main`, geverifieerd bij commit `63ab45acc7`. Dit is geen nieuwe regressie- of browser-PASS.
 
-De nieuwe [M8a — Ellipsen](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn **goedgekeurde ontwerpcontracten**, geen reeds bestaande API's. De implementatie blijft via `ConstructionService`, `ToolCatalog`, autorisatiemodel, document-/dependency-graaf en bestaande render-/exportpaden lopen. Let op: sectie 6 noemt nog de *historische* basis tot documentversie 7 / constructieschema 4. De huidige `main` ondersteunt via REG-2 documentversie 8, `regionSchema:1` en `constructionSchema:5`; latere M8-schemaversies zijn nog niet geïmplementeerd.
+De [M7-VEC-FUND — Vectorfundament](M7-VEC-FUND-CONTRACT.md), [M8a — Ellipsen](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn **goedgekeurde ontwerpcontracten**, geen reeds bestaande API's. M7-VEC-FUND is de definitieve vectorfundament-identificatie; de bestaande roadmapgroep M7a–c blijft voor starre transformaties gereserveerd. De implementatie blijft via `ConstructionService`, `ToolCatalog`, autorisatiemodel, document-/dependency-graaf en bestaande render-/exportpaden lopen. Let op: sectie 6 noemt nog de *historische* basis tot documentversie 7 / constructieschema 4. De huidige `main` ondersteunt via REG-2 documentversie 8, `regionSchema:1` en `constructionSchema:5`; latere M8-schemaversies zijn nog niet geïmplementeerd.
 
 ## DOC-RADIAL-1 — Actuele architectuurlaag (2026-10-14, voorrang voor radiale functies)
 

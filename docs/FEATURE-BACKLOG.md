@@ -1,10 +1,10 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.9.2 (M7-vectorontwerp opgenomen, 2026-10-15)
+Version: 1.9.3 (M7-VEC-FUND definitief benoemd en goedgekeurd, 2026-10-15)
 Status: UI-RADIAL/REG-2 staan sinds merge PR #12 op `main` (referentiecommit `63ab45acc7`). Dit is geen nieuwe Node-/Edge-test of afzonderlijke gebruikersacceptatie. De bestaande historische tijdlijn hieronder blijft intact.
 Date: 2026-10-15
 
-> **Normatieve ontwerpen:** [M8a — Ellipsen v1.0.0](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn door de gebruiker **goedgekeurd als ontwerp**, niet geïmplementeerd. [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md) definiëren huidige UI- en servicegrenzen; zie [roadmap](DEVELOPMENT-ROADMAP.md) voor status. [M7a — Vectorfundament v1.0.0](M7a-VECTORFUNDAMENT-CONTRACT.md) is **gepubliceerd als ontwerp ter goedkeuring**, niet geïmplementeerd. De M7a/M7b-namen in het contract conflicteren met de bestaande transformatiesgroep M7a–c; nog geen definitieve hernummering of Codex-GO.
+> **Normatieve ontwerpen:** [M8a — Ellipsen v1.0.0](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn door de gebruiker **goedgekeurd als ontwerp**, niet geïmplementeerd. [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md) definiëren huidige UI- en servicegrenzen; zie [roadmap](DEVELOPMENT-ROADMAP.md) voor status. [M7-VEC-FUND — Vectorfundament v1.0.0](M7-VEC-FUND-CONTRACT.md) is **formeel goedgekeurd als ontwerp**, niet geïmplementeerd. Het oude vectorlabel `M7a` is vervangen; de bestaande M7a–c-transformatiegroep behoudt de naam. Historische verwijzingen naar M7b/M7f als vervolgwerk zijn nog geen definitieve hernummering of Codex-GO.
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
 
@@ -113,7 +113,7 @@ See [functional specification](POST-M5A-ENHANCEMENTS-SPEC.md) and the sequencing
 - M5b addition: tangent through a linked point on a circle, preserving current tangent cases.
 - Before dynamic text: document units/scale/precision in axis properties, default cm for new documents; preserve absent-metadata legacy display. Then safe typed dynamic text bindings with explicit source-deletion behavior.
 - M8: regular polygons from center/vertex/n; possible independent checkpoint after M5b.
-- M7a/M7f: linked/component vectors, then vector operations and their visualizations.
+- M7-VEC-FUND (goedgekeurd ontwerp) / historisch M7f: linked/component vectors, gevolgd door afzonderlijk te ontwerpen vectoralgebra en visualisaties. Bestaande M7a–c blijven starre transformaties.
 - Dedicated sets stream: shared typed semantics, Venn/Euler, interval number line; coordinate-plane sets at/after M11 numeric/expression groundwork. All three representations retained.
 
 The later items remain planned until individually requested. No milestone number is silently reassigned.

@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.6 (M7a Vectorfundament-contractregister, 2026-10-15)
+Version: 2.8.7 (M7-VEC-FUND benoeming en goedkeuring, 2026-10-15)
 Status: `main` bevat PR #12 (UI-RADIAL/REG-2), geverifieerd bij commit `63ab45acc7e94b120a5fb052840c199816399afd`. Dat bewijst integratie van de broncode, niet afzonderlijke gebruikersacceptatie of een nieuwe volledige Node-/Edge-regressie. De resterende historische checkpoints hieronder blijven bewaard.
 Date: 2026-10-15
 
@@ -12,14 +12,14 @@ Date: 2026-10-15
 |---|---|---|
 | **M8a — Ellipsen** | **Goedgekeurd**: [contract v1.0.0](M8a-ELLIPSEN-CONTRACT.md) | M8a-D voltooid; M8a-1 ellipsbron, M8a-2 punt-op-ellips, M8a-3 consolidatie **nog niet geïmplementeerd**; per uitvoeringsfase aparte GO |
 | **M8b — Parallellogrammen** | **Goedgekeurd**: [contract v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) | M8b-ontwerp voltooid; M8b-0 preflight, M8b-1 constructie, M8b-2 maten/UI en M8b-3 regressie/acceptatie **nog niet geïmplementeerd**; standaard na M8a-1-acceptatie |
-| **M7a — Vectorfundament (conceptuele naam)** | [Contract v1.0.0](M7a-VECTORFUNDAMENT-CONTRACT.md) **gepubliceerd als ontwerp ter goedkeuring**; oorspronkelijke tekst bewaard | Geen ontwerpgoedkeuring of implementatie-GO in dit bestand; nummer **M7a** overlapt met bestaande M7a–c voor starre transformaties en met vectorplanningsitems `tasks-146`/`tasks-147`. Nummering blijft open. |
+| **M7-VEC-FUND — Vectorfundament** | **Ontwerp v1.0.0 goedgekeurd** op 15 oktober 2026: [contract](M7-VEC-FUND-CONTRACT.md). Historisch label `M7a` vervalt uitsluitend voor vectorfundament. | **Niet geïmplementeerd.** Read-only preflight vereist; afzonderlijke GO nodig voor productiecode, tests en branchwerk. `tasks-146` en `tasks-147` behoren inhoudelijk tot dit traject. |
 | **Parabolen/hyperbolen** | Architectuurvoorstel besproken in *WIE - Kegelsneden* | Nog **geen** afzonderlijk goedgekeurde ontwerpcontracten of implementatieopdrachten |
 | **UI-RADIAL/REG-2** | Bestaande contracten en implementaties | Gemerged op `main` via PR #12; nieuw volledig regressie- en handmatig acceptatiebewijs niet uit deze docs-update afleidbaar |
 | **STAB-1** | Integratie-/regressiecontrole gepland | Afzonderlijke afronding/goedkeuring en eventuele nieuwe testresultaten nog te verifiëren |
 
 **Schema-grens:** de huidige code op de geverifieerde basis ondersteunt document v8, `regionSchema:1` en `constructionSchema:5`. M8a's voorgestelde v9/`ellipseSchema:1`/`constructionSchema:6` en M8b's daaropvolgende uitbreiding zijn **ontwerpbesluiten**, geen aanwezige productieschema's; vereisen preflight, migration/roundtrip en mixed-document/restricted-permission tests.
 
-**Nummerbeleid M7 (open):** het oorspronkelijke [Vectorfundament-contract v1.0.0](M7a-VECTORFUNDAMENT-CONTRACT.md) is nu beschikbaar. Het gebruikt “M7a” voor het vectorfundament en “M7b” voor vectorgebaseerde translatie, terwijl `tasks-118`–`tasks-123` reeds “M7a–c” voor starre transformaties reserveren en `tasks-146`/`tasks-147` vectorwerk ook “M7a” noemen. **Nog geen hernummering, geen stilzwijgende alias als definitieve mijlpaal en geen implementatie-GO.** Leg vóór Codex-uitvoering één eenduidige mijlpaalidentificatie vast, met behoud van historische taakrefs. Aanbevolen technische referentie totdat dit is beslist: `M7-VEC-FUND` (documentalias, geen hernummering).
+**Nummerbeleid M7 (besloten voor vectorfundament, 15 oktober 2026):** **M7-VEC-FUND** is de definitieve unieke identifier voor [Vectorfundament v1.0.0](M7-VEC-FUND-CONTRACT.md). Het oudere vectorlabel `M7a` is uitsluitend een historisch synoniem en wordt niet meer voor deze milestone gebruikt. **M7a–c — Starre transformaties** (`tasks-118`–`tasks-123`) behouden hun bestaande nummering. De oorspronkelijke tekst noemt `M7b` voor translatie en `M7f` voor vectoralgebra; de uiteindelijke namen en volgorde van die vervolgtrajecten vereisen nog aparte besluitvorming. De bestaande taakrefs blijven behouden; contractgoedkeuring is geen implementatie-GO.
 
 **Deze wijziging is documentatie-only:** geen productiecode, Node-/Edge-/browseruitvoering of nieuw test-PASS.
 
@@ -101,7 +101,7 @@ Product source: [Post-M5a specification 1.3.0](POST-M5A-ENHANCEMENTS-SPEC.md). A
 | After M5b, before dynamic text | Units, scale and measurement notation | New default cm, 1 coordinate unit = 1 cm, precision 2; axis inspector; length scale and area scale squared; preserve legacy display without migration (see UNITS-SCALE-CONTRACT.md) |
 | Directly after units | Dynamic text bindings | Stable typed references and common unit formatting; define invalid/deleted source semantics first; templates later |
 | M8 alongside parallelogram, optionally separate after M5b | Regular polygon | Center/vertex/n contract, consistent side/angle/area, zero-radius policy and referenced topology policy |
-| M7a | Linked vector AB and component representation | Useful input for vector translation; fixed/free vector semantics |
+| M7-VEC-FUND | Linked vector AB and component representation | Approved design v1.0.0; future translation consumes vector source, implementation still pending |
 | M7f | Vector algebra and visualizations | Add/subtract/scalar/dot/angle/projection; units and zero-vector cases; small checkpoints |
 | Separate stream after M5-M6 | Sets: semantic core, then Venn/Euler and number-line views separately | Typed operations; mathematically valid conversions only; intervals/open boundaries/unbounded components |
 | At/after M11 | Sets in coordinate plane | Reuse safe expression/numeric groundwork where appropriate; robust boundary and region evaluation, no arbitrary code |
@@ -640,8 +640,8 @@ Statuses below reproduce the supplied export and preserve stable task references
 | `tasks-143` | ↳ Matrixtransformaties | `not_started` |
 | `tasks-144` | ↳ Milestone-gate: testen, documenteren, gebruikersacceptatie | `not_started` |
 | `tasks-145` | Vectoren — gekoppelde vectoren en vectoralgebra | `not_started` |
-| `tasks-146` | ↳ M7a: vrije versus gebonden vector en componentencontract | `not_started` |
-| `tasks-147` | ↳ M7a: dynamische vector AB en componentweergave | `not_started` |
+| `tasks-146` | ↳ M7-VEC-FUND: vrije versus gebonden vector en componentencontract | `not_started` |
+| `tasks-147` | ↳ M7-VEC-FUND: dynamische vector AB en componentweergave | `not_started` |
 | `tasks-148` | ↳ M7f: som, verschil en scalair vermenigvuldigen | `not_started` |
 | `tasks-149` | ↳ M7f: inproduct, hoek en projectie; nulvectorgevallen | `not_started` |
 | `tasks-150` | ↳ Kop-staart, parallellogramregel en projectievisualisatie | `not_started` |

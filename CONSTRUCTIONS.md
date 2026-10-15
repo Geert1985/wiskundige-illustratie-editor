@@ -1,6 +1,6 @@
 # Linked geometric constructions
 
-> **Geldigheid:** oudere basisconstructies en meetprincipes hieronder bevatten historische beschrijvingen. UI-RADIAL-9 en de contextuele constructiearchitectuur staan sinds merge PR #12 op `main` (referentie `63ab45acc7`); zie [UI-RADIAL-9](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md), [AGENTS.md](AGENTS.md) en [roadmap](docs/DEVELOPMENT-ROADMAP.md). De ontwerpcontracten [M8a](docs/M8a-ELLIPSEN-CONTRACT.md) en [M8b](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn goedgekeurd maar nog niet geïmplementeerd.
+> **Geldigheid:** oudere basisconstructies en meetprincipes hieronder bevatten historische beschrijvingen. UI-RADIAL-9 en de contextuele constructiearchitectuur staan sinds merge PR #12 op `main` (referentie `63ab45acc7`); zie [UI-RADIAL-9](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md), [AGENTS.md](AGENTS.md) en [roadmap](docs/DEVELOPMENT-ROADMAP.md). De ontwerpcontracten [M7-VEC-FUND](docs/M7-VEC-FUND-CONTRACT.md), [M8a](docs/M8a-ELLIPSEN-CONTRACT.md) en [M8b](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn goedgekeurd maar nog niet geïmplementeerd. Het oude vectorlabel M7a is vervangen; M7a–c blijft voor starre transformaties.
 
 ## Actuele contextuele constructies (aanvulling 2026-10-14)
 
