@@ -1025,3 +1025,20 @@ De goedgekeurde **Geometrie**-preview wordt de **visuele standaard** voor alle e
 - JavaScript-cache-invalidering gebruikt één gedeeld release-token voor de 49 klassieke scripts; de Edge-test blijft een verouderde gecachte `model.js` injecteren en controleert tekencompatibiliteit.
 - Gerichte Edge-dekking omvat radiale eigenschappen/bronrollen, UI-TABS, kleurenpalet, lagen, undo/redo en regio-label/scroll. UI-RADIAL-11/12 en layer-multidrag van PR #13 zijn in de volledige suite meegenomen.
 - Technisch testbesluit en open handmatige acceptatie: [STAB-1-implementatie- en testrapport](STAB-1-IMPLEMENTATION-AND-TEST-REPORT.md). Geen merge naar `main` vanuit STAB-1.
+
+## M8a-1b — Ellips met permanent besturingspunt Q (2026-10-15)
+
+**Basis:** actuele `origin/main` `9da6e2a50d8aa08a1e11ee95e3b8a46e8f650da7`; M8a-1 en M8a-2 zijn geïntegreerd via PR #15 en #16. **Branch:** `codex/m8a-1b-ellipse-control-point`. De normatieve contractaanvulling is [M8a-ELLIPSEN-CONTRACT.md](M8a-ELLIPSEN-CONTRACT.md) v1.1.0.
+
+M8a-1b vervangt alleen de gebruikersgerichte nieuwe ellipsconstructie: drie puntbronnen F₁, F₂ en blijvend Q; `S=|QF₁|+|QF₂|` wordt afgeleid. Bestaande `ellipseByFociAndSum`-documenten en hun numerieke S-invoer blijven intact. De nieuwe bronconstructie gebruikt dezelfde `EllipseGeometry`, `ConstructionService`, permission-/history-, inspector-, render- en exportpaden. Schema 7 wordt uitsluitend geactiveerd wanneer een object van het nieuwe recept wordt opgeslagen; document v9, `ellipseSchema:1` en schema-6-lezing blijven behouden.
+
+| Deel | Status bij branchstart | Acceptatiepoort |
+|---|---|---|
+| Architectuurcontrole en testimpactmatrix | Opgesteld vóór productiecode | Vastgelegd in implementatieverslag |
+| Contractaddendum v1.1.0 | Normatief, vóór productiecode vastgelegd | Schema-, compatibiliteits- en interactiebeleid expliciet |
+| Driebronrecept, cycles, schema 7, atomische Q+ellips | Nog te implementeren | Gerichte Node-dekking, replay en rollback |
+| Tool, preview, bestaande-Q/vrije-Q-interactie en eigenschappen | Nog te implementeren | Edge-controle op echte UI en previewprestatie |
+| `pointOnEllipse`, restricted rechten, legacy en exports | Nog te controleren na wijziging | Volledige Node-/Edge-regressie |
+| Gebruikersacceptatie en integratie naar `main` | Open | Afzonderlijke expliciete gebruikersbeslissing; geen merge vanuit deze taak |
+
+Historische M8a-1/M8a-2 testresultaten en acceptatiestatussen blijven ongewijzigd. Uitgevoerde testresultaten voor M8a-1b worden alleen in het afzonderlijke [implementatieverslag](M8a-1b-ELLIPSE-CONTROL-POINT-IMPLEMENTATION.md) bijgehouden.
