@@ -237,6 +237,7 @@
       const triangleCenterSource = this.#objects.some(object => MI.ConstructionService.triangleCenterKinds.includes(object.construction?.kind) && object.construction.sources.some(ref => ref.objectId === current.id && ref.part == null && ref.index == null));
       const nextData = { ...current, ...patch, style: 'style' in patch ? mergeStyle(current.style, patch.style) : current.style };
       delete nextData.regionGeometry;delete nextData.regionArea;delete nextData.regionStatus;
+      if(nextData.type==='ellipse'){for(const k of ['c','e','ellipseArea','ellipseBounds'])delete nextData[k];if(nextData.construction)for(const k of ['cx','cy','a','b','rotation'])delete nextData[k];}
       const next = freeze(normaliseObject(nextData, triangleCenterSource && nextData.type === 'polygon' && nextData.vertices?.length === 3 ? {allowDegenerateTriangle:true} : {}));
       const objects = this.#objects.slice(); objects[index] = next;MI.MathSource.checkDocument(objects);MI.TextValues.checkDocument(objects); this.#objects = freeze(MI.ConstructionService.resolve(objects,this.#circleDistributions)); return this.get(id);
     }
@@ -325,7 +326,7 @@
       ["title", "description"].forEach(key => {
         if (meta[key] != null && typeof meta[key] !== "string") throw new Error("Ongeldige documentmetadata: " + key);
       });
-      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=4?["groups","groupSchema"]:[]), ...(version>=5?["layers","layerSchema"]:[]), ...(version>=6?["circleDistributionSchema","circleDistributions"]:[]), ...(version>=7?["textSchema"]:[]), ...(version>=8?["regionSchema"]:[]), ...(version>=9?["ellipseSchema"]:[])].includes(key))));
+      const extra = clone(Object.fromEntries(Object.entries(data).filter(([key]) => !["type", "version", "meta", "objects", "presentation", ...(version>=3?["constructionSchema"]:[]), ...(version>=4?["groups","groupSchema"]:[]), ...(version>=5?["layers","layerSchema"]:[]), ...(version>=6?["circleDistributionSchema","circleDistributions"]:[]), ...(version>=7?["textSchema"]:[]), ...(version>=8?["regionSchema"]:[]), ...(version>=9?["ellipseSchema"]:[])].includes(key))));
       const seen = new Set();
       const triangleSourceIds = new Set(data.objects.filter(input => MI.ConstructionService.triangleCenterKinds.includes(input?.construction?.kind)).flatMap(input => Array.isArray(input?.construction?.sources) ? input.construction.sources.filter(ref => ref && ref.part == null && ref.index == null && typeof ref.objectId === 'string').map(ref => ref.objectId) : []));
       const constructedTriangleIds = new Set(data.objects.filter(input => input?.construction?.kind === 'triangleFromPoints' && input.type === 'polygon').map(input => String(input.id)));

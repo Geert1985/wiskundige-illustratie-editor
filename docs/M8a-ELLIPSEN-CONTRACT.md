@@ -133,7 +133,7 @@ De circulaire grens `p→1/0` moet bij dragging zonder verouderde positie werken
 
 ### 4.1 Eén model, één graaf, geen parallelle engine
 
-Voeg getypeerd `ellipse` toe aan `IllustrationModel`. Voor M8a bestaat dit object **alleen als gekoppelde constructie**. Maak een zuivere, UI-onafhankelijke `EllipseGeometry`-service voor validatie, parameters, contourpunten, extrema, oppervlakte en dichtstbijzijnde-puntprojectie; `ConstructionService` blijft exclusief eigenaar van recepten, bronrollen, dependency resolution, invalid/recovery en computed fields. SVG, snapping, inspector en exports consumeren dezelfde afgeleide geometrie.
+Voeg getypeerd `ellipse` toe aan `IllustrationModel`. Een ellips is gekoppeld via brandpunten en afstandsom, of zelfstandig via de primaire definitieparameters `cx`, `cy`, `a`, `b` en `rotation`; het normatieve addendum in sectie 4.2 bepaalt duplicatie en ontkoppeling. Maak een zuivere, UI-onafhankelijke `EllipseGeometry`-service voor validatie, parameters, contourpunten, extrema, oppervlakte en dichtstbijzijnde-puntprojectie; `ConstructionService` blijft exclusief eigenaar van recepten, bronrollen, dependency resolution, invalid/recovery en computed fields. SVG, snapping, inspector en exports consumeren dezelfde afgeleide geometrie.
 
 Voorgestelde recepten (contractnamen voorlopig):
 
@@ -153,7 +153,7 @@ Voorgestelde recepten (contractnamen voorlopig):
 }
 ```
 
-`sumDistance` wordt opgeslagen in **modelafstand**, niet in schermpixels of naar fysieke eenheden omgerekend in de geometrische kernel. De UI mag de waarde via het bestaande `MeasurementUnits`-contract weergeven en bij author-invoer precies eenmaal omrekenen. Laat het voorgestelde `sumDistance`-veld niet zonder expliciete command- en normalisatievalidatie meelopen op het oudere generieke `parameter`-pad van punt-op-segment/cirkel.
+`sumDistance` wordt opgeslagen in **modelafstand**, niet in schermpixels of naar fysieke eenheden omgerekend in de geometrische kernel. De UI mag de waarde via het bestaande `MeasurementUnits`-contract weergeven en bij author-invoer precies eenmaal omrekenen. Het author-only commando `construction.setSumDistance` gebruikt `{id, sumDistance}` en weigert een ongeldige nieuwe waarde atomair. `construction.create` gebruikt voor dit recept uitsluitend het getypeerde `sumDistance`-veld. Laat het `sumDistance`-veld niet zonder expliciete command- en normalisatievalidatie meelopen op het oudere generieke `parameter`-pad van punt-op-segment/cirkel.
 
 ### 4.2 Object en documentformaat: voorlopig schemabesluit
 
@@ -168,7 +168,7 @@ Voorgestelde recepten (contractnamen voorlopig):
 
 De combinatie *ellips + REG-2-regio + rijke tekst + asreferenties + lagen* is een verplichte integratietest. Documentversie 9 en schema 6 zijn het M8a-implementatiecontract.
 
-#### M8a-1 addendum — zelfstandige ellipsen en duplicatie
+#### M8a-1 normatief addendum — zelfstandige ellipsen en duplicatie
 
 Een `ellipse` kan óf gekoppeld zijn via `ellipseByFociAndSum`, óf zelfstandig zijn gedefinieerd. Een gekoppelde ellips bewaart uitsluitend de twee puntbronnen en positieve `sumDistance`; de actuele contourvelden zijn berekend en worden niet in JSON opgeslagen. Een zelfstandige ellips bewaart definitieparameters `cx`, `cy`, `a`, `b` en `rotation`, waarbij `a ≥ b > 0` en `rotation` de richting van de halve lange as is. Dit zijn primaire definitiegegevens, geen cache of gefingeerde bronpunten.
 
