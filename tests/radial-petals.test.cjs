@@ -8,6 +8,7 @@ const root=path.resolve(__dirname,'..');
 function element(tag='div'){
   return {
     tagName:tag.toUpperCase(),className:'',dataset:{},attributes:{},children:[],
+    classList:{add(){},remove(){}},
     style:{values:{},setProperty(name,value){this.values[name]=value;}},
     innerHTML:'',value:'',textContent:'',hidden:false,readOnly:false,disabled:false,
     setAttribute(key,value){this.attributes[key]=String(value);},
