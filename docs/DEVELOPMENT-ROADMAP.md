@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.5 (main-integratie en M8-design-gates, 2026-10-15)
+Version: 2.8.6 (M7a Vectorfundament-contractregister, 2026-10-15)
 Status: `main` bevat PR #12 (UI-RADIAL/REG-2), geverifieerd bij commit `63ab45acc7e94b120a5fb052840c199816399afd`. Dat bewijst integratie van de broncode, niet afzonderlijke gebruikersacceptatie of een nieuwe volledige Node-/Edge-regressie. De resterende historische checkpoints hieronder blijven bewaard.
 Date: 2026-10-15
 
@@ -12,14 +12,14 @@ Date: 2026-10-15
 |---|---|---|
 | **M8a — Ellipsen** | **Goedgekeurd**: [contract v1.0.0](M8a-ELLIPSEN-CONTRACT.md) | M8a-D voltooid; M8a-1 ellipsbron, M8a-2 punt-op-ellips, M8a-3 consolidatie **nog niet geïmplementeerd**; per uitvoeringsfase aparte GO |
 | **M8b — Parallellogrammen** | **Goedgekeurd**: [contract v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) | M8b-ontwerp voltooid; M8b-0 preflight, M8b-1 constructie, M8b-2 maten/UI en M8b-3 regressie/acceptatie **nog niet geïmplementeerd**; standaard na M8a-1-acceptatie |
-| **M7 vectorfundament** | Concept v1.0.0 opgesteld in *WIE - Vectoren*, maar niet gepubliceerd: originele bestand ontbreekt in deze publicatie | **Geen** implementatie- of ontwerpgoedkeuring bevestigd; de labelnaam “M7a” **botst** met bestaande roadmap M7a–c voor starre transformaties |
+| **M7a — Vectorfundament (conceptuele naam)** | [Contract v1.0.0](M7a-VECTORFUNDAMENT-CONTRACT.md) **gepubliceerd als ontwerp ter goedkeuring**; oorspronkelijke tekst bewaard | Geen ontwerpgoedkeuring of implementatie-GO in dit bestand; nummer **M7a** overlapt met bestaande M7a–c voor starre transformaties en met vectorplanningsitems `tasks-146`/`tasks-147`. Nummering blijft open. |
 | **Parabolen/hyperbolen** | Architectuurvoorstel besproken in *WIE - Kegelsneden* | Nog **geen** afzonderlijk goedgekeurde ontwerpcontracten of implementatieopdrachten |
 | **UI-RADIAL/REG-2** | Bestaande contracten en implementaties | Gemerged op `main` via PR #12; nieuw volledig regressie- en handmatig acceptatiebewijs niet uit deze docs-update afleidbaar |
 | **STAB-1** | Integratie-/regressiecontrole gepland | Afzonderlijke afronding/goedkeuring en eventuele nieuwe testresultaten nog te verifiëren |
 
 **Schema-grens:** de huidige code op de geverifieerde basis ondersteunt document v8, `regionSchema:1` en `constructionSchema:5`. M8a's voorgestelde v9/`ellipseSchema:1`/`constructionSchema:6` en M8b's daaropvolgende uitbreiding zijn **ontwerpbesluiten**, geen aanwezige productieschema's; vereisen preflight, migration/roundtrip en mixed-document/restricted-permission tests.
 
-**Nummerbeleid M7:** niet automatisch hernummeren. Eerst de oorspronkelijke vectorfundament-contracttekst beschikbaar maken en expliciet vaststellen of het label M7a voor vectoren óf voor starre transformaties wordt gebruikt.
+**Nummerbeleid M7 (open):** het oorspronkelijke [Vectorfundament-contract v1.0.0](M7a-VECTORFUNDAMENT-CONTRACT.md) is nu beschikbaar. Het gebruikt “M7a” voor het vectorfundament en “M7b” voor vectorgebaseerde translatie, terwijl `tasks-118`–`tasks-123` reeds “M7a–c” voor starre transformaties reserveren en `tasks-146`/`tasks-147` vectorwerk ook “M7a” noemen. **Nog geen hernummering, geen stilzwijgende alias als definitieve mijlpaal en geen implementatie-GO.** Leg vóór Codex-uitvoering één eenduidige mijlpaalidentificatie vast, met behoud van historische taakrefs. Aanbevolen technische referentie totdat dit is beslist: `M7-VEC-FUND` (documentalias, geen hernummering).
 
 **Deze wijziging is documentatie-only:** geen productiecode, Node-/Edge-/browseruitvoering of nieuw test-PASS.
 

@@ -1,10 +1,10 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.9.1 (geactualiseerde main-status en M8-design-gates, 2026-10-15)
+Version: 1.9.2 (M7-vectorontwerp opgenomen, 2026-10-15)
 Status: UI-RADIAL/REG-2 staan sinds merge PR #12 op `main` (referentiecommit `63ab45acc7`). Dit is geen nieuwe Node-/Edge-test of afzonderlijke gebruikersacceptatie. De bestaande historische tijdlijn hieronder blijft intact.
 Date: 2026-10-15
 
-> **Normatieve ontwerpen:** [M8a — Ellipsen v1.0.0](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn door de gebruiker **goedgekeurd als ontwerp**, niet geïmplementeerd. [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md) definiëren huidige UI- en servicegrenzen; zie [roadmap](DEVELOPMENT-ROADMAP.md) voor status. M7a vectorfundament blijft wachtend op originele bron en oplossing van het M7a–c-nummerconflict.
+> **Normatieve ontwerpen:** [M8a — Ellipsen v1.0.0](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn door de gebruiker **goedgekeurd als ontwerp**, niet geïmplementeerd. [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md) definiëren huidige UI- en servicegrenzen; zie [roadmap](DEVELOPMENT-ROADMAP.md) voor status. [M7a — Vectorfundament v1.0.0](M7a-VECTORFUNDAMENT-CONTRACT.md) is **gepubliceerd als ontwerp ter goedkeuring**, niet geïmplementeerd. De M7a/M7b-namen in het contract conflicteren met de bestaande transformatiesgroep M7a–c; nog geen definitieve hernummering of Codex-GO.
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
 
