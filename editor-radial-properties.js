@@ -576,7 +576,7 @@
         else if(plan.mode==='placement')
           hint=kind==='pointOnEllipse'?'Klik daarna nabij de ellipscontour om de puntpositie vast te leggen.':'Klik daarna op het bronobject om de puntpositie vast te leggen.';
         else if(plan.mode==='complete')hint='Direct uit de geselecteerde bron berekenen.';
-        else hint=MI.ToolInstructions.constructionHint(kind,plan.sourceIndex===0?1:0)||
+        else hint=kind==='ellipseByFociAndPoint'?'Selecteer de overige brandpunten; Q kies je als laatste bron.':MI.ToolInstructions.constructionHint(kind,plan.sourceIndex===0?1:0)||
           'Selecteer de volgende constructiebron.';
         if(plan.sourceIndex>0)hint+=' De huidige selectie wordt daarna automatisch ingevuld.';
         info.append(text('small','',hint,this.doc));

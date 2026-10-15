@@ -7,11 +7,13 @@
   const withinLimit=p=>Math.abs(p.x)<=LIMIT&&Math.abs(p.y)<=LIMIT;
 
   function resolve(recipe,sources){
-    if(!recipe||recipe.kind!=='ellipseByFociAndSum'||!Array.isArray(sources)||sources.length!==2||sources.some(p=>p?.type!=='point'))return invalid('INVALID_REFERENCE');
-    const [f1,f2]=sources;
+    const legacy=recipe?.kind==='ellipseByFociAndSum',controlled=recipe?.kind==='ellipseByFociAndPoint';
+    if(!recipe||(!legacy&&!controlled)||!Array.isArray(sources)||sources.length!==(legacy?2:3)||sources.some(p=>p?.type!=='point'))return invalid('INVALID_REFERENCE');
+    const [f1,f2,q]=sources;
     if(!finitePoint(f1)||!finitePoint(f2))return invalid('SOURCE_INVALID');
     if(!withinLimit(f1)||!withinLimit(f2))return invalid('COORDINATE_LIMIT');
-    const sum=recipe.sumDistance;
+    let sum=recipe.sumDistance;
+    if(controlled){if(!finitePoint(q))return invalid('SOURCE_INVALID');if(!withinLimit(q))return invalid('COORDINATE_LIMIT');const first=Math.hypot(q.x-f1.x,q.y-f1.y),second=Math.hypot(q.x-f2.x,q.y-f2.y);sum=first+second;}
     if(typeof sum!=='number'||!Number.isFinite(sum))return invalid('INVALID_SUM');
     if(sum<=0)return invalid('SUM_NOT_POSITIVE');
 

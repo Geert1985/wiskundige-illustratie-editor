@@ -1,7 +1,7 @@
 # From Zero 2 Infinity — Wiskundige Illustratie Editor
 ## M8a — Dynamische ellipsen: wiskundig, functioneel en technisch ontwerpcontract
 
-**Documentversie:** 1.0.0 — **als ontwerp goedgekeurd op 15 oktober 2026**  
+**Documentversie:** 1.1.0 — **M8a-1b-normatieve aanvulling**  
 **Datum:** 15 oktober 2026  
 **Repository:** [`Geert1985/wiskundige-illustratie-editor`](https://github.com/Geert1985/wiskundige-illustratie-editor)  
 **Gecontroleerde basis:** `main` op `63ab45acc7e94b120a5fb052840c199816399afd`  
@@ -253,3 +253,41 @@ Bij elke stap: aparte branch vanaf een gecontroleerde `main`-commit, bounded com
 - [`docs/CORE-1-ARCHITECTURE-DESIGN.md`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/docs/CORE-1-ARCHITECTURE-DESIGN.md) en [`docs/REG-1-CONTRACT.md`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/docs/REG-1-CONTRACT.md): hergebruik servicegrenzen en bestaande versionerings-/permissieprincipes.
 
 **Bronstatus:** de genoemde punten uit roadmap en repository zijn gecontroleerde bestaande uitgangspunten. Nieuwe receptnamen, elliptische numerieke policies, docversie 9/schema 6, UX en fasering zijn **goedgekeurde ontwerpuitgangspunten**, niet reeds aanwezige productiecode; definitieve schema-aanpak vereist preflight.
+
+---
+
+## 9. Normatieve aanvulling M8a-1b — besturingspunt Q
+
+**Status:** goedgekeurd als uitvoeringsopdracht op 15 oktober 2026; dit addendum is normatief voor de nieuwe gebruikersgerichte ellipsconstructie. Het vervangt alleen waar expliciet beschreven het eerdere voorstel voor nieuwe constructies via F₁, F₂ en een niet-opgeslagen derde klikpunt. Het breekt geen bestaand opgeslagen recept.
+
+### 9.1 Nieuw recept en bronrollen
+
+De nieuwe constructiemethode is **Ellips via twee brandpunten en besturingspunt** met tool-ID `construct:ellipseByFociAndPoint` en recept `ellipseByFociAndPoint`. De bronlijst heeft exact drie volledige puntreferenties in deze vaste volgorde: F₁, F₂, Q. Q is een gewoon, permanent, selecteerbaar puntobject. Het kan een reeds bestaand toegestaan punt zijn, ook wanneer dat punt zelf een toegestane afhankelijke constructie is, of een punt dat de editor samen met de ellips bij een vrije plaatsingsklik maakt.
+
+De geometrische parameter `S = |QF₁| + |QF₂|` is afgeleid uit de actuele bronposities en wordt niet in het recept opgeslagen. Het recept slaat geen ellipscontour of berekende aswaarden op. De bestaande `EllipseGeometry` blijft de enige rekenkern: de driebronadapter berekent S en geeft de brandpunten plus die S door aan dezelfde numerieke resolver die het legacyrecept gebruikt.
+
+Q (besturingspunt) is bron van de ellips; het door `pointOnEllipse` gemaakte P blijft een afhankelijke puntpositie met eigen canonieke parameter. Deze rollen zijn niet uitwisselbaar. Een punt dat rechtstreeks of via een dependency cascade van de doel-ellips afhangt, mag niet als Q worden gekoppeld; geldige import en iedere bronwijziging moeten dezelfde acycliciteitscontrole ondergaan.
+
+Geldige Q-geometrie vereist een eindige berekende afstandsom en een geldige niet-ontaarde resolveruitkomst. Een punt op het brandpuntsegment of samenvallend met een brandpunt levert geen geldige nieuwe bevestiging. Samenvallende brandpunten met een Q op een andere positie leveren de bestaande canonieke cirkelvariant. Tijdelijke broninvaliditeit behoudt de ellips-ID en referenties, maar levert geen verouderde contour of afhankelijke puntpositie op; herstel gebruikt de bestaande dependency resolution. Een afgewezen derde klik laat geen punt, ellips of geschiedeniswijziging achter.
+
+### 9.2 Schema- en lezerbeleid
+
+Documentversie blijft **9** en `ellipseSchema` blijft **1**. De eerste opgeslagen `ellipseByFociAndPoint` activeert `constructionSchema:7`, omdat de schema-6-lezer ellipsrecepten expliciet valideert als de bestaande recepten `ellipseByFociAndSum` en `pointOnEllipse` en onbekende recepten atomair weigert. `constructionSchema:6` blijft het exacte schema voor documenten met alleen de bestaande M8a-recepten, ook in documenten met legacy-ellipsen.
+
+Een v9/schema-6-document wordt zonder receptmigratie, fictieve Q of wijziging van geometrie gelezen en blijft exporteren met de opgeslagen S. `constructionSchema:7` accepteert zowel de schema-6-recepten als `ellipseByFociAndPoint`; oudere lezers die schema 7 niet ondersteunen wijzen het hele document af in plaats van het stilzwijgend te downgraden. De huidige reader wijst onbekende recepttypen en schema's boven 7 atomair af. Er is geen automatische migratie van de legacy `ellipseByFociAndSum`: het oorspronkelijke derde klikpunt is niet opgeslagen en kan niet betrouwbaar worden gereconstrueerd.
+
+Documentvalidatie controleert bronsoorten, bronrollen, bestaande referenties, cycles en gedeelde ellipsvaliditeit. Import heeft hetzelfde gedrag als interactieve bronbinding. Geen berekende S wordt gekopieerd naar de constructie tijdens export of restricted projectie.
+
+### 9.3 Interactie, permissies en geschiedenis
+
+De sidebar, fullscreen-kiezer en toepasselijke contextuele constructies gebruiken de gedeelde `ToolCatalog` en `ConstructionService.contextualPlans`. Een focuspunt mag volgens de bestaande rolplannen als F₁ of F₂ vooraf worden ingevuld. De derde stap kiest een bestaand toegestaan punt wanneer de bestaande puntselectie-/snappingprioriteit dat aanwijst; anders plaatst de klik een gewoon punt Q. De live preview gebruikt de positie van een geldig bestaand Q of de vrije cursorpositie, wordt per bestaand previewpad bijgewerkt en mutatet geen document of geschiedenis.
+
+Een nieuwe Q bij vrije plaatsing en de ellips vormen één logische, atomaire actie en één Undo/Redo-stap. De actie controleert zowel de rechten om een gewoon punt te maken als de rechten voor het nieuwe ellipsgereedschap en de drie bronnen. Als één validatie of commando faalt, worden beide creaties teruggedraaid. Undo verwijdert eerst de ellips en dan Q; Redo herstelt beide met dezelfde stabiele IDs en bronrelatie. Bestaande command replay blijft deterministisch.
+
+Q blijft een gewoon punt voor naam, label, stijl, zichtbaarheid, laag, selectie, lock, verplaatsen en export. Verslepen en snapping mogen Q niet aan de contour van de ellips die door Q zelf wordt bestuurd vastzetten. Verbergen, verwijderen, locken of intrekken van rechten volgt de bestaande dependency- en restricted-projectieregels, zonder brondata van ongeautoriseerde objecten te lekken.
+
+### 9.4 Eigenschappen en compatibiliteit
+
+Voor het nieuwe recept toont Constructie de rollen F₁, F₂ en Q. Afstandsom S is eenhedenbewust, berekend en alleen-lezen. Centrum C, halve assen a/b, excentriciteit e en oppervlakte πab komen uit de bestaande geometrische resolver en formatter. Alleen de legacy `ellipseByFociAndSum` behoudt de bestaande author-only invoer voor S. `pointOnEllipse` blijft ongewijzigd en volgt hetzelfde ellipsobject wanneer F₁, F₂ of Q verplaatst wordt; parameter p blijft behouden.
+
+Duplicatie, detach, documentlagen, lock, SVG/PNG-rendering en import/export gebruiken de bestaande object-/constructie-/projectiepaden. Het nieuwe recept introduceert geen tweede afhankelijkheidsgraaf, geometry-cache, ellipsrenderer, toolcatalogus of permissiepad.

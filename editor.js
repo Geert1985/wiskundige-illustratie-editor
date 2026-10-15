@@ -609,11 +609,11 @@
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
       if(state.radialPlacement||state.pathPlacement){this.radialPathPlacement(point,event,state);return;}
-      if(kind==='ellipseByFociAndSum'&&state.sources.length===2){
-        const preview=this.ellipsePlacementPreview(point);if(!preview?.valid){this.status('Deze positie geeft geen geldige ellips ('+(preview?.reasonCode||'ONGELDIGE_GEOMETRIE')+'). Beweeg de muis naar buiten het brandpuntsegment.');this.invalidate();return;}
-        const payload={toolId:'construct:ellipseByFociAndSum',sources:state.sources.map(ref=>({...ref})),sumDistance:preview.sumDistance};
+      if(kind==='ellipseByFociAndPoint'&&state.sources.length===2){
+        const preview=this.ellipsePlacementPreview(point);if(!preview?.valid){this.status('Deze positie geeft geen geldige ellips ('+(preview?.reasonCode||'ONGELDIGE_GEOMETRIE')+'). Kies Q buiten het brandpuntsegment.');this.invalidate();return;}
+        const payload={toolId:'construct:ellipseByFociAndPoint',sources:preview.source?[...state.sources.map(ref=>({...ref})),{...preview.source}]:state.sources.map(ref=>({...ref})),...(preview.source?{}:{controlPoint:{...preview.point}})};
         this.interaction=null;this.release(state);this.engine.renderer.preview=null;
-        try{this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',payload).result.map(o=>o.id);});this.tool='select';this.status('Ellips toegevoegd.');}
+        try{this.changeDocument(()=>{const created=this.execute('construction.create',payload).result,ellipse=created.find(o=>o.type==='ellipse');this.selectedIds=ellipse?[ellipse.id]:created.map(o=>o.id);});this.tool='select';this.status(preview.source?'Ellips gekoppeld aan bestaand besturingspunt Q.':'Besturingspunt Q en ellips toegevoegd.');}
         catch(error){this.status(error.message);}
         this.invalidate();return;
       }
@@ -634,7 +634,7 @@
       if(kind==='angleDirections'){state.anglePicks=state.anglePicks||[];state.anglePicks.push({...point});}
       state.pointerId=event.pointerId; this.interaction=state;
       if(this.nodes.canvasWrap.setPointerCapture)try{this.nodes.canvasWrap.setPointerCapture(event.pointerId);}catch(_){}
-      if(kind==='ellipseByFociAndSum'&&state.sources.length===2){state.ellipsePlacement=true;this.interaction=state;this.status(this.constructionHint(kind,2));this.invalidate();return;}
+      if(kind==='ellipseByFociAndPoint'&&state.sources.length===2){state.ellipsePlacement=true;this.interaction=state;this.status(this.constructionHint(kind,2));this.invalidate();return;}
       if(kind==='pointOnEllipse'&&state.sources.length===1){state.pathPlacement=true;this.interaction=state;this.status(this.constructionHint(kind,1));this.invalidate();return;}
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       if(kind==='angleDirections')state.sources=MI.ConstructionService.selectAngleArms(state.sources,state.anglePicks,new Map(this.engine.model.objects.map(o=>[o.id,o])));
@@ -646,11 +646,10 @@
     ellipsePlacementPreview(point){
       const state=this.interaction;if(!state||!state.ellipsePlacement||state.sources.length!==2)return null;
       const foci=state.sources.map(ref=>this.engine.get(ref.objectId));if(foci.some(o=>!o||o.type!=='point'))return {valid:false,reasonCode:'INVALID_REFERENCE'};
-      const sumDistance=Math.hypot(point.x-foci[0].x,point.y-foci[0].y)+Math.hypot(point.x-foci[1].x,point.y-foci[1].y);
-      const result=MI.EllipseGeometry.resolve({kind:'ellipseByFociAndSum',sumDistance},foci);
-      state.sumDistance=sumDistance;state.previewReason=result.reasonCode;state.previewValid=result.reasonCode==='VALID';
-      this.engine.renderer.preview=state.previewValid?{type:'ellipse',cx:result.geometry.center.x,cy:result.geometry.center.y,a:result.geometry.a,b:result.geometry.b,rotation:result.geometry.rotation,style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5',fill:'none'}}:{type:'ellipse-invalid',foci:foci.map(o=>({x:o.x,y:o.y})),point:{...point}};
-      return {valid:state.previewValid,reasonCode:result.reasonCode,sumDistance};
+      const source=this.constructionPick(point,'point',2),control=source?MI.ConstructionService.point(this.engine.get(source.objectId),source):point,sources=[...foci,{type:'point',x:control.x,y:control.y}],result=MI.EllipseGeometry.resolve({kind:'ellipseByFociAndPoint'},sources),valid=result.reasonCode==='VALID';
+      state.previewReason=result.reasonCode;state.previewValid=valid;state.controlPointMode=source?'existing':'new';state.controlPoint=control;state.controlPointSource=source||null;
+      this.engine.renderer.preview=valid?{type:'ellipse',cx:result.geometry.center.x,cy:result.geometry.center.y,a:result.geometry.a,b:result.geometry.b,rotation:result.geometry.rotation,controlPoint:{...control},controlPointMode:source?'existing':'new',style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5',fill:'none'}}:{type:'ellipse-invalid',foci:foci.map(o=>({x:o.x,y:o.y})),point:{...control}};
+      return {valid,reasonCode:result.reasonCode,point:{...control},source:source||null};
     }
     renderEllipsePlacementPreview(){
       const svg=this.nodes.canvas.querySelector('svg');if(!svg)return;
@@ -1261,6 +1260,10 @@
         const source=this.engine.get(object.construction.sources[0]?.objectId),scale=meta?.scale||1;
         html+='<label>Afstandsom S ('+esc(meta?.unit==='dimensionless'?'':meta?.unit||'u')+')<input data-ellipse-sum type="number" min="0" step="any" value="'+esc(Number((object.construction.sumDistance*scale).toFixed(meta?.precision??2)))+'" aria-label="Afstandsom S"'+(object.locked||this.runtime?' disabled':'')+'></label><p class="help-text">S = '+esc(format(object.construction.sumDistance))+'; invoer gebruikt de documenteenheid ('+esc(meta?.unit||'u')+'). Verandering wordt alleen opgeslagen als de ellips geldig blijft.</p>';
         if(source)html+='<p class="help-text">F₁: '+esc(source.name||source.id)+'; F₂: '+esc(this.engine.get(object.construction.sources[1]?.objectId)?.name||object.construction.sources[1]?.objectId||'niet beschikbaar')+'</p>';
+      }
+      if(object.construction?.kind==='ellipseByFociAndPoint'){
+        const [f1,f2,q]=object.construction.sources.map(ref=>this.engine.get(ref.objectId)),sum=f1&&f2&&q?Math.hypot(q.x-f1.x,q.y-f1.y)+Math.hypot(q.x-f2.x,q.y-f2.y):NaN;
+        html+='<p class="help-text">F₁: '+esc(f1?.name||f1?.id||'niet beschikbaar')+'; F₂: '+esc(f2?.name||f2?.id||'niet beschikbaar')+'; Q: '+esc(q?.name||q?.id||'niet beschikbaar')+'</p><p><strong>Afstandsom S:</strong> <output data-ellipse-derived-s>'+esc(format(sum))+'</output> <span class="help-text">(afgeleid uit F₁, F₂ en Q)</span></p>';
       }
       const geometry=valid?MI.EllipseGeometry.fromDefinition(object).geometry:null;
       const rows=[['Centrum C',geometry?'('+format(geometry.center.x)+', '+format(geometry.center.y)+')':'niet beschikbaar'],['Grote halve as a',format(geometry?.a)],['Kleine halve as b',format(geometry?.b)],['Excentriciteit e',geometry?Number(geometry.e.toFixed(6)).toString():'niet beschikbaar'],['Oppervlakte πab',format(object.ellipseArea,'area')]];
