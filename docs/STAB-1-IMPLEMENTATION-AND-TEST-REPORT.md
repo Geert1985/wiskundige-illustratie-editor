@@ -119,7 +119,8 @@ Geen test is overgeslagen of uitgezet om een PASS te forceren. Assertions zijn b
 ## 5. Bestaande en nieuwe tests
 
 - Bestaande Node-architectuur-, lifecycle-, constructie-, permissie-, regio-, laag-, tekst- en exporttests zijn behouden en afgestemd op de actuele UI.
-- Nieuwe gerichte regio-presentatiebrowsercheck toetst kleuren/fill, `none`, precisie 0–3, legacy-compatibiliteit, scroll/sticky heading en label-offsethistorie/persistentie.
+- `tests/browser-region-presentation.cjs` is onderdeel van de standaard volledige Edge-runner en blijft ook afzonderlijk oproepbaar via `UI_RADIAL_10_ONLY=1`. De check toetst regiofill/randkleur/opacity, `fill='none'`, precisie 0–3 en legacy-clamping, legacy-labelpositie, constructiepaneelscroll/sticky heading en een echte muisversleping van het regiolabel.
+- Voor de regiolabelversleping controleert Edge de zichtbare labelpositie en modeloffsets vóór en na slepen, daarna expliciet na Undo en Redo; vervolgens worden opslag en herladen vergeleken.
 - Edge-cases zijn geactualiseerd voor regionale bronrollen, constructie-inputs, tangent-hover, tabbediening, laagdrag, volle-canvas-clipping, UI-RADIAL-11/12 en assetversies.
 - Coverage is kwalitatief geïnventariseerd; geen instrumented line-/branch-/mutation-coverage is uitgevoerd en er wordt geen percentage geclaimd.
 
@@ -129,12 +130,20 @@ Omgeving: Node `v22.18.0`, npm `10.9.3`, Playwright `1.62.1`, Microsoft Edge `15
 
 | Commando | Resultaat |
 |---|---|
-| `npm test` | 624 passed, 0 failed, 0 skipped; 11.87 s. |
-| `npm run test:edge` | Geslaagd op Microsoft Edge; volledige runner afgerond met `pageErrors: []`. |
+| `npm test` | 624 passed, 0 failed, 0 skipped; laatste correctieronde 15.27 s. |
+| `npm run test:edge` | Geslaagd op Microsoft Edge; de standaard volledige runner omvat ook de regio-presentatietest en eindigt met `pageErrors: []`. |
 | Gerichte Edge-subsets | Gebieden, canvasselectie, assets, radial menu, lagen, constructies, tekstbindingen, hoek- en puntprojecties, meeteenheden, tabnavigatie en responsive toolgroepen zijn ook afzonderlijk uitgevoerd; de integrale run is het afsluitende bewijs. |
 | `git diff --check` | Geslaagd na laatste edits. |
 
 Browser `pageErrors` van de uiteindelijke integrale run: 0.
+
+### Aanvullende correctieronde
+
+De regio-presentatietest was vóór deze correctieronde wel aanwezig en afzonderlijk selecteerbaar, maar ontbrak in het standaardpad van `tests/browser.cjs`. De standaard Edge-runner roept hem nu aan het einde aan en rapporteert `regionPresentation`. De check herstelt na afloop het normale viewport en sluit het paneel.
+
+De eerder gesimuleerde offsetwijziging is vervangen door een muisdrag van het SVG-regiolabel met asserts op de modeloffsets en zichtbare labelpositie vóór/na drag en na Undo/Redo. De opslag-/herlaadassertie blijft daarna actief. Downloadasserties in de bestaande browsercheck lezen de door Playwright beheerde tijdelijke downloadbestanden; de kopieën in `test-results` blijven beschikbaar als artefacten.
+
+Na deze correctie zijn `npm test` opnieuw uitgevoerd (624 geslaagd, geen failures of skips), `npm run test:edge` volledig uitgevoerd met Microsoft Edge (alle checks geslaagd, `pageErrors: []`) en `git diff --check` gecontroleerd. De gerichte uitvoering `UI_RADIAL_10_ONLY=1 npm run test:edge` slaagde eveneens; de standaardrun bevat dezelfde regio-presentatiecheck.
 
 ## 7. Kwalitatieve dekking en resterende hiaten
 
