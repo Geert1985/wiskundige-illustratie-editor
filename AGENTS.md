@@ -1,6 +1,6 @@
 # AGENTS.md — Wiskundige Illustratie Editor (WIE)
 
-**Versie:** 1.0.3 · **Datum:** 2026-10-15 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
+**Versie:** 1.0.4 · **Datum:** 2026-10-15 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
 **Doel:** persistente instructies voor Codex en andere code-assistenten, zonder eerder goedgekeurde implementaties onbedoeld terug te draaien.
 
 ## Eerst lezen en bronvoorrang
@@ -58,10 +58,10 @@
 
 ## Goedgekeurde ontwerpcontracten — status 2026-10-15
 
-- **M8a Ellipsen:** [v1.0.0](docs/M8a-ELLIPSEN-CONTRACT.md) goedgekeurd als ontwerp. `ellipse`, nieuwe constructierecepten en document v9/`ellipseSchema:1` zijn **niet** aanwezig op deze codebasis. Eerst een read-only Codex-preflight, daarna pas afzonderlijke gebruikers-GO voor M8a-1.
+- **M8a Ellipsen:** [contract v1.0.0](docs/M8a-ELLIPSEN-CONTRACT.md) is de normatieve basis. **M8a-1 en STAB-1 staan op `main` via PR #15** (commit `000399af`; document v9, `ellipseSchema:1`, `constructionSchema:6`). **M8a-2 — Punt op ellips** is geïmplementeerd en op 2026-10-15 door de gebruiker functioneel goedgekeurd; zie [M8a-2-verslag](docs/M8a-2-POINT-ON-ELLIPSE-IMPLEMENTATION.md). Controleer de actuele branch/PR voor de integratiestatus. Het geplande ellips-besturingspunt Q behoort tot een afzonderlijke, nog niet uitgevoerde uitbreiding; wijzig daarvoor niet stilzwijgend het bestaande recept.
 - **M8b Parallellogrammen:** [v1.0.0](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md) goedgekeurd als ontwerp. Eén dynamisch vier-vertex-`polygon` op basis van twee bestaande punten, zijlengte en gerichte hoek. Eerst aparte preflight, daarna GO; M8a-implementatie en schema's opnieuw beoordelen.
 - **M7-VEC-FUND — Vectorfundament:** [contract v1.0.0](docs/M7-VEC-FUND-CONTRACT.md) op 15 oktober 2026 **goedgekeurd als ontwerp**; identifier **M7-VEC-FUND definitief vastgesteld**. Het historische vectorlabel `M7a` vervalt; de bestaande **M7a–c — Starre transformaties** blijven ongewijzigd. `M7b` en `M7f` in het oorspronkelijke contract zijn historische labels voor toekomstige werkzaamheden, geen autorisatie of definitieve toewijzing. **Niet geïmplementeerd**: vóór Codex-productiecode eerst read-only preflight en aparte gebruikers-GO; geen automatische merge.
-- **Main-integratie:** PR #12 op `main` sinds commit `63ab45acc7`. Voorheen beschreven featurebranchstatus is historisch; nieuwe volledige regressie/individuele acceptatie blijft apart.
+- **Main-integratie:** PR #12 (`63ab45acc7`) en PR #15 (`000399af`) vormen de gecontroleerde historische checkpoints. Volgende integraties volgen eigen PR en actuele tests; branchstatus, gebruikersacceptatie en daadwerkelijke merge blijven afzonderlijke feiten.
 - **Voorrang:** documentgoedkeuring betekent **geen** implementatieautorisatie, en schema-voorstellen zijn geen geïmplementeerde documentversies.
 
 ## Nieuwe gereedschappen en objecttypen — ontwikkelchecklist
