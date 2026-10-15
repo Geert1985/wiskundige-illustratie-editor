@@ -420,9 +420,12 @@
       lower.innerHTML=
         // Three separate bounded paths; the lower wedges are symmetric,
         // leave room for the icons, and stay within the 192px hub.
-        '<path class="radial-center-name-shape" d="M8 96 C50 111 142 111 184 96 L182 124 C137 140 55 140 10 124 Z"/>'+
-        '<path class="radial-center-control-left" d="M12 129 C36 138 64 143 96 143 L96 187 C59 185 29 164 12 129 Z"/>'+
-        '<path class="radial-center-control-right" d="M96 143 C128 143 156 138 180 129 C163 164 133 185 96 187 Z"/>';
+        // One gold separator at the name band; the lower wedges do not
+        // redraw it. The central divider is the sole additional gold line.
+        '<path class="radial-center-control-left" d="M11 126 C38 135 67 140 96 140 L96 187 C58 185 28 162 11 126 Z"/>'+
+        '<path class="radial-center-control-right" d="M96 140 C125 140 154 135 181 126 C164 162 134 185 96 187 Z"/>'+
+        '<path class="radial-center-name-shape" d="M8 94 C50 110 142 110 184 94 L181 126 C143 138 49 138 11 126 Z"/>'+
+        '<path class="radial-center-divider" d="M96 140 L96 186"/>';
       hub.append(lower);
       const labelButton=this.doc.createElement('button');
       labelButton.type='button';labelButton.className='radial-center-control radial-center-control-label';
