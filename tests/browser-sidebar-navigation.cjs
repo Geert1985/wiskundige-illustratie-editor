@@ -8,11 +8,12 @@ module.exports=async page=>{
   const categories=page.locator('#toolGrid > [data-tool-category]');
   const subgroups=page.locator('#toolGrid [data-tool-subgroup]');
   assert.equal(await categories.count(),8);
-  assert.equal(await subgroups.count(),5);
+  assert.equal(await subgroups.count(),4);
   assert.deepEqual(await categories.evaluateAll(ns=>ns.map(n=>n.open)),Array(8).fill(false));
-  assert.deepEqual(await subgroups.evaluateAll(ns=>ns.map(n=>n.querySelector('.tool-subgroup-toggle').getAttribute('aria-expanded'))),Array(5).fill('false'));
-  for(const summary of ['Lagen en objecten','Illustratie','Bediening']){
-    const section=page.locator('.sidebar > .sidebar-section').filter({has:page.locator('summary', {hasText:summary})}).first();
+  assert.deepEqual(await subgroups.evaluateAll(ns=>ns.map(n=>n.querySelector('.tool-subgroup-toggle').getAttribute('aria-expanded'))),Array(4).fill('false'));
+  assert.equal(await page.locator('#sidebarLayersPanel').isVisible(),false,'The layers panel starts inactive');
+  for(const summary of ['Illustratie','Bediening']){
+    const section=page.locator('#sidebarLayersPanel details').filter({has:page.locator('summary', {hasText:summary})}).first();
     assert.equal(await section.evaluate(el=>el.open),false,summary);
   }
   const before=await page.evaluate(()=>JSON.stringify(FZI.MathIllustration.editor.engine.toJSON()));
@@ -33,8 +34,8 @@ module.exports=async page=>{
   assert.equal(await categories.evaluateAll(ns=>ns.filter(n=>n.open).length),1);
   assert.equal(await page.locator('[data-tool-subgroup="driehoekconstructies"] .tool-subgroup-toggle').getAttribute('aria-expanded'),'true');
   await search.fill('punt op cirkel');
-  const split=page.locator('[data-tool-split="pointConstruction"]');
-  assert.equal(await split.isVisible(),true,'Search must include alternate split-menu tool choices');
+  const pointOnCircle=page.locator('[data-tool="construct:pointOnCircle"]');
+  assert.equal(await pointOnCircle.isVisible(),true,'Search must include nested construction choices');
   assert.equal(await page.locator('[data-tool-subgroup="puntconstructies"] .tool-subgroup-toggle').getAttribute('aria-expanded'),'true');
   await search.fill('niet-bestaande-meetkundige-tool');
   assert.equal(await page.locator('#toolSearchFeedback').textContent(),'Geen gereedschap gevonden.');
@@ -65,5 +66,5 @@ module.exports=async page=>{
   }
   await page.setViewportSize(oldViewport);
   await page.reload();
-  return {categories:8,subgroups:5,defaultCollapsed:'passed',keyboardDisclosure:'passed',liveSearch:'passed',splitSearch:'passed',restoreState:'passed',documentUnchanged:'passed',responsiveChecks:3};
+  return {categories:8,subgroups:4,defaultCollapsed:'passed',keyboardDisclosure:'passed',liveSearch:'passed',splitSearch:'passed',restoreState:'passed',documentUnchanged:'passed',responsiveChecks:3};
 };

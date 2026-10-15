@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.7 (M7-VEC-FUND benoeming en goedkeuring, 2026-10-15)
-Status: `main` bevat PR #12 (UI-RADIAL/REG-2), geverifieerd bij commit `63ab45acc7e94b120a5fb052840c199816399afd`. Dat bewijst integratie van de broncode, niet afzonderlijke gebruikersacceptatie of een nieuwe volledige Node-/Edge-regressie. De resterende historische checkpoints hieronder blijven bewaard.
+Version: 2.8.8 (STAB-1 integratie- en regressiecontrole, 2026-10-15)
+Status: actuele gecontroleerde basis `main` = `ccacb0d` (PR #13, UI-RADIAL-11/12) boven op PR #12. STAB-1 brengt de auditbevindingen op deze nieuwste basis opnieuw in kaart; zie het STAB-1-rapport voor uitgevoerde tests, regressiefixes en de eindstatus. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-15
 
 > **Lees eerst:** [AGENTS.md](../AGENTS.md), [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en de nieuwste toevoegingen hieronder. De volledige eerdere M1–M20-backlog, FUN-OBJ/MAT-OBJ-voorstellen en historische tests blijven behouden.
@@ -1016,3 +1016,12 @@ De goedgekeurde **Geometrie**-preview wordt de **visuele standaard** voor alle e
 **Architectuur:** één gescopeerd CSS-systeem onder `.radial-detail-pane`, en één idempotente `RadialProperties.decoratePropertySections()`-presentatiehelper die de bestaande `SEGMENT_ICONS` hergebruikt. Geen duplicatie van object-specifieke propertypanels, geen nieuwe model-/commandopaden, geen aanpassing van bestaande permissies of Undo/Redo.
 
 **Validatie:** GitHub-broncontrole uitgevoerd; handmatige toetsing op verschillende objecttypes, fullscreen, kleine vensters en keyboardnavigatie vereist; geen automatische/browsertests uitgevoerd.
+
+## Roadmap v2.8.8 — STAB-1: integratie en regressie (2026-10-15)
+
+**Uitgangsbasis:** branch `codex/stab-1-integration-regression` fast-forward bijgewerkt naar actuele `origin/main` `ccacb0ddeb54d561fe0eddbc5d2280515fd67f74` (PR #13). De audit `WIE-STAB-1-Architectuur-en-Testdekkingsaudit-v1.0.0.md` onderzocht de eerdere `main`-HEAD `8603355`; verschillen zijn vóór aanpassing opnieuw gecontroleerd.
+
+- Vijf auditconflicten zijn op actuele code en tests herbeoordeeld; het scriptmanifest en de nieuwe tabstructuur zijn bijgewerkt en blijven door regressieasserties bewaakt.
+- JavaScript-cache-invalidering gebruikt één gedeeld release-token voor de 49 klassieke scripts; de Edge-test blijft een verouderde gecachte `model.js` injecteren en controleert tekencompatibiliteit.
+- Gerichte Edge-dekking omvat radiale eigenschappen/bronrollen, UI-TABS, kleurenpalet, lagen, undo/redo en regio-label/scroll. UI-RADIAL-11/12 en layer-multidrag van PR #13 zijn in de volledige suite meegenomen.
+- Technisch testbesluit en open handmatige acceptatie: [STAB-1-implementatie- en testrapport](STAB-1-IMPLEMENTATION-AND-TEST-REPORT.md). Geen merge naar `main` vanuit STAB-1.

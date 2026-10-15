@@ -5,8 +5,11 @@ module.exports = async page => {
   await page.route(pattern, route => route.fulfill({ contentType: 'text/javascript', body: cachedModel }));
   try {
     await page.reload();
-    const versions = await page.evaluate(() => Array.from(document.scripts, script => new URL(script.src).searchParams.get('v')));
-    assert.ok(versions.every(Boolean)); assert.equal(new Set(versions).size, 1);
+    const versions = await page.evaluate(() => {const rows=Array.from(document.scripts,script=>{const url=new URL(script.src);return [url.pathname.split('/').at(-1),url.searchParams.get('v')];});return Object.fromEntries(rows);});
+    assert.ok(Object.values(versions).every(Boolean));
+    assert.deepEqual(new Set(Object.values(versions)),new Set(['stab-1-20261015']));
+    assert.equal(versions['editor.js'],'stab-1-20261015');
+    assert.equal(versions['editor-radial-properties.js'],'stab-1-20261015');
     for (const type of ['line', 'straight', 'ray', 'vector']) {
       await require('./browser-tool-menu.cjs').choose(page,`[data-tool="${type}"]`);
       const start = await page.evaluate(() => FZI.MathIllustration.editor.transform().mathToScreen({ x: -2, y: -1 }));
@@ -19,5 +22,5 @@ module.exports = async page => {
       assert.deepEqual(await page.evaluate(() => FZI.MathIllustration.editor.engine.renderer.bounds), bounds);
     }
   } finally { await page.unroute(pattern); }
-  return { cachedModelWithoutRegistry: 'passed', allFourDrawingTools: 'passed', noPan: 'passed', consistentAssetVersion: 'passed' };
+  return { cachedModelWithoutRegistry: 'passed', allFourDrawingTools: 'passed', noPan: 'passed', perAssetCacheVersionParameters: 'passed' };
 };

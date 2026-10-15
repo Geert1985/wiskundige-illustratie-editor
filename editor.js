@@ -110,7 +110,7 @@
       for(const [selector,operation] of [['[data-delete-selected]','object.delete'],['[data-duplicate-selection]','object.duplicate']])for(const button of this.document.querySelectorAll(selector))button.disabled=!this.selectedIds.length || !this.allowed(operation,{ids:this.selectedIds});
     }
     updateObject(id,patch) {
-      const object=this.engine.get(id);if(!object)return null;if(!this.runtime)MI.normaliseObject({...object,...patch,style:patch.style?{...object.style,...patch.style}:object.style});
+      const object=this.engine.get(id);if(!object)return null;if(!this.runtime){const candidate={...object,...patch,style:patch.style?{...object.style,...patch.style}:object.style};delete candidate.regionGeometry;delete candidate.regionArea;delete candidate.regionStatus;MI.normaliseObject(candidate);}
       const fields=MI.PermissionFields.patch(object,Object.fromEntries(Object.entries(patch).filter(([key])=>key!=='id'&&key!=='type'&&key!=='visible'&&key!=='locked'&&key!=='construction'&&key!=='constructionValid'))).filter(f=>{
         const match=f.path.match(/^vertices\[(\d+)\]\.(x|y)$/),value=match?object.vertices[Number(match[1])][match[2]]:f.path.split('.').reduce((o,k)=>o?.[k],object);return JSON.stringify(value)!==JSON.stringify(f.value);
       });
@@ -181,11 +181,15 @@
         const position=this.transform()?.mathToScreen({x:selectedPathPoint.x,y:selectedPathPoint.y});
         if(position&&Math.hypot(position.x-event.clientX,position.y-event.clientY)<=8)return {object:selectedPathPoint,kind:'object'};
       }
+      const paintedObject=target?.closest?.('[data-object-id]'),painted=paintedObject&&n.canvas.contains(paintedObject)&&this.engine.get(paintedObject.getAttribute('data-object-id'));
+      // A real SVG hit identifies the visually topmost overlapping point.
+      // Use the enlarged radius only when the pointer is on empty canvas.
+      if(painted?.type==='point'&&this.canvasSelectable(painted))return {object:painted};
       // Points can be visually small or partially obscured by nearby SVG.
-      // Expand the hit radius, without hijacking draggable labels/endpoints.
+      // Use the shared 8 CSS-pixel radius, without hijacking labels/endpoints.
       if(this.tool==='select'&&this.navigationMode!=='pan'&&
           !target?.closest?.('.object-label,.fzi-polygon-vertex,.fzi-line-endpoint')){
-        const t=this.transform();let nearest=null,nearestDistance=11;
+        const t=this.transform();let nearest=null,nearestDistance=8;
         for(const candidate of this.engine.model.objects){
           if(candidate.type!=='point'||!this.canvasSelectable(candidate))continue;
           const position=t?.mathToScreen({x:candidate.x,y:candidate.y});
@@ -194,7 +198,6 @@
         }
         if(nearest)return {object:nearest,kind:'object'};
       }
-      const paintedObject=target?.closest?.('[data-object-id]'),painted=paintedObject&&n.canvas.contains(paintedObject)&&this.engine.get(paintedObject.getAttribute('data-object-id'));
       if(painted&&MI.LinearGeometry.isLinear(painted)) {
         let nearest=null,nearestDistance=8;
         for(const point of this.engine.model.objects) {
@@ -214,11 +217,11 @@
       if(this.canvasSelectable(object))return {object};
       const hit=point&&this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8});
       if(hit&&this.canvasSelectable(hit.object))return hit;
-      // Give thin circular and linear strokes a slightly wider pickup area
-      // in selection mode, without changing explicit label/endpoint handles.
+      // Keep thin circular and linear strokes on the same 8 CSS-pixel pickup
+      // rule as other canvas geometry; labels and endpoints remain explicit.
       if(point&&this.tool==='select'&&this.navigationMode!=='pan'&&
           !target?.closest?.('.object-label,.fzi-polygon-vertex,.fzi-line-endpoint')){
-        const nearby=this.engine.selectAt(point.x,point.y,{transform,tolerancePx:11});
+        const nearby=this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8});
         if(nearby&&['circle','line','straight','ray','vector'].includes(nearby.object?.type)&&
             this.canvasSelectable(nearby.object))return nearby;
       }

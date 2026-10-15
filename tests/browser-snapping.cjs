@@ -42,6 +42,7 @@ module.exports = async function verifySnapping(page) {
   await page.mouse.up();
   // A selected endpoint independently snaps to grid; its other endpoint is untouched.
   await load([{ id: 'l', type: 'line', x1: .3, y1: .3, x2: 1.3, y2: .3 }], true);
+  await page.locator('#sidebarLayersTab').click();
   await page.locator('[data-select-object="l"]').click();
   await page.locator('.fzi-line-endpoint[data-endpoint="end"]').waitFor();
   const handle = await page.locator('.fzi-line-endpoint[data-endpoint="end"]').boundingBox();
@@ -51,6 +52,7 @@ module.exports = async function verifySnapping(page) {
   await page.mouse.up(); line = (await objects()).find(o => o.id === 'l');
   close(line.x1, .3); close(line.y1, .3); close(line.x2, 2); close(line.y2, 0);
   await load([{ id: 'p', type: 'point', x: 2, y: 1 }, { id: 'l', type: 'line', x1: .3, y1: .3, x2: 1.3, y2: .3 }]);
+  await page.locator('#sidebarLayersTab').click();
   await page.locator('[data-select-object="l"]').click();
   await page.locator('.fzi-line-endpoint[data-endpoint="end"]').waitFor();
   const pointHandle = await page.locator('.fzi-line-endpoint[data-endpoint="end"]').boundingBox();
