@@ -581,6 +581,7 @@
         const references=MI.ConstructionService.referencesForRole(o,role,kind).filter(ref=>kind!=='lineBetweenPoints'||o.type==='point'&&!ref.part);
         for(const ref of references) {
           if(role==='point')add(ref,distance(MI.ConstructionService.point(o,ref)));
+          else if(role==='ellipse'){const nearest=MI.EllipseGeometry.nearest(o,screen,p=>transform.mathToScreen(p));add(ref,nearest?.distance??Infinity);}
           else if(role==='line'||role==='segment')add(ref,segment(o,ref));
           else if((role==='figure'||role==='triangle')&&o.type==='polygon')add(ref,MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
           else if(role==='polygon'&&o.type==='polygon')add(ref,MI.PolygonGeometry.contains(o.vertices,point)?0:Math.min(...o.vertices.map((v,index)=>segment(o,{part:'edge',index}))));
@@ -607,7 +608,7 @@
     }
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
-      if(state.radialPlacement){this.radialPathPlacement(point,event,state);return;}
+      if(state.radialPlacement||state.pathPlacement){this.radialPathPlacement(point,event,state);return;}
       if(kind==='ellipseByFociAndSum'&&state.sources.length===2){
         const preview=this.ellipsePlacementPreview(point);if(!preview?.valid){this.status('Deze positie geeft geen geldige ellips ('+(preview?.reasonCode||'ONGELDIGE_GEOMETRIE')+'). Beweeg de muis naar buiten het brandpuntsegment.');this.invalidate();return;}
         const payload={toolId:'construct:ellipseByFociAndSum',sources:state.sources.map(ref=>({...ref})),sumDistance:preview.sumDistance};
@@ -634,6 +635,7 @@
       state.pointerId=event.pointerId; this.interaction=state;
       if(this.nodes.canvasWrap.setPointerCapture)try{this.nodes.canvasWrap.setPointerCapture(event.pointerId);}catch(_){}
       if(kind==='ellipseByFociAndSum'&&state.sources.length===2){state.ellipsePlacement=true;this.interaction=state;this.status(this.constructionHint(kind,2));this.invalidate();return;}
+      if(kind==='pointOnEllipse'&&state.sources.length===1){state.pathPlacement=true;this.interaction=state;this.status(this.constructionHint(kind,1));this.invalidate();return;}
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       if(kind==='angleDirections')state.sources=MI.ConstructionService.selectAngleArms(state.sources,state.anglePicks,new Map(this.engine.model.objects.map(o=>[o.id,o])));
       this.interaction=null;this.release(state);
@@ -711,7 +713,7 @@
         selectionIdsBefore:selectionBefore,pointerId:null
       };
       const hint=plan.mode==='placement'
-        ?'Klik op het bronobject om de puntpositie vast te leggen.'
+        ?(kind==='pointOnEllipse'?'Klik nabij de ellipscontour om de puntpositie vast te leggen.':'Klik op het bronobject om de puntpositie vast te leggen.')
         :this.constructionHint(kind,plan.sourceIndex===0?1:0);
       this.status((source.name||objectId)+' is vastgelegd. '+hint);
       this.invalidate();
@@ -725,7 +727,7 @@
         this.status('De bron van deze constructie is niet beschikbaar.');return;
       }
       const screen=this.transform().mathToScreen(point);
-      let distance=Infinity;
+      let distance=Infinity,parameter;
       if(kind==='pointOnCircle'&&source.type==='circle'){
         const edge=this.transform().mathToScreen({x:source.cx+source.r,y:source.cy});
         const center=this.transform().mathToScreen({x:source.cx,y:source.cy});
@@ -739,22 +741,44 @@
         const t=length?Math.max(0,Math.min(1,
           ((screen.x-a.x)*dx+(screen.y-a.y)*dy)/length)):0;
         distance=Math.hypot(screen.x-a.x-t*dx,screen.y-a.y-t*dy);
+      }else if(kind==='pointOnEllipse'&&source.type==='ellipse'){
+        const nearest=MI.EllipseGeometry.nearest(source,screen,p=>this.transform().mathToScreen(p));
+        if(nearest){distance=nearest.distance;parameter=nearest.parameter;}
       }
       if(distance>12){
-        this.status('Klik binnen 12 pixels van de geselecteerde lijn of cirkelrand.');
+        this.status(kind==='pointOnEllipse'?'Klik binnen 12 pixels van de ellipscontour.':'Klik binnen 12 pixels van de geselecteerde lijn of cirkelrand.');
         return;
       }
-      const parameter=MI.ConstructionService.projectParameter(kind,source,ref,point);
+      if(parameter==null)parameter=MI.ConstructionService.projectParameter(kind,source,ref,point);
       try{
         this.changeDocument(()=>{
           this.selectedIds=this.execute('construction.create',{
             toolId:this.tool,sources:state.sources,parameter
           }).result.map(o=>o.id);
         });
-        this.interaction=null;this.tool='select';
+        this.interaction=null;this.tool='select';this.engine.renderer.preview=null;
         this.status('Afhankelijk punt toegevoegd.');
       }catch(error){this.status(error.message);}
       this.invalidate();
+    }
+    ellipsePointPlacementPreview(point){
+      const state=this.interaction,ref=state?.sources?.[0],source=ref&&this.engine.get(ref.objectId);
+      if(!state||(!state.pathPlacement&&!state.radialPlacement)||this.tool!=='construct:pointOnEllipse'||!source)return null;
+      const transform=this.transform(),screen=transform.mathToScreen(point),nearest=source.type==='ellipse'&&source.constructionValid!==false?MI.EllipseGeometry.nearest(source,screen,p=>transform.mathToScreen(p)):null;
+      const valid=!!nearest&&nearest.distance<=12;
+      this.engine.renderer.preview={type:'point-placement',point:valid?nearest.point:point,valid};
+      return {valid,nearest};
+    }
+    renderPointPlacementPreview(){
+      const svg=this.nodes.canvas.querySelector('svg');if(!svg)return;
+      const markup=this.engine.renderer.renderPreview(),current=svg.querySelector('[data-point-placement-preview]');
+      if(!markup){current?.remove();return;}
+      const range=this.document.createRange();range.selectNodeContents(svg);const fragment=range.createContextualFragment(markup),next=fragment.firstElementChild;
+      if(current)current.replaceWith(next);else svg.appendChild(next);
+    }
+    queuePointPlacementPreview(){
+      if(this.pointPlacementPreviewFrame!=null||!this.window.requestAnimationFrame)return;
+      this.pointPlacementPreviewFrame=this.window.requestAnimationFrame(()=>{this.pointPlacementPreviewFrame=null;if(this.initialized&&this.interaction?.mode==='construction'&&(this.interaction.pathPlacement||this.interaction.radialPlacement)&&this.tool==='construct:pointOnEllipse')this.renderPointPlacementPreview();});
     }
     begin(state, event) {
       this.clearHover();
@@ -934,7 +958,7 @@
         if (!this.tool.startsWith('construct:') && this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
         return;
       }
-      if(state.mode==='construction'){if(state.ellipsePlacement){const point=this.pointer(event);if(point){this.ellipsePlacementPreview(point);this.queueEllipsePlacementPreview();}return;}this.queueHover(event);return;}
+      if(state.mode==='construction'){if(state.ellipsePlacement){const point=this.pointer(event);if(point){this.ellipsePlacementPreview(point);this.queueEllipsePlacementPreview();}return;}if((state.pathPlacement||state.radialPlacement)&&this.tool==='construct:pointOnEllipse'){const point=this.pointer(event);if(point){this.ellipsePointPlacementPreview(point);this.queuePointPlacementPreview();}return;}this.queueHover(event);return;}
       if (state.mode==='polygon') { if(event.isPrimary===false || (state.pointerId!=null && event.pointerId!==state.pointerId)) return; const point=this.pointer(event); if(point) { state.result=this.polygonResult(point); this.polygonPreview(); } return; }
       if (event.pointerId !== state.pointerId) return;
       state.lastPointer={clientX:event.clientX,clientY:event.clientY};
@@ -1005,6 +1029,7 @@
     }
     cancel() {
       if(this.ellipsePreviewFrame!=null&&this.window.cancelAnimationFrame){this.window.cancelAnimationFrame(this.ellipsePreviewFrame);this.ellipsePreviewFrame=null;}
+      if(this.pointPlacementPreviewFrame!=null&&this.window.cancelAnimationFrame){this.window.cancelAnimationFrame(this.pointPlacementPreviewFrame);this.pointPlacementPreviewFrame=null;}
       if(this.circleDistributionPreview){const preview=this.circleDistributionPreview;this.circleDistributionPreview=null;this.engine.load(JSON.parse(preview.history.document));this.engine.model._nextId=preview.nextId;}
       this.clearHover();
       const state = this.interaction; this.interaction = null;
@@ -1268,7 +1293,7 @@
       const restore=object.textContent?.schema>=3&&typeof object.legacyStaticText==='string'?'<button type="button" data-text-restore="'+MI.escapeXml(object.id)+'"'+(this.allowed('text.restoreStatic',{id:object.id})?'':' disabled')+'>Oorspronkelijke statische tekst herstellen</button>':'';
       const richEdit=object.type==='text'&&!object.textBinding&&!object.construction?'<button type="button" class="secondary" data-rich-text-edit="'+MI.escapeXml(object.id)+'"'+(object.locked?' disabled':'')+'>Tekst bewerken</button>':'';
       const toolbar='<div class="object-toolbar">'+(richEdit?'<div class="object-edit-row">'+richEdit+'</div>':'')+'<div class="object-actions">'+restore+labelButton+(!this.runtime?actionIcon('data-group-selection','Groeperen','<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h5v5H7zM12 12h5v5h-5z"/>',this.selectedIds.length<2)+actionIcon('data-ungroup-selection','Groep opheffen','<path d="M3 8V3h5M16 3h5v5M21 16v5h-5M8 21H3v-5M7 7h5v5H7zM12 12h5v5h-5z"/>',!this.selectedGroups().length):'')+actionIcon('data-visibility-selection',this.selectedObjects().every(o=>o.visible!==false)?'Selectie verbergen':'Selectie tonen',eyeIcon(this.selectedObjects().every(o=>o.visible!==false)),!this.allowed('object.setVisibility',{ids:this.selectedIds,value:true}))+actionIcon('data-duplicate-selection','Dupliceren','<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/>')+actionIcon('data-lock-selection',this.selectedObjects().every(o=>o.locked)?'Ontgrendelen':'Vergrendelen','<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>')+actionIcon('data-delete-selected','Verwijder object','<path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7M14 10v7"/>',!this.editableSelection())+'</div></div>';
-      const pathParameter=!this.runtime&&MI.ConstructionService.pathKind(object.construction?.kind)?'<label>Positie op pad<input data-path-parameter type="range" min="0" max="'+(object.construction.kind==='pointOnCircle'?'.999':'1')+'" step=".001" value="'+object.construction.parameter+'"'+(object.locked?' disabled':'')+' aria-label="Positie op pad"><output>'+Number((object.construction.parameter*100).toFixed(1))+'%</output></label>':'';
+      const isEllipsePath=object.construction?.kind==='pointOnEllipse',pathParameter=!this.runtime&&MI.ConstructionService.pathKind(object.construction?.kind)?'<label>'+(isEllipsePath?'Parameter op ellips':'Positie op pad')+'<input data-path-parameter type="'+(isEllipsePath?'number':'range')+'" min="0" max="'+(object.construction.kind==='pointOnSegment'?'1':'.9999999999999999')+'" step="'+(isEllipsePath?'any':'.001')+'" value="'+object.construction.parameter+'"'+(object.locked?' disabled':'')+' aria-label="'+(isEllipsePath?'Parameter op ellips':'Positie op pad')+'"><output>'+Number((object.construction.parameter*100).toFixed(4))+'%</output></label>':'';
       const distribution=this.distributionInspector(object);
       const actions=info+this.constructionInputs(object)+pathParameter+distribution+detach+assignment;
       const kind=MI.escapeXml(({point:'Punt',line:'Lijnstuk',straight:'Rechte',ray:'Halfrechte',vector:'Vector',circle:'Cirkel',text:'Tekst',polygon:'Veelhoek',region:'Gebied',dimension:'Lengtemaat',angle:'Hoek'})[object.type]||object.type);
