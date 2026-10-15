@@ -139,6 +139,8 @@ Browser `pageErrors` van de uiteindelijke integrale run: 0.
 
 ### Aanvullende correctieronde
 
+**Correctiecommit:** `d3ae839` (`test: run region presentation in full Edge suite`).
+
 De regio-presentatietest was vóór deze correctieronde wel aanwezig en afzonderlijk selecteerbaar, maar ontbrak in het standaardpad van `tests/browser.cjs`. De standaard Edge-runner roept hem nu aan het einde aan en rapporteert `regionPresentation`. De check herstelt na afloop het normale viewport en sluit het paneel.
 
 De eerder gesimuleerde offsetwijziging is vervangen door een muisdrag van het SVG-regiolabel met asserts op de modeloffsets en zichtbare labelpositie vóór/na drag en na Undo/Redo. De opslag-/herlaadassertie blijft daarna actief. Downloadasserties in de bestaande browsercheck lezen de door Playwright beheerde tijdelijke downloadbestanden; de kopieën in `test-results` blijven beschikbaar als artefacten.
