@@ -61,7 +61,7 @@ module.exports = async page => {
   const lock=hub.locator('[data-radial-toggle="lock"]');
   assert.equal(await label.count(),1);
   assert.equal(await lock.count(),1);
-  assert.equal(await hub.locator('.radial-center-lower-skin path').count(),3);
+  assert.equal(await hub.locator('.radial-center-lower-skin path').count(),4);
   const bounds=await page.evaluate(() => {
     const hub=document.querySelector('.radial-center').getBoundingClientRect();
     const input=document.querySelector('.radial-center-input').getBoundingClientRect();
@@ -72,6 +72,17 @@ module.exports = async page => {
   assert.equal(await hub.locator('.radial-center-name-shape').count(),1);
   assert.equal(await hub.locator('.radial-center-control-left').count(),1);
   assert.equal(await hub.locator('.radial-center-control-right').count(),1);
+  assert.equal(await hub.locator('.radial-center-divider').count(),1);
+  const separator=await page.evaluate(()=>{
+    const hub=document.querySelector('.radial-center-lower-skin');
+    const name=hub.querySelector('.radial-center-name-shape');
+    const wedges=[...hub.querySelectorAll('.radial-center-control-left,.radial-center-control-right')];
+    return {nameStroke:getComputedStyle(name).stroke,
+      wedgesWithoutStroke:wedges.every(node=>getComputedStyle(node).stroke==='none'),
+      divider:getComputedStyle(hub.querySelector('.radial-center-divider')).stroke};
+  });
+  assert.ok(separator.wedgesWithoutStroke,'wedges must not duplicate the gold name border');
+
   const geometry=await page.evaluate(() => {
     const input=document.querySelector('#radialPropertiesWheel input.radial-center-input');
     const control=document.querySelector('#radialPropertiesWheel button.radial-center-control-label');
