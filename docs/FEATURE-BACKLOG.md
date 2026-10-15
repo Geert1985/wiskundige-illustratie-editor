@@ -1,10 +1,10 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.9.0 (DOC-RADIAL-1 status consolidation, 2026-10-14)
-Status: **historical `main` baseline** f403984 on 2026-10-13, plus current featurebranch addendum 2026-10-14. UI-RADIAL-1–9 are now implemented on `codex/ui-radial-7-point-context-constructions` with positive staged user feedback, no assistant-run automated tests in this UI branch sequence, and no merge to `main`. REG-2 is in its feature-branch lineage. Earlier tasks and snapshots below are preserved for historical traceability; use UI-RADIAL-9/roadmap v2.8.0 for current radial behavior.
-Date: 2026-10-14
+Version: 1.9.1 (geactualiseerde main-status en M8-design-gates, 2026-10-15)
+Status: UI-RADIAL/REG-2 staan sinds merge PR #12 op `main` (referentiecommit `63ab45acc7`). Dit is geen nieuwe Node-/Edge-test of afzonderlijke gebruikersacceptatie. De bestaande historische tijdlijn hieronder blijft intact.
+Date: 2026-10-15
 
-> **Actuele bron voor de radiale UI:** [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md), [AGENTS.md](../AGENTS.md), [roadmap v2.8.0](DEVELOPMENT-ROADMAP.md). UI-R1–R3/REG-2-historische werkvolgorde is geen actuele startopdracht voor reeds uitgevoerde featurebranchstappen.
+> **Normatieve ontwerpen:** [M8a — Ellipsen v1.0.0](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn door de gebruiker **goedgekeurd als ontwerp**, niet geïmplementeerd. [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md) definiëren huidige UI- en servicegrenzen; zie [roadmap](DEVELOPMENT-ROADMAP.md) voor status. M7a vectorfundament blijft wachtend op originele bron en oplossing van het M7a–c-nummerconflict.
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
 

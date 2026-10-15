@@ -1,10 +1,27 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.4 (UI-PANEL-1 shared contextual property design, 2026-10-14)
-Status: **current working-branch overview**: UI-RADIAL-1–9 are implemented on `codex/ui-radial-7-point-context-constructions`, manually reviewed in stages by the user, not merged to `main`, and not automatically retested in this development sequence. REG-2 and the sidebar/layer integration are present in the feature-branch lineage; this is NOT a claim of `main` integration or full release verification. Previous gates and historical statuses below refer to their original dated snapshots. Read the v2.8.0 addendum and `docs/UI-RADIAL-9-CONTRACT-DRIVEN.md` before following older UI-R1–R3 planning.
-Date: 2026-10-14
+Version: 2.8.5 (main-integratie en M8-design-gates, 2026-10-15)
+Status: `main` bevat PR #12 (UI-RADIAL/REG-2), geverifieerd bij commit `63ab45acc7e94b120a5fb052840c199816399afd`. Dat bewijst integratie van de broncode, niet afzonderlijke gebruikersacceptatie of een nieuwe volledige Node-/Edge-regressie. De resterende historische checkpoints hieronder blijven bewaard.
+Date: 2026-10-15
 
-> **Lees eerst:** [AGENTS.md](../AGENTS.md) en [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md). De oorspronkelijke gate- en roadmapteksten blijven als historische momentopname beschikbaar; v2.8.0 is de actuele status op de bovengenoemde ontwikkelbranch. De projectbrede roadmap en eerder goedgekeurde FUN-OBJ/MAT-OBJ-uitbreidingen blijven volledig behouden.
+> **Lees eerst:** [AGENTS.md](../AGENTS.md), [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en de nieuwste toevoegingen hieronder. De volledige eerdere M1–M20-backlog, FUN-OBJ/MAT-OBJ-voorstellen en historische tests blijven behouden.
+
+## Roadmap v2.8.5 — beslissingen en open kwaliteitsgates op 15 oktober 2026
+
+| Traject | Ontwerpstatus | Implementatie-/acceptatiestatus |
+|---|---|---|
+| **M8a — Ellipsen** | **Goedgekeurd**: [contract v1.0.0](M8a-ELLIPSEN-CONTRACT.md) | M8a-D voltooid; M8a-1 ellipsbron, M8a-2 punt-op-ellips, M8a-3 consolidatie **nog niet geïmplementeerd**; per uitvoeringsfase aparte GO |
+| **M8b — Parallellogrammen** | **Goedgekeurd**: [contract v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) | M8b-ontwerp voltooid; M8b-0 preflight, M8b-1 constructie, M8b-2 maten/UI en M8b-3 regressie/acceptatie **nog niet geïmplementeerd**; standaard na M8a-1-acceptatie |
+| **M7 vectorfundament** | Concept v1.0.0 opgesteld in *WIE - Vectoren*, maar niet gepubliceerd: originele bestand ontbreekt in deze publicatie | **Geen** implementatie- of ontwerpgoedkeuring bevestigd; de labelnaam “M7a” **botst** met bestaande roadmap M7a–c voor starre transformaties |
+| **Parabolen/hyperbolen** | Architectuurvoorstel besproken in *WIE - Kegelsneden* | Nog **geen** afzonderlijk goedgekeurde ontwerpcontracten of implementatieopdrachten |
+| **UI-RADIAL/REG-2** | Bestaande contracten en implementaties | Gemerged op `main` via PR #12; nieuw volledig regressie- en handmatig acceptatiebewijs niet uit deze docs-update afleidbaar |
+| **STAB-1** | Integratie-/regressiecontrole gepland | Afzonderlijke afronding/goedkeuring en eventuele nieuwe testresultaten nog te verifiëren |
+
+**Schema-grens:** de huidige code op de geverifieerde basis ondersteunt document v8, `regionSchema:1` en `constructionSchema:5`. M8a's voorgestelde v9/`ellipseSchema:1`/`constructionSchema:6` en M8b's daaropvolgende uitbreiding zijn **ontwerpbesluiten**, geen aanwezige productieschema's; vereisen preflight, migration/roundtrip en mixed-document/restricted-permission tests.
+
+**Nummerbeleid M7:** niet automatisch hernummeren. Eerst de oorspronkelijke vectorfundament-contracttekst beschikbaar maken en expliciet vaststellen of het label M7a voor vectoren óf voor starre transformaties wordt gebruikt.
+
+**Deze wijziging is documentatie-only:** geen productiecode, Node-/Edge-/browseruitvoering of nieuw test-PASS.
 
 ## Baseline
 User-reported 0A–0D PASS on chatgpt/math-illustration-stabilization, 0D HEAD 297b4d7c834fe0cd9f9b01bc3a43a7d592ef2713, 60/60 Node tests and Edge tests. Verify repository and user's manual acceptance before proceeding. User reports development has advanced beyond phase 0 and already includes bisectors, parallels, perpendiculars, tangents, area and circumference. Do not assume 0E is still pending; inspect actual HEAD and current backlog.

@@ -1,6 +1,6 @@
 # AGENTS.md — Wiskundige Illustratie Editor (WIE)
 
-**Versie:** 1.0.0 · **Datum:** 2026-10-14 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
+**Versie:** 1.0.1 · **Datum:** 2026-10-15 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
 **Doel:** persistente instructies voor Codex en andere code-assistenten, zonder eerder goedgekeurde implementaties onbedoeld terug te draaien.
 
 ## Eerst lezen en bronvoorrang
@@ -30,7 +30,7 @@
 - **Regiostijl:** bij `region` is de standaard kleuractie **Vulkleur** (`style.fill`), randkleur (`style.stroke`) is apart; expliciet `fill='none'` blijft transparant. Hergebruik de bestaande kleurenpicker, validatie en Undo/Redo.
 - **Oppervlakteweergave:** precisie voor cirkelsector/-segment en overige regio-oppervlakten via **slider 0–3 hele decimalen, standaard effectief 2**. De oude `precision:null` en `areaDisplay.position` mogen zonder schema-breaking migratie worden gelezen.
 - **Labelpositie:** de oppervlakte van een regio is geen apart besturingsmechanisme. `renderer.renderLabel`, `.object-label`, `data-label-id`, de bestaande muiscontroller en de normale `labelOffsetX/Y`-eigenschappen verzorgen selectie, versleping, permissies en Undo/Redo. **Geen Labelpositie-dropdown/offsetvelden** voor regiogebieden opnieuw introduceren. Behoud oude opgeslagen offsets bij import voor visuele compatibiliteit.
-- **Status:** UI-RADIAL-10 is op ontwikkelbranch geïmplementeerd, niet naar `main` gemerged, en de nieuwe fixes zijn nog niet handmatig beoordeeld of geautomatiseerd getest.
+- **Status:** UI-RADIAL-10 is via PR #12 naar `main` gemerged, en de nieuwe fixes zijn nog niet handmatig beoordeeld of geautomatiseerd getest.
 
 ## UI-TOOLBAR-1 — Geschiedenis en consistente iconen (2026-10-14)
 
@@ -38,7 +38,7 @@
 - **Teksteditor Ongedaan/Opnieuw:** als twee icoonknoppen in de rijke tekstopmaakbalk **direct na Rechts uitlijnen**, niet in de teksteditortitelbalk. IDs `richUndo`/`richRedo`, afzonderlijke rich-texthistory en sneltoetsen behouden.
 - **Titel:** `Wiskundige Illustratie Editor`. Knop **Opslaan** toont diskette-SVG; beide **Meer**-menu's hebben een passend driepuntjes-SVG en gelijke titelbalktypografie; **Toevoegen** in teksteditor gebruikt een plusteken-SVG.
 - De knoppen blijven toegankelijk (`aria-label`, tooltip, focus) en gebruiken **inline SVG**, gedeelde CSS en bestaande handlers; voeg geen dubbele/parallelle undo-implementatie toe. Zie [UI-TOOLBAR-1](docs/UI-TOOLBAR-1-HISTORY-AND-ICONS.md).
-- **Status:** op featurebranch geïmplementeerd, handmatige acceptatie en geautomatiseerde tests voor deze wijziging nog open, niet naar `main` gemerged.
+- **Status:** via PR #12 in `main` geïntegreerd; handmatige acceptatie en afzonderlijke regressietests staan nog open.
 
 ## UI-COLOR-1 — Gedeelde kleurkiezer (2026-10-14)
 
@@ -46,7 +46,7 @@
 - De kleurkiezer heeft **Huidig/Nieuw**-preview, twaalf benoemde presets in een 6×2-raster, een HEX-veld en een native kleurkiezer. Alle keuzes synchroniseren met dezelfde live objectpreview. Presets krijgen `aria-pressed`; HEX-validatie voorkomt bevestiging van ongeldige codes.
 - **Geen vulling** is alleen voor `style.fill`; bewaar `none` en onderscheid het van een ontbrekende fill (rendererstandaard). **Annuleren** moet de oorspronkelijke stijl herstellen, **Toepassen** moet bestaande transacties correct afsluiten.
 - Bewaar responsiviteit, focus, toetsenbordbediening en het visuele donkerblauw/gouden ontwerpsysteem. Zie [UI-COLOR-1](docs/UI-COLOR-1-PALETTE-REDESIGN.md).
-- **Status:** gepusht op featurebranch; handmatige acceptatie en automatische tests nog open, niet naar `main` gemerged.
+- **Status:** via PR #12 in `main` geïntegreerd; handmatige acceptatie en afzonderlijke regressietests staan nog open.
 
 ## UI-PANEL-1 — Uniforme contextuele eigenschappenpanelen (2026-10-14)
 
@@ -54,7 +54,15 @@
 - **Geen paneelkopieën:** definieer styling centraal in `editor.css` onder `.radial-detail-pane`. `RadialProperties.decoratePropertySections()` voegt idempotent decoratieve SVG-iconen toe aan bestaande `<details data-property-section><summary>`-secties, zonder nieuwe eventhandlers of duplicaatcontrols.
 - Behoud de **compacte paneelbreedte**, UI-RADIAL-10 viewportveilige scrollhoogte en sticky titel; de preview is visuele referentie, geen vergrotingsopdracht. Houd coördinatenvelden compact met naam links en waarde rechts.
 - Behoud native `details/summary`, toegankelijkheid, data-attributen, permissies, bestaande inspector-handler, Undo/Redo, open/dicht-status en filtergedrag. Nieuwe objecteigenschappen gebruiken dezelfde presentatiecomponenten.
-- **Status:** op ontwikkelbranch geïmplementeerd, niet naar `main` gemerged; handmatige acceptatie en tests nog open.
+- **Status:** via PR #12 in `main` geïntegreerd; handmatige acceptatie en afzonderlijke regressietests staan nog open.
+
+## Goedgekeurde ontwerpcontracten — status 2026-10-15
+
+- **M8a Ellipsen:** [v1.0.0](docs/M8a-ELLIPSEN-CONTRACT.md) goedgekeurd als ontwerp. `ellipse`, nieuwe constructierecepten en document v9/`ellipseSchema:1` zijn **niet** aanwezig op deze codebasis. Eerst een read-only Codex-preflight, daarna pas afzonderlijke gebruikers-GO voor M8a-1.
+- **M8b Parallellogrammen:** [v1.0.0](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md) goedgekeurd als ontwerp. Eén dynamisch vier-vertex-`polygon` op basis van twee bestaande punten, zijlengte en gerichte hoek. Eerst aparte preflight, daarna GO; M8a-implementatie en schema's opnieuw beoordelen.
+- **M7 vectorfundament:** ontwerptekst v1.0.0 uit andere chat nog niet beschikbaar voor GitHub-publicatie; de aanduiding “M7a” conflicteert met roadmap M7a–c voor starre transformaties. Geen stille hernummering of impliciete GO.
+- **Main-integratie:** PR #12 op `main` sinds commit `63ab45acc7`. Voorheen beschreven featurebranchstatus is historisch; nieuwe volledige regressie/individuele acceptatie blijft apart.
+- **Voorrang:** documentgoedkeuring betekent **geen** implementatieautorisatie, en schema-voorstellen zijn geen geïmplementeerde documentversies.
 
 ## Nieuwe gereedschappen en objecttypen — ontwikkelchecklist
 
