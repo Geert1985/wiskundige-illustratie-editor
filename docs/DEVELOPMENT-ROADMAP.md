@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.7 (M7-VEC-FUND benoeming en goedkeuring, 2026-10-15)
-Status: `main` bevat PR #12 (UI-RADIAL/REG-2), geverifieerd bij commit `63ab45acc7e94b120a5fb052840c199816399afd`. Dat bewijst integratie van de broncode, niet afzonderlijke gebruikersacceptatie of een nieuwe volledige Node-/Edge-regressie. De resterende historische checkpoints hieronder blijven bewaard.
+Version: 2.8.8 (STAB-1 integratie- en regressiecontrole, 2026-10-15)
+Status: actuele gecontroleerde basis `main` = `ccacb0d` (PR #13, UI-RADIAL-11/12) boven op PR #12. STAB-1 brengt de auditbevindingen op deze nieuwste basis opnieuw in kaart; zie het STAB-1-rapport voor uitgevoerde tests, regressiefixes en de eindstatus. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-15
 
 > **Lees eerst:** [AGENTS.md](../AGENTS.md), [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en de nieuwste toevoegingen hieronder. De volledige eerdere M1–M20-backlog, FUN-OBJ/MAT-OBJ-voorstellen en historische tests blijven behouden.
@@ -10,14 +10,14 @@ Date: 2026-10-15
 
 | Traject | Ontwerpstatus | Implementatie-/acceptatiestatus |
 |---|---|---|
-| **M8a — Ellipsen** | **Goedgekeurd**: [contract v1.0.0](M8a-ELLIPSEN-CONTRACT.md) | M8a-D voltooid; M8a-1 ellipsbron, M8a-2 punt-op-ellips, M8a-3 consolidatie **nog niet geïmplementeerd**; per uitvoeringsfase aparte GO |
+| **M8a — Ellipsen** | **Goedgekeurd**: [contract v1.0.0](M8a-ELLIPSEN-CONTRACT.md) | M8a-D voltooid; op `Codex/M8a`: geometrische kern, model/constructies en command-/permissielaag van M8a-1 geïmplementeerd en gericht getest. SVG-rendering, contourselectie en snapping zijn gericht in Node/Edge getest; zie [renderverslag](M8a-1-RENDER-SELECTION.md). Driestapsinteractie en eigenschappen zijn nu ook aangesloten en gericht in Edge getest, met expliciete previewmetingen en een pointerpreviewpad zonder volledige canvasredraw; zie [interactie- en eigenschappenverslag](M8a-1-INTERACTION-PROPERTIES.md). Volledige regressie, definitieve SVG/PNG-exportacceptatie en volledige M8a-1-acceptatie blijven open. M8a-2 en merge naar `main` blijven buiten deze stap. |
 | **M8b — Parallellogrammen** | **Goedgekeurd**: [contract v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) | M8b-ontwerp voltooid; M8b-0 preflight, M8b-1 constructie, M8b-2 maten/UI en M8b-3 regressie/acceptatie **nog niet geïmplementeerd**; standaard na M8a-1-acceptatie |
 | **M7-VEC-FUND — Vectorfundament** | **Ontwerp v1.0.0 goedgekeurd** op 15 oktober 2026: [contract](M7-VEC-FUND-CONTRACT.md). Historisch label `M7a` vervalt uitsluitend voor vectorfundament. | **Niet geïmplementeerd.** Read-only preflight vereist; afzonderlijke GO nodig voor productiecode, tests en branchwerk. `tasks-146` en `tasks-147` behoren inhoudelijk tot dit traject. |
 | **Parabolen/hyperbolen** | Architectuurvoorstel besproken in *WIE - Kegelsneden* | Nog **geen** afzonderlijk goedgekeurde ontwerpcontracten of implementatieopdrachten |
 | **UI-RADIAL/REG-2** | Bestaande contracten en implementaties | Gemerged op `main` via PR #12; nieuw volledig regressie- en handmatig acceptatiebewijs niet uit deze docs-update afleidbaar |
 | **STAB-1** | Integratie-/regressiecontrole gepland | Afzonderlijke afronding/goedkeuring en eventuele nieuwe testresultaten nog te verifiëren |
 
-**Schema-grens:** de huidige code op de geverifieerde basis ondersteunt document v8, `regionSchema:1` en `constructionSchema:5`. M8a's voorgestelde v9/`ellipseSchema:1`/`constructionSchema:6` en M8b's daaropvolgende uitbreiding zijn **ontwerpbesluiten**, geen aanwezige productieschema's; vereisen preflight, migration/roundtrip en mixed-document/restricted-permission tests.
+**Schema-grens:** de huidige code op de geverifieerde basis ondersteunt document v8, `regionSchema:1` en `constructionSchema:5`. Op `Codex/M8a` zijn v9/`ellipseSchema:1`/`constructionSchema:6` voor ellipsen geïmplementeerd met gerichte roundtrip- en restricted-projectietests; dit is nog geen main-integratie of volledige M8a-acceptatie. M8b's uitbreiding blijft een ontwerpbesluit.
 
 **Nummerbeleid M7 (besloten voor vectorfundament, 15 oktober 2026):** **M7-VEC-FUND** is de definitieve unieke identifier voor [Vectorfundament v1.0.0](M7-VEC-FUND-CONTRACT.md). Het oudere vectorlabel `M7a` is uitsluitend een historisch synoniem en wordt niet meer voor deze milestone gebruikt. **M7a–c — Starre transformaties** (`tasks-118`–`tasks-123`) behouden hun bestaande nummering. De oorspronkelijke tekst noemt `M7b` voor translatie en `M7f` voor vectoralgebra; de uiteindelijke namen en volgorde van die vervolgtrajecten vereisen nog aparte besluitvorming. De bestaande taakrefs blijven behouden; contractgoedkeuring is geen implementatie-GO.
 
@@ -1016,3 +1016,12 @@ De goedgekeurde **Geometrie**-preview wordt de **visuele standaard** voor alle e
 **Architectuur:** één gescopeerd CSS-systeem onder `.radial-detail-pane`, en één idempotente `RadialProperties.decoratePropertySections()`-presentatiehelper die de bestaande `SEGMENT_ICONS` hergebruikt. Geen duplicatie van object-specifieke propertypanels, geen nieuwe model-/commandopaden, geen aanpassing van bestaande permissies of Undo/Redo.
 
 **Validatie:** GitHub-broncontrole uitgevoerd; handmatige toetsing op verschillende objecttypes, fullscreen, kleine vensters en keyboardnavigatie vereist; geen automatische/browsertests uitgevoerd.
+
+## Roadmap v2.8.8 — STAB-1: integratie en regressie (2026-10-15)
+
+**Uitgangsbasis:** branch `codex/stab-1-integration-regression` fast-forward bijgewerkt naar actuele `origin/main` `ccacb0ddeb54d561fe0eddbc5d2280515fd67f74` (PR #13). De audit `WIE-STAB-1-Architectuur-en-Testdekkingsaudit-v1.0.0.md` onderzocht de eerdere `main`-HEAD `8603355`; verschillen zijn vóór aanpassing opnieuw gecontroleerd.
+
+- Vijf auditconflicten zijn op actuele code en tests herbeoordeeld; het scriptmanifest en de nieuwe tabstructuur zijn bijgewerkt en blijven door regressieasserties bewaakt.
+- JavaScript-cache-invalidering gebruikt één gedeeld release-token voor de 49 klassieke scripts; de Edge-test blijft een verouderde gecachte `model.js` injecteren en controleert tekencompatibiliteit.
+- Gerichte Edge-dekking omvat radiale eigenschappen/bronrollen, UI-TABS, kleurenpalet, lagen, undo/redo en regio-label/scroll. UI-RADIAL-11/12 en layer-multidrag van PR #13 zijn in de volledige suite meegenomen.
+- Technisch testbesluit en open handmatige acceptatie: [STAB-1-implementatie- en testrapport](STAB-1-IMPLEMENTATION-AND-TEST-REPORT.md). Geen merge naar `main` vanuit STAB-1.

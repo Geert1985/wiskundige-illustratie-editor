@@ -152,6 +152,8 @@
 
     renderPreview(clipBounds=this.bounds) {
       const preview = this.preview; if (!preview) return "";
+      if(preview.type==='ellipse')return '<g data-drawing-preview>'+this.renderObject({...preview,id:'ellipse-preview'},clipBounds)+'</g>';
+      if(preview.type==='ellipse-invalid')return '<g data-drawing-preview data-preview-valid="false"><line x1="'+number(this.mapX(preview.foci[0].x))+'" y1="'+number(this.mapY(preview.foci[0].y))+'" x2="'+number(this.mapX(preview.foci[1].x))+'" y2="'+number(this.mapY(preview.foci[1].y))+'" stroke="#b74343" stroke-width="2" stroke-dasharray="5 4"/><circle cx="'+number(this.mapX(preview.point.x))+'" cy="'+number(this.mapY(preview.point.y))+'" r="4" fill="#b74343"/>'+preview.foci.map(p=>'<circle cx="'+number(this.mapX(p.x))+'" cy="'+number(this.mapY(p.y))+'" r="4" fill="#9a7a32"/>').join('')+'</g>';
       if(preview.type==='angle' && preview.vertices.length===3) { try { MI.MeasurementGeometry.validateAngle(preview.vertices,preview.angleMark); return '<g data-drawing-preview>'+this.renderObject({type:'angle',angleMark:preview.angleMark,vertices:preview.vertices,id:'preview',style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5'}})+'</g>'; } catch(_) {} }
       if (preview.type === "polygon" || preview.type==='angle') return '<g data-drawing-preview><polyline points="'+preview.vertices.map(p=>this.mapX(p.x)+','+this.mapY(p.y)).join(' ')+'" fill="none" stroke="#9a7a32" stroke-width="2" stroke-dasharray="7 5"/>'+this.renderPolygonMeasurements(preview)+preview.vertices.map(p=>'<circle cx="'+this.mapX(p.x)+'" cy="'+this.mapY(p.y)+'" r="4" fill="#9a7a32"/>').join('')+'</g>';
       const sx = this.mapX(preview.start.x), sy = this.mapY(preview.start.y), ex = this.mapX(preview.end.x), ey = this.mapY(preview.end.y), dx = preview.end.x - preview.start.x, dy = preview.end.y - preview.start.y, length = Math.hypot(dx, dy);
@@ -176,7 +178,7 @@
     renderLabel(object, label, defaultDx, defaultDy, line) {
       let x, y;
       if (line) { x = this.mapX((object.x1 + object.x2) / 2); y = this.mapY((object.y1 + object.y2) / 2); }
-      else if (object.type === "circle") { x = this.mapX(object.cx); y = this.mapY(object.cy); }
+      else if (["circle","ellipse"].includes(object.type)) { x = this.mapX(object.cx); y = this.mapY(object.cy); }
       else { x = this.mapX(object.x); y = this.mapY(object.y); }
       const style = object.style || {};
       const labelColor = style.stroke && style.stroke !== "none" ? style.stroke : (style.fill || "#222");
@@ -240,6 +242,14 @@
       if (['straight', 'ray', 'vector'].includes(object.type)) {
         svg = this.renderDirected({...object,style},clipBounds);
         if (svg && object.showLabel) svg += this.renderLabel(object, object.name || object.id, 6, -6, true);
+      }
+      if(object.type==='ellipse'){
+        const resolved=MI.EllipseGeometry.fromDefinition(object);if(resolved.reasonCode!=='VALID')return '';
+        const cx=this.mapX(object.cx),cy=this.mapY(object.cy),rx=object.a*this.scale(),ry=object.b*this.scale(),angle=-Math.atan2(resolved.geometry.u.y,resolved.geometry.u.x)*180/Math.PI;
+        const clipId='ellipse-clip-'+Array.from(String(object.id)).map(ch=>ch.codePointAt(0).toString(16)).join('-');
+        const left=this.mapX(clipBounds.xMin),top=this.mapY(clipBounds.yMax),width=(clipBounds.xMax-clipBounds.xMin)*this.scale(),height=(clipBounds.yMax-clipBounds.yMin)*this.scale();
+        svg='<defs><clipPath id="'+clipId+'" clipPathUnits="userSpaceOnUse"><rect x="'+number(left)+'" y="'+number(top)+'" width="'+number(width)+'" height="'+number(height)+'"/></clipPath></defs><g clip-path="url(#'+clipId+')"><ellipse cx="'+cx+'" cy="'+cy+'" rx="'+rx+'" ry="'+ry+'" transform="rotate('+angle+' '+cx+' '+cy+')" '+strokeAttrs(style)+' fill="'+esc(style.fill??'none')+'"/></g>';
+        if(object.showLabel)svg+=this.renderLabel(object,object.name||object.label||object.id,8,-8);
       }
       if (object.type === "circle") {
         const cx = this.mapX(object.cx), cy = this.mapY(object.cy), r = object.r * this.scale();

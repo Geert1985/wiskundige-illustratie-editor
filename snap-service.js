@@ -44,14 +44,17 @@
     return result;
   }
 
+  function eligibleObjects(engine,excludeId){
+    const excluded=MI.ConstructionService.descendants(engine.model.objects,Array.isArray(excludeId)?excludeId:excludeId?[excludeId]:[]);
+    return engine.model.objects.filter(o=>o.visible!==false&&!(o.construction&&o.constructionValid===false)&&!excluded.has(o.id)&&MI.DocumentLayers.visible(engine.model.layers||[],o.id)&&(!engine.canSnap||engine.canSnap(o.id)));
+  }
   const geometryCache = new WeakMap();
   function snapCandidates(engine, excludeId) {
-    const excluded=MI.ConstructionService.descendants(engine.model.objects,Array.isArray(excludeId)?excludeId:excludeId?[excludeId]:[]);
-    const objects = engine.model.objects.filter(o => o.visible !== false && !(o.construction && o.constructionValid===false) && !excluded.has(o.id) && (!engine.canSnap || engine.canSnap(o.id)));
+    const objects=eligibleObjects(engine,excludeId);
     // Inspect geometry rather than trusting a revision counter: injected
     // service-input views may differ from the immutable production model.
     // One entry per model bounds cache lifetime even when exclusions change.
-    const key = JSON.stringify(objects.map(o => [o.id, o.type, o.x, o.y, o.x1, o.y1, o.x2, o.y2, o.cx, o.cy, o.r, o.vertices]));
+    const key = JSON.stringify(objects.map(o => [o.id, o.type, o.x, o.y, o.x1, o.y1, o.x2, o.y2, o.cx, o.cy, o.r, o.a, o.b, o.rotation, o.vertices]));
     const cached = geometryCache.get(engine.model);
     if (cached && cached.key === key) return cached.candidates;
     objects.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
@@ -92,7 +95,7 @@
   }
 
 
-  const PRIORITY = Object.freeze({ point: 0, "line-line-intersection": 1, "line-circle-intersection": 1, "circle-circle-intersection": 1, "line-endpoint": 2, "circle-center": 3, grid: 4 });
+  const PRIORITY = Object.freeze({ point: 0, "line-line-intersection": 1, "line-circle-intersection": 1, "circle-circle-intersection": 1, "line-endpoint": 2, "circle-center": 3, "ellipse-contour": 3, grid: 4 });
   function valid(point) { return point && Number.isFinite(point.x) && Number.isFinite(point.y); }
   function compare(a, b) {
     if (a.priority !== b.priority) return a.priority - b.priority;
@@ -119,6 +122,10 @@
         if (Number.isFinite(distancePx) && distancePx <= SnapService.tolerancePx + 1e-9) results.push({ point: { x: candidate.x, y: candidate.y }, snapped: true, kind: candidate.kind, ids: candidate.ids.slice(), grid: candidate.kind === "grid", priority: PRIORITY[candidate.kind], distancePx, constraint: null });
       };
       candidates.forEach(consider);
+      for(const object of eligibleObjects(engine,options.excludeIds||options.excludeId))if(object.type==='ellipse'){
+        const nearest=MI.EllipseGeometry.nearest(object,screen,p=>transform.mathToScreen(p));
+        if(nearest)consider({...nearest.point,kind:'ellipse-contour',ids:[object.id]});
+      }
       const step = engine.renderer.axisStep;
       if (engine.renderer.showGrid && Number.isFinite(step) && step > 0) consider({ x: Math.round(point.x / step) * step, y: Math.round(point.y / step) * step, kind: "grid", ids: [] });
       results.sort(compare);

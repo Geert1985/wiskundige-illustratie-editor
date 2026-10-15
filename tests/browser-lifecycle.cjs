@@ -10,7 +10,7 @@ module.exports = async function verifyLifecycle(page) {
   const doc = () => app(() => FZI.MathIllustration.editor.engine.toJSON());
   const screen = point => page.evaluate(point => FZI.MathIllustration.CoordinateTransform.forCanvas(FZI.MathIllustration.editor.engine).mathToScreen(point), point);
   const move = async point => { const p = await screen(point); await page.mouse.move(p.x, p.y); };
-  const select = id => page.locator(`[data-select-object="${id}"]`).click();
+  const select = async id => { if(!(await page.locator('#sidebarLayersPanel').isVisible()))await page.locator('#sidebarLayersTab').click();await page.locator(`[data-select-object="${id}"]`).click(); };
   const center = async locator => { const b = await locator.boundingBox(); assert.ok(b); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
   const begin = async mode => {
     if (mode === 'endpoint') await select('l'); else await select('p');
@@ -27,16 +27,20 @@ module.exports = async function verifyLifecycle(page) {
   // Startup: all services are injected before the first render, including restored documents.
   await page.evaluate(data => localStorage.setItem(FZI.MathIllustration.DraftStore.key, JSON.stringify(data)), fixture);
   await page.reload();
+  await page.locator('#sidebarLayersTab').click();
   assert.equal(await page.locator('#viewList [data-color-object]').count(), 0);assert.equal(await page.locator('[data-object-visibility="p"]').count(),1);
   assert.equal(await app(() => !!FZI.MathIllustration.editor.services.axis && !!FZI.MathIllustration.editor.services.resolver), true);
-  await page.locator('[data-select-object="p"]').click();await page.locator('[data-fill-object]').click();
+  await select('p');
+  await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.radialProperties.openAt({x:innerWidth/2,y:innerHeight/2},false);a.radialProperties.choose('appearance');});
+  await page.locator('[data-fill-object]').click();
   await page.locator('[data-editor-color]').evaluate(input => { input.value = '#123456'; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); });
   await page.locator('#colorApply').click();
   assert.equal(await app(() => FZI.MathIllustration.editor.engine.get('p').style.fill), '#123456');
-  await page.locator('[data-view-select="axes"]').click();
-  await page.locator('[data-axis-setting="showXAxis"]').click();
+  await page.locator('#navigationTools [data-view-select="axes"]').click();
+  await page.locator('#radialPropertiesWheel [data-radial-action="axes"]').click();
+  await page.locator('#propertiesSidebar [data-axis-setting="showXAxis"]').click();
   assert.equal(await app(() => FZI.MathIllustration.editor.engine.renderer.showXAxis), false);
-  await page.locator('[data-view-select="axes"]').click();
+  await page.locator('#propertiesClose').click();
   await require('./browser-tool-menu.cjs').choose(page,'[data-tool="point"]'); await move({ x: -2, y: -2 }); await page.mouse.down(); await page.mouse.up();
   assert.equal((await doc()).objects.length, 4);
   // CSS/SVG scaling and viewport zoom use the same CoordinateTransform for label deltas.
@@ -120,10 +124,10 @@ module.exports = async function verifyLifecycle(page) {
   await page.mouse.up();
   for (const [key, value] of Object.entries(view.patch)) close((await doc()).objects.find(o => o.id === 'l')[key], value);
   // Color/as changes go through full rendering, preserving hidden state and selection overlays.
-  await page.locator('[data-select-object="hidden"]').click();await page.locator('[data-style-color]').click();
+  await select('hidden');await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.radialProperties.openAt({x:innerWidth/2,y:innerHeight/2},false);a.radialProperties.choose('appearance');});await page.locator('[data-style-color]').click();
   await page.locator('[data-editor-color]').evaluate(input => { input.value = '#abcdef'; input.dispatchEvent(new Event('input')); input.dispatchEvent(new Event('change')); });
   await page.locator('#colorApply').click();
-  await page.locator('[data-view-select="axes"]').click(); await page.locator('[data-axis-setting="showXAxis"]').click();
+  await page.locator('#navigationTools [data-view-select="axes"]').click();await page.locator('#radialPropertiesWheel [data-radial-action="axes"]').click();await page.locator('#propertiesSidebar [data-axis-setting="showXAxis"]').click();await page.locator('#propertiesClose').click();
   assert.equal(await page.locator('[data-object-id="hidden"]').count(), 0);
   assert.equal(await page.locator('[data-object-id="l"].selected').count(), 0); // Axes configuration is a distinct context.
   await select('l');

@@ -22,7 +22,8 @@ module.exports = async page => {
   assert.equal(await page.evaluate(() => FZI.MathIllustration.editor.selectedId), 'text');
   await page.mouse.move(text.x + text.width * .8 + 20, text.y + text.height / 2); await page.mouse.up();
   assert.ok(await page.evaluate(() => FZI.MathIllustration.editor.engine.get('text').x > -2));
-  await page.locator('[data-select-object="c"]').click();
+  await page.locator('#sidebarLayersTab').click();await page.locator('[data-select-object="c"]').click();
+  await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.radialProperties.openAt({x:innerWidth/2,y:innerHeight/2},false);a.radialProperties.choose('geometry');});
   const before = await page.evaluate(() => FZI.MathIllustration.editor.engine.toJSON());
   await page.locator('[data-edit="r"]').fill('-1'); await page.locator('[data-edit="r"]').press('Tab');
   assert.deepEqual(await page.evaluate(() => FZI.MathIllustration.editor.engine.toJSON()), before);

@@ -110,7 +110,7 @@
       for(const [selector,operation] of [['[data-delete-selected]','object.delete'],['[data-duplicate-selection]','object.duplicate']])for(const button of this.document.querySelectorAll(selector))button.disabled=!this.selectedIds.length || !this.allowed(operation,{ids:this.selectedIds});
     }
     updateObject(id,patch) {
-      const object=this.engine.get(id);if(!object)return null;if(!this.runtime)MI.normaliseObject({...object,...patch,style:patch.style?{...object.style,...patch.style}:object.style});
+      const object=this.engine.get(id);if(!object)return null;if(!this.runtime){const candidate={...object,...patch,style:patch.style?{...object.style,...patch.style}:object.style};delete candidate.regionGeometry;delete candidate.regionArea;delete candidate.regionStatus;MI.normaliseObject(candidate);}
       const fields=MI.PermissionFields.patch(object,Object.fromEntries(Object.entries(patch).filter(([key])=>key!=='id'&&key!=='type'&&key!=='visible'&&key!=='locked'&&key!=='construction'&&key!=='constructionValid'))).filter(f=>{
         const match=f.path.match(/^vertices\[(\d+)\]\.(x|y)$/),value=match?object.vertices[Number(match[1])][match[2]]:f.path.split('.').reduce((o,k)=>o?.[k],object);return JSON.stringify(value)!==JSON.stringify(f.value);
       });
@@ -181,11 +181,15 @@
         const position=this.transform()?.mathToScreen({x:selectedPathPoint.x,y:selectedPathPoint.y});
         if(position&&Math.hypot(position.x-event.clientX,position.y-event.clientY)<=8)return {object:selectedPathPoint,kind:'object'};
       }
+      const paintedObject=target?.closest?.('[data-object-id]'),painted=paintedObject&&n.canvas.contains(paintedObject)&&this.engine.get(paintedObject.getAttribute('data-object-id'));
+      // A real SVG hit identifies the visually topmost overlapping point.
+      // Use the enlarged radius only when the pointer is on empty canvas.
+      if(painted?.type==='point'&&this.canvasSelectable(painted))return {object:painted};
       // Points can be visually small or partially obscured by nearby SVG.
-      // Expand the hit radius, without hijacking draggable labels/endpoints.
+      // Use the shared 8 CSS-pixel radius, without hijacking labels/endpoints.
       if(this.tool==='select'&&this.navigationMode!=='pan'&&
           !target?.closest?.('.object-label,.fzi-polygon-vertex,.fzi-line-endpoint')){
-        const t=this.transform();let nearest=null,nearestDistance=11;
+        const t=this.transform();let nearest=null,nearestDistance=8;
         for(const candidate of this.engine.model.objects){
           if(candidate.type!=='point'||!this.canvasSelectable(candidate))continue;
           const position=t?.mathToScreen({x:candidate.x,y:candidate.y});
@@ -194,7 +198,6 @@
         }
         if(nearest)return {object:nearest,kind:'object'};
       }
-      const paintedObject=target?.closest?.('[data-object-id]'),painted=paintedObject&&n.canvas.contains(paintedObject)&&this.engine.get(paintedObject.getAttribute('data-object-id'));
       if(painted&&MI.LinearGeometry.isLinear(painted)) {
         let nearest=null,nearestDistance=8;
         for(const point of this.engine.model.objects) {
@@ -214,11 +217,11 @@
       if(this.canvasSelectable(object))return {object};
       const hit=point&&this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8});
       if(hit&&this.canvasSelectable(hit.object))return hit;
-      // Give thin circular and linear strokes a slightly wider pickup area
-      // in selection mode, without changing explicit label/endpoint handles.
+      // Keep thin circular and linear strokes on the same 8 CSS-pixel pickup
+      // rule as other canvas geometry; labels and endpoints remain explicit.
       if(point&&this.tool==='select'&&this.navigationMode!=='pan'&&
           !target?.closest?.('.object-label,.fzi-polygon-vertex,.fzi-line-endpoint')){
-        const nearby=this.engine.selectAt(point.x,point.y,{transform,tolerancePx:11});
+        const nearby=this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8});
         if(nearby&&['circle','line','straight','ray','vector'].includes(nearby.object?.type)&&
             this.canvasSelectable(nearby.object))return nearby;
       }
@@ -410,6 +413,7 @@
       });
       for(const node of [n.toolInstructions,n.fullscreenHint])this.on(node,"change",e=>{if(e.target.matches("[data-region-create-extent]")){this.regionExtent=e.target.value;this.renderInstructions();}});
       this.on(n.selectionPanel, "change", e => {
+        const ellipseSum=e.target.closest('[data-ellipse-sum]');if(ellipseSum&&this.selectedId){const object=this.engine.get(this.selectedId),scale=this.engine.model.meta.measurement?.scale||1;try{if(!object||object.type!=='ellipse'||object.construction?.kind!=='ellipseByFociAndSum')throw Error('Alleen de afstandsom van een gekoppelde ellips kan hier worden gewijzigd.');this.changeDocument(()=>this.execute('construction.setSumDistance',{id:object.id,sumDistance:ellipseSum.valueAsNumber/scale}));}catch(error){this.status(error.message);this.invalidate();}return;}
         const extentControl=e.target.closest('[data-region-extent]');if(extentControl?.dataset?.regionExtent!=null&&this.selectedId){try{this.changeDocument(()=>this.execute('construction.setExtent',{id:this.selectedId,extent:extentControl.value}));}catch(error){this.status(error.message);}this.invalidate();return;}
         const regionControl=e.target.closest('[data-region-display]');if(regionControl?.dataset.regionDisplay&&this.selectedId){const key=regionControl.dataset.regionDisplay,object=this.engine.get(this.selectedId),value=regionControl.type==='checkbox'?regionControl.checked:key==='precision'?(regionControl.value===''?null:regionControl.valueAsNumber):key==='position.dx'||key==='position.dy'?regionControl.valueAsNumber:regionControl.value;let fields;if(key==='position.mode')fields=[{path:'areaDisplay.position',value:value==='offset'?{mode:'offset',dx:object.areaDisplay.position.dx||0,dy:object.areaDisplay.position.dy||0}:{mode:'auto'}}];else if(key==='position.dx'||key==='position.dy')fields=[{path:'areaDisplay.position',value:{mode:'offset',dx:key==='position.dx'?value:object.areaDisplay.position.dx||0,dy:key==='position.dy'?value:object.areaDisplay.position.dy||0}}];else fields=[{path:'areaDisplay.'+key,value}];try{this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields}));}catch(error){this.status(error.message);}this.invalidate();return;}
         const distribution=e.target.closest('[data-circle-distribution]');if(distribution?.dataset.circleDistribution&&this.selectedId){const historyBefore=this.circleDistributionPreview?.history||this.history.capture();try{if(this.circleDistributionPreview){this.engine.load(JSON.parse(historyBefore.document));this.engine.model._nextId=this.circleDistributionPreview.nextId;}const object=this.engine.get(this.selectedId),prior=this.engine.model.circleDistributions.find(d=>d.pointIds.includes(object.id)),count=distribution.dataset.circleDistribution==='count'?distribution.valueAsNumber:(prior?.count||1),startAngle=distribution.dataset.circleDistribution==='startAngle'?distribution.valueAsNumber*Math.PI/180:(prior?.startAngle??2*Math.PI*(object.construction?.parameter||0));this.execute('circleDistribution.set',{pointId:object.id,count,startAngle});this.history.record(historyBefore);}catch(error){this.status(error.message);}this.circleDistributionPreview=null;this.invalidate();return;}
@@ -604,6 +608,14 @@
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
       if(state.radialPlacement){this.radialPathPlacement(point,event,state);return;}
+      if(kind==='ellipseByFociAndSum'&&state.sources.length===2){
+        const preview=this.ellipsePlacementPreview(point);if(!preview?.valid){this.status('Deze positie geeft geen geldige ellips ('+(preview?.reasonCode||'ONGELDIGE_GEOMETRIE')+'). Beweeg de muis naar buiten het brandpuntsegment.');this.invalidate();return;}
+        const payload={toolId:'construct:ellipseByFociAndSum',sources:state.sources.map(ref=>({...ref})),sumDistance:preview.sumDistance};
+        this.interaction=null;this.release(state);this.engine.renderer.preview=null;
+        try{this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',payload).result.map(o=>o.id);});this.tool='select';this.status('Ellips toegevoegd.');}
+        catch(error){this.status(error.message);}
+        this.invalidate();return;
+      }
       let sources=this.constructionSourcesAt(point,event,state.sources);
       if(!sources){this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}
       // The selected object may fill a later role (e.g. circle as the second
@@ -621,12 +633,33 @@
       if(kind==='angleDirections'){state.anglePicks=state.anglePicks||[];state.anglePicks.push({...point});}
       state.pointerId=event.pointerId; this.interaction=state;
       if(this.nodes.canvasWrap.setPointerCapture)try{this.nodes.canvasWrap.setPointerCapture(event.pointerId);}catch(_){}
+      if(kind==='ellipseByFociAndSum'&&state.sources.length===2){state.ellipsePlacement=true;this.interaction=state;this.status(this.constructionHint(kind,2));this.invalidate();return;}
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       if(kind==='angleDirections')state.sources=MI.ConstructionService.selectAngleArms(state.sources,state.anglePicks,new Map(this.engine.model.objects.map(o=>[o.id,o])));
       this.interaction=null;this.release(state);
       try {let created=false;this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{}),...(state.extent?{extent:state.extent}:{})}).result.map(o=>o.id);created=true;});if(created){this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}else this.interaction={...state,sources:previousSources,pointerId:null};}
       catch(error){this.status(error.message);}
       this.invalidate();
+    }
+    ellipsePlacementPreview(point){
+      const state=this.interaction;if(!state||!state.ellipsePlacement||state.sources.length!==2)return null;
+      const foci=state.sources.map(ref=>this.engine.get(ref.objectId));if(foci.some(o=>!o||o.type!=='point'))return {valid:false,reasonCode:'INVALID_REFERENCE'};
+      const sumDistance=Math.hypot(point.x-foci[0].x,point.y-foci[0].y)+Math.hypot(point.x-foci[1].x,point.y-foci[1].y);
+      const result=MI.EllipseGeometry.resolve({kind:'ellipseByFociAndSum',sumDistance},foci);
+      state.sumDistance=sumDistance;state.previewReason=result.reasonCode;state.previewValid=result.reasonCode==='VALID';
+      this.engine.renderer.preview=state.previewValid?{type:'ellipse',cx:result.geometry.center.x,cy:result.geometry.center.y,a:result.geometry.a,b:result.geometry.b,rotation:result.geometry.rotation,style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5',fill:'none'}}:{type:'ellipse-invalid',foci:foci.map(o=>({x:o.x,y:o.y})),point:{...point}};
+      return {valid:state.previewValid,reasonCode:result.reasonCode,sumDistance};
+    }
+    renderEllipsePlacementPreview(){
+      const svg=this.nodes.canvas.querySelector('svg');if(!svg)return;
+      const r=this.engine.renderer,viewport=this.nodes.canvas.getBoundingClientRect?.(),transform=MI.CoordinateTransform.forViewport(r,viewport),clip=transform?.visibleBounds(viewport),markup=r.renderPreview(clip||r.bounds),current=svg.querySelector('[data-drawing-preview]');
+      if(!markup){current?.remove();return;}
+      const range=this.document.createRange();range.selectNodeContents(svg);const fragment=range.createContextualFragment(markup),next=fragment.firstElementChild;
+      if(current)current.replaceWith(next);else svg.appendChild(next);
+    }
+    queueEllipsePlacementPreview(){
+      if(this.ellipsePreviewFrame!=null||!this.window.requestAnimationFrame)return;
+      this.ellipsePreviewFrame=this.window.requestAnimationFrame(()=>{this.ellipsePreviewFrame=null;if(this.initialized&&this.interaction?.ellipsePlacement)this.renderEllipsePlacementPreview();});
     }
     setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.regionExtent=undefined;this.tool = tool;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
     // UI-RADIAL-9: generic adapter for any document object accepted by a
@@ -901,7 +934,7 @@
         if (!this.tool.startsWith('construct:') && this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
         return;
       }
-      if(state.mode==='construction'){this.queueHover(event);return;}
+      if(state.mode==='construction'){if(state.ellipsePlacement){const point=this.pointer(event);if(point){this.ellipsePlacementPreview(point);this.queueEllipsePlacementPreview();}return;}this.queueHover(event);return;}
       if (state.mode==='polygon') { if(event.isPrimary===false || (state.pointerId!=null && event.pointerId!==state.pointerId)) return; const point=this.pointer(event); if(point) { state.result=this.polygonResult(point); this.polygonPreview(); } return; }
       if (event.pointerId !== state.pointerId) return;
       state.lastPointer={clientX:event.clientX,clientY:event.clientY};
@@ -971,6 +1004,7 @@
        if(state.lastPointer && ['object','group','label','pan','circleDistributionPoint'].includes(state.mode))this.updateHover(state.lastPointer);
     }
     cancel() {
+      if(this.ellipsePreviewFrame!=null&&this.window.cancelAnimationFrame){this.window.cancelAnimationFrame(this.ellipsePreviewFrame);this.ellipsePreviewFrame=null;}
       if(this.circleDistributionPreview){const preview=this.circleDistributionPreview;this.circleDistributionPreview=null;this.engine.load(JSON.parse(preview.history.document));this.engine.model._nextId=preview.nextId;}
       this.clearHover();
       const state = this.interaction; this.interaction = null;
@@ -1194,6 +1228,20 @@
       if(object.type!=='angle'||this.selectedIds.length!==1)return '';const config=object.angleSettings||MI.AngleMeasurements.defaults,disabled=object.locked||!this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'angleSettings',value:{...config}}]})?' disabled':'',select=(key,label,options,extra='')=>'<label>'+label+'<select data-angle-setting="'+key+'" aria-label="'+label+'"'+disabled+extra+'>'+options.map(([value,text])=>'<option value="'+value+'"'+(config[key]===value?' selected':'')+'>'+text+'</option>').join('')+'</select></label>';
       return '<details data-property-section="angle-measurement" open><summary>Hoekmeting</summary>'+select('mode','Hoekbereik',[['smallest','Kleinste (0-180&#176;)'],['directed','Gericht (0-360&#176;)']],object.angleMark==='right'?' disabled':'')+select('unit','Hoekeenheid',[['document','Documentstandaard'],['deg','Graden (&#176;)'],['rad','Radialen (rad)']])+'<label>Hoekdecimalen<input data-angle-setting="precision" aria-label="Hoekdecimalen" type="number" min="0" max="10" step="1" placeholder="Documentstandaard" value="'+(config.precision??'')+'"'+disabled+'></label><label class="style-toggle"><input type="checkbox" data-angle-setting="showArc"'+(config.showArc?' checked':'')+disabled+'>Hoekboog tonen</label><p class="help-text">Referentieframe: cartesische documentassen. Bij ongerichte lijnen bepaalt de aangeklikte kant de hoekarm. Assen, halfrechten en vectoren behouden hun richting. Een gerichte hoek loopt van de eerste naar de tweede arm, tegen de klok in.</p></details>';
     }
+    ellipseInspector(object){
+      if(object.type!=='ellipse'||this.selectedIds.length!==1)return '';
+      const meta=this.engine.model.meta.measurement,info=this.engine.getConstructionInfo(object.id),valid=object.constructionValid!==false&&info?.valid!==false,esc=MI.escapeXml,format=(n,kind='length')=>Number.isFinite(n)?MI.MeasurementUnits.format(n,kind,meta):'niet beschikbaar';
+      let html='';
+      if(object.construction?.kind==='ellipseByFociAndSum'){
+        const source=this.engine.get(object.construction.sources[0]?.objectId),scale=meta?.scale||1;
+        html+='<label>Afstandsom S ('+esc(meta?.unit==='dimensionless'?'':meta?.unit||'u')+')<input data-ellipse-sum type="number" min="0" step="any" value="'+esc(Number((object.construction.sumDistance*scale).toFixed(meta?.precision??2)))+'" aria-label="Afstandsom S"'+(object.locked||this.runtime?' disabled':'')+'></label><p class="help-text">S = '+esc(format(object.construction.sumDistance))+'; invoer gebruikt de documenteenheid ('+esc(meta?.unit||'u')+'). Verandering wordt alleen opgeslagen als de ellips geldig blijft.</p>';
+        if(source)html+='<p class="help-text">F₁: '+esc(source.name||source.id)+'; F₂: '+esc(this.engine.get(object.construction.sources[1]?.objectId)?.name||object.construction.sources[1]?.objectId||'niet beschikbaar')+'</p>';
+      }
+      const geometry=valid?MI.EllipseGeometry.fromDefinition(object).geometry:null;
+      const rows=[['Centrum C',geometry?'('+format(geometry.center.x)+', '+format(geometry.center.y)+')':'niet beschikbaar'],['Grote halve as a',format(geometry?.a)],['Kleine halve as b',format(geometry?.b)],['Excentriciteit e',geometry?Number(geometry.e.toFixed(6)).toString():'niet beschikbaar'],['Oppervlakte πab',format(object.ellipseArea,'area')]];
+      html+='<details data-property-section="ellipse-geometry" open><summary>Ellipsgeometrie</summary>'+rows.map(([label,value])=>'<p><strong>'+label+':</strong> <output>'+esc(value)+'</output></p>').join('')+'<p class="help-text">a is de halve lange as; de volledige lange as is 2a.</p></details>';
+      return html;
+    }
     pointProjectionInspector(object) {
       if(object.type!=='point'||this.selectedIds.length!==1)return '';
       const config=object.coordinateProjections||MI.PointProjections.defaults,disabled=object.locked||!this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'coordinateProjections',value:{...config}}]})?' disabled':'';
@@ -1225,7 +1273,7 @@
       const actions=info+this.constructionInputs(object)+pathParameter+distribution+detach+assignment;
       const kind=MI.escapeXml(({point:'Punt',line:'Lijnstuk',straight:'Rechte',ray:'Halfrechte',vector:'Vector',circle:'Cirkel',text:'Tekst',polygon:'Veelhoek',region:'Gebied',dimension:'Lengtemaat',angle:'Hoek'})[object.type]||object.type);
       const heading='<div class="object-heading"><div>'+(this.selectedIds.length>1?'<strong>'+this.selectedIds.length+' objecten geselecteerd</strong>':'<input class="object-name-input" type="text" data-edit="name" aria-label="Objectnaam" value="'+MI.escapeXml(object.name)+'"'+(object.locked?' disabled':'')+'>')+'<span class="object-kind">'+(this.selectedIds.length>1?'Multiselectie':kind)+'</span></div>'+toolbar+'</div>';
-      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object);return;}
+      if(this.selectedIds.length>1 || object.locked) {panel.innerHTML=heading+'<p class="help-text">'+(this.editableSelection()?'Sleep een geselecteerd object om de hele selectie te verplaatsen.':'Ontgrendel om de selectie te bewerken.')+'</p>'+(this.selectedIds.length>1?this.commonInspector():'')+actions+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+this.ellipseInspector(object);return;}
       const displayNumber=value=>String(Number(Number(value).toFixed(2)));
       let html = '';
       const keys = MI.LinearGeometry.isLinear(object) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y"] }[object.type];
@@ -1247,7 +1295,7 @@
         const options=[['','Doorgetrokken'],['8 5','Gestreept'],['2 5','Gestippeld'],['8 4 2 4','Streep-punt']];
         if(!options.some(o=>o[0]===style.dash)) options.push([style.dash,'Eigen patroon']);
         html+='<div class="line-pattern-row"><span>Lijnpatroon</span><div class="line-patterns" role="group" aria-label="Lijnpatroon">'+options.map(([value,label])=>'<button type="button" class="secondary" data-style="dash" data-style-dash value="'+esc(value)+'" aria-label="'+label+'" title="'+label+'" aria-pressed="'+(style.dash===value)+'"><svg viewBox="0 0 60 14" aria-hidden="true"><line x1="3" y1="7" x2="57" y2="7" stroke="currentColor" stroke-width="2"'+(value?' stroke-dasharray="'+esc(value)+'"':'')+'/></svg></button>').join('')+'</div></div>';
-        if(['point','circle','polygon','region'].includes(object.type)) html+='<div class="inspector-color-row"><span>Vulkleur</span><button type="button" class="secondary inspector-color" data-fill-object="'+esc(object.id)+'" aria-label="Vulkleur wijzigen" title="Vulkleur wijzigen" style="--object-color:'+esc(style.fill==='none'?'transparent':style.fill)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
+        if(['point','circle','polygon','region','ellipse'].includes(object.type)) html+='<div class="inspector-color-row"><span>Vulkleur</span><button type="button" class="secondary inspector-color" data-fill-object="'+esc(object.id)+'" aria-label="Vulkleur wijzigen" title="Vulkleur wijzigen" style="--object-color:'+esc(style.fill==='none'?'transparent':style.fill)+'"><span class="color-swatch" aria-hidden="true"></span></button></div>';
       }
       html+='<label>Dekking<span class="stroke-slider"><input aria-label="Dekking" data-style="opacity" type="range" min="0" max="100" step="1" value="'+esc(style.opacity*100)+'"><output>'+esc(Math.round(style.opacity*100))+'%</output></span></label><p class="help-text">0% is onzichtbaar, 100% is volledig zichtbaar.</p></fieldset>';
       const split=html.indexOf('<details data-property-section="labels"'),appearance=html.indexOf('<fieldset');
@@ -1269,7 +1317,7 @@
         const output='<output>'+MI.escapeXml(object.constructionValid===false?'Niet beschikbaar':MI.RegionGeometry.format(object.regionArea,d,this.engine.model.meta.measurement))+'</output>';
         return extentControl+'<details data-property-section="region" open><summary>Oppervlakte</summary>'+visible+mode+slider+help+output+'</details>';
       })():'';
-      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+regionDisplay+html;
+      panel.innerHTML = heading+'<details data-property-section="relations" open><summary>Relaties en constructies</summary>'+actions+'</details>'+this.pointProjectionInspector(object)+this.angleInspector(object)+this.dynamicTextInspector(object)+regionDisplay+this.ellipseInspector(object)+html;
     }
     async exportImage(kind){
       try{

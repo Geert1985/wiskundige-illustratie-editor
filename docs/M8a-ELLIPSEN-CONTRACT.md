@@ -133,7 +133,7 @@ De circulaire grens `p→1/0` moet bij dragging zonder verouderde positie werken
 
 ### 4.1 Eén model, één graaf, geen parallelle engine
 
-Voeg getypeerd `ellipse` toe aan `IllustrationModel`. Voor M8a bestaat dit object **alleen als gekoppelde constructie**. Maak een zuivere, UI-onafhankelijke `EllipseGeometry`-service voor validatie, parameters, contourpunten, extrema, oppervlakte en dichtstbijzijnde-puntprojectie; `ConstructionService` blijft exclusief eigenaar van recepten, bronrollen, dependency resolution, invalid/recovery en computed fields. SVG, snapping, inspector en exports consumeren dezelfde afgeleide geometrie.
+Voeg getypeerd `ellipse` toe aan `IllustrationModel`. Een ellips is gekoppeld via brandpunten en afstandsom, of zelfstandig via de primaire definitieparameters `cx`, `cy`, `a`, `b` en `rotation`; het normatieve addendum in sectie 4.2 bepaalt duplicatie en ontkoppeling. Maak een zuivere, UI-onafhankelijke `EllipseGeometry`-service voor validatie, parameters, contourpunten, extrema, oppervlakte en dichtstbijzijnde-puntprojectie; `ConstructionService` blijft exclusief eigenaar van recepten, bronrollen, dependency resolution, invalid/recovery en computed fields. SVG, snapping, inspector en exports consumeren dezelfde afgeleide geometrie.
 
 Voorgestelde recepten (contractnamen voorlopig):
 
@@ -153,7 +153,7 @@ Voorgestelde recepten (contractnamen voorlopig):
 }
 ```
 
-`sumDistance` wordt opgeslagen in **modelafstand**, niet in schermpixels of naar fysieke eenheden omgerekend in de geometrische kernel. De UI mag de waarde via het bestaande `MeasurementUnits`-contract weergeven en bij author-invoer precies eenmaal omrekenen. Laat het voorgestelde `sumDistance`-veld niet zonder expliciete command- en normalisatievalidatie meelopen op het oudere generieke `parameter`-pad van punt-op-segment/cirkel.
+`sumDistance` wordt opgeslagen in **modelafstand**, niet in schermpixels of naar fysieke eenheden omgerekend in de geometrische kernel. De UI mag de waarde via het bestaande `MeasurementUnits`-contract weergeven en bij author-invoer precies eenmaal omrekenen. Het author-only commando `construction.setSumDistance` gebruikt `{id, sumDistance}` en weigert een ongeldige nieuwe waarde atomair. `construction.create` gebruikt voor dit recept uitsluitend het getypeerde `sumDistance`-veld. Laat het `sumDistance`-veld niet zonder expliciete command- en normalisatievalidatie meelopen op het oudere generieke `parameter`-pad van punt-op-segment/cirkel.
 
 ### 4.2 Object en documentformaat: voorlopig schemabesluit
 
@@ -166,7 +166,13 @@ Voorgestelde recepten (contractnamen voorlopig):
 - Oude readers die v9, `ellipseSchema:1` of constructionSchema 6 niet begrijpen, moeten atomair weigeren; geen impliciete downgrade naar polygonen of SVG-paden.
 - Legacydocumenten v1–v8 behouden betekenis en blijven leesbaar. Restricted export leidt versie/schemas af uit **alleen geprojecteerde**, toegestane objecten en recepten.
 
-De combinatie *ellips + REG-2-regio + rijke tekst + asreferenties + lagen* is een verplichte integratietest. Documentversie 9 en schema 6 zijn hier **een ontwerpvoorstel**, geen bestaand productiecontract; eventuele afwijking vereist aparte expliciete review.
+De combinatie *ellips + REG-2-regio + rijke tekst + asreferenties + lagen* is een verplichte integratietest. Documentversie 9 en schema 6 zijn het M8a-implementatiecontract.
+
+#### M8a-1 normatief addendum — zelfstandige ellipsen en duplicatie
+
+Een `ellipse` kan óf gekoppeld zijn via `ellipseByFociAndSum`, óf zelfstandig zijn gedefinieerd. Een gekoppelde ellips bewaart uitsluitend de twee puntbronnen en positieve `sumDistance`; de actuele contourvelden zijn berekend en worden niet in JSON opgeslagen. Een zelfstandige ellips bewaart definitieparameters `cx`, `cy`, `a`, `b` en `rotation`, waarbij `a ≥ b > 0` en `rotation` de richting van de halve lange as is. Dit zijn primaire definitiegegevens, geen cache of gefingeerde bronpunten.
+
+Duplicatie van een geldige gekoppelde ellips maakt standaard een zelfstandige ellips met dezelfde vorm en de bestaande duplicatie-offset toegepast op het centrum. Daarmee blijven de oorspronkelijke brandpuntbronnen onafhankelijk. Ontkoppelen bewaart de actuele opgeloste geometrie als zelfstandige definitie en is alleen toegestaan voor geldige, ontgrendelde ellipsen, conform de bestaande detach-regels. Een ongeldige gekoppelde ellips kan niet worden gedupliceerd of ontkoppeld. Beide vormen gebruiken documentversie 9 en `ellipseSchema:1`; het constructieschema 6 is vereist voor de gekoppelde vorm.
 
 ### 4.3 Renderer, selectie, snap en export
 
@@ -177,6 +183,8 @@ De combinatie *ellips + REG-2-regio + rijke tekst + asreferenties + lagen* is ee
 - Snap op de ellipscontour is een **virtueel kandidaatpunt**, geen opgeslagen documentobject en geen onbeperkte samplelijst. Respecteer uitsluiting van eigen/downstream-objecten, verborgen/vergrendelde bronregels, snaptolerantie en constructiecontext.
 - SVG en offline PNG moeten overeenkomen met de canvasgeometrie en mogen geen ongeldige path-attributen of stale geometry bevatten. Bewaar een vaste renderbudget- en foutgrens.
 - M8a introduceert geen algemene ellips-lijn/ellips-ellipsintersectie. De bestaande snappers mogen dit niet onterecht claimen.
+
+M8a-1 rendering/selectie-addendum: `EllipseGeometry.nearest` berekent contourafstand na een optionele affiene mapping, via hoofdassen en maximaal 96 bisectiestappen. Bij een meerduidige centrum-/asprojectie wordt deterministisch de positieve tweede hoofdas gekozen; voor een cirkelcentrum de positieve eerste hoofdas in de meetruimte. Puntselectie blijft voor ellipsen contourgericht, ook bij vulling. Marqueeselectie gebruikt analytische extrema voor volledige insluiting en contourkruisingen voor kruissectie; een klein kader geheel in het lege interieur selecteert de ellips niet. `ellipse-contour` is een virtuele snapkandidaat met dezelfde prioriteit als cirkelcentrum (3), voor raster (4) en na bestaande punten, snijpunten en eindpunten. De dichtstbijzijnde positie en CSS-pixelafstand bepalen de kandidaat; geen opgeslagen samples of nieuwe intersectietypen. De renderer bewaart de volledige numerieke precisie van de halve assen en gebruikt een clipgroep rond de geroteerde contour; labels blijven via het bestaande labelpad lopen.
 
 ### 4.4 Autorisatie
 
