@@ -1,9 +1,9 @@
 # M8a-2 — Punt op ellips
 
-**Documentversie:** 1.0.0
+**Documentversie:** 1.0.1
 **Uitgangsbasis:** `origin/main` op `000399afc52eb82519ff1a1832c1bb73b0169d15`
 **Featurebranch:** `codex/m8a-2-point-on-ellipse`
-**Status:** geïmplementeerd op featurebranch; regressieverificatie voltooid
+**Status:** door gebruiker functioneel geaccepteerd op 2026-10-15; geïntegreerd op `main` via [PR #16](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/16), mergecommit `ac3dc29f638de035fb51ef9360e53e6459ef10a8`
 
 ## Architectuurcontrole en testimpactmatrix
 
@@ -51,6 +51,17 @@ Gerichte tests:
 
 Eerste volledige Edge-poging stopte vóór alle tests omdat het al gelockte `experiments/text-editor-preflight`-pakket niet geïnstalleerd was (`pngjs` ontbrak). De bestaande `npm ci --prefix experiments/text-editor-preflight` herstelde de gedeclareerde testomgeving; de volledige suite slaagde daarna. Deze installatie wijzigde geen tracked manifests.
 
+## Onafhankelijke integratiecontrole en gebruikersacceptatie
+
+Na de gerapporteerde Codex-runs zijn drie gerichte correcties op de featurebranch uitgevoerd: het verouderde M8a-statusgedeelte in `AGENTS.md` is bijgewerkt, de instructie bij de radiale ellipsplaatsing is verduidelijkt en de Edge-exporttest verifieert nu het daadwerkelijke gekoppelde SVG-punt (ID en exacte schermcoördinaten) én gewijzigde PNG-pixels nabij dat punt wanneer de puntgroep wordt weggelaten.
+
+- [GitHub Actions — M8a-2 acceptance](https://github.com/Geert1985/wiskundige-illustratie-editor/actions/runs/38790665076), **poging 2: SUCCESS**.
+- Node 22 op Ubuntu: `npm ci`, `npm test` — **659 geslaagd, 0 fouten, 0 overgeslagen**.
+- Windows/Edge: `npm ci`, `npm ci --prefix experiments/text-editor-preflight`, `npm run test:edge`, `node tests/browser-ellipse-render.cjs`, `node tests/browser-ellipse-interaction.cjs` — **alle stappen geslaagd**.
+- Eerste Edge-poging stopte bij een bestaande teksteditor-test (`browser-inputs.cjs`, `#textDialog` niet zichtbaar binnen twee seconden). Zonder productiecodewijziging is de Edge-job opnieuw gedraaid en volledig geslaagd. De oorzaak van de eerste timeout is niet definitief vastgesteld; niet als bewezen opgelost beschouwen.
+- Gebruikersacceptatie: **geslaagd**, bevestigd op 2026-10-15.
+- Merge: [PR #16](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/16) → `main`, SHA `ac3dc29f638de035fb51ef9360e53e6459ef10a8`.
+
 ## Handmatige acceptatiechecklist
 
 - [x] Gereedschap via linker- en fullscreen-kiezer kiezen.
@@ -61,8 +72,8 @@ Eerste volledige Edge-poging stopte vóór alle tests omdat het al gelockte `exp
 - [x] Ongeldigheid/herstel, annuleren, lock en restricted bronrevocatie controleren.
 - [x] Opslaan/herladen en SVG/PNG-presentatie controleren.
 - [x] Geen browserfouten; previewmutaties veranderen de documentdata niet.
-- [ ] Handmatige visuele acceptatie door de gebruiker.
+- [x] Handmatige visuele acceptatie door de gebruiker — gebruiker bevestigde op 2026-10-15: 'test ok'.
 
 ## Technisch oordeel
 
-**GO voor technische review van M8a-2 op de featurebranch.** De gerichte en volledige Node/Edge-tests zijn geslaagd. **Geen merge naar `main`**; M8a-2-eindacceptatie en integratie wachten op gebruikersgoedkeuring. Handmatige visuele acceptatie blijft open.
+**GO — M8a-2 geaccepteerd en geïntegreerd in `main`.** De gebruiker heeft de functionaliteit op 2026-10-15 aanvaard. De onafhankelijke GitHub Actions-regressie bevestigde 659/659 Node-tests en een geslaagde volledige Edge-suite inclusief afzonderlijke ellipscontroles. Integratie gebeurde via PR #16; de nieuwe besturingspunt-Q-constructie valt buiten M8a-2.
