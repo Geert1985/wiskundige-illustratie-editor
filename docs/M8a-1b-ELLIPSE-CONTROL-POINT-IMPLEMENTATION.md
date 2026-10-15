@@ -4,7 +4,7 @@
 **Uitgangsbasis:** `origin/main` `9da6e2a50d8aa08a1e11ee95e3b8a46e8f650da7`  
 **Featurebranch:** `codex/m8a-1b-ellipse-control-point`  
 **Contract:** [M8a-ELLIPSEN-CONTRACT.md](M8a-ELLIPSEN-CONTRACT.md) v1.1.0  
-**Status:** implementatie loopt; er is nog geen codewijziging verricht bij het vastleggen van deze architectuurcontrole.
+**Status:** productiecode en gerichte tests zijn geïmplementeerd op de featurebranch. De volledige Edge-regressie en handmatige browseracceptatie zijn door de gebruiker overgenomen en staan nog open. Er is geen merge naar `main` uitgevoerd.
 
 ## Architectuurcontrole en testimpactmatrix
 
@@ -32,26 +32,33 @@ Document v9 en `ellipseSchema:1` blijven staan. `constructionSchema:7` wordt all
 
 ## Implementatiebeslissingen
 
-Wordt aangevuld nadat de codecontrole de definitieve transactievorm en UI-keuzes heeft vastgesteld.
+* `ellipseByFociAndPoint` gebruikt exact drie puntbronnen. Q wordt bewaard; `sumDistance` wordt bij elke evaluatie uit `|QF₁|+|QF₂|` afgeleid via dezelfde `EllipseGeometry`-kern.
+* Een vrije Q en de ellips worden in één `construction.create`-transactie gemaakt. Bestaande puntobjecten kunnen als Q dienen. De editor toont de afgeleide S alleen-lezen voor het nieuwe recept; de bestaande somafstandconstructie behoudt haar invoer.
+* Het nieuwe recept vereist `constructionSchema:7`; oudere schema-6-documenten en -recepten behouden hun opgeslagen vorm. Nieuwe imports worden schema-aware gevalideerd.
+* Bij een tijdelijk ongeldige Q-ellips of een punt-op-ellips daarvan worden de stale berekende geometrievelden verwijderd; de definitie en bronrollen blijven herstelbaar. Bestaande legacy-invaliditysemantiek blijft ongemoeid.
+* Restricted authoring controleert puntcreatie, exacte toolgrant, beide focusrechten en ellipscreatie atomair. De Edge-check bracht daarnaast een ontbrekende `renderPreview`-methode in de rendererfacade aan het licht; die is aangesloten.
 
 ## Gewijzigde bestanden en commits
 
-Wordt aangevuld tijdens implementatie.
+Productiecode: `ellipse-geometry.js`, `construction-service.js`, `model.js`, `index.js`, `permission-runtime.js`, `editor.js`, `renderer.js`, `editor-radial-properties.js`, `editor-tool-instructions.js` en `editor.html`. Nieuwe dekking staat in `tests/ellipse-control-point.test.cjs` en `tests/browser-ellipse-control-point.cjs`; `tests/browser.cjs` integreert de browsercheck en bestaande tests verwachten het bijgewerkte cachetoken.
+
+Documentatie: dit verslag, het normatieve addendum in `M8a-ELLIPSEN-CONTRACT.md` en de actuele status in `DEVELOPMENT-ROADMAP.md`. Commits: `ce20ffc` contract/architectuur; `c54329e` geometrie/model/rechten; `6321c02` tool en interactie. De test-/rapportagecommit volgt na de laatste Node-run.
 
 ## Verificatie
 
-Exacte commando's en werkelijke resultaten worden na uitvoering ingevuld. De gerapporteerde historische basis is 659 geslaagde Node-tests plus een geslaagde volledige Edge-suite; dit zijn bronclaims uit M8a-2, geen M8a-1b-testresultaten.
+* `npm test` — **665/665 geslaagd**.
+* Gerichte Edge-acceptatie: PowerShell `$env:ELLIPSE_CONTROL_POINT_ONLY='1'; node tests/browser.cjs` — **geslaagd**. Bestaand Q, vrije Q met atomische undo/redo, linked point, legacy somafstand, save/reload, restricted automatic Q en SVG/PNG zijn gecontroleerd; geen page errors.
+* Edge-previewmeting in dezelfde gerichte run: 205 objecten; 12 bursts van 40 pointerbewegingen. Burst p50 **164.4 ms**, p95 **169.3 ms**, maximum **169.3 ms**. Preview-update p50 **0.4 ms**, p95 **0.5 ms**, maximum **0.5 ms**; 12 preview-updates en **0** volledige canvassrenders tijdens de pointerbewegingen.
+* De volledige `npm run test:edge`-regressie is na de laatste wijzigingen niet afgerond. De gebruiker voert de browserregressie en praktische UI-acceptatie zelf uit; deze openstaande controle wordt niet als geslaagd gerapporteerd.
 
 ## Handmatige acceptatiechecklist
 
-- [ ] Bestaand Q selecteren en vrije Q plaatsen.
-- [ ] Live preview, annulering en zichtbare keuze tussen bestaand/nieuw punt.
-- [ ] Q verslepen; F₁/F₂ verplaatsen; geometrie en S volgen.
-- [ ] Punt P op ellips plaatsen/verslepen; parameter blijft bij bronwijziging behouden.
-- [ ] Legacy v9/schema-6 ellips openen en S invoeren.
-- [ ] Undo/Redo, save/reload, SVG/PNG, lock en restricted bronrechten.
-- [ ] Performance: preview p50/p95/max, frameupdates en volledige redraws.
+- [x] Automatische gerichte browsercontrole: bestaand Q, vrije Q, legacy S, save/reload, SVG/PNG en restricted automatic Q.
+- [x] Previewprestatie gemeten: waarden hierboven; geen volledige redraw tijdens pointerbewegingen.
+- [ ] Handmatige UI-controle door gebruiker: driestapsinteractie, previewannulering, Q/F₁/F₂ slepen, P op ellips slepen en lock/restricted gedrag.
+- [ ] Volledige Edge-regressie na de laatste wijzigingen.
+- [ ] Gebruikersacceptatie en besluit over eventuele latere merge naar `main`.
 
 ## Technisch oordeel
 
-Nog niet beoordeeld. Technisch GO/NO-GO wordt ingevuld na gerichte en volledige regressieverificatie. Handmatige gebruikersacceptatie en merge naar `main` blijven afzonderlijke gates.
+**Voorwaardelijke technische GO voor review:** volledige Node-regressie en gerichte Edge-acceptatie zijn groen, inclusief de expliciete previewmeting. **Volledige M8a-1b-acceptatie blijft open** tot de volledige Edge-regressie en handmatige browseracceptatie door de gebruiker zijn afgerond. Geen merge naar `main` is uitgevoerd of onderdeel van deze branchpublicatie.

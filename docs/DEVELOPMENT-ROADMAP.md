@@ -1034,11 +1034,11 @@ M8a-1b vervangt alleen de gebruikersgerichte nieuwe ellipsconstructie: drie punt
 
 | Deel | Status bij branchstart | Acceptatiepoort |
 |---|---|---|
-| Architectuurcontrole en testimpactmatrix | Opgesteld vóór productiecode | Vastgelegd in implementatieverslag |
+| Architectuurcontrole en testimpactmatrix | Afgerond vóór productiecode | Vastgelegd in implementatieverslag en commit `ce20ffc` |
 | Contractaddendum v1.1.0 | Normatief, vóór productiecode vastgelegd | Schema-, compatibiliteits- en interactiebeleid expliciet |
-| Driebronrecept, cycles, schema 7, atomische Q+ellips | Nog te implementeren | Gerichte Node-dekking, replay en rollback |
-| Tool, preview, bestaande-Q/vrije-Q-interactie en eigenschappen | Nog te implementeren | Edge-controle op echte UI en previewprestatie |
-| `pointOnEllipse`, restricted rechten, legacy en exports | Nog te controleren na wijziging | Volledige Node-/Edge-regressie |
-| Gebruikersacceptatie en integratie naar `main` | Open | Afzonderlijke expliciete gebruikersbeslissing; geen merge vanuit deze taak |
+| Driebronrecept, cycles, schema 7, atomische Q+ellips | Geïmplementeerd | `npm test`: 665/665 geslaagd; replay, undo/redo en rollback gedekt |
+| Tool, preview, bestaande-Q/vrije-Q-interactie en eigenschappen | Geïmplementeerd | Gerichte Edge-acceptatie geslaagd; preview p50/p95/max 0.4/0.5/0.5 ms; volledige browserregressie en handmatige bediening staan open voor gebruiker |
+| `pointOnEllipse`, restricted rechten, legacy en exports | Gericht gecontroleerd | Node en gerichte Edge-check groen, inclusief SVG/PNG en restricted automatic Q; volledige Edge-regressie nog open |
+| Gebruikersacceptatie en integratie naar `main` | Open | Gebruiker voert browsercontrole uit; geen merge naar `main` |
 
 Historische M8a-1/M8a-2 testresultaten en acceptatiestatussen blijven ongewijzigd. Uitgevoerde testresultaten voor M8a-1b worden alleen in het afzonderlijke [implementatieverslag](M8a-1b-ELLIPSE-CONTROL-POINT-IMPLEMENTATION.md) bijgehouden.
