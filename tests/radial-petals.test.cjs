@@ -69,6 +69,10 @@ test('UI-RADIAL-11 renders six matching Bezier petals with individual SVG paint 
     assert.equal(ids.length,2);
     gradientIds.push(...ids);
   }
+  assert.match(contours[0],/^M43 12 C77 -2 133 -2 167 12 /,
+    'the narrower UI-RADIAL-12 outline must be rendered');
+  assert.match(insets[0],/^M47 19 C79 7 131 7 163 19 /,
+    'the inner bevel must track the narrowed outline');
   assert.equal(new Set(contours).size,1,'every petal shares the same silhouette');
   assert.equal(new Set(insets).size,1,'bevel stays consistent');
   assert.equal(new Set(sheens).size,1,'top-edge highlight stays consistent');
@@ -87,6 +91,6 @@ test('UI-RADIAL-11 styles use SVG gradients, preserve accessible HTML buttons an
   assert.match(css,/#radialPropertiesWheel input\.radial-center-input\{/);
   assert.match(script,/node\.type='button';node\.className='radial-segment'/);
   assert.match(script,/node\.setAttribute\('aria-label',label\)/);
-  assert.match(html,/editor-radial-properties\.js\?v=radialmenu-3/);
-  assert.match(html,/editor\.css\?v=radialmenu-3/);
+  assert.match(html,/editor-radial-properties\.js\?v=radialmenu-4/);
+  assert.match(html,/editor\.css\?v=radialmenu-4/);
 });
