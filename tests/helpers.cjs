@@ -13,6 +13,7 @@ function runtime(files = ['model.js', 'renderer.js', 'index.js'], additions = {}
     if (file === 'renderer.js') for(const service of ['math-fragments.js','text-metrics.js','rich-text-renderer.js'])vm.runInContext(fs.readFileSync(path.join(root,service),'utf8'),context,{filename:service});
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'regular-geometry.js'), 'utf8'), context, { filename: 'regular-geometry.js' });
     if (file === 'editor.js') for (const service of ['editor-color.js', 'text-editor-ux.js', 'editor-tool-instructions.js', 'tool-catalog.js']) vm.runInContext(fs.readFileSync(path.join(root, service), 'utf8'), context, { filename: service });
+    if (file === 'editor.js' && !context.FZI.MathIllustration.RadialProperties) context.FZI.MathIllustration.RadialProperties = class { sync() {} dispose() {} close() {} openForAxes() {} };
     vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'persistent-groups.js'), 'utf8'), context);
     if (file === 'model.js') vm.runInContext(fs.readFileSync(path.join(root, 'document-layers.js'), 'utf8'), context);

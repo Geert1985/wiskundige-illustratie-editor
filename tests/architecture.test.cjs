@@ -23,7 +23,8 @@ const modules = [
   { file: 'linear-geometry.js', provides: ['LinearGeometry'], after: ['model.js'] },
   { file: 'measurement-geometry.js', provides: ['AngleMeasurements', 'MeasurementUnits', 'MeasurementGeometry'], after: ['model.js', 'polygon-geometry.js', 'linear-geometry.js'] },
   { file: 'region-geometry.js', provides: ['RegionGeometry'], after: ['model.js', 'polygon-geometry.js', 'measurement-geometry.js'] },
-  { file: 'construction-service.js', provides: ['AxisReferences', 'ConstructionService'], after: ['model.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js'] },
+  { file: 'ellipse-geometry.js', provides: ['EllipseGeometry'], after: ['model.js'] },
+  { file: 'construction-service.js', provides: ['AxisReferences', 'ConstructionService'], after: ['model.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js', 'ellipse-geometry.js'] },
   { file: 'math-fragments.js', provides: ['MathFragments'], after: ['math-source.js','model.js'] },
   { file: 'text-metrics.js', provides: ['TextMetrics'], after: ['model.js'] },
   { file: 'rich-text-renderer.js', provides: ['RichTextRenderer'], after: ['math-fragments.js','text-metrics.js','model.js'] },
@@ -32,7 +33,7 @@ const modules = [
   { file: 'text-dynamic-value-editor.js', provides: ['TextDynamicValueEditor'], after: ['text-values.js'] },
   { file: 'text-symbol-catalog.js', provides: ['TextSymbolCatalog'], after: [] },
   { file: 'text-insert-panel.js', provides: ['TextInsertPanel'], after: ['math-fragments.js','text-symbol-catalog.js','text-math-input.js','text-formula-editor.js','text-dynamic-value-editor.js'] },
-  { file: 'renderer.js', provides: ['SvgRenderer', 'escapeXml'], after: ['model.js', 'document-layers.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js', 'construction-service.js'] },
+  { file: 'renderer.js', provides: ['SvgRenderer', 'escapeXml'], after: ['model.js', 'document-layers.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js', 'ellipse-geometry.js', 'construction-service.js'] },
   { file: 'index.js', provides: ['CONSTRUCTION_COLOR', 'Engine', 'distancePointToSegment'], after: ['model.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js', 'construction-service.js', 'renderer.js'] },
   { file: 'semantic-sequence.js', provides: ['SemanticSequence'], after: ['index.js'] },
   { file: 'coordinate-transform.js', provides: ['CoordinateTransform'], after: ['renderer.js'] },
@@ -53,19 +54,22 @@ const modules = [
   { file: 'export-service.js', provides: ['ExportService'], after: ['index.js','math-fragments.js'] },
   { file: 'text-workspace.js', provides: ['TextWorkspace'], after: ['model.js'] },
   { file: 'tool-catalog.js', provides: ['ToolCatalog'], after: [] },
+  { file: 'editor-radial-properties.js', provides: ['RadialProperties'], after: ['tool-catalog.js','construction-service.js','editor-tool-instructions.js'] },
   { file: 'editor.js', provides: ['EditorApp'], after: modulesBeforeEditor() },
+  { file: 'editor-tool-search.js', provides: [], after: ['editor.js'] },
+  { file: 'editor-sidebar-tabs.js', provides: [], after: ['editor.js'] },
   { file: 'editor-bootstrap.js', provides: ['bootstrapEditor', 'editor', 'activeEngine', 'bootstrapRestrictedEditor'], after: ['editor.js'] },
 ];
 
 function modulesBeforeEditor() {
   return [
     'math-source.js', 'text-values.js', 'text-dependencies.js', 'math-fragments.js', 'text-metrics.js', 'rich-text-renderer.js', 'text-math-input.js', 'text-formula-editor.js', 'text-dynamic-value-editor.js', 'text-symbol-catalog.js', 'text-insert-panel.js', 'export-service.js', 'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
-    'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js', 'construction-service.js',
+    'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js', 'ellipse-geometry.js', 'construction-service.js',
     'renderer.js', 'index.js', 'semantic-sequence.js', 'coordinate-transform.js',
     'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js',
     'permission-runtime.js', 'editor-startup.js', 'editor-adaptive-grid.js',
     'editor-label-drag.js', 'editor-enhancements.js', 'editor-color.js', 'text-editor-ux.js',
-    'editor-axis-settings.js', 'editor-history.js', 'editor-tool-instructions.js', 'text-workspace.js', 'tool-catalog.js',
+    'editor-axis-settings.js', 'editor-history.js', 'editor-tool-instructions.js', 'export-service.js', 'text-workspace.js', 'tool-catalog.js','editor-radial-properties.js',
   ];
 }
 

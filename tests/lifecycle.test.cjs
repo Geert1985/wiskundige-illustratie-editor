@@ -45,6 +45,7 @@ function appRuntime() {
   for (const file of ['editor-color.js', 'text-editor-ux.js']) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
   vm.runInContext(fs.readFileSync(path.join(root, 'editor-tool-instructions.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(root, 'tool-catalog.js'), 'utf8'), context, { filename: 'tool-catalog.js' });
+  MI.RadialProperties=class { sync() {} dispose() {} close() {} openForAxes() {} };
   vm.runInContext(fs.readFileSync(path.join(root, 'editor.js'), 'utf8'), context);
   const events = new Map();
   function target() { return { value: '', style: { setProperty() {} }, dataset: {}, attributes: {}, events: new Map(), classList: { add() {}, remove() {}, toggle() {} },
