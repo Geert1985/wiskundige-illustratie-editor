@@ -574,7 +574,7 @@
         let hint;
         if(plan.key==='endpoints')hint='Gebruikt direct de twee eindpunten als bronnen.';
         else if(plan.mode==='placement')
-          hint='Klik daarna op het bronobject om de puntpositie vast te leggen.';
+          hint=kind==='pointOnEllipse'?'Klik daarna nabij de ellipscontour om de puntpositie vast te leggen.':'Klik daarna op het bronobject om de puntpositie vast te leggen.';
         else if(plan.mode==='complete')hint='Direct uit de geselecteerde bron berekenen.';
         else hint=MI.ToolInstructions.constructionHint(kind,plan.sourceIndex===0?1:0)||
           'Selecteer de volgende constructiebron.';

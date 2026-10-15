@@ -152,6 +152,7 @@
 
     renderPreview(clipBounds=this.bounds) {
       const preview = this.preview; if (!preview) return "";
+      if(preview.type==='point-placement')return '<g data-point-placement-preview data-preview-valid="'+(preview.valid?'true':'false')+'"><circle cx="'+number(this.mapX(preview.point.x))+'" cy="'+number(this.mapY(preview.point.y))+'" r="5" fill="'+(preview.valid?'#9a7a32':'#b74343')+'" stroke="white" stroke-width="1.5"/></g>';
       if(preview.type==='ellipse')return '<g data-drawing-preview>'+this.renderObject({...preview,id:'ellipse-preview'},clipBounds)+'</g>';
       if(preview.type==='ellipse-invalid')return '<g data-drawing-preview data-preview-valid="false"><line x1="'+number(this.mapX(preview.foci[0].x))+'" y1="'+number(this.mapY(preview.foci[0].y))+'" x2="'+number(this.mapX(preview.foci[1].x))+'" y2="'+number(this.mapY(preview.foci[1].y))+'" stroke="#b74343" stroke-width="2" stroke-dasharray="5 4"/><circle cx="'+number(this.mapX(preview.point.x))+'" cy="'+number(this.mapY(preview.point.y))+'" r="4" fill="#b74343"/>'+preview.foci.map(p=>'<circle cx="'+number(this.mapX(p.x))+'" cy="'+number(this.mapY(p.y))+'" r="4" fill="#9a7a32"/>').join('')+'</g>';
       if(preview.type==='angle' && preview.vertices.length===3) { try { MI.MeasurementGeometry.validateAngle(preview.vertices,preview.angleMark); return '<g data-drawing-preview>'+this.renderObject({type:'angle',angleMark:preview.angleMark,vertices:preview.vertices,id:'preview',style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5'}})+'</g>'; } catch(_) {} }
