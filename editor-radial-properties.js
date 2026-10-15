@@ -113,6 +113,12 @@
       this.renderWheel();
       this.listen(this.closeBtn,'click',e=>{e.stopPropagation();this.closeDetail();this.wheel.querySelector('.radial-center-input')?.focus();});
       this.listen(this.wheel,'click',e=>{const button=e.target.closest('[data-radial-action]');if(button&&!button.disabled)this.choose(button.dataset.radialAction);});
+      this.listen(this.wheel,'click',e=>{
+        const button=e.target.closest('[data-radial-toggle]');
+        if(!button||button.disabled)return;
+        e.stopPropagation();
+        this.toggleHubAction(button.dataset.radialToggle);
+      });
       this.listen(this.pointConstructPanel,'click',e=>{
         const button=e.target.closest('[data-radial-construct]');
         if(button&&!button.disabled)this.startContextConstruction(button);
@@ -237,8 +243,66 @@
         if(input&&this.doc.activeElement!==input)input.value=ctx.name;
         const cap=this.wheel.querySelector('.radial-center-caption');
         if(cap)cap.textContent=CENTER_CAPTIONS[ctx.type]||'OBJECT';
+        this.updateHubControls(ctx);
       }
       if(this.detailMode)this.applyFilter(this.detailMode);
+    }
+    canRenameContext(ctx){
+      if(!ctx)return false;
+      if(ctx.type==='group')return !this.app.runtime&&this.app.allowed('group.rename',{id:ctx.id,name:ctx.name});
+      const object=ctx.objects?.length===1?ctx.objects[0]:null;
+      return !!object&&ctx.type!=='axes'&&ctx.type!=='multiple'&&!object.locked&&
+        this.app.allowed('object.setProperties',{ids:[object.id],fields:[{path:'name',value:object.name}]});
+    }
+    hubObject(ctx){
+      return ctx&&ctx.type!=='group'&&ctx.type!=='multiple'&&ctx.type!=='axes'&&
+        ctx.objects?.length===1?ctx.objects[0]:null;
+    }
+    updateHubControls(ctx){
+      const object=this.hubObject(ctx);
+      const input=this.wheel.querySelector('.radial-center-input');
+      if(input){
+        const editable=this.canRenameContext(ctx);
+        input.readOnly=!editable;
+        input.title=editable?'':ctx?.type==='axes'?'Assenstelsel':'Niet wijzigbaar';
+      }
+      const label=this.wheel.querySelector('[data-radial-toggle="label"]');
+      if(label){
+        const visible=!!object?.showLabel;
+        label.setAttribute('aria-pressed',String(visible));
+        label.disabled=!object||object.locked||
+          !this.app.allowed('object.setProperties',{ids:[object.id],fields:[{path:'showLabel',value:!visible}]});
+      }
+      const lock=this.wheel.querySelector('[data-radial-toggle="lock"]');
+      if(lock){
+        const locked=!!object?.locked;
+        lock.setAttribute('aria-pressed',String(locked));
+        lock.disabled=!object||!this.app.allowed('object.setLock',{ids:[object.id],value:!locked});
+        const icon=lock.querySelector('svg');
+        if(icon){
+          const shape=locked
+            ?'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>'
+            :'<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 7-2.6"/>';
+          if(icon.innerHTML!==shape)icon.innerHTML=shape;
+        }
+        lock.title=locked?'Positie ontgrendelen':'Positie vergrendelen';
+        lock.setAttribute('aria-label',lock.title);
+      }
+    }
+    toggleHubAction(action){
+      const object=this.hubObject(this.context());
+      if(!object)return;
+      try{
+        if(action==='label'){
+          const value=!object.showLabel;
+          if(object.locked||!this.app.allowed('object.setProperties',{ids:[object.id],fields:[{path:'showLabel',value}]}))return;
+          this.app.setCommonProperty('showLabel',value);
+        }else if(action==='lock'){
+          const value=!object.locked;
+          if(!this.app.allowed('object.setLock',{ids:[object.id],value}))return;
+          this.app.changeDocument(()=>this.app.execute('object.setLock',{ids:[object.id],value}));
+        }
+      }catch(error){this.app.status(error.message);this.app.invalidate();}
     }
     defaultAnchor(){
       const rect=this.app.nodes.canvasWrap.getBoundingClientRect();
@@ -306,11 +370,8 @@
       const input=this.doc.createElement('input');
       input.type='text';input.className='radial-center-input';input.value=ctx.name;
       input.setAttribute('aria-label','Naam geselecteerd object');input.maxLength=200;
-      const editable=ctx.type==='group'
-        ?!this.app.runtime&&this.app.allowed('group.rename',{id:ctx.id,name:ctx.name})
-        :ctx.type!=='axes'&&ctx.type!=='multiple'&&ctx.objects?.length===1&&!ctx.objects[0].locked&&this.app.allowed('object.setProperties',{ids:[ctx.objects[0].id],fields:[{path:'name',value:ctx.objects[0].name}]});
-      input.readOnly=!editable;
-      if(!editable)input.title=ctx.type==='axes'?'Assenstelsel':'Niet wijzigbaar';
+      input.readOnly=!this.canRenameContext(ctx);
+      if(input.readOnly)input.title=ctx.type==='axes'?'Assenstelsel':'Niet wijzigbaar';
       const grip=this.doc.createElement('button');
       grip.type='button';grip.className='radial-drag-handle';grip.dataset.radialDrag='';
       grip.title='Sleep om het radiaalmenu te verplaatsen';
@@ -319,7 +380,30 @@
       dots.setAttribute('aria-hidden','true');
       for(let i=0;i<6;i++)dots.append(text('i','radial-grip-dot','',this.doc));
       grip.append(dots);
-      hub.append(grip,label,input);this.wheel.append(hub);
+      // Purely decorative SVG skins keep the name band and two actions inside
+      // the circular hub. Native HTML inputs/buttons remain keyboard operable.
+      const lower=this.doc.createElementNS(SVG_NS,'svg');
+      lower.setAttribute('viewBox','0 0 192 192');
+      lower.setAttribute('class','radial-center-lower-skin');
+      lower.setAttribute('aria-hidden','true');
+      lower.innerHTML=
+        '<path class="radial-center-name-shape" d="M15 111 Q96 142 177 111 L178 143 Q96 174 14 143 Z"/>'+
+        '<path class="radial-center-control-left" d="M15 146 Q54 163 96 159 L96 186 Q60 183 28 165 Z"/>'+
+        '<path class="radial-center-control-right" d="M96 159 Q138 163 177 146 L164 165 Q132 183 96 186 Z"/>';
+      hub.append(lower);
+      const labelButton=this.doc.createElement('button');
+      labelButton.type='button';labelButton.className='radial-center-control radial-center-control-label';
+      labelButton.dataset.radialToggle='label';
+      labelButton.setAttribute('aria-label','Objectlabel tonen of verbergen');
+      labelButton.title='Objectlabel tonen/verbergen';
+      labelButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5h16M12 4.5V20M8.5 20h7"/></svg>';
+      const lockButton=this.doc.createElement('button');
+      lockButton.type='button';lockButton.className='radial-center-control radial-center-control-lock';
+      lockButton.dataset.radialToggle='lock';
+      lockButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"></svg>';
+      hub.append(grip,label,input,labelButton,lockButton);
+      this.wheel.append(hub);
+      this.updateHubControls(ctx);
     }
     openAt(anchor,focus=false){
       const ctx=this.context();if(!this.allowedContext(ctx))return;
@@ -517,8 +601,11 @@
     applyFilter(filter){
       if(!this.panel||this.detail.hidden)return;
       this.decoratePropertySections();
-      this.detail.dataset.radialContext=this.constructionContext()?'point':'other';
-      if(this.constructionContext()){this.applyContextFilter(filter);return;}
+      // Point identity is stable when visibility changes. A hidden point is no
+      // longer canvas-selectable, but its Actions pane must not grow a name row.
+      const ctx=this.context();
+      this.detail.dataset.radialContext=ctx?.objects?.length===1&&ctx.objects[0]?.type==='point'?'point':'other';
+      if(this.constructionContext(ctx)){this.applyContextFilter(filter);return;}
       this.panel.hidden=false;this.pointConstructPanel.hidden=true;
       const axesRoot=this.panel.querySelector('.axis-settings');
       if(axesRoot&&this.app.inspectorTarget==='axes'){

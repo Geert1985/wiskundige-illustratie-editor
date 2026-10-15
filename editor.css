@@ -537,7 +537,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   display:block;width:192px;height:192px;padding:0;
   border:3px solid #f2c85f;border-radius:50%;
   background:linear-gradient(150deg,#1d3c4e 0%,#102a39 43%,#0a202d 100%);
-  color:#fff;pointer-events:auto;
+  color:#fff;pointer-events:auto;overflow:hidden;
   box-shadow:0 12px 24px #0b213c52,inset 0 4px 12px #23415288;
 }
 .radial-center-caption{
@@ -547,19 +547,53 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   font-size:14px;font-weight:700;line-height:1.4;
   text-shadow:0 1px 2px #09121b;
 }
+/* The black name band and two lower wedges follow the inner circle.
+   Hit targets are real buttons, never SVG paths. */
+.radial-center-lower-skin{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;
+}
+.radial-center-name-shape{
+  fill:#070d12;stroke:#456276;stroke-width:1.5;
+}
+.radial-center-control-left,.radial-center-control-right{
+  fill:#1e3c4e;stroke:#dfba59;stroke-width:1.35;
+  transition:fill .16s ease;
+}
+.radial-center:has(.radial-center-control-label:is(:hover,:focus-visible)) .radial-center-control-left,
+.radial-center:has(.radial-center-control-lock:is(:hover,:focus-visible)) .radial-center-control-right{
+  fill:#34586a;
+}
 .radial-center-input{
-  position:absolute;top:110px;left:50%;
+  position:absolute;z-index:1;top:122px;left:50%;
   transform:translateX(-50%);
-  width:143px;max-width:calc(100% - 26px);
-  height:43px;min-height:0;margin:0;padding:6px 8px;
-  border:2px solid #355568;border-radius:9px;
-  background:linear-gradient(#071923,#0a1e2a);
+  width:162px;max-width:calc(100% - 30px);
+  height:34px;min-height:0;margin:0;padding:2px 6px;
+  border:0;border-radius:14px;background:transparent;
   color:#fff;font:700 18px/1.2 "Source Sans 3",system-ui,sans-serif;
   text-align:center;text-overflow:ellipsis;
-  box-shadow:inset 0 1px 6px #0005;
 }
-.radial-center-input:focus-visible{outline:2px solid #f4ce75;outline-offset:2px}
+.radial-center-input:focus-visible{outline:2px solid #f4ce75;outline-offset:-2px}
 .radial-center-input[readonly]{cursor:default;opacity:.96}
+.radial-center-control{
+  position:absolute;z-index:2;top:156px;
+  width:76px;height:29px;min-height:0;min-width:0;margin:0;padding:3px;
+  display:grid;place-items:center;
+  color:#eef4f8;background:transparent!important;
+  border:0!important;border-radius:0;box-shadow:none!important;
+  cursor:pointer;touch-action:manipulation;
+}
+.radial-center-control-label{left:20px}
+.radial-center-control-lock{left:96px}
+.radial-center-control svg{
+  display:block;width:23px;height:23px;
+  fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;
+  pointer-events:none;
+}
+.radial-center-control[aria-pressed="true"]{color:#f4cb64}
+.radial-center-control:disabled{cursor:not-allowed;opacity:.42}
+.radial-center-control:focus-visible{outline:2px solid #f4ce75;outline-offset:-4px}
 .radial-drag-handle{
   position:absolute;top:16px;left:50%;
   transform:translateX(-50%);
