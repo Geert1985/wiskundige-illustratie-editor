@@ -11,7 +11,10 @@ function element(tag='div'){
     classList:{add(){},remove(){}},
     style:{values:{},setProperty(name,value){this.values[name]=value;}},
     innerHTML:'',value:'',textContent:'',hidden:false,readOnly:false,disabled:false,
-    setAttribute(key,value){this.attributes[key]=String(value);},
+    setAttribute(key,value){
+      this.attributes[key]=String(value);
+      if(key==='class')this.className=String(value);
+    },
     getAttribute(key){return this.attributes[key];},
     append(...nodes){this.children.push(...nodes);},
     replaceChildren(...nodes){this.children=[...nodes];},
@@ -56,8 +59,8 @@ test('UI-RADIAL-11 renders six matching Bezier petals with individual SVG paint 
     const shapes=segment.querySelectorAll('.radial-segment-silhouette');
     assert.equal(shapes.length,1);
     contours.push(shapes[0].attributes.d);
-    assert.match(shapes[0].attributes.fill,/^url\\(#fziRadialPetalSurface[0-5]\\)$/);
-    assert.match(shapes[0].attributes.stroke,/^url\\(#fziRadialPetalRim[0-5]\\)$/);
+    assert.match(shapes[0].attributes.fill,/^url\(#fziRadialPetalSurface[0-5]\)$/);
+    assert.match(shapes[0].attributes.stroke,/^url\(#fziRadialPetalRim[0-5]\)$/);
     insets.push(...segment.querySelectorAll('.radial-segment-inset').map(n=>n.attributes.d));
     sheens.push(...segment.querySelectorAll('.radial-segment-sheen').map(n=>n.attributes.d));
     const defs=segment.querySelectorAll('defs');
@@ -78,12 +81,12 @@ test('UI-RADIAL-11 styles use SVG gradients, preserve accessible HTML buttons an
   const css=fs.readFileSync(path.join(root,'editor.css'),'utf8');
   const script=fs.readFileSync(path.join(root,'editor-radial-properties.js'),'utf8');
   const html=fs.readFileSync(path.join(root,'editor.html'),'utf8');
-  assert.match(css,/\\.radial-segment-stop-top\\{stop-color:/);
-  assert.match(css,/\\.radial-segment:is\\(:hover,:focus-visible,\\[aria-pressed="true"\\]\\)/);
-  assert.match(css,/\\.radial-segment-inset\\{/);
-  assert.match(css,/#radialPropertiesWheel input\\.radial-center-input\\{/);
-  assert.match(script,/node\\.type='button';node\\.className='radial-segment'/);
-  assert.match(script,/node\\.setAttribute\\('aria-label',label\\)/);
-  assert.match(html,/editor-radial-properties\\.js\\?v=radialmenu-3/);
-  assert.match(html,/editor\\.css\\?v=radialmenu-3/);
+  assert.match(css,/\.radial-segment-stop-top\{stop-color:/);
+  assert.match(css,/\.radial-segment:is\(:hover,:focus-visible,\[aria-pressed="true"\]\)/);
+  assert.match(css,/\.radial-segment-inset\{/);
+  assert.match(css,/#radialPropertiesWheel input\.radial-center-input\{/);
+  assert.match(script,/node\.type='button';node\.className='radial-segment'/);
+  assert.match(script,/node\.setAttribute\('aria-label',label\)/);
+  assert.match(html,/editor-radial-properties\.js\?v=radialmenu-3/);
+  assert.match(html,/editor\.css\?v=radialmenu-3/);
 });
