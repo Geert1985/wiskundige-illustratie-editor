@@ -9,6 +9,48 @@ module.exports = async page => {
     app.radialProperties.openAt(null);
   });
   const wheel=page.locator('#radialPropertiesWheel');
+  // UI-RADIAL-11: all six buttons use one shared shape and independent
+  // SVG paint servers, with intact counter-rotation and native interactions.
+  const petals=wheel.locator('.radial-segment');
+  assert.equal(await petals.count(),6);
+  assert.equal(await wheel.locator('.radial-segment-silhouette').count(),6);
+  assert.equal(await wheel.locator('.radial-segment-inset').count(),6);
+  assert.equal(await wheel.locator('.radial-segment-sheen').count(),6);
+  const outer=await page.evaluate(()=>{
+    const nodes=[...document.querySelectorAll('#radialPropertiesWheel .radial-segment')];
+    return nodes.map((node,i)=>{
+      const shape=node.querySelector('.radial-segment-silhouette');
+      const defs=[...node.querySelectorAll('linearGradient')];
+      const fill=getComputedStyle(shape).fill,stroke=getComputedStyle(shape).stroke;
+      const face=node.querySelector('.radial-segment-content');
+      return {action:node.dataset.radialAction,name:node.getAttribute('aria-label'),
+        contour:shape.getAttribute('d'),
+        servers:defs.map(gradient=>gradient.id),fill,stroke,
+        angle:node.style.getPropertyValue('--radial-angle'),
+        counterAngle:face.style.getPropertyValue('--radial-counter-angle')||
+          node.style.getPropertyValue('--radial-counter-angle')};
+    });
+  });
+  assert.equal(new Set(outer.map(item=>item.contour)).size,1,
+    'all categories must share precisely the same Bezier geometry');
+  assert.equal(new Set(outer.flatMap(item=>item.servers)).size,12,
+    'surface and gold rim gradient IDs must be unique');
+  assert.ok(outer.every(item=>item.servers.length===2 &&
+    item.fill.includes('url(') && item.stroke.includes('url(')));
+  for(let i=0;i<outer.length;i++){
+    assert.equal(outer[i].angle,(i*60)+'deg');
+    assert.equal(outer[i].counterAngle,(-i*60)+'deg');
+  }
+  const appearanceButton=wheel.locator('[data-radial-action="appearance"]');
+  const topStop=appearanceButton.locator('.radial-segment-stop-top');
+  const beforeHover=await topStop.evaluate(node=>getComputedStyle(node).stopColor);
+  await appearanceButton.hover();
+  await page.waitForTimeout(250);
+  const duringHover=await topStop.evaluate(node=>getComputedStyle(node).stopColor);
+  assert.notEqual(duringHover,beforeHover,'hover should highlight the navy gradient');
+  await appearanceButton.click();
+  assert.equal(await appearanceButton.getAttribute('aria-pressed'),'true');
+  assert.equal(await page.locator('#propertiesSidebar .radial-detail-title').textContent(),'Uiterlijk');
   const hub=wheel.locator('.radial-center');
   const input=hub.locator('.radial-center-input');
   const label=hub.locator('[data-radial-toggle="label"]');
