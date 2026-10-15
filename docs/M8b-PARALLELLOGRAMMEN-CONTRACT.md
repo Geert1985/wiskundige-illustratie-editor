@@ -1,0 +1,275 @@
+# From Zero 2 Infinity — Wiskundige Illustratie Editor
+## M8b — Dynamische parallellogrammen: wiskundig, functioneel en technisch ontwerpcontract
+
+**Documentversie:** 1.0.0  
+**Datum:** 15 oktober 2026  
+**Status:** **als ontwerp goedgekeurd op 15 oktober 2026**; niet geïmplementeerd; afzonderlijke GO vereist voor Codex  
+**Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
+**Statisch gecontroleerde basis:** GitHub `main`, commit `63ab45acc7e94b120a5fb052840c199816399afd` (14 oktober 2026); controle van geselecteerde broncode en roadmap, **geen tests uitgevoerd**.  
+**Roadmapreferenties:** `tasks-129` t/m `tasks-133` — M8b: twee zijden en ingesloten hoek, live lengte-/hoekaanduiding, degeneraties en roundtrip, test-/acceptatiepoort.  
+**Relatie tot M8a:** M8a-ontwerpcontract v1.0.0 werd op 15 oktober 2026 door de gebruiker goedgekeurd. **M8b verandert dat contract niet**. Schema- en implementatieafhankelijkheden moeten vóór Codex-codering opnieuw op de dan actuele branch worden gecontroleerd.
+
+---
+
+## 1. Doel en ontwerpbesluit
+
+De editor moet een **meetkundig exact en dynamisch parallellogram** kunnen maken op basis van twee aangrenzende zijden en hun ingesloten hoek. Wanneer bronpunten verschuiven of de instelbare zijde/hoek wijzigt, blijft de figuur een parallellogram. Zijde-, hoek-, omtrek- en oppervlaktewaarden worden uit dezelfde opgeloste geometrie afgeleid.
+
+### 1.1 Eén bestaand objecttype, één rekenwaarheid
+
+- **Resultaatobject:** één bestaand `polygon`-object met **exact vier hoekpunten**, in vaste volgorde `A, B, C, D`.
+- **Constructie:** één nieuw getypeerd recept in de bestaande `ConstructionService`, **niet** een nieuw vrij aanpasbaar `parallelogram`-objecttype en **niet** vier afzonderlijk opgeslagen lijnen en/of hoekpunten.
+- **Bronnen:** twee reeds bestaande, geautoriseerde puntobjecten `A` en `B` (ook punten die zelf dynamisch geconstrueerd zijn, mits geldig). De tweede zijlengte en ingesloten *gerichte* hoek zijn constructieparameters.
+- **Herberekening:** via de bestaande dependency graph. `PolygonGeometry`, `MeasurementUnits`, `renderer`, `SnapService`, `ToolCatalog`, `PermissionRuntime`, `history` en documentexport blijven gezaghebbend voor hun bestaande verantwoordelijkheden.
+- **Verboden:** zelfstandig parallellogram-rekenpad in de UI, onbeheerde modelmutaties, ongekoppelde hulpobjecten, een tweede renderer, een tweede permissielaag of impliciete conversie naar een ander objecttype.
+
+### 1.2 Expliciete scope
+
+**Binnen M8b:** constructie uit twee puntbronnen plus gekozen/ingevoerde lengte en hoek; live preview; exacte numerieke invoer; bronherberekening; stabiele selectie en bronvolgorde; maatweergave; styling/lagen/groepen; zoom/snap/hit-test; ongeldigheid en herstel; documentopslag; undo/redo; bestaande dynamische meetobjecten en polygongebieden; beperkte gebruikersrechten; SVG/PNG/JSON; volledige milestone-acceptatie.
+
+**Buiten M8b:** een tweede recept **via drie permanent gekoppelde bronpunten** (mogelijk later `M8b+`, afzonderlijk akkoord), automatische vierhoekherkenning, vrije sleepgrepen op berekende hoekpunten, willekeurige hoekpuntgewijze vervorming die parallellogram-eigenschap kan schenden, gekoppelde transformaties van M7, constraint solver, symbolische lengtes/algebra, zelfstandige diagonalen/hoogtelijnen, verzamelingen en andere kegelsneden. Rechthoeken, ruiten en vierkanten zijn **bijzondere waarden** van dezelfde constructie; er komen geen nieuwe objecttypes voor.
+
+## 2. Wiskundige definitie en invarianten
+
+### 2.1 Parameters
+
+Gegeven twee bronpunten `A=(Aₓ,Aᵧ)` en `B=(Bₓ,Bᵧ)` met `A≠B`, een zijlengte `L>0` en een gerichte hoek `θ` van de vector `AB` naar `AD`, waarbij `−π<θ<π`, `θ≠0` en `sin θ ≠ 0` (binnen numerieke resolutie):
+
+\[
+\mathbf v=B-A,\quad a=\|\mathbf v\|,\quad
+\mathbf u=\frac{\mathbf v}{a},\quad
+\mathbf w=L\begin{pmatrix}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\end{pmatrix}\mathbf u.
+\]
+
+Definieer:
+
+\[
+D=A+\mathbf w,\qquad C=B+\mathbf w.
+\]
+
+De gesloten vierhoek loopt in de opgeslagen volgorde `A → B → C → D → A`. Het getekende punt `Q` bij de derde plaatsingsklik levert eenmalig de beginparameters `L=|Q−A|` en `θ=atan2(cross(B−A,Q−A),dot(B−A,Q−A))`, maar `Q` is **geen opgeslagen of blijvend gekoppelde derde bron**.
+
+**Belangrijke semantiek:** bij het verslepen van `B` blijft `L` in modelcoördinaten vast en blijft de gerichte hoek ten opzichte van de **nieuwe** richting `AB` gelijk. De zijde `AB` kan dan van lengte veranderen, maar de zijde `AD` blijft `L`. Dit is niet hetzelfde als het achteraf verslepen van een onafhankelijk derde bronpunt; dat is bewust buiten scope.
+
+### 2.2 Invarianten en metingen
+
+Voor iedere geldige figuur geldt, onafhankelijk van zoom en opgeslagen beeldpunten:
+
+- `B−A = C−D` en `D−A = C−B` (gelijke, evenwijdige tegenoverliggende zijdevectoren).
+- `|AB|=|CD|=a`, `|AD|=|BC|=L`.
+- De diagonalen hebben hetzelfde midden: `(A+C)/2=(B+D)/2`; numeriek berekenen in een lokale oorsprong.
+- `∠DAB=|θ|` als binnenhoek (in radialen; gebruikersweergave volgens documenthoekeenheid). De binnenhoek bij `B` is `π−|θ|`.
+- De omtrek `P=2(a+L)` en de niet-negatieve oppervlakte `S=aL|sin θ|`.
+- `|AC|²=a²+L²+2aL cosθ` en `|BD|²=a²+L²−2aL cosθ` (optionele testinvarianten; geen verplichte UI-eigenschappen in deze milestone).
+- Zowel met `θ>0` (tegenwijzerzin) als `θ<0` (wijzerzin) is de figuur geldig. Het teken bepaalt de oriëntatie, **niet** de gerapporteerde oppervlakte.
+- Dezelfde `A`, `B`, `L` en `θ` leveren steeds dezelfde vier hoekpunten; **geen verborgen toestand**, geen afhankelijkheid van preview- of sleepgeschiedenis.
+
+**Bijzondere gevallen zonder apart type:** `|θ|=90°` geeft een rechthoek; `a=L` geeft een ruit; beide tegelijk geven een vierkant. Gebruik eventuele toleranties alleen voor informatieve classificatie, nooit om de parameters stilzwijgend af te ronden of de geometrie aan te passen.
+
+### 2.3 Rekennauwkeurigheid en degeneratie
+
+- Modelwaarden zijn JavaScript binary64 met de bestaande limiet `|x|, |y| ≤ 10¹²`. Alle broncoördinaten, `L`, `θ`, tussenvectoren, hoekpunten, afstanden, oppervlakte en gemapte numerieke outputs moeten eindig zijn. Geen `NaN`, `Infinity`, clamping of stilzwijgend overstromen.
+- Gebruik `Math.hypot` en lokale verschilvectoren. Vorm `D=A+w`, `C=B+w` en controleer alle vier werkelijk berekende hoekpunten tegen de limiet. Gebruik de bestaande schaal-/normalisatietechnieken voor wiskundige controles; geef geen numerieke garanties die binary64 niet kan waarmaken.
+- Hergebruik de huidige `PolygonGeometry.validate` voor geldige niet-kruisende vierhoeken. **Calibreer** extra condities voor bijna nul-lengte en bijna collineariteit met bestaande polygonvalidatie en onafhankelijke numerieke fixtures; vervang de bestaande globale tolerantie niet zonder apart regressieonderzoek.
+- `θ` wordt intern bewaard in **radialen**, als eindige getypeerde waarde in het open interval `(-π,π)`. Exact `0`, `±π` en waarden die binnen de gekozen numerieke policy niet van collineariteit te onderscheiden zijn, zijn ongeldig. Het paneel toont/aanvaardt expliciet graden of radialen volgens de bestaande documentinstellingen.
+- Nieuwe invoer `L≤0`, een ongeldige hoek of een ongeldige berekende figuur wordt **vóór commit afgewezen**; geen gedeeltelijke wijziging. Een reeds bestaande constructie kan daarentegen *tijdelijk ongeldig* worden doordat `A` of `B` dynamisch samenvalt of brongeometrie ongeldig wordt.
+- In zo'n tijdelijke ongeldigheid blijven constructie- en object-ID bewaard; geen oude zichtbare figuur, afgeleid label of meetwaarde. Bij herstel wordt dezelfde figuur opnieuw berekend. Reeds gematerialiseerde hoekpunten in interne/backward-compatible opslag zijn **nooit** een vervanging voor de actuele constructie-resolver of een reden om oude geometrie aan restricted gebruikers te tonen.
+
+**Voorgestelde foutcodes:** `VALID`, `SOURCE_INVALID`, `INVALID_REFERENCE`, `COINCIDENT_BASE_POINTS`, `INVALID_SIDE_LENGTH`, `DEGENERATE_PARALLELOGRAM`, `NUMERIC_UNRESOLVED`, `NON_FINITE_RESULT`, `COORDINATE_LIMIT`, `PERMISSION_DENIED`. De implementatie koppelt deze aan bestaande fout- en invalidatieconventies; labels van foutcodes zijn voorstel, geen bestaande API-claims.
+
+## 3. Gebruikerservaring en interactie
+
+### 3.1 Gereedschap en primaire aanmaakroute
+
+**Plaatsing:** *Constructies → Vierhoekconstructies → Parallellogram via zijde en hoek*, of een passende, gelijkwaardig ingedeelde bestaande Constructies-subgroep. Het gereedschap is alleen *implemented* nadat er een werkende geautoriseerde commandroute is. De gedeelde `ToolCatalog` is de enige gereedschapsbron voor sidebar, fullscreen en contextueel radiaalmenu.
+
+1. Kies **Parallellogram via zijde en hoek**.
+2. Selecteer **bestaand punt A** als eerste hoekpunt.
+3. Selecteer **bestaand punt B** als aangrenzend hoekpunt; de preview toont zijde `AB`.
+4. Beweeg de pointer naar een voorlopig punt `Q`. De preview toont `A–B–C–D`, lengte `AD` en gerichte hoek. `Q` bepaalt slechts de initiële parameters en wordt niet automatisch als punt gecreëerd.
+5. Bevestig door een derde klik, of voer **exact numeriek** `L` en de hoek in en bevestig vanuit dezelfde previewstap. Eén bevestiging leidt tot **één geautoriseerd constructiecommando en één undo-stap**.
+
+Kies `A` en `B` via bestaande bronreferenties; voor deze eerste variant **uitsluitend volledige `point`-objectreferenties** (`{objectId}`), geen willekeurige polygonvertex, halve lijn of as. Hetzelfde object mag niet tweemaal als bron gekozen worden. Als twee verschillende punten dezelfde coördinaten hebben, kan de gebruiker niet geldig bevestigen.
+
+**Annuleren:** Escape, toolwissel, blur, pointercancel, nieuw document, reset en dispose ruimen de voorlopige interactie zonder schrijfcommando op. Selectie, pans, canvasgeschiedenis en pointer capture blijven consistent met de bestaande toolcontrollers. Voor een nog ongeldige preview wordt geen definitieve creatie toegelaten.
+
+**Contextueel radiaalmenu:** als een geldige puntbron geselecteerd is, mag `ConstructionService.contextualPlans` de eerste bron voorinvullen. `placement` na twee bronnen moet een **expliciet geautoriseerde en geteste** interactiestap gebruiken; laat het generieke `complete`-pad **niet automatisch** al na `B` committen. Gebruik `EditorApp.startContextConstruction` en de bestaande `construction.create`-route, zonder tweede voorinvul- of modelmutatie-engine.
+
+### 3.2 Eigenschappen en bewerken
+
+De geselecteerde afgeleide vierhoek gebruikt het **bestaande zwevende eigenschappenpaneel** in de donkerblauw/gouden gedeelde UI-PANEL-1-stijl; geen herintroductie van een permanente rechterkolom. In *Geometrie*:
+
+| Veld | Aard | Gedrag |
+|---|---|---|
+| `A`, `B` | bronreferenties, alleen lezen in M8b | tonen wanneer rechten dit toelaten, inclusief bronstatus |
+| `|AB|` | berekend, alleen lezen | wijzigt wanneer een bronpunt beweegt |
+| `|AD| = L` | **bewerkbare constructieparameter** | positieve lengte, eenhedenconversie exact eenmaal; geautoriseerd author-commando |
+| `∠DAB` | **bewerkbare gerichte parameter** | intern `θ` in rad; UI kiest links-/rechtsdraaiing en toont `|θ|` in actuele hoekeenheid |
+| `|BC|`, `|CD|` | berekend, alleen lezen | gelijk aan `L` resp. `|AB|` |
+| `∠ABC` | berekend, alleen lezen | `π−|θ|` |
+| Omtrek | berekend | bestaande `MeasurementUnits.figureValue` / formatter |
+| Oppervlakte | berekend | bestaande `MeasurementUnits.figureValue` / formatter; documentschaal² **eenmaal** |
+
+Stijlvelden (randkleur, dikte, vulling, opacity, naam, showLabel, zichtbaarheid en lock) blijven bestaande propertycommando's. `locked` blokkeert directe gebruikerbewerking maar **niet** de herberekening wanneer een geautoriseerd bronpunt wijzigt. De vierhoek zelf en de berekende vertices `C`, `D` zijn **niet direct vrij versleepbaar**. Een wijziging van `L` of `θ` verloopt uitsluitend via een expliciet gevalideerd constructieparametercommando. Misbruik `construction.setParameter` voor gekoppelde padpunten niet als die API alleen één padpositie beheert; voeg een klein getypeerd parameterveldcommando toe en toets permissions/undo apart.
+
+**Uitwisselen van A en B** is geen triviale naamwijziging: het kan de constructieoriëntatie en de positie van `C`, `D` veranderen. In M8b is bronvolgorde daarom vast tijdens de constructie; een later “wissel bron”-commando vraagt aparte acceptatie.
+
+### 3.3 Live lengte- en hoekaanduiding
+
+- Toon de twee **verschillende** zijlengtes (`a=|AB|` en `L=|AD|`) en ten minste de **ingesloten binnenhoek `|θ|`** als live read-only gegevens in het paneel.
+- Maak optioneel een duidelijke **canvasmaatweergave** via de bestaande algemene `showMeasurement`-boolean op het parallellogramobject: korte labels nabij zijde `AB`, zijde `AD` en hoekpunt `A`. Gebruik bestaande meet-/hoekformatters en defensieve labels tegenover zoom/viewport; geen extra persistente punt-, lijn- of tekstobjecten per label.
+- **Voorstel:** `showMeasurement` is bij een nieuw M8b-object standaard `true`; uitzetten verbergt uitsluitend de M8b-maatlabels, niet het parallellogram of de naam. Dit is een gespecialiseerde weergave van een bestaand veld, geen nieuw documentveld. Controleer eerst dat bestaand gedrag van dit veld op oude polygonen ongewijzigd blijft.
+- Maatlabels zijn afgeleid van de actuele polygonvertices, **nooit** van de preview, opgeslagen tekst, SVG of afgeronde canvaspunten; de schaal wordt bij formatteren éénmaal toegepast. Hoeken volgen de bestaande deg/rad-instellingen; de binnenhoek is zichtbaar niet gelijk aan de gerichte tekenzin.
+- Maak de annotaties toetsenbord- en screenreader-veilig. Zij nemen geen canvaspointerevents over en bevatten geen ongeautoriseerde waarden. Individueel verslepen van de drie maatlabels is **niet** vereist in M8b; voeg daarvoor geen concurrerend labeldrag-systeem toe.
+
+### 3.4 Rechten, organisatie, kopiëren en ontkoppelen
+
+- Selecteerbaarheid en bewerkbaarheid volgen bestaande `PermissionRuntime` en autoritatieve commando's. Voor gecreëerde polygonen gelden het geldende `createdObjectRules.polygon`-beleid plus nieuwe expliciete tool/source grants.
+- Bronpunten blijven afzonderlijk selecteerbare objecten. Bij bronverplaatsing herberekenen alle dependents topologisch; bij verwijderen van een bron volgt de bestaande cascade met herstelfunctie via undo.
+- Dupliceren van een gekoppelde vierhoek volgt het bestaande beleid: een onafhankelijk, vertaald **polygon-snapshot** zonder constructiekoppeling; dat snapshot hoeft bij latere vrije hoekpuntwijziging niet langer parallellogram te blijven. Dit onderscheid moet in de UI begrijpelijk zijn. Een beschikbare “constructie losmaken”-actie heeft dezelfde bewuste ontkoppeling.
+- Reeds bestaande polygon-edge- en vertexreferenties voor volgende constructies blijven gekoppeld aan de **stabiele vertexindexen 0=A, 1=B, 2=C, 3=D**. Voor gekoppelde gebieden, perimeter/area, `pointOnSegment`, snapping en lagen is dit essentieel. Een bronbeweging mag vertexindexen nooit herschikken.
+
+## 4. Architectuur-, commando- en opslagcontract
+
+### 4.1 Voorgesteld constructierecept
+
+**Voorstel, niet bestaand schema:**
+
+```json
+{
+  "type": "polygon",
+  "id": "polygon-21",
+  "vertices": [
+    {"x": 0, "y": 0},
+    {"x": 4, "y": 0},
+    {"x": 5.5, "y": 2.598076211353316},
+    {"x": 1.5, "y": 2.598076211353316}
+  ],
+  "showMeasurement": true,
+  "construction": {
+    "kind": "parallelogramBySideAngle",
+    "sources": [
+      {"objectId": "point-A"},
+      {"objectId": "point-B"}
+    ],
+    "sideLength": 3,
+    "signedAngle": 1.0471975511965976
+  }
+}
+```
+
+`vertices` zijn de **op het moment van oplossen berekende** materialisatie die het bestaande polygon-ecosysteem nodig heeft. De autoritatieve bron is uitsluitend `sources + sideLength + signedAngle`; bij load, replay en wijziging worden de vertices door `ConstructionService` opnieuw opgelost. Genereer geen tweede canonieke maat- of vertexopslag. Geen bronpunt voor `Q`, geen in JSON opgeslagen preview, oppervlakte, formatteruitkomst of schermcoördinaten.
+
+Het recept is strikt: exacte bronaantallen/rollen en parameterkeys, getypeerde, eindige waarden, geen onbekende sleutels, geen as- of willekeurige partreferenties, geen cycli. Een nieuw constructiecommando voert **alle** validatie inclusief permissies vóór de atomaire commit uit. Het voorgestelde tool-ID is `construct:parallelogramBySideAngle`; de commandroute blijft `construction.create` met expliciet getypeerde `sideLength`/`signedAngle`-velden. Codex moet zo nodig de bestaande commandpayload **klein en veilig** uitbreiden, niet parameterdata langs ongevalideerde object properties doorsmokkelen.
+
+### 4.2 Versies: afstemmen met goedgekeurd M8a-contract
+
+De huidige gecontroleerde `main` accepteert documentversies tot v8 en constructieschema's tot 5. Het goedgekeurde **M8a-ontwerp** stelt voor ellipsen `document v9`, `ellipseSchema:1`, `constructionSchema:6` voor; dat is op de gecontroleerde `main` **nog geen productiefeit**.
+
+Voor M8b:
+
+1. Een extra objecttype of eigen `parallelogramSchema` is **niet nodig**, zolang uitsluitend bestaande polygonvelden zoals `showMeasurement` worden gebruikt.
+2. Het nieuwe recept vereist wel een **expliciet nieuw `constructionSchema`-contract**; een oude reader mag het niet silently aannemen of de bronkoppeling verwijderen.
+3. **Volgordevoorstel:** wordt M8a eerder geïmplementeerd met `constructionSchema:6`, reserveer voor M8b voorlopig `constructionSchema:7`. Is de werkelijke basisketen anders, dan bepaalt een nieuwe read-only inventaris het eerste vrije geldige schema; **niet** op basis van alleen dit document een definitief versienummer vastleggen.
+4. Een document zonder ellips of nieuwe objectvelden krijgt **geen onnodige documentversiebump** louter omdat het recept nieuw is. Handhaaf de bestaande maximale-versionregel voor daadwerkelijk aanwezige features en declareer de hogere constructieschema-versie wanneer het M8b-recept voorkomt. Voor een gecombineerd document met M8a-ellips, M8b-vierhoek, regio, lagen en rich text gelden de gezamenlijke compatibiliteitseisen van al die features.
+5. Pas relevante `model.js`-acceptatietabellen, constructionSchema-regels (ook **REG-2 plus hogere schema's**), writer, importer, restricted projectie en legacy-tests samen aan. De oude harde regel “regiorecept = schema precies 5” mag niet verhinderen dat een document zowel een regio als een nieuwer recept bevat.
+6. Een reader zonder ondersteuning voor het nieuwe recept/schema **weigert atomair en zonder downgrade**. Oude v1–v8-documenten en hun bestaande object-/constructiesemantiek blijven ongewijzigd leesbaar.
+7. De uiteindelijke schema-/versiematrix is een **verplichte reviewgate vóór productiecode**, niet een vrij mandaat om M8a te veranderen.
+
+### 4.3 Teken-/snaphandhaving
+
+- `ConstructionService.contract('parallelogramBySideAngle')`: `resultType:'polygon'`, bronrollen `['point','point']`, uitsluitend hele puntobjecten; het result-object gebruikt bestaande dependency-resolve/recovery.
+- Voor een **geldige** vierhoek gebruiken `renderer` en `hit-testing` de bestaande polygoncontour; afzonderlijke SVG-lijnen of pathcaches zijn niet nodig. Vulling, rand en renderorde volgen polygonregels. Zichtbare annotaties zijn apart afgeleide presentatie.
+- `SnapService` ziet vier vertex-kandidaten en vier randsegmenten via bestaande polygonregels. Verwijder geen kandidaten door een extra `parallelogram`-type te introduceren. Self/downstream-snap uitsluitingen blijven bestaan.
+- Gebruik de huidige lagen-/groepsvolgorde, bewaar `fill:'none'` waar expliciet gekozen; `region`/`polygonRegion` blijft een afzonderlijke bronafhankelijke gebiedsconstructie indien gewenst.
+- JSON roundtrip, SVG en offline PNG gebruiken dezelfde actuele resolved vertices; geen verborgen hulppunten of onjuiste zelfkruising bij `θ<0`.
+- Maandelijkse/latere meetfuncties mogen niet uit geformatteerde tekst rekenen; `figureValue(polygon,'area'|'perimeter')` blijft de eigenaarsroute, inclusief schaling door `MeasurementUnits.format`.
+
+### 4.4 Restricted gebruikers en bronlekken
+
+Het gereedschap mag alleen aangeboden/gebruikt worden wanneer het actuele permissieprofiel de tool en beide bronrollen toestaat. Controleer `read`, `display`, `sourceTools`, `createdObjectRules.polygon`, source-epoch, revision, directe en indirecte effecten, documentbudgets en historygrenzen. Controleer **opnieuw bij finaliseren**, niet alleen bij preview. Een niet-toegankelijke, verborgen, verwijderde of ingetrokken bron mag niet via contour, label, getoonde parameters, ARIA, SVG, PNG, JSON, clipboard, cache, foutrapport of radiaalmenu uitlekken. Een mislukte commandvalidatie is atomair; bij onbekende schema- of permissiegevallen **fail closed**.
+
+## 5. Onafhankelijke mathematische acceptatiefixtures
+
+| Geval | Bronnen/parameters | Vereiste uitkomst |
+|---|---|---|
+| Scheve standaard | `A=(0,0)`, `B=(4,0)`, `L=3`, `θ=+60°` | `D=(1.5,3√3/2)`, `C=(5.5,3√3/2)`, `P=14`, `S=6√3`, binnenhoek B `120°` |
+| Rechthoek | `A=(1,2)`, `B=(5,2)`, `L=3`, `θ=+90°` | `D=(1,5)`, `C=(5,5)`, `P=14`, `S=12` |
+| Spiegeloriëntatie | `A=(0,0)`, `B=(4,0)`, `L=3`, `θ=−60°` | `D=(1.5,−3√3/2)`, `C=(5.5,−3√3/2)`, zelfde positieve oppervlakte `6√3` |
+| Ruit | `A=(0,0)`, `B=(5,0)`, `L=5`, `θ=+60°` | alle zijden 5, `P=20`, `S=25√3/2` |
+| Vierkant | `A=(0,0)`, `B=(2,0)`, `L=2`, `θ=+90°` | `C=(2,2)`, `D=(0,2)`, `P=8`, `S=4` |
+| 90° gedraaide zijde | `A=(0,0)`, `B=(0,4)`, `L=3`, `θ=+90°` | `D=(−3,0)`, `C=(−3,4)`, `P=14`, `S=12` |
+| Bronwijziging | wijzig `B=(4,0)` naar `(8,0)` bij `L=3`, `θ=60°` | `D` blijft `(1.5,3√3/2)`; `C=(9.5,3√3/2)`; oppervlakte verdubbelt, `L`/`θ` blijven |
+| Collineariteit | `θ=0`, `θ=±180°` of numeriek onoplosbaar | geen commit of recoverable invalid, nooit een geldig parallellogram met nuloppervlakte |
+| Samenvallende bronnen | `A=B` door bronverplaatsing | tijdelijke ongeldigheid met stabiele ID, geen oude zichtbare maatlabels, herstel mogelijk |
+
+**Controle-instructie:** onafhankelijke tests moeten de verwachte waarden als afzonderlijk berekende orakels vastleggen en niet de productieformule simpelweg opnieuw kopiëren.
+
+Aanvullend: kleine/grote geldige modelschalen, coördinaten rond ±10¹², cancellation, `L` extreem klein/groot, hoeken dicht bij `0/π`, bronverwijdering, lokale translatie, routewisseling van hoekeenheid en begrensde seeded invarianttests. Rapporteer per geval zowel ruwe geometrie als geformatteerde waarde.
+
+## 6. Testimpact en regressiematrix
+
+**Eerste technische deliverable vóór implementatie:** leg een `M8b-TEST-IMPACT.md` vast met per geraakte bestaande test: `ongewijzigd`, `uitbreiden`, `contractueel aanpassen` of `vervangen`, plus oorspronkelijke garantie, noodzakelijke nieuwe verwachting, onafhankelijke tegencontrole en eventuele risico's. Een rode test door echt defect gedrag wordt opgelost in **productiecode**, nooit weggeschreven door versoepeling van de assertion.
+
+### 6.1 Nieuwe gerichte Node-tests
+
+1. Wiskunde: standaard-, geroteerde-, spiegel-, rechthoek-, ruit- en vierkantfixtures; elke vector-, diagonaal- en oppervlakte-invariant.
+2. Bronnen: precies twee geldige hele puntbronnen, bronvolgorde, duplicate IDs, ongeldige/ontbrekende bronnen, acyclische dependency, bronketens, topology-stabiliteit en beide oriëntaties.
+3. Parameters: `L>0`, radiaal/graduele inputconversie, signed hoekbeleid, verboden extra keys, typechecks, niet-eindige waarden, veel te kleine hoeken, coördinatenlimiet en recoverable invalid/recovery.
+4. Integratie: `PolygonGeometry.validate`, polygonmetingen, `polygonRegion`, `pointOnSegment` met vaste randen, `referencesForRole`, bijwerken van afgeleide objecten.
+5. Commando/geschiedenis: één creatie-undo, twee atomair bewerkbare parameters, wijziging van bronnen, undo/redo, replay, duplicatie-snapshot, detach, cascade-delete, lagen/groepen, lock.
+6. Schema: toekomstige constructionSchema-versie, legacy v1–v8, documenten met/zonder M8a en REG-2, atomair afwijzen onbegrepen readers, restricted JSON zonder bronlek en geen half gecommitte import.
+7. Beveiliging: denied source/created-object grants, ingetrokken rechten, verborgen bron, gewijzigde epoch, indirecte effecten, DOM/exportredactie en geen afgeleide stale waarden.
+
+### 6.2 Gerichte Edge-tests
+
+1. Aanklikken A→B→Q, correcte preview en één creatiecommando; numerieke L/hoek vóór confirm; foutieve preview niet commitbaar.
+2. Annulering: Escape, pointercancel, toolwissel, blur, reset, fullscreen, dispose. Geen verborgen preview, spookpunten, pointer captures of extra undo-stappen.
+3. Bron A/B verslepen: correcte vierhoek, live lengte/hoek/oppervlakte; hoekoriëntatie behouden wanneer AB roteert; herstel na tijdelijke coincidentie.
+4. Paneel: bestaande navy/gold-layout, precieze input, graden/radialen, showMeasurement, label/naam, vulling/geen vulling, lock, permissies en focus.
+5. Selectie, viewport/zoom, 4 hoeken/4 randen snap, geen zelf- of downsteam-feedback, verborgen laag, groepsselectie, contextmenu en touchscreen-/keyboardpaden voor zover ondersteund.
+6. JSON save/reload, SVG en offline PNG, gebiedsopvulling + metingen, restricted read/denial, mixed documenten, nul page errors/console exceptions.
+
+### 6.3 Efficiënte testvolgorde
+
+Gebruik **gerichte wiskundige Node-fixtures tijdens ontwikkeling**, daarna gerichte browserinteractie en integratietests; voer **de volledige Node- en Edge-suites aan de mergepoort** uit, en opnieuw na een relevante correctie. Geen volledige suite na elke cosmetische bewerking. Per bestaande testwijziging: leg oorzaak en behouden invariant vast. Werkelijke PASS/FAIL-aantallen, runs, platform, exacte commando's en beperkingen worden gedocumenteerd; geen fictieve resultaten.
+
+## 7. Uitvoering in kleinere mijlpalen (na ontwerpgoedkeuring)
+
+| Stap | Scope | Stop-/acceptatiepoort |
+|---|---|---|
+| **M8b-D — Ontwerp** | Dit contract, UX, mathematische semantiek, beveiliging, versiebeleid en testmatrix | **Gebruiker keurt ontwerp expliciet goed; geen code** |
+| **M8b-0 — Read-only technische planning** | Controleer actuele branch, status M8a/schema's; verifieer bestaande command-/render-/snapcontracten; lever impactmatrix, versievoorstel en uitvoeringsplan | **Stop, vraag afzonderlijke GO** |
+| **M8b-1 — Dynamisch vierhoekrecept** | `parallelogramBySideAngle`, A/B/Q-interactie en numerieke parameters, recoverable invalid, bestaand polygon-renderpad, JSON/history/permission | Gerichte Node/Edge PASS en gebruikersbeoordeling |
+| **M8b-2 — Meetweergave en integratie** | Twee lengte-/hoeklabels, inspector, live maten, overige polygoncontructies, styling, snapping, restricted en mixed schema's | Gerichte Node/Edge PASS en visuele gebruikersacceptatie |
+| **M8b-3 — Consolidatie** | Volledige suites, legacy/mixed roundtrip, regressie-audit, docs, exact rapport, acceptatiescenario's | **Expliciete GO/NO-GO vóór merge naar `main`** |
+
+Voor de uitvoering: nieuwe featurebranch vanaf een **op dat moment geverifieerde** `main`-basis, geen overlap met open M8a-wijzigingen, géén automatische merge. Vanwege afhankelijkheidsconcurrentie is het niet verstandig M8a en M8b tegelijk aan dezelfde schema- en constructiebestanden te laten wijzigen. Parallel **ontwerpen** mag wel; parallel **implementeren** alleen na concrete branch-/schema-isolatie.
+
+## 8. Beslispunten voor gebruikersgoedkeuring
+
+1. **Aanmaakmethode:** kies twee bestaande punten `A`,`B`, vervolgens een derde *plaatsingsklik* `Q` voor initiële `L`/`θ`, of typ die waarden exact in dezelfde stap; `Q` wordt geen bronpunt.
+2. **Dynamiek:** `L` en `θ` blijven vast bij verplaatsing van `A/B`; `|AB|` is bronafhankelijk. Het resultaat heeft vier vaste vertexindexen.
+3. **Objectmodel:** één gekoppeld `polygon` van vier punten, geen nieuw geometrisch objecttype.
+4. **Hoekbeleid:** gerichte `θ` met beide draairichtingen, intern radialen, gebruikersweergave in de gekozen hoekeenheid; nul/180° zijn ongeldig.
+5. **Maten:** live waarden in het paneel; optionele canvasannotaties via bestaande `showMeasurement`, zonder aparte tekstobjecten of labeldrag-mechanisme.
+6. **Versiebeheer:** apart constructieschema noodzakelijk, voorlopig ná de reeds gereserveerde M8a-schemastap; definitieve toewijzing pas na actuele repository-inventaris.
+7. **Scopegrens:** drie *blijvend* gekoppelde bronpunten en vrij slepen van berekende hoekpunten blijven aparte latere uitbreidingen.
+8. **Proces:** ontwerpacceptatie **is geen Codex-implementatieautorisatie**; eerst M8b-0, dan afzonderlijke GO voor M8b-1, geen ongeautoriseerde merge.
+
+**Besluit 15 oktober 2026:** dit contract als ontwerpbasis goedgekeurd; nog geen Codex-implementatie voordat M8a-branch en document-/schemasituatie opnieuw zijn gecontroleerd. Dit document autoriseert zelf geen wijziging van `main`.
+
+## 9. Bronbasis en herkomst van besluiten
+
+**Repo-onderbouwde bestaande feiten:**
+
+- [`docs/DEVELOPMENT-ROADMAP.md`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/docs/DEVELOPMENT-ROADMAP.md): M8b staat gepland voor twee zijden/hoek, live maten, degeneraties/roundtrip en finale milestone-gate.
+- [`docs/FEATURE-BACKLOG.md`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/docs/FEATURE-BACKLOG.md): parallellogram met twee zijden, ingesloten hoek, exacte invoer en evenwijdigheidsinvariant.
+- [`AGENTS.md`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/AGENTS.md), [`docs/CORE-1-ARCHITECTURE-DESIGN.md`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/docs/CORE-1-ARCHITECTURE-DESIGN.md): één document-/constructiewaarheid, ToolCatalog, contextconstructie, rechten en geautoriseerd commandpad.
+- [`construction-service.js`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/construction-service.js): sourceRoles, resolver, dependents, `triangleFromPoints`, `construction.setParameter`-gerelateerde bestaande paden.
+- [`polygon-geometry.js`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/polygon-geometry.js), [`model.js`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/model.js): polygonvalidatie, vierhoekvertices, bestaande versie/constructie-schemaregels.
+- [`measurement-geometry.js`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/measurement-geometry.js), [`renderer.js`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/renderer.js), [`snap-service.js`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/snap-service.js): polygonmetingen, contourweergave en vertices-/rand-snapping.
+- [`permission-runtime.js`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/permission-runtime.js): geautoriseerde creatie, constructieparameters en bronrechten.
+- **Goedgekeurde M8a-basis:** lokaal opgesteld document `M8a-Ellipsen-Ontwerpcontract-v1.0.0.md`, door gebruiker in dit project op 15 oktober 2026 goedgekeurd; **geen claim** dat zijn nieuwe schema's al op `main` zijn geïmplementeerd.
+
+**Nieuwe M8b-ontwerpkeuzes, goedgekeurd als ontwerp maar niet geïmplementeerd:** `parallelogramBySideAngle`, A/B/Q-interactie, `sideLength`/`signedAngle`-recept, `showMeasurement`-interpretatie, foutcodes, versievolgorde en opsplitsing M8b-0 t/m M8b-3. Niets hiervan wordt als bestaand of getest gepresenteerd.
