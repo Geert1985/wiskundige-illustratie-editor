@@ -1,10 +1,10 @@
 # UI-RADIAL-9 — Generieke contractgestuurde contextuele constructies
 
-**Versie:** 1.1.0 (DOC-RADIAL-1 consolidatie; oorspronkelijke implementatiebeschrijving behouden)  
+**Versie:** 1.1.1 (main-integratiestatus; oorspronkelijke implementatiebeschrijving behouden)  
 **Datum:** 14 oktober 2026  
 **Branch:** `codex/ui-radial-7-point-context-constructions`  
 **Basis:** UI-RADIAL-7A/B (punt) en UI-RADIAL-8 (cirkel, lijnstuk, rechte, halfrechte, vector)  
-**Status:** geïmplementeerd op ontwikkelbranch en door gebruiker functioneel positief beoordeeld; **geen merge naar `main`**; door de assistent **geen automatische Node-/Edge-tests of browserregressie uitgevoerd**.
+**Status per 15 oktober 2026:** via PR #12 geïntegreerd in `main` (`63ab45acc7`), na eerdere positieve gebruikersfeedback. Deze documentatieaanvulling heeft geen nieuwe Node-/Edge-/browserregressie uitgevoerd; historische statusregisters hieronder verwijzen naar de periode vóór de merge.
 
 ## Doel
 

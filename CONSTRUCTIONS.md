@@ -1,6 +1,6 @@
 # Linked geometric constructions
 
-> **Geldigheid:** de hieronder volgende basisconstructies, meetprincipes en selectieregels zijn deels **historische beschrijvingen**. De actuele menustructuur en het radiale voorinvulcontract op featurebranch `codex/ui-radial-7-point-context-constructions` zijn vastgelegd in [UI-RADIAL-9](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md), [AGENTS.md](AGENTS.md) en [roadmap v2.8.0](docs/DEVELOPMENT-ROADMAP.md). De huidige code blijft de bron voor de daadwerkelijk beschikbare gereedschappen. Geen claim van merge naar `main` of uitgevoerde regressietests.
+> **Geldigheid:** oudere basisconstructies en meetprincipes hieronder bevatten historische beschrijvingen. UI-RADIAL-9 en de contextuele constructiearchitectuur staan sinds merge PR #12 op `main` (referentie `63ab45acc7`); zie [UI-RADIAL-9](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md), [AGENTS.md](AGENTS.md) en [roadmap](docs/DEVELOPMENT-ROADMAP.md). De ontwerpcontracten [M8a](docs/M8a-ELLIPSEN-CONTRACT.md) en [M8b](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn goedgekeurd maar nog niet geïmplementeerd.
 
 ## Actuele contextuele constructies (aanvulling 2026-10-14)
 
@@ -12,7 +12,7 @@
 - **Gereedschapsinterface:** tabbladen **Gereedschappen** / **Lagen en objecten**, met de acht hoofdcategorieën uit de README. **Hoek** en **Rechte hoek** vallen onder **Vrije objecten**. In het radiaalmenu zijn categorieën voor geschikte enkelvoudige selecties **Constructie, Uiterlijk, Geometrie, Relaties, Acties, Alles**; labelzichtbaarheid is een actie.
 - Alleen **rechtsklikken** opent het compacte, verplaatsbare zesdelige wiel; `Alles` toont de volledige inspector in een **zwevend paneel** en er is geen permanente rechter eigenschappenbalk.
 
-**Validatie/status:** gebruikersfeedback bevestigt UI-RADIAL-7/8/9 in de praktijk; de assistent heeft voor deze reeks geen automatische tests uitgevoerd. Geen merge naar `main`.
+**Validatie/status (2026-10-15):** UI-RADIAL-7/8/9 zijn via PR #12 in `main` geïntegreerd; eerdere gebruikersfeedback was positief. Deze documentatie-update heeft geen nieuwe Node-/Edge- of browsertests uitgevoerd.
 
 
 Six tools create ordinary rendered point/straight/ray objects with explicit construction references. Select sources by clicking existing geometry:
