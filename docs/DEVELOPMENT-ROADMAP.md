@@ -1,8 +1,16 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.12 (M8b-1 handmatig geaccepteerd en geïntegreerd, 2026-10-16)
-Status: gecontroleerde integratiebasis `main` = `adc6638` (PR #21). M8b-1 is door de gebruiker handmatig geaccepteerd en geïntegreerd: dynamisch parallellogram via A, B, L en θ, inclusief schema 8, restricted export en ongeldigheidsherstel. M8b-2 en M8b-3 blijven open. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
+Version: 2.8.14 (M8b-2c implementatie op featurebranch, wacht op code-review en gebruikersacceptatie, 2026-10-16)
+Status: gecontroleerde M8b-2b-basisbranch `codex/m8b-2b-ux-geometry-integration` = `5f5551cc589ed0aff8ad83b9154f3ceb086dc7e0`. M8b-2c staat op `codex/m8b-2c-rhombus-constraints` en is niet naar `main` of een andere branch geïntegreerd. M8b-2 en M8b-2b blijven eveneens afzonderlijke featurebranchstatussen; M8b-3 blijft open. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-16
+
+## M8b-2 — featurebranchstatus
+
+M8b-2 is geïmplementeerd op featurebranch `codex/m8b-2-measurements-inspector`, gebaseerd op commit `c608cbc567edd566c0c68c55473def221cfade78`; de branch wacht op gebruikersacceptatie en is niet op `main` geïntegreerd. M8b-2b bouwt op deze branch in `codex/m8b-2b-ux-geometry-integration`: meetlabels standaard verborgen, individuele hoekbogen/rechtehoekmarkeringen, live bronpuntnamen, tijdelijke bestaande Q-plaatsing, ±90° vrije snap en polygonrandcontextconstructies. De branchstatus van M8b-2b wordt in [het implementatieverslag](M8b-2b-UX-GEOMETRY-INTEGRATION.md) geregistreerd. M8b-3 blijft open.
+
+## M8b-2c — featurebranchstatus
+
+M8b-2c bouwt op de gecontroleerde M8b-2b-featurebranch in `codex/m8b-2c-rhombus-constraints`. De nieuwe vaste-lengtemodus blijft `constructionSchema:8`; de blijvende `sideLengthMode:"matchAB"`-voorwaarde gebruikt `constructionSchema:9`. De implementatie omvat gelijke-zijdensnap met hysterese, gecombineerde ±90°-snap, de eigenschappenschakelaar, classificatie en dynamische puntnamen, plus invalidatie van verouderde randcontext. De branch wacht op code-review en gebruikersacceptatie; geen merge is uitgevoerd. Zie [het M8b-2c-implementatieverslag](M8b-2c-RHOMBUS-CONSTRAINTS-IMPLEMENTATION.md).
 
 > **Lees eerst:** [AGENTS.md](../AGENTS.md), [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en de nieuwste toevoegingen hieronder. De volledige eerdere M1–M20-backlog, FUN-OBJ/MAT-OBJ-voorstellen en historische tests blijven behouden.
 
@@ -11,13 +19,13 @@ Date: 2026-10-16
 | Traject | Ontwerpstatus | Implementatie-/acceptatiestatus |
 |---|---|---|
 | **M8a — Ellipsen** | **Goedgekeurd**: [contract v1.1.0](M8a-ELLIPSEN-CONTRACT.md) | M8a-1/STAB-1 via PR #15, M8a-2 via PR #16 en M8a-1b permanent besturingspunt Q via PR #17 staan op `main`. `ellipseByFociAndPoint` gebruikt drie puntbronnen en afgeleide S; `ellipseByFociAndSum` blijft beschikbaar voor legacyrecepten en -documenten. Zie [M8a-1b-verslag](M8a-1b-ELLIPSE-CONTROL-POINT-IMPLEMENTATION.md). |
-| **M8b — Parallellogrammen** | **Goedgekeurd**: [contract v1.1.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) | M8b-0 en M8b-0b afgerond; **M8b-1 geïmplementeerd, handmatig geaccepteerd en op `main` geïntegreerd via [PR #21](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/21) (`adc6638`)**. Codex rapporteerde `npm test` 683/683 en volledige Edge-suite PASS; onafhankelijke GitHub Actions-checks voor de feature-HEAD ontbraken. Zie [M8b-1-verslag](M8b-1-DYNAMIC-PARALLELOGRAM-IMPLEMENTATION.md). M8b-2 (metingen/UI) en M8b-3 (consolidatie) zijn open en vereisen afzonderlijke GO. |
+| **M8b — Parallellogrammen** | **Goedgekeurd**: [contract v1.3.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) | M8b-0 en M8b-0b afgerond; **M8b-1 geïmplementeerd, handmatig geaccepteerd en op `main` geïntegreerd via [PR #21](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/21) (`adc6638`)**. Zie [M8b-1-verslag](M8b-1-DYNAMIC-PARALLELOGRAM-IMPLEMENTATION.md). M8b-2 en M8b-2b wachten op gebruikersacceptatie. M8b-2c wordt geïmplementeerd op `codex/m8b-2c-rhombus-constraints` en is nog niet gemerged; zie [implementatieverslag](M8b-2c-RHOMBUS-CONSTRAINTS-IMPLEMENTATION.md). M8b-3 blijft open. |
 | **M7-VEC-FUND — Vectorfundament** | **Ontwerp v1.0.0 goedgekeurd** op 15 oktober 2026: [contract](M7-VEC-FUND-CONTRACT.md). Historisch label `M7a` vervalt uitsluitend voor vectorfundament. | **Niet geïmplementeerd.** Read-only preflight vereist; afzonderlijke GO nodig voor productiecode, tests en branchwerk. `tasks-146` en `tasks-147` behoren inhoudelijk tot dit traject. |
 | **Parabolen/hyperbolen** | Architectuurvoorstel besproken in *WIE - Kegelsneden* | Nog **geen** afzonderlijk goedgekeurde ontwerpcontracten of implementatieopdrachten |
 | **UI-RADIAL/REG-2** | Bestaande contracten en implementaties | Gemerged op `main` via PR #12; nieuw volledig regressie- en handmatig acceptatiebewijs niet uit deze docs-update afleidbaar |
 | **STAB-1** | Integratie-/regressiecontrole | Opgenomen in de goedgekeurde basis `main` via PR #15; latere featurebranches krijgen hun eigen regressieresultaten |
 
-**Schema-grens:** `main` bevat schema 6 voor legacy ellipssom/punt-op-ellipsrecepten, schema 7 voor ellipsen met besturingspunt en **`constructionSchema:8` voor `parallelogramBySideAngle`**. GEO-UI-metingen gebruiken documentversie 10/`measurementSchema:1`; ellipsen `ellipseSchema:1`. Documentversie 11 is niet vereist voor M8b. De verdere M8b-2/M8b-3-implementaties blijven apart.
+**Schema-grens:** `main` bevat schema 6 voor legacy ellipssom/punt-op-ellipsrecepten, schema 7 voor ellipsen met besturingspunt en **`constructionSchema:8` voor vaste `parallelogramBySideAngle`-constructies**. M8b-2c reserveert schema 9 voor parallellogrammen met blijvende `sideLengthMode:"matchAB"`; deze wijziging bestaat alleen op de featurebranch zolang acceptatie en merge openstaan. GEO-UI-metingen blijven documentversie 10/`measurementSchema:1`; documentversie 11 is niet vereist.
 
 **Nummerbeleid M7 (besloten voor vectorfundament, 15 oktober 2026):** **M7-VEC-FUND** is de definitieve unieke identifier voor [Vectorfundament v1.0.0](M7-VEC-FUND-CONTRACT.md). Het oudere vectorlabel `M7a` is uitsluitend een historisch synoniem en wordt niet meer voor deze milestone gebruikt. **M7a–c — Starre transformaties** (`tasks-118`–`tasks-123`) behouden hun bestaande nummering. De oorspronkelijke tekst noemt `M7b` voor translatie en `M7f` voor vectoralgebra; de uiteindelijke namen en volgorde van die vervolgtrajecten vereisen nog aparte besluitvorming. De bestaande taakrefs blijven behouden; contractgoedkeuring is geen implementatie-GO.
 

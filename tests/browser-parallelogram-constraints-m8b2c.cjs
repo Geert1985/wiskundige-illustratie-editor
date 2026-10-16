@@ -1,0 +1,47 @@
+const assert=require('node:assert/strict');
+module.exports=async page=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[{id:'A',type:'point',x:0,y:0},{id:'B',type:'point',x:4,y:0}],presentation:{bounds:{xMin:-5,xMax:12,yMin:-7,yMax:8}}}));
+ await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:parallelogramBySideAngle"]');
+ const clickMath=async p=>{const q=await page.evaluate(p=>FZI.MathIllustration.editor.transform().mathToScreen(p),p);await page.mouse.click(q.x,q.y);};
+ await clickMath({x:0,y:0});await clickMath({x:4,y:0});
+ const hoverMath=async p=>{const q=await page.evaluate(p=>FZI.MathIllustration.editor.transform().mathToScreen(p),p);await page.mouse.move(q.x,q.y);};
+ await hoverMath({x:4*Math.cos(Math.PI/4),y:4*Math.sin(Math.PI/4)});
+ await page.waitForFunction(()=>FZI.MathIllustration.editor.engine.renderer.preview?.equalSides===true);
+ assert.ok(await page.locator('#canvas [data-preview-equal-sides]').count());assert.match(await page.locator('#toolInstructions [data-parallelogram-status]').textContent(),/Gelijke zijden behouden/);assert.equal(await page.locator('#toolInstructions [data-parallelogram-match-ab]').isChecked(),true);
+ await clickMath({x:4*Math.cos(Math.PI/4),y:4*Math.sin(Math.PI/4)});
+ let p=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.find(o=>o.construction?.kind==='parallelogramBySideAngle'));
+ assert.equal(p.construction.sideLengthMode,'matchAB');assert.equal(p.vertices.length,4);assert.ok(Math.abs(Math.hypot(p.vertices[3].x-p.vertices[0].x,p.vertices[3].y-p.vertices[0].y)-4)<1e-9);
+ const names=await page.evaluate(id=>{const app=FZI.MathIllustration.editor;app.engine.update('A',{name:'P'});app.engine.update('B',{name:'Q'});app.selectedIds=[id];const html=app.parallelogramInspector(app.engine.get(id));app.radialProperties.contextEdge={objectId:id,index:2};const valid=app.radialProperties.context();app.selectObject('A');const stale=app.radialProperties.context();return {html,validEdge:valid.edgeRef,staleEdge:stale.edgeRef,cleared:app.radialProperties.contextEdge===null};},p.id);
+ assert.match(names.html,/Bronpunt P/);assert.match(names.html,/Bronpunt Q/);assert.match(names.html,/Zijde PQ/);assert.match(names.html,/Zijde DP/);assert.deepEqual(names.validEdge,{objectId:p.id,part:'edge',index:2});assert.equal(names.staleEdge,undefined);assert.equal(names.cleared,true);
+ await page.evaluate(id=>{const app=FZI.MathIllustration.editor;app.engine.update('B',{x:6,y:0});app.invalidate();},p.id);
+ p=await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id),p.id);assert.equal(p.construction.sideLengthMode,'matchAB');assert.ok(Math.abs(Math.hypot(p.vertices[3].x-p.vertices[0].x,p.vertices[3].y-p.vertices[0].y)-6)<1e-9);
+ const shape=await page.evaluate(id=>FZI.MathIllustration.ConstructionService.parallelogramShape(FZI.MathIllustration.editor.engine.get(id)),p.id);assert.equal(shape,'Ruit');
+
+ // The length snap and existing right-angle snap can be active together.
+ await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:parallelogramBySideAngle"]');await clickMath({x:0,y:0});await clickMath({x:6,y:0});const squareQ={x:6*Math.cos(88*Math.PI/180),y:6*Math.sin(88*Math.PI/180)};await hoverMath(squareQ);await page.waitForFunction(()=>FZI.MathIllustration.editor.engine.renderer.preview?.equalSides===true&&FZI.MathIllustration.editor.engine.renderer.preview?.snapped===true);assert.equal(await page.locator('#toolInstructions [data-parallelogram-match-ab]').isChecked(),true);await clickMath(squareQ);
+ let square=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.filter(o=>o.construction?.kind==='parallelogramBySideAngle').at(-1));assert.equal(square.construction.sideLengthMode,'matchAB');assert.ok(Math.abs(square.construction.signedAngle-Math.PI/2)<1e-12);assert.equal(await page.evaluate(id=>FZI.MathIllustration.ConstructionService.parallelogramShape(FZI.MathIllustration.editor.engine.get(id)),square.id),'Vierkant');await page.evaluate(()=>{const app=FZI.MathIllustration.editor;app.engine.update('B',{x:8,y:0});app.invalidate();});square=await page.evaluate(id=>{const o=FZI.MathIllustration.editor.engine.get(id);return {object:o,shape:FZI.MathIllustration.ConstructionService.parallelogramShape(o)};},square.id);assert.equal(square.shape,'Vierkant');assert.ok(Math.abs(Math.hypot(square.object.vertices[3].x-square.object.vertices[0].x,square.object.vertices[3].y-square.object.vertices[0].y)-8)<1e-9);
+
+ // Selecting an existing placement point has priority over both magnetic snaps.
+ await page.evaluate(id=>{const app=FZI.MathIllustration.editor;app.engine.add({id:'Q',type:'point',x:3,y:3});app.selectObject(id);},p.id);
+ await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:parallelogramBySideAngle"]');await clickMath({x:0,y:0});await clickMath({x:8,y:0});await clickMath({x:3,y:3});
+ const qPlacement=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.filter(o=>o.construction?.kind==='parallelogramBySideAngle').at(-1));assert.equal(qPlacement.construction.sideLengthMode,undefined);assert.equal(qPlacement.construction.sources.length,2);assert.ok(Math.abs(qPlacement.construction.sideLength-Math.sqrt(18))<1e-8);
+
+ // During placement, the disabled L field follows AB while equal sides are
+ // active, then shows the fixed placement length again when the option is off.
+ const documentBeforeFieldToggle=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
+ await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[{id:'A',type:'point',x:0,y:0},{id:'B',type:'point',x:4,y:0}],presentation:{bounds:{xMin:-5,xMax:12,yMin:-7,yMax:8}}}));
+ await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:parallelogramBySideAngle"]');await clickMath({x:0,y:0});await clickMath({x:4,y:0});
+ const placementSide=page.locator('#toolInstructions [data-parallelogram-param="sideLength"]'),matchDuringPlacement=page.locator('#toolInstructions [data-parallelogram-match-ab]');await placementSide.fill('2.5');await page.locator('#toolInstructions [data-parallelogram-param="signedAngle"]').fill('60');assert.equal(await placementSide.inputValue(),'2.5');
+ await matchDuringPlacement.check();assert.equal(await placementSide.isDisabled(),true);assert.equal(await placementSide.inputValue(),'4');assert.match(await page.locator('#toolInstructions [data-parallelogram-status]').textContent(),/AD = 4/);
+ await matchDuringPlacement.uncheck();assert.equal(await placementSide.isDisabled(),false);assert.equal(await placementSide.inputValue(),'4');await page.keyboard.press('Escape');await page.evaluate(doc=>FZI.MathIllustration.editor.loadDocument(doc),documentBeforeFieldToggle);
+
+ // Exact numeric input is authoritative; an explicit opt-in is available separately.
+ await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:parallelogramBySideAngle"]');await clickMath({x:0,y:0});await clickMath({x:8,y:0});await page.locator('#toolInstructions [data-parallelogram-param="sideLength"]').fill('2.5');await page.locator('#toolInstructions [data-parallelogram-param="signedAngle"]').fill('90');assert.equal(await page.locator('#toolInstructions [data-parallelogram-match-ab]').isChecked(),false);await page.locator('#toolInstructions [data-parallelogram-confirm]').click();
+ p=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.filter(o=>o.construction?.kind==='parallelogramBySideAngle').at(-1));assert.equal(p.construction.sideLengthMode,undefined);assert.ok(Math.abs(p.construction.sideLength-2.5)<1e-10);
+ await page.evaluate(id=>{const app=FZI.MathIllustration.editor;app.selectObject(id);app.radialProperties.openAt({x:innerWidth/2,y:innerHeight/2},false);app.radialProperties.choose('geometry');},p.id);const panel=page.locator('#propertiesSidebar');await panel.locator('[data-parallelogram-property="sideLengthMode"]').check();assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).construction.sideLengthMode,p.id),'matchAB');await panel.locator('[data-parallelogram-property="sideLengthMode"]').uncheck();p=await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id),p.id);assert.equal(p.construction.sideLengthMode,undefined);assert.ok(Math.abs(p.construction.sideLength-8)<1e-9);
+ await page.locator('#undoBtn').click();assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).construction.sideLengthMode,p.id),'matchAB');await page.locator('#redoBtn').click();assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).construction.sideLengthMode,p.id),undefined);
+ const saved=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());assert.equal(saved.constructionSchema,9);await page.evaluate(doc=>FZI.MathIllustration.editor.loadDocument(doc),saved);assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).construction.sideLengthMode,p.id),undefined);
+ assert.deepEqual(errors,[]);
+ return {equalSideMagneticPreview:'passed',combined90DegreeSquareSnap:'passed',persistentRhombusOnSourceMotion:'passed',dynamicSourceNamesAndRadialEdgeContext:'passed',existingQAndNumericPriority:'passed',manualToggleAndUndoRedo:'passed',schema9Roundtrip:'passed',pageErrors:errors};
+};

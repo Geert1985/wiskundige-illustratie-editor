@@ -76,7 +76,7 @@
   // UI-PANEL-1: one section-icon vocabulary for every floating inspector.
   // Presentation only: no change to details state, model fields or commands.
   const PROPERTY_ICONS=Object.freeze({
-    'point-projections':'axes',geometry:'geometry','object-geometry':'geometry',measurements:'measurement',appearance:'appearance',
+    'point-projections':'axes',geometry:'geometry','object-geometry':'geometry','parallelogram-geometry':'geometry',measurements:'measurement',appearance:'appearance',
     relations:'relations',labels:'labels',region:'measurement',
     'angle-measurement':'angleUnits','circle-distribution':'geometry',
     'dynamic-text':'editText',common:'appearance',axes:'axes',
@@ -193,7 +193,7 @@
           this.app.suppressMarqueeMenu||this.app.interaction)return;
         const hit=this.app.hitAt(e);
         if(!hit?.object||!this.app.canvasSelectable(hit.object))return;
-        this.app.selectObject(hit.object.id,false,'canvas');
+        this.contextEdge=hit.edgeRef||null;this.app.selectObject(hit.object.id,false,'canvas');
         this.openAt({x:e.clientX,y:e.clientY},true);
       },true);
       // Right-button pointerup fallback for browsers that dispatch
@@ -208,7 +208,7 @@
         if(this.app.suppressMarqueeMenu||this.app.interaction)return;
         const hit=this.app.hitAt(e);
         if(!hit?.object||!this.app.canvasSelectable(hit.object))return;
-        this.app.selectObject(hit.object.id,false,'canvas');
+        this.contextEdge=hit.edgeRef||null;this.app.selectObject(hit.object.id,false,'canvas');
         this.openAt({x:e.clientX,y:e.clientY},false);
       });
       this.listen(this.win,'resize',()=>{
@@ -232,7 +232,8 @@
       const groupId=app.selectedGroups?.()?.[0];
       const group=groupId&&app.engine.model.groups.find(g=>g.id===groupId);
       if(group&&app.groupLeaves(group.id).length>1)return {type:'group',name:group.name,id:group.id,objects};
-      return {type:obj.type==='text'?'text':obj.construction?'linked':'object',name:obj.name,id:obj.id,objects};
+      const edge=this.contextEdge,edgeValid=edge?.objectId===obj.id&&obj.type==='polygon'&&obj.constructionValid!==false&&Array.isArray(obj.vertices)&&obj.vertices.length>=3&&Number.isInteger(edge.index)&&edge.index>=0&&edge.index<obj.vertices.length;if(edge&&!edgeValid)this.contextEdge=null;
+      return {type:obj.type==='text'?'text':obj.construction?'linked':'object',name:obj.name,id:obj.id,objects,...(edgeValid?{edgeRef:{objectId:edge.objectId,part:'edge',index:edge.index}}:{})};
     }
     allowedContext(ctx){
       if(!ctx||this.doc.querySelector('dialog[open]')||this.app.interaction)return false;
@@ -535,7 +536,7 @@
           (!app.runtime||app.capabilities(source.id).sourceTools.includes(entry.id)));
       const out=[];
       for(const entry of entries){
-        const plans=MI.ConstructionService.contextualPlans(source,entry.id.slice(10));
+        const plans=MI.ConstructionService.contextualPlans(source,entry.id.slice(10),ctx.edgeRef);
         // Keep one discoverable entry for each construction. A composite
         // endpoint recipe takes precedence when defined by the service.
         if(plans.length)out.push({entry,plan:plans[0]});
@@ -551,7 +552,7 @@
       const ctx=this.context(),items=this.contextConstructions(ctx);
       panel.hidden=false;panel.replaceChildren();
       panel.append(text('p','radial-construction-lead',
-        (ctx.name||ctx.id)+' is als constructiebron geselecteerd. Kies een gereedschap:',this.doc));
+        (ctx.name||ctx.id)+(ctx.edgeRef?' · zijde '+(ctx.edgeRef.index+1):'')+' is als constructiebron geselecteerd. Kies een gereedschap:',this.doc));
       if(!items.length){
         panel.append(text('p','radial-construction-empty',
           'Geen toegestane constructies voor dit object.',this.doc));
@@ -591,7 +592,7 @@
         item.entry.id===toolId&&item.plan.key===planKey))return;
       const sourceId=ctx.objects[0].id;
       this.close();
-      this.app.startContextConstruction(toolId,sourceId,planKey);
+      this.app.startContextConstruction(toolId,sourceId,planKey,ctx.edgeRef);
     }
     applyContextFilter(filter){
       const object=this.context().objects[0];
