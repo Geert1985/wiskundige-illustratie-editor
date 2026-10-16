@@ -31,6 +31,7 @@ const server = http.createServer((req, res) => {
     if (process.env.M8B1_ONLY === '1') { const parallelogram = await require('./browser-parallelogram-m8b.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', parallelogram, pageErrors: errors })); return; }
     if (process.env.M8B2_ONLY === '1') { const parallelogramMeasurements = await require('./browser-parallelogram-measurements-m8b2.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', parallelogramMeasurements, pageErrors: errors })); return; }
     if (process.env.M8B2B_ONLY === '1') { const parallelogramUx = await require('./browser-parallelogram-ux-m8b2b.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', parallelogramUx, pageErrors: errors })); return; }
+    if (process.env.M8B2C_ONLY === '1') { const parallelogramConstraints = await require('./browser-parallelogram-constraints-m8b2c.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', parallelogramConstraints, pageErrors: errors })); return; }
     if (process.env.M8B1_REVIEW_FIXES_ONLY === '1') { const m8bReviewFixes = await require('./browser-m8b-review-fixes.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', m8bReviewFixes, pageErrors: errors })); return; }
     if (process.env.POINT_ON_ELLIPSE_ONLY === '1') { const pointOnEllipse = await require('./browser-point-on-ellipse.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', pointOnEllipse, pageErrors: errors })); return; }
     if (process.env.ELLIPSE_CONTROL_POINT_ONLY === '1') { const ellipseControlPoint = await require('./browser-ellipse-control-point.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', ellipseControlPoint, pageErrors: errors })); return; }
@@ -172,6 +173,7 @@ const server = http.createServer((req, res) => {
     const styles = await require('./browser-styles.cjs')(page);
     const measurementsGroups = await require('./browser-measurements-groups.cjs')(page);
     const parallelogramMeasurementsM8b2 = await require('./browser-parallelogram-measurements-m8b2.cjs')(page);
+    const parallelogramConstraintsM8b2c = await require('./browser-parallelogram-constraints-m8b2c.cjs')(page);
     const geoUi = await require('./browser-geo-ui.cjs')(page);
     const ellipseMeasurementAnchors = await require('./browser-ellipse-measurement-anchors.cjs')(page);
     const constructions = await require('./browser-constructions.cjs')(page);

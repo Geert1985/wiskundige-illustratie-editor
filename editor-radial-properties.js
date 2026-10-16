@@ -232,7 +232,8 @@
       const groupId=app.selectedGroups?.()?.[0];
       const group=groupId&&app.engine.model.groups.find(g=>g.id===groupId);
       if(group&&app.groupLeaves(group.id).length>1)return {type:'group',name:group.name,id:group.id,objects};
-      return {type:obj.type==='text'?'text':obj.construction?'linked':'object',name:obj.name,id:obj.id,objects,...(this.contextEdge?.objectId===obj.id?{edgeRef:this.contextEdge}:{})};
+      const edge=this.contextEdge,edgeValid=edge?.objectId===obj.id&&obj.type==='polygon'&&obj.constructionValid!==false&&Array.isArray(obj.vertices)&&obj.vertices.length>=3&&Number.isInteger(edge.index)&&edge.index>=0&&edge.index<obj.vertices.length;if(edge&&!edgeValid)this.contextEdge=null;
+      return {type:obj.type==='text'?'text':obj.construction?'linked':'object',name:obj.name,id:obj.id,objects,...(edgeValid?{edgeRef:{objectId:edge.objectId,part:'edge',index:edge.index}}:{})};
     }
     allowedContext(ctx){
       if(!ctx||this.doc.querySelector('dialog[open]')||this.app.interaction)return false;
