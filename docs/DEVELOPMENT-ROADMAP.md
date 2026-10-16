@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.21 (M-PATH als universeel punt-op-objecttraject gepland; optie A voor vaste veelhoekzijde goedgekeurd, 2026-10-16)
+Version: 2.8.22 (M8-INT-ontwerpcontract v1.0.0 goedgekeurd en opgenomen; geen implementatie-GO, 2026-10-16)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. De M8b-3 Node- en Edge-regressiepoort is op de featurebranch geslaagd. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-16
 
@@ -33,7 +33,7 @@ Classificeer een gereedschap op basis van zijn primaire functie: **Vrije objecte
 
 ## Roadmap v2.8.20 — M8-INT: universeel snijpuntgereedschap en kegelsnede-snijpunten (2026-10-16)
 
-**Besluit en status:** Eén algemeen gereedschap **Snijpunt** wordt het uniforme gebruikersingangspunt voor alle daadwerkelijk ondersteunde paren geometrische objecten. Dit is een **goedgekeurde roadmapwijziging**; alle M8-INT-fasen zijn nog **gepland en niet geïmplementeerd**. Er is **geen implementatie-GO**, geen reeds goedgekeurd volledig technisch M8-INT-contract en geen wijziging van huidige productfunctionaliteit. M8a-ellipsen en M5b-snijpuntconstructies blijven behouden; M8b is afgerond.
+**Besluit en status:** Eén algemeen gereedschap **Snijpunt** wordt het uniforme gebruikersingangspunt voor alle daadwerkelijk ondersteunde paren geometrische objecten. Dit is een **goedgekeurde roadmapwijziging**; alle M8-INT-fasen zijn nog **gepland en niet geïmplementeerd**. Het [technische M8-INT-ontwerpcontract v1.0.0](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md) is als **ontwerp goedgekeurd en vastgelegd op `main`**. Er is **geen implementatie-GO** en er is geen wijziging van huidige productfunctionaliteit. M8a-ellipsen en M5b-snijpuntconstructies blijven behouden; M8b is afgerond.
 
 **Ontwerpprincipe:** **één UI-gereedschap en één gedeelde selectie-/dispatchworkflow**, maar **hergebruik van gespecialiseerde mathematisch robuuste algoritmen en bestaande constructierecepten**, zonder tweede solver, tweede constructiegraaf of tweede permissiesysteem. De huidige recepten `lineIntersection`, `lineCircleIntersection` en `circleCircleIntersection` zijn in de bestaande `ConstructionService` aanwezig en moeten als compatibele persistente constructiesoorten blijven werken. Eventuele toekomstige nieuwe typen gebruiken de bestaande contract-/schema- en bronafhankelijkheidsmechanismen.
 
