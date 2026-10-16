@@ -8,9 +8,9 @@ module.exports=async page=>{
   const categories=page.locator('#toolGrid > [data-tool-category]');
   const subgroups=page.locator('#toolGrid [data-tool-subgroup]');
   assert.equal(await categories.count(),8);
-  assert.equal(await subgroups.count(),5);
+  assert.equal(await subgroups.count(),6);
   assert.deepEqual(await categories.evaluateAll(ns=>ns.map(n=>n.open)),Array(8).fill(false));
-  assert.deepEqual(await subgroups.evaluateAll(ns=>ns.map(n=>n.querySelector('.tool-subgroup-toggle').getAttribute('aria-expanded'))),Array(5).fill('false'));
+  assert.deepEqual(await subgroups.evaluateAll(ns=>ns.map(n=>n.querySelector('.tool-subgroup-toggle').getAttribute('aria-expanded'))),Array(6).fill('false'));
   assert.equal(await page.locator('#sidebarLayersPanel').isVisible(),false,'The layers panel starts inactive');
   for(const summary of ['Illustratie','Bediening']){
     const section=page.locator('#sidebarLayersPanel details').filter({has:page.locator('summary', {hasText:summary})}).first();
@@ -66,5 +66,5 @@ module.exports=async page=>{
   }
   await page.setViewportSize(oldViewport);
   await page.reload();
-  return {categories:8,subgroups:5,defaultCollapsed:'passed',keyboardDisclosure:'passed',liveSearch:'passed',splitSearch:'passed',restoreState:'passed',documentUnchanged:'passed',responsiveChecks:3};
+  return {categories:8,subgroups:6,defaultCollapsed:'passed',keyboardDisclosure:'passed',liveSearch:'passed',splitSearch:'passed',restoreState:'passed',documentUnchanged:'passed',responsiveChecks:3};
 };
