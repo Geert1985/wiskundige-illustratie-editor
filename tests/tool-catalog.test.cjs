@@ -16,7 +16,7 @@ test('tool catalog provides the same immutable categories for sidebar and fullsc
   const api = catalogApi();
   const catalog = api.create({
     categories: [
-      { id: 'vrije-objecten', label: 'Vrije objecten', entries: [
+      { id: 'vrije-objecten', label: 'Vrije objecten', emptySubgroups: [{ id: 'vectoren', label: 'Vectoren' }], entries: [
         { id: 'point', label: 'Punt', status: 'implemented', commandToolId: 'create:point', markup: '<span>Punt</span>' },
         { id: 'line', label: 'Lijnstuk', status: 'implemented', commandToolId: 'create:line', splitGroup: 'linear', markup: '<span>Lijnstuk</span>' },
         { label: 'Ellips', status: 'planned', markup: '<span>Ellips</span>' },
@@ -30,8 +30,17 @@ test('tool catalog provides the same immutable categories for sidebar and fullsc
   assert.equal(catalog.getTool('point').commandToolId, 'create:point');
   assert.equal(catalog.getSplitForTool('line').id, 'linear');
   assert.equal(catalog.getSplit('missing'), null);
+  assert.deepEqual(Array.from(catalog.list('fullscreen')[0].emptySubgroups, subgroup => subgroup.label), ['Vectoren']);
   const planned = catalog.list('sidebar')[0].entries.find(entry => entry.status === 'planned');
-  assert.deepEqual(Object.keys(planned).sort(), ['label', 'markup', 'status']);
+  assert.deepEqual(Object.keys(planned).sort(), ['label', 'markup', 'status', 'title']);
+});
+
+test('empty subgroups keep presentation metadata without inventing a tool ID', () => {
+  const api = catalogApi();
+  const catalog = api.create({ categories: [{ id: 'constructies', label: 'Constructies', entries: [], emptySubgroups: [{ id: 'vectoren', label: 'Vectoren' }] }], splits: [] });
+  assert.deepEqual(Array.from(catalog.list('sidebar')[0].entries), []);
+  assert.equal(catalog.getTool('vectorAB'), null);
+  assert.ok(Object.isFrozen(catalog.list('sidebar')[0].emptySubgroups[0]));
 });
 
 test('tool catalog rejects duplicate IDs, unknown split choices, and actionable planned entries', () => {

@@ -4,6 +4,11 @@ Version: 2.8.19 (M8-INT als gepland kegelsnede-snijpunttraject toegevoegd; M8b-3
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. De M8b-3 Node- en Edge-regressiepoort is op de featurebranch geslaagd. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-16
 
+<<<<<<< HEAD
+## Gereedschapscatalogus en classificatie
+
+Classificeer een gereedschap op basis van zijn primaire functie: **Vrije objecten** maakt objecten zonder bestaande geometrische bronnen aan; **Constructies** maakt geometrisch afhankelijke objecten; **Metingen** bepaalt, combineert of presenteert geometrische eigenschappen; **Transformaties** maakt afhankelijke objecten via geometrische transformaties. Pas expliciet goedgekeurde herindelingen toe en verplaats andere bestaande vermeldingen pas na afzonderlijke goedkeuring. Sidebar en fullscreen gebruiken dezelfde `ToolCatalog`; lege subcategorieën zijn presentatiegroepen zonder gereedschap-ID en geplande placeholders blijven niet-interactief.
+=======
 ## Roadmap v2.8.19 — M8-INT: snijpunten van kegelsneden (2026-10-16)
 
 **Status:** als nieuwe roadmapmilestone gepland; **niet geïmplementeerd**. Dit is een planningsbesluit, geen goedgekeurd technisch ontwerpcontract of Codex-implementatie-GO. De bestaande M8a-ellipsfunctionaliteit en M5b-snijpuntconstructies blijven ongewijzigd. M8b is afgerond; M8-INT is een afzonderlijk traject.
@@ -17,6 +22,7 @@ Date: 2026-10-16
 **Aanbevolen volgorde:** **M8a (bestaande ellipsimplementatie) → M8-INT.1 → toekomstige parabool-/hyperboolfundamenten en M8-INT.2 → M8-INT.3.** M8-INT.1 kan dus als afzonderlijke kleine uitbreiding vóór de volledige veralgemening van kegelsneden worden ontworpen en uitgevoerd. Dit bepaalt een afhankelijkheidsvolgorde, niet noodzakelijk de onmiddellijke eerstvolgende Codex-taak ten opzichte van andere roadmaptrajecten.
 
 **Architectuur- en acceptatiepoort per fase:** hergebruik bestaande constructieafhankelijkheden, snijpuntlogica, `ConstructionService`, `ToolCatalog`, `contextualPlans`, dynamische herberekening en geautoriseerde commando's. Leg vooraf een afzonderlijk wiskundig/UX-contract vast voor lijn versus lijnstuk/halfrechte, oplossingstakken en snijpuntaantallen, raak- en bijna-raakgevallen, ongeldige en samenvallende bronnen, precisieregels, document-/constructieschema en backwardscompatibiliteit. Neem onafhankelijke wiskundige fixtures, Undo/Redo, replay, restricted bronnen, JSON-roundtrip, SVG/PNG, hit/snap, Node/Edge en handmatige gebruikersacceptatie op. Een generieke menuvermelding **Snijpunt lijn–kegelsnede** vervangt bestaande gespecialiseerde items pas na functionele pariteit en expliciete UX-goedkeuring; geen nieuwe solver of permissieroute parallel aan de huidige architectuur.
+>>>>>>> origin/main
 
 ## M8b-2, M8b-2b en M8b-2c — geaccepteerd en geïntegreerd
 

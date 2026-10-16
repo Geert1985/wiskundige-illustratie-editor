@@ -5,7 +5,9 @@ module.exports=async page=>{
  const category=page.locator('[data-tool-category="constructies"]');
  if(!(await category.evaluate(node=>node.open)))await category.locator(':scope > summary').click();
  const groups=category.locator(':scope > .tool-grid > .tool-subgroup');
- assert.deepEqual(await groups.evaluateAll(nodes=>nodes.map(node=>node.querySelector(':scope > .tool-subgroup-toggle').textContent.trim())),['Puntconstructies','Lijnconstructies','Cirkelconstructies','Kegelsneden','Vierhoekconstructies','Driehoekconstructies']);
+ assert.deepEqual(await groups.evaluateAll(nodes=>nodes.map(node=>node.querySelector(':scope > .tool-subgroup-toggle')?.textContent.trim()||node.querySelector(':scope > .tool-subgroup-label')?.textContent.trim())),['Puntconstructies','Lijnconstructies','Kegelsneden','Vectoren','Vierhoekconstructies','Driehoekconstructies']);
+ const pointTools=category.locator('[data-tool-subgroup="puntconstructies"] [data-tool]');assert.deepEqual(await pointTools.evaluateAll(nodes=>nodes.map(node=>node.dataset.tool)),['construct:midpoint','construct:pointOnSegment','construct:pointOnCircle','construct:pointOnEllipse','construct:lineIntersection','construct:lineCircleIntersection','construct:circleCircleIntersection']);
+ assert.equal(await category.locator('[data-tool-subgroup="kegelsneden"] [data-tool="construct:pointOnEllipse"]').count(),0);
  assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').find(item=>item.id==='constructies').entries.filter(item=>item.status==='implemented').map(item=>item.id).filter(id=>['construct:circleByCenterPoint','construct:parallel','construct:tangent','construct:lineBetweenPoints'].includes(id)).sort()),['construct:circleByCenterPoint','construct:lineBetweenPoints','construct:parallel','construct:tangent'].sort());
  for(const id of ['construct:circleByCenterPoint','construct:parallel','construct:tangent','construct:lineBetweenPoints'])assert.equal(await category.locator(`[data-tool="${id}"]`).count(),1);
  const doc=()=>page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
