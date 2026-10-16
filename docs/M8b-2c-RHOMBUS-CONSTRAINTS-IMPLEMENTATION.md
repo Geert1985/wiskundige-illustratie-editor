@@ -84,6 +84,20 @@ Handmatige acceptatiechecklist:
 5. Controleer bestaand Q, exacte L-/θ-invoer, dynamische bronpuntnamen en contextuele randconstructies.
 6. Sla vaste schema-8- en gekoppelde schema-9-documenten op en laad ze opnieuw; controleer ook export en restricted bronrechten.
 
+## UX-correctie na branchreview
+
+Tijdens stap 3 van de constructie toont het lengteveld nu de effectieve AD-lengte wanneer **Gelijke zijden behouden** is ingeschakeld. De waarde wordt alleen bijgewerkt als het veld niet actief bewerkt wordt. Uitschakelen toont de vaste lengte die de bestaande omschakelactie heeft overgenomen, zodat veld, preview en statusregel overeenkomen.
+
+De Edge-regressie voert tijdens dezelfde plaatsingsstap `L = 2,5` in met `AB = 4`, schakelt de voorwaarde in en controleert dat het uitgeschakelde veld én de status `AD = 4` tonen. Na uitschakelen controleert de test dat het veld weer actief is en nog steeds `4` toont. Daarna wordt de plaatsing geannuleerd en de bestaande numerieke constructiechecks gaan door met de oorspronkelijke documentfixture.
+
+| Verificatie na de UX-correctie | Resultaat |
+|---|---|
+| `$env:M8B2C_ONLY='1'; node tests/browser.cjs` | PASS — gerichte Edge-module, beide toggleovergangen en nul page errors |
+| `npm test` | PASS — 705/705 Node-tests |
+| `npm run test:edge` | PASS — volledige Microsoft Edge-suite, `pageErrors: []` |
+
+Deze correctie wijzigt alleen het plaatsingsveld en voegt geen aparte meet- of snaparchitectuur toe.
+
 ## Technisch oordeel
 
 **Technisch GO voor code-review en handmatige gebruikersacceptatie; geen merge-GO.** Alle gerichte regressies, de volledige Node-suite en de volledige Edge-suite zijn geslaagd. De browsermodule rapporteerde nul page errors. Gebruikersacceptatie en merge blijven open.

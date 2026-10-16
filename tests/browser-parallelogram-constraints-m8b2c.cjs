@@ -27,6 +27,15 @@ module.exports=async page=>{
  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:parallelogramBySideAngle"]');await clickMath({x:0,y:0});await clickMath({x:8,y:0});await clickMath({x:3,y:3});
  const qPlacement=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.filter(o=>o.construction?.kind==='parallelogramBySideAngle').at(-1));assert.equal(qPlacement.construction.sideLengthMode,undefined);assert.equal(qPlacement.construction.sources.length,2);assert.ok(Math.abs(qPlacement.construction.sideLength-Math.sqrt(18))<1e-8);
 
+ // During placement, the disabled L field follows AB while equal sides are
+ // active, then shows the fixed placement length again when the option is off.
+ const documentBeforeFieldToggle=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
+ await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[{id:'A',type:'point',x:0,y:0},{id:'B',type:'point',x:4,y:0}],presentation:{bounds:{xMin:-5,xMax:12,yMin:-7,yMax:8}}}));
+ await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:parallelogramBySideAngle"]');await clickMath({x:0,y:0});await clickMath({x:4,y:0});
+ const placementSide=page.locator('#toolInstructions [data-parallelogram-param="sideLength"]'),matchDuringPlacement=page.locator('#toolInstructions [data-parallelogram-match-ab]');await placementSide.fill('2.5');await page.locator('#toolInstructions [data-parallelogram-param="signedAngle"]').fill('60');assert.equal(await placementSide.inputValue(),'2.5');
+ await matchDuringPlacement.check();assert.equal(await placementSide.isDisabled(),true);assert.equal(await placementSide.inputValue(),'4');assert.match(await page.locator('#toolInstructions [data-parallelogram-status]').textContent(),/AD = 4/);
+ await matchDuringPlacement.uncheck();assert.equal(await placementSide.isDisabled(),false);assert.equal(await placementSide.inputValue(),'4');await page.keyboard.press('Escape');await page.evaluate(doc=>FZI.MathIllustration.editor.loadDocument(doc),documentBeforeFieldToggle);
+
  // Exact numeric input is authoritative; an explicit opt-in is available separately.
  await require('./browser-tool-menu.cjs').choose(page,'[data-tool="construct:parallelogramBySideAngle"]');await clickMath({x:0,y:0});await clickMath({x:8,y:0});await page.locator('#toolInstructions [data-parallelogram-param="sideLength"]').fill('2.5');await page.locator('#toolInstructions [data-parallelogram-param="signedAngle"]').fill('90');assert.equal(await page.locator('#toolInstructions [data-parallelogram-match-ab]').isChecked(),false);await page.locator('#toolInstructions [data-parallelogram-confirm]').click();
  p=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.filter(o=>o.construction?.kind==='parallelogramBySideAngle').at(-1));assert.equal(p.construction.sideLengthMode,undefined);assert.ok(Math.abs(p.construction.sideLength-2.5)<1e-10);
