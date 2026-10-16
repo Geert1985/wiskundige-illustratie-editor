@@ -4,6 +4,10 @@ Version: 2.8.12 (M8b-1 handmatig geaccepteerd en geïntegreerd, 2026-10-16)
 Status: gecontroleerde integratiebasis `main` = `adc6638` (PR #21). M8b-1 is door de gebruiker handmatig geaccepteerd en geïntegreerd: dynamisch parallellogram via A, B, L en θ, inclusief schema 8, restricted export en ongeldigheidsherstel. M8b-2 en M8b-3 blijven open. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-16
 
+## M8b-2 — featurebranchstatus
+
+M8b-2 is geïmplementeerd op featurebranch `codex/m8b-2-measurements-inspector`, gebaseerd op `origin/main` `26d33c0065ed77f9189fe7b9fb69f6ab71733610`; de Node- en Edge-regressies zijn geslaagd. De branch voegt de drie standaardmetingen, parallellogramparameterbediening en restricted projectie toe aan de bestaande GEO-UI-architectuur. De branch wacht op gebruikersacceptatie en is **niet** op `main` geïntegreerd. M8b-3 blijft open. Zie [M8b-2-implementatieverslag](M8b-2-MEASUREMENTS-INSPECTOR-IMPLEMENTATION.md) voor scope en validatie.
+
 > **Lees eerst:** [AGENTS.md](../AGENTS.md), [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en de nieuwste toevoegingen hieronder. De volledige eerdere M1–M20-backlog, FUN-OBJ/MAT-OBJ-voorstellen en historische tests blijven behouden.
 
 ## Roadmap v2.8.5 — beslissingen en open kwaliteitsgates op 15 oktober 2026

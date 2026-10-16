@@ -76,7 +76,7 @@
   // UI-PANEL-1: one section-icon vocabulary for every floating inspector.
   // Presentation only: no change to details state, model fields or commands.
   const PROPERTY_ICONS=Object.freeze({
-    'point-projections':'axes',geometry:'geometry','object-geometry':'geometry',measurements:'measurement',appearance:'appearance',
+    'point-projections':'axes',geometry:'geometry','object-geometry':'geometry','parallelogram-geometry':'geometry',measurements:'measurement',appearance:'appearance',
     relations:'relations',labels:'labels',region:'measurement',
     'angle-measurement':'angleUnits','circle-distribution':'geometry',
     'dynamic-text':'editText',common:'appearance',axes:'axes',

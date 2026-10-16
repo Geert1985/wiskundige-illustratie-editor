@@ -220,6 +220,7 @@
         if(!task.exit){stack.push({id:task.id,exit:true});for(const ref of refs)if(!allowed.has(ref.objectId))stack.push({id:ref.objectId,exit:false});continue;}
         let valid=refs.every(ref=>allowed.get(ref.objectId));
         if(current.type==='ellipse'){const caps=effective(s,current);valid=valid&&!!caps.read&&!!caps.display&&available(current,kernel)&&refs.every(ref=>{const src=map.get(ref.objectId),r=src&&effective(s,src);return !!src&&r.read&&r.display&&available(src,kernel)&&(r.sourceTools||[]).includes('construct:'+current.construction.kind);});}
+        if(current.construction?.kind==='parallelogramBySideAngle'){const caps=effective(s,current),tool='construct:parallelogramBySideAngle';valid=valid&&!!caps.read&&!!caps.display&&refs.every(ref=>{const src=map.get(ref.objectId),r=src&&effective(s,src);return !!src&&r.read&&r.display&&available(src,kernel)&&(r.sourceTools||[]).includes(tool);});}
         if(current.type==='point'&&current.construction?.kind==='pointOnEllipse')valid=valid&&refs.length===1&&refs.every(ref=>{const src=map.get(ref.objectId),r=src&&effective(s,src);return !!src&&src.type==='ellipse'&&r.read&&r.display&&available(src,kernel)&&(r.sourceTools||[]).includes('construct:pointOnEllipse');});
         allowed.set(task.id,valid);
       }}cache={objects,policy:s.policy,allowed};ellipseProjectionCache.set(s,cache);
@@ -243,6 +244,7 @@
     const objects=readObjects(s,s.kernel,svg);
     if(!svg){
       const ids=new Set(objects.map(o=>o.id));
+      for(const current of s.kernel.model.objects){if(current.construction?.kind!=='parallelogramBySideAngle'||!effective(s,current).read||!effective(s,current).display)continue;const tool='construct:parallelogramBySideAngle';if(current.construction.sources.some(ref=>{const source=s.kernel.get(ref.objectId),caps=source&&effective(s,source);return !source||!caps.read||!caps.display||!available(source,s.kernel)||!(caps.sourceTools||[]).includes(tool);}))fail('PERMISSION_DENIED');}
       if(objects.some(o=>o.construction&&o.construction.sources.some(r=>!MI.AxisReferences.isAxis(r)&&!ids.has(r.objectId))))fail('PERMISSION_DENIED');
       for(const o of objects){if(o.type==='region'){delete o.regionGeometry;delete o.regionArea;delete o.regionStatus;}if(o.type==='ellipse'){for(const k of ['c','e','ellipseArea','ellipseBounds'])delete o[k];if(o.construction)for(const k of ['cx','cy','a','b','rotation'])delete o[k];}}
     }
