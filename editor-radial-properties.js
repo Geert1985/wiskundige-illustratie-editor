@@ -55,7 +55,7 @@
   // UI-RADIAL-4: native SVG icon shapes reproduce the approved navy/gold
   // concept without bitmaps, duplicate action engines or network dependencies.
   const SEGMENT_ICONS=Object.freeze({
-    construct:'<path d="M12 2v4M3 12h4M17 12h4M12 18v4"/><circle cx="12" cy="12" r="5"/><path d="M8.5 15.5 5 19M15.5 8.5 19 5"/>',
+    construct:'<path d="M12 2.5v3.2"/><circle cx="12" cy="7.6" r="2.2"/><path d="M10.2 9 5.4 20M13.8 9 18.6 20"/><path d="M3.3 19.7A10.1 10.1 0 0 1 20.7 19.7" stroke-dasharray="2.1 3.1"/>',
     relations:'<circle cx="5" cy="12" r="2.3"/><circle cx="19" cy="5" r="2.3"/><circle cx="19" cy="19" r="2.3"/><path d="M7.3 10.9 16.7 6.1M7.3 13.1l9.4 4.8M19 7.3v9.4"/>',
     appearance:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6.4"/>',
     measurement:'<path d="m2.8 16.5 13.7-13.7 4.7 4.7L7.5 21.2l-4.7-4.7Z"/><path d="m13.5 6 3.1 3.1M10.6 8.9l1.8 1.8M8 11.5l3.1 3.1M5.3 14.2l1.8 1.8"/>',
