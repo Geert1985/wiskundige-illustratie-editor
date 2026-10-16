@@ -1,6 +1,6 @@
 # AGENTS.md — Wiskundige Illustratie Editor (WIE)
 
-**Versie:** 1.0.5 · **Datum:** 2026-10-15 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
+**Versie:** 1.0.6 · **Datum:** 2026-10-16 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
 **Doel:** persistente instructies voor Codex en andere code-assistenten, zonder eerder goedgekeurde implementaties onbedoeld terug te draaien.
 
 ## Eerst lezen en bronvoorrang
@@ -59,7 +59,7 @@
 ## Goedgekeurde ontwerpcontracten — status 2026-10-15
 
 - **M8a Ellipsen:** [contract v1.1.0](docs/M8a-ELLIPSEN-CONTRACT.md) is de normatieve basis. M8a-1/STAB-1 (PR #15), M8a-2 Punt op ellips (PR #16) en M8a-1b Ellips met permanent besturingspunt Q (PR #17) staan op `main`. De actuele code gebruikt document v9/`ellipseSchema:1`, `constructionSchema:6` voor legacy somafstand en punt-op-ellips, en schema 7 voor het driebronnenrecept. Behoud `ellipseByFociAndSum` voor legacydocumenten en -recepttests; zie [M8a-1b-verslag](docs/M8a-1b-ELLIPSE-CONTROL-POINT-IMPLEMENTATION.md).
-- **M8b Parallellogrammen:** [v1.1.0](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md) goedgekeurd als ontwerp; M8b-0 en M8b-0b preflight zijn afgerond, zonder M8b-productiecode. Eén dynamisch vier-vertex-`polygon` op basis van twee bestaande punten, zijlengte en gerichte hoek; meetlabels gebruiken GEO-UI en schema 8 is gereserveerd. M8b-1 vereist nog afzonderlijke gebruikers-GO.
+- **M8b Parallellogrammen:** [contract v1.1.0](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md) is de normatieve basis. M8b-0/0b zijn afgerond; **M8b-1 is handmatig geaccepteerd en via PR #21 (`adc6638`) naar `main` gemerged**. Bestaand `polygon` met vier vaste vertices, twee puntbronnen, `sideLength` en `signedAngle`, `constructionSchema:8`; Q is alleen een tijdelijke plaatsingspositie. [M8b-1-verslag](docs/M8b-1-DYNAMIC-PARALLELLOGRAM-IMPLEMENTATION.md). M8b-2 (GEO-UI-standaardmetingen en uitgebreid eigenschappenpaneel) en M8b-3 (consolidatie) zijn **nog niet uitgevoerd**; aparte gebruikers-GO vereist.
 - **M7-VEC-FUND — Vectorfundament:** [contract v1.0.0](docs/M7-VEC-FUND-CONTRACT.md) op 15 oktober 2026 **goedgekeurd als ontwerp**; identifier **M7-VEC-FUND definitief vastgesteld**. Het historische vectorlabel `M7a` vervalt; de bestaande **M7a–c — Starre transformaties** blijven ongewijzigd. `M7b` en `M7f` in het oorspronkelijke contract zijn historische labels voor toekomstige werkzaamheden, geen autorisatie of definitieve toewijzing. **Niet geïmplementeerd**: vóór Codex-productiecode eerst read-only preflight en aparte gebruikers-GO; geen automatische merge.
 - **Main-integratie:** PR #12 (`63ab45acc7`), PR #15 (`000399af`) en PR #16 (`ac3dc29`) vormen de gecontroleerde historische checkpoints. Volgende integraties volgen eigen PR en actuele tests; branchstatus, gebruikersacceptatie en daadwerkelijke merge blijven afzonderlijke feiten.
 - **Voorrang:** documentgoedkeuring betekent **geen** implementatieautorisatie, en schema-voorstellen zijn geen geïmplementeerde documentversies.
