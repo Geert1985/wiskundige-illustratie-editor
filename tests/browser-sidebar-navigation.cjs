@@ -10,7 +10,8 @@ module.exports=async page=>{
   assert.equal(await categories.count(),8);
   assert.equal(await subgroups.count(),6);
   assert.deepEqual(await categories.evaluateAll(ns=>ns.map(n=>n.open)),Array(8).fill(false));
-  assert.deepEqual(await subgroups.evaluateAll(ns=>ns.map(n=>n.querySelector('.tool-subgroup-toggle').getAttribute('aria-expanded'))),Array(6).fill('false'));
+  assert.deepEqual(await subgroups.evaluateAll(ns=>ns.filter(n=>n.querySelector('.tool-subgroup-toggle')).map(n=>n.querySelector('.tool-subgroup-toggle').getAttribute('aria-expanded'))),Array(5).fill('false'));
+  assert.equal(await page.locator('[data-tool-subgroup="vectoren"] .tool-subgroup-toggle').count(),0,'Vectoren is visible without an expand control');
   assert.equal(await page.locator('#sidebarLayersPanel').isVisible(),false,'The layers panel starts inactive');
   for(const summary of ['Illustratie','Bediening']){
     const section=page.locator('#sidebarLayersPanel details').filter({has:page.locator('summary', {hasText:summary})}).first();
@@ -25,7 +26,7 @@ module.exports=async page=>{
   await page.keyboard.press('Enter');
   assert.equal(await toggle.getAttribute('aria-expanded'),'true');
   assert.equal(await triangle.locator(':scope > .tool-grid').isVisible(),true);
-  assert.equal(await constructs.locator('[data-tool-subgroup="cirkelconstructies"] .tool-subgroup-toggle').getAttribute('aria-expanded'),'false');
+  assert.equal(await constructs.locator('[data-tool-subgroup="kegelsneden"] .tool-subgroup-toggle').getAttribute('aria-expanded'),'false');
 
   await search.fill('Negenpuntscirkel');
   assert.equal(await page.locator('[data-tool="construct:ninePointCircle"]').isVisible(),true);
@@ -37,6 +38,12 @@ module.exports=async page=>{
   const pointOnCircle=page.locator('[data-tool="construct:pointOnCircle"]');
   assert.equal(await pointOnCircle.isVisible(),true,'Search must include nested construction choices');
   assert.equal(await page.locator('[data-tool-subgroup="puntconstructies"] .tool-subgroup-toggle').getAttribute('aria-expanded'),'true');
+  await search.fill('Gecombineerde meting');
+  const combined=page.locator('.combined-measurement-placeholder');
+  assert.equal(await combined.isVisible(),true);
+  assert.equal(await page.locator('#toolSearchFeedback').textContent(),'1 gereedschap gevonden.');
+  assert.equal(await page.locator('#toolGrid [data-tool="construct:area"], #toolGrid [data-tool="construct:perimeter"]').count(),0);
+  await search.fill('Vectoren');assert.equal(await page.locator('[data-tool-subgroup="vectoren"]').isVisible(),true);assert.equal(await page.locator('#toolSearchFeedback').textContent(),'1 gereedschap gevonden.');
   await search.fill('niet-bestaande-meetkundige-tool');
   assert.equal(await page.locator('#toolSearchFeedback').textContent(),'Geen gereedschap gevonden.');
   assert.equal(await categories.evaluateAll(ns=>ns.filter(n=>n.open).length),0);

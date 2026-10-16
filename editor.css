@@ -341,6 +341,14 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   background:#1b2b36; color:#e6edf2; font-size:14px; font-weight:700;
   line-height:1.45; text-align:left; white-space:normal; overflow-wrap:anywhere;
 }
+.sidebar .tool-subgroup-label {
+  display:flex; align-items:center; gap:8px; width:100%; min-width:0;
+  padding:10px 9px; border:1px solid #405361; border-radius:7px;
+  background:#1b2b36; color:#e6edf2; font-size:14px; font-weight:700;
+  line-height:1.45; text-align:left; white-space:normal; overflow-wrap:anywhere;
+}
+.sidebar .tool-subgroup-empty { display:flex; align-items:center; gap:8px; }
+.sidebar .tool-subgroup-empty .planned-badge { margin-left:auto; }
 .sidebar .tool-subgroup-toggle::before {
   content:"▸"; flex:0 0 auto; font-size:13px; color:var(--accent);
 }
@@ -355,6 +363,8 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 #toolGrid [data-search-hidden="true"] { display:none !important; }
 .sidebar .planned-tools h3 { font-size:13px; line-height:1.5; }
 .sidebar .tool-placeholder { font-size:13px; }
+.tool-placeholder[title] { cursor:help; }
+.canvas-tools-menu .tool-subgroup-empty { color:#dce5eb; font-size:13px; font-weight:700; }
 
 
 /* UI-TABS-1 — tabs stay fixed; only the selected pane scrolls. */

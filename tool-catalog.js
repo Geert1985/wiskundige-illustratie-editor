@@ -24,9 +24,13 @@
           return { ...entry };
         }
         if ('id' in entry || 'commandToolId' in entry || 'splitGroup' in entry) throw new TypeError('Een geplande tool mag niet interactief zijn.');
-        return { label: entry.label, status: 'planned', markup: entry.markup || '' };
+        return { label: entry.label, status: 'planned', markup: entry.markup || '', title: typeof entry.title === 'string' ? entry.title : '' };
       });
-      return { id: category.id, label: category.label, entries };
+      const emptySubgroups = (category.emptySubgroups || []).map(subgroup => {
+        if (!subgroup || typeof subgroup.id !== 'string' || !subgroup.id || typeof subgroup.label !== 'string' || !subgroup.label) throw new TypeError('Ongeldige lege gereedschapssubcategorie.');
+        return { id: subgroup.id, label: subgroup.label };
+      });
+      return { id: category.id, label: category.label, entries, emptySubgroups };
     });
     const categoryIds = categories.map(category => category.id);
     if (new Set(categoryIds).size !== categoryIds.length) throw new TypeError('Dubbele categorie-ID.');
@@ -68,11 +72,15 @@
       const summary = category.querySelector(':scope > summary');
       const label = summary?.firstChild?.textContent?.trim() || summary?.textContent?.trim();
       const entries = Array.from(category.querySelectorAll('[data-tool], .tool-placeholder')).map(element => {
-        if (element.classList.contains('tool-placeholder')) return { label: element.textContent.trim(), status: 'planned', markup: element.innerHTML };
+        if (element.classList.contains('tool-placeholder')) return { label: element.textContent.trim(), status: 'planned', markup: element.innerHTML, title: element.title || '' };
         const id = element.dataset.tool;
         return { id, label: element.textContent.trim(), status: 'implemented', commandToolId: id.startsWith('construct:') ? id : 'create:' + id, markup: element.innerHTML };
       });
-      return { id: category.dataset.toolCategory, label, entries };
+      const emptySubgroups = Array.from(category.querySelectorAll('[data-tool-subgroup]')).filter(subgroup => !subgroup.querySelector('.tool-grid > .tool, .tool-placeholder')).map(subgroup => ({
+        id: subgroup.dataset.toolSubgroup,
+        label: subgroup.querySelector(':scope > .tool-subgroup-label')?.textContent?.trim() || subgroup.querySelector(':scope > .tool-subgroup-toggle')?.textContent?.trim() || '',
+      }));
+      return { id: category.dataset.toolCategory, label, entries, emptySubgroups };
     });
     const splits = Array.from(root.querySelectorAll('[data-tool-split]')).map(group => {
       const id = group.dataset.toolSplit;

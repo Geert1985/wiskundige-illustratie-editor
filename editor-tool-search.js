@@ -20,6 +20,7 @@
   };
   const controls = subgroup => ({
     toggle: subgroup.querySelector(':scope > .tool-subgroup-toggle'),
+    label: subgroup.querySelector(':scope > .tool-subgroup-label'),
     panel: subgroup.querySelector(':scope > .tool-grid')
   });
   function setExpanded(subgroup, expanded) {
@@ -29,9 +30,10 @@
     panel.hidden = !expanded;
   }
   for (const subgroup of subgroups) {
-    const {toggle, panel} = controls(subgroup);
-    if (!toggle || !panel || toggle.getAttribute('aria-controls') !== panel.id) throw Error('Ongeldige gereedschapssubgroep.');
-    setExpanded(subgroup, false);
+    const {toggle, label, panel} = controls(subgroup);
+    if (toggle && (!panel || toggle.getAttribute('aria-controls') !== panel.id)) throw Error('Ongeldige gereedschapssubgroep.');
+    if (!toggle && (!label || panel || subgroup.querySelector('.tool-grid, .tool-placeholder'))) throw Error('Ongeldige lege gereedschapssubcategorie.');
+    if (toggle) setExpanded(subgroup, false);
   }
 
   root.addEventListener('click', event => {
@@ -58,27 +60,40 @@
     if (!beforeSearch) {
       beforeSearch = {
         categories: categories.map(category => [category, category.open]),
-        subgroups: subgroups.map(subgroup => [subgroup, controls(subgroup).toggle.getAttribute('aria-expanded') === 'true'])
+        subgroups: subgroups.map(subgroup => [subgroup, controls(subgroup).toggle?.getAttribute('aria-expanded') === 'true'])
       };
     }
     let matches = 0;
     for (const category of categories) {
       const allCategory = matching(categoryLabel(category), query);
       const entries = Array.from(category.querySelectorAll('.tool-grid > .tool'));
+      const placeholders = Array.from(category.querySelectorAll('.tool-placeholder'));
       for (const entry of entries) {
         const subgroup = entry.closest('[data-tool-subgroup]');
-        const allSubgroup = subgroup && matching(controls(subgroup).toggle.textContent, query);
+        const allSubgroup = subgroup && matching(controls(subgroup).toggle?.textContent || controls(subgroup).label?.textContent, query);
         const visible = allCategory || allSubgroup || matching(entry.dataset.tool + ' ' + entry.textContent, query);
         setHidden(entry, !visible);
         if (visible) matches += 1;
       }
-      for (const subgroup of category.querySelectorAll('[data-tool-subgroup]')) {
-        const visible = Array.from(subgroup.querySelectorAll('.tool-grid > .tool')).some(entry => entry.dataset.searchHidden !== 'true');
-        setHidden(subgroup, !visible);
-        setExpanded(subgroup, visible);
+      for (const placeholder of placeholders) {
+        const subgroup = placeholder.closest('[data-tool-subgroup]');
+        const allSubgroup = subgroup && matching(controls(subgroup).toggle?.textContent || controls(subgroup).label?.textContent, query);
+        const visible = allCategory || allSubgroup || matching(placeholder.textContent, query);
+        setHidden(placeholder, !visible);
+        if (visible) matches += 1;
       }
-      for (const planned of category.querySelectorAll('.planned-tools')) setHidden(planned, true);
-      const visible = entries.some(entry => entry.dataset.searchHidden !== 'true');
+      for (const subgroup of category.querySelectorAll('[data-tool-subgroup]')) {
+        const {toggle, label} = controls(subgroup);
+        const visible = Array.from(subgroup.querySelectorAll('.tool-grid > .tool, .tool-placeholder')).some(entry => entry.dataset.searchHidden !== 'true') || (!toggle && (allCategory || matching(label.textContent, query)));
+        setHidden(subgroup, !visible);
+        if (toggle) setExpanded(subgroup, visible);
+        else if (matching(label.textContent, query)) matches += 1;
+      }
+      for (const planned of category.querySelectorAll('.planned-tools')) {
+        const visible = Array.from(planned.querySelectorAll('.tool-placeholder')).some(entry => entry.dataset.searchHidden !== 'true');
+        setHidden(planned, !visible);
+      }
+      const visible = entries.some(entry => entry.dataset.searchHidden !== 'true') || placeholders.some(entry => entry.dataset.searchHidden !== 'true') || Array.from(category.querySelectorAll('.tool-subgroup-empty')).some(entry => entry.dataset.searchHidden !== 'true');
       setHidden(category, !visible);
       category.open = visible;
     }

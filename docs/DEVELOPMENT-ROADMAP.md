@@ -4,6 +4,10 @@ Version: 2.8.18 (M8b-3 definitief geaccepteerd en gemerged via PR #23; volledig 
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. De M8b-3 Node- en Edge-regressiepoort is op de featurebranch geslaagd. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-16
 
+## Gereedschapscatalogus en classificatie
+
+Classificeer een gereedschap op basis van zijn primaire functie: **Vrije objecten** maakt objecten zonder bestaande geometrische bronnen aan; **Constructies** maakt geometrisch afhankelijke objecten; **Metingen** bepaalt, combineert of presenteert geometrische eigenschappen; **Transformaties** maakt afhankelijke objecten via geometrische transformaties. Pas expliciet goedgekeurde herindelingen toe en verplaats andere bestaande vermeldingen pas na afzonderlijke goedkeuring. Sidebar en fullscreen gebruiken dezelfde `ToolCatalog`; lege subcategorieën zijn presentatiegroepen zonder gereedschap-ID en geplande placeholders blijven niet-interactief.
+
 ## M8b-2, M8b-2b en M8b-2c — geaccepteerd en geïntegreerd
 
 De gebruiker heeft op 16 oktober 2026 de handmatige acceptatietests van de volledige M8b-2-keten goedgekeurd en daarna expliciet de merge naar `main` gevraagd. [PR #22](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/22) is gemerged op `main` met mergecommit `0b8e7a4f9eb50c5f196c33ccdf63cbdbcce773f6`; de feature-HEAD was `9bfbfa2e7fc0b89e7aeef4f99f3f27804af062b6`. Daarmee zijn M8b-2 (metingen en inspector), M8b-2b (hoekbogen, puntnamen, Q-selectie, 90°-snap, polygonrandconstructies) en M8b-2c (gelijke-zijdensnap, blijvende `matchAB`-voorwaarde, schema 9 en UX-correctie) in `main` aanwezig.

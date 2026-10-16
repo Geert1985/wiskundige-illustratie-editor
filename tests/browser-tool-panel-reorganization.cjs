@@ -3,7 +3,7 @@ const {choose}=require('./browser-tool-menu.cjs');
 module.exports=async page=>{
  const originalViewport=page.viewportSize();await page.setViewportSize({width:1280,height:900});await page.reload();
  const ids=await page.locator('#toolGrid [data-tool]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tool));
- assert.equal(ids.length,43);assert.equal(new Set(ids).size,43);
+ assert.equal(ids.length,41);assert.equal(new Set(ids).size,41);
  const snapshot=()=>page.evaluate(()=>{const a=FZI.MathIllustration.editor;return {document:a.engine.toJSON(),tool:a.tool,selected:a.selectedIds,interaction:a.interaction,history:a.history.entries,cursor:a.history.cursor,status:a.nodes.status.textContent,storage:Object.entries(localStorage)};});
  await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[]}));
  const documentBefore=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
@@ -13,14 +13,20 @@ module.exports=async page=>{
  assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').map(category=>category.id)),['vrije-objecten','constructies','meten','gebieden','transformeren','functies','tekst','verzamelingen']);
  assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').map(category=>category.entries.filter(entry=>entry.status==='implemented').map(entry=>entry.id)).flat().sort()),ids.slice().sort());
  assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('sidebar').find(category=>category.id==='gebieden').entries.filter(entry=>entry.status==='implemented').map(entry=>entry.commandToolId).sort()),['construct:circleSectorRegion','construct:circleSegmentRegion','construct:polygonRegion'].sort());
+ assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('fullscreen').find(category=>category.id==='constructies').emptySubgroups.map(group=>group.label)),['Vectoren']);
+ assert.equal(await page.locator('[data-tool-category="constructies"] [data-tool-subgroup="cirkelconstructies"]').count(),0);
  for(let i=0;i<8;i++){const category=categories.nth(i),wasOpen=await category.evaluate(n=>n.open),others=await categories.evaluateAll(ns=>ns.map(n=>n.open));await category.locator(':scope > summary').focus();await page.keyboard.press('Enter');assert.equal(await category.evaluate(n=>n.open),!wasOpen);const after=await categories.evaluateAll(ns=>ns.map(n=>n.open));for(let j=0;j<8;j++)if(i!==j)assert.equal(after[j],others[j]);if(wasOpen)await category.locator(':scope > summary').click();}
  const placeholders=page.locator('#toolGrid .tool-placeholder'),before=await snapshot();
+ const combinedSidebar=page.locator('#toolGrid .combined-measurement-placeholder');assert.equal(await combinedSidebar.count(),1);assert.equal(await combinedSidebar.getAttribute('title'),'Binnenkort beschikbaar');
+ await page.locator('#toolSearch').fill('Gecombineerde meting');assert.equal(await combinedSidebar.isVisible(),true);assert.equal(await page.locator('#toolSearchFeedback').textContent(),'1 gereedschap gevonden.');await page.locator('#toolSearch').fill('');
  for(let i=0;i<await placeholders.count();i++){await placeholders.nth(i).click();assert.deepEqual(await snapshot(),before);}
  assert.equal(await placeholders.locator('button,a,input,select,[tabindex],[data-tool]').count(),0);
  await page.locator('#canvasFullscreenBtn').click();await page.locator('#canvasToolsBtn').click();
  assert.equal(await page.locator('#canvasToolsMenu > section').count(),8);
+ assert.equal(await page.locator('#canvasToolsMenu .tool-subgroup-empty').count(),1);
  assert.deepEqual((await page.locator('#canvasToolsMenu [data-canvas-tool]').evaluateAll(ns=>ns.map(n=>n.dataset.canvasTool))).sort(),ids.slice().sort());
  const fullscreenBefore=await snapshot(),fullscreenPlans=page.locator('#canvasToolsMenu .tool-placeholder');
+ const combinedFullscreen=page.locator('#canvasToolsMenu .tool-placeholder').filter({hasText:'Gecombineerde meting'});assert.equal(await combinedFullscreen.getAttribute('title'),'Binnenkort beschikbaar');
  assert.equal(await fullscreenPlans.count(),await placeholders.count());
  for(let i=0;i<await fullscreenPlans.count();i++){await fullscreenPlans.nth(i).click();assert.deepEqual(await snapshot(),fullscreenBefore);}
  await page.keyboard.press('Escape');assert.equal(await page.locator('#canvasToolsMenu').isVisible(),false);await page.locator('#canvasFullscreenBtn').click();
@@ -38,5 +44,5 @@ module.exports=async page=>{
   await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-'+name+'.png')});
  }
  await page.setViewportSize(originalViewport);await page.reload();await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-overview.png')});
- return {allTools:43,categories:8,plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
+ return {allTools:41,categories:8,plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
 };
