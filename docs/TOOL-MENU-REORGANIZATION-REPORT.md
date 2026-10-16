@@ -1,9 +1,9 @@
 # Gereedschappenmenu herstructurering — implementatierapport
 
-**Opdracht:** v1.0.0 met bindende aanvulling v1.1.0  
-**Branch:** `codex/ui-tools-menu-reorganization`  
-**Basis:** actuele `origin/main`, commit `a5355b3fe2ba205925511af2f8d89b6f7ad0938b`  
-**Roadmap:** v2.8.18
+- **Opdracht:** v1.0.0 met bindende aanvulling v1.1.0
+- **Branch:** `codex/ui-tools-menu-reorganization`
+- **Basis:** actuele `origin/main`, commit `a5355b3fe2ba205925511af2f8d89b6f7ad0938b`
+- **Roadmap:** v2.8.18
 
 ## Uitvoering
 
