@@ -1,6 +1,6 @@
 # M8b-3 — Consolidatie- en eindacceptatierapport
 
-**Documentversie:** 1.0.0
+**Documentversie:** 1.0.1
 
 **Datum:** 16 oktober 2026
 
@@ -12,7 +12,7 @@
 
 **Baselinecode:** `50a897fbb6a30caf981b499f7fd0b6e86f8a067f`
 
-**Uitkomst:** volledige technische regressiepoort PASS; handmatige eindacceptatie blijft bij de gebruiker. Niet gemerged.
+**Uitkomst:** volledige technische regressiepoort PASS; gebruiker heeft M8b-3 op 16 oktober 2026 definitief geaccepteerd; geïntegreerd op `main` via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23) (mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`).
 
 ## Samenvatting
 
@@ -94,3 +94,10 @@ De geautomatiseerde regressiepoort is volledig groen. Een browserautomatisering 
 ## Technisch oordeel
 
 **Technisch GO voor code-review en handmatige eindacceptatie.** De schema-8/9-regels, gemengde documenten, randafhankelijkheden, invaliditeit/herstel, semantische geschiedenis, fail-closed export en volledige regressies zijn geverifieerd. **Geen merge-GO:** gebruikersacceptatie blijft open; er is niet naar `main` gemerged.
+
+
+## Definitieve acceptatie en integratie — 16 oktober 2026
+
+De gebruiker heeft na de code-review van M8b-3 expliciet de **definitieve eindacceptatie** gegeven en meegedeeld de merge zelf uit te voeren. GitHub bevestigt vervolgens dat [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23) op 16 oktober 2026 is gemerged in `main`, met mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883` en feature-HEAD `c235cdc6e4fed46297a95ecc26798af4a5c8c3f2`.
+
+**Definitieve status: M8b-3 geaccepteerd en geïntegreerd. Het volledige M8b-traject is afgerond.** De hierboven genoemde testresultaten zijn afkomstig uit de Codex-regressie op de featurebranch; deze documentatieregistratie heeft geen nieuwe Node- of Edge-suite uitgevoerd en wijzigt geen productiecode.
