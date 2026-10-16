@@ -1,11 +1,11 @@
 # From Zero 2 Infinity — Wiskundige Illustratie Editor
 ## M8b — Dynamische parallellogrammen: wiskundig, functioneel en technisch ontwerpcontract
 
-**Documentversie:** 1.3.0
+**Documentversie:** 1.3.1
 **Datum:** 16 oktober 2026
-**Status:** ontwerp uitgebreid voor M8b-2c; M8b-1 is geïntegreerd op `main`; M8b-2/M8b-2b/M8b-2c blijven featurebranchwerk tot afzonderlijke gebruikersacceptatie en merge
+**Status:** M8b-1 geïntegreerd op `main` via PR #21; M8b-2/2b/2c door gebruiker geaccepteerd en geïntegreerd via PR #22; M8b-3-consolidatie is gestart op een afzonderlijke featurebranch en nog niet geaccepteerd.
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Technisch geverifieerde basis voor versiebeleid:** M8b-1 gebruikt `constructionSchema:8`; M8b-2c introduceert schema 9 uitsluitend voor de persistente lengtemodus `matchAB`. M8b-2c behoudt documentversie 10 en `measurementSchema:1` voor GEO-UI-metingen.
+**Actueel versiebeleid:** vaste parallellogramconstructies gebruiken `constructionSchema:8`; persistente `sideLengthMode:"matchAB"` gebruikt schema 9. Individuele GEO-UI-metingen behouden documentversie 10 en `measurementSchema:1`. Dit beleid is via PR #22 op `main` geïntegreerd.
 **Roadmapreferenties:** `tasks-129` t/m `tasks-133` — M8b: twee zijden en ingesloten hoek, live lengte-/hoekaanduiding, degeneraties en roundtrip, test-/acceptatiepoort.  
 **Relatie tot M8a:** M8a-ontwerpcontract v1.0.0 werd op 15 oktober 2026 door de gebruiker goedgekeurd. **M8b verandert dat contract niet**. Schema- en implementatieafhankelijkheden moeten vóór Codex-codering opnieuw op de dan actuele branch worden gecontroleerd.
 
@@ -118,7 +118,7 @@ Stijlvelden (randkleur, dikte, vulling, opacity, naam, showLabel, zichtbaarheid 
 
 - Toon de twee **verschillende** zijlengtes (`a=|AB|` en `L=|AD|`) en ten minste de **ingesloten binnenhoek `|θ|`** als live read-only gegevens in het paneel.
 - Hergebruik `MeasurementGeometry` en de individuele `object.measurements`-instellingen uit GEO-UI. Implementeer geen aparte M8b-weergave of betekenis voor `showMeasurement`.
-- Stel voor nieuwe M8b-objecten de metingen `side:0`, `side:3` en `angle:0` standaard zichtbaar in. Deze tonen respectievelijk `AB`, `AD` en de binnenhoek bij A. Andere zijden, hoeken, omtrek en oppervlakte blijven afzonderlijk instelbaar via dezelfde meetinstellingen.
+- Stel bij nieuwe M8b-objecten **alle tien individuele metingen standaard verborgen** in. De gebruiker kan `side:0`, `side:3`, `angle:0` en de overige zijden, hoeken, omtrek en oppervlakte afzonderlijk activeren. Deze bepaling vervangt de standaardzichtbaarheid uit het oorspronkelijke M8b-2-ontwerp (besluit M8b-2b).
 - Behoud voor deze labels de bestaande zichtbaarheid, precisie, tekstmodus, labelpositie en verplaatsbaarheid. Gebruik geen extra persistente punt-, lijn- of tekstobjecten per label. De labels volgen de actuele opgeloste polygonvertices en worden met bestaande meet- en hoekformatters weergegeven.
 - De bewerkbare gerichte constructieparameter `θ` blijft onderscheiden van de zichtbare **binnenhoek** `|θ|`. De labelwaarde is afgeleid van polygongeometrie; zij is geen opslagplaats of editor voor de gerichte parameter.
 - Houd labels toetsenbord- en screenreader-veilig, zonder canvaspointerevents over te nemen of ongeautoriseerde waarden te tonen.
@@ -134,7 +134,7 @@ Stijlvelden (randkleur, dikte, vulling, opacity, naam, showLabel, zichtbaarheid 
 
 ### 4.1 Bestaand constructierecept en documentfragment
 
-De productiecode gebruikt dit recept. `vertices` zijn afgeleide polygongeometrie; de autoritatieve constructiegegevens blijven twee puntbronnen plus `sideLength` en `signedAngle`. Bij nieuwe parallellogrammen zijn alle tien bestaande individuele meetinstellingen standaard verborgen; eerder opgeslagen instellingen blijven ongewijzigd.
+De productiecode gebruikt dit recept. `vertices` zijn afgeleide polygongeometrie. In de **vaste lengtemodus** bestaan de autoritatieve constructiegegevens uit twee puntbronnen, `sideLength` en `signedAngle` (schema 8). In de **gekoppelde lengtemodus** stuurt `sideLengthMode:"matchAB"` de actuele zijde AD op basis van `|AB|` (schema 9), zonder extra bronpunt; een optionele bewaarde `sideLength` is dan niet autoritatief. Bij nieuwe parallellogrammen zijn alle tien individuele meetinstellingen standaard verborgen; eerder opgeslagen instellingen blijven ongewijzigd.
 
 ```json
 {
@@ -241,7 +241,7 @@ Aanvullend: kleine/grote geldige modelschalen, coördinaten rond ±10¹², cance
 1. Aanklikken A→B→Q, correcte preview en één creatiecommando; numerieke L/hoek vóór confirm; foutieve preview niet commitbaar.
 2. Annulering: Escape, pointercancel, toolwissel, blur, reset, fullscreen, dispose. Geen verborgen preview, spookpunten, pointer captures of extra undo-stappen.
 3. Bron A/B verslepen: correcte vierhoek, live lengte/hoek/oppervlakte; hoekoriëntatie behouden wanneer AB roteert; herstel na tijdelijke coincidentie.
-4. Paneel: bestaande navy/gold-layout, precieze input, graden/radialen, `side:0`/`side:3`/`angle:0`-standaardlabels, individuele overige metingen, label/naam, vulling/geen vulling, lock, permissies en focus.
+4. Paneel: bestaande navy/gold-layout, precieze input, graden/radialen, **alle maatlabels standaard verborgen**, individueel in te schakelen `side:0`/`side:3`/`angle:0` en overige metingen, hoekbogen en rechtehoekmarkeringen, live naamgeving, vulling/geen vulling, lock, permissies en focus.
 5. Selectie, viewport/zoom, 4 hoeken/4 randen snap, geen zelf- of downsteam-feedback, verborgen laag, groepsselectie, contextmenu en touchscreen-/keyboardpaden voor zover ondersteund.
 6. JSON save/reload, SVG en offline PNG, gebiedsopvulling + metingen, restricted read/denial, mixed documenten, nul page errors/console exceptions.
 
@@ -257,7 +257,7 @@ Gebruik **gerichte wiskundige Node-fixtures tijdens ontwikkeling**, daarna geric
 | **M8b-0 — Read-only technische planning** | Controleer actuele branch, status M8a/schema's; verifieer bestaande command-/render-/snapcontracten; lever impactmatrix, versievoorstel en uitvoeringsplan | Afgerond; afzonderlijke GO vereist voor M8b-1 |
 | **M8b-0b — Preflightblokkades oplossen** | Werk verouderde ellipsbrowserflow bij zonder regressieverzwakking; actualiseer dit contract met GEO-UI-meet- en schema-afspraken; voer voorgeschreven suites uit | Afgerond; resultaten in [M8b-0b-rapport](M8b-0b-STABILIZATION-REPORT.md); geen M8b-productiecode |
 | **M8b-1 — Dynamisch vierhoekrecept** | `parallelogramBySideAngle`, A/B/Q-interactie en numerieke parameters, recoverable invalid, bestaand polygon-renderpad, JSON/history/permission | Gerichte Node/Edge PASS en gebruikersbeoordeling |
-| **M8b-2 — Meetweergave en integratie** | Twee lengte-/hoeklabels, inspector, live maten, overige polygoncontructies, styling, snapping, restricted en mixed schema's | Gerichte Node/Edge PASS en visuele gebruikersacceptatie |
+| **M8b-2 — Meetweergave en integratie (inclusief 2b/2c)** | Inspector en tien individueel schakelbare metingen, hoekbogen, polygonranden, Q-selectie, ±90°-/gelijke-zijdensnap, blijvende `matchAB`-modus, schema 9 en export/rechten | Handmatig geaccepteerd en geïntegreerd via PR #22; finale M8b-3-audit nog open |
 | **M8b-3 — Consolidatie** | Volledige suites, legacy/mixed roundtrip, regressie-audit, docs, exact rapport, acceptatiescenario's | **Expliciete GO/NO-GO vóór merge naar `main`** |
 
 Voor de uitvoering: nieuwe featurebranch vanaf een **op dat moment geverifieerde** `main`-basis, geen overlap met open M8a-wijzigingen, géén automatische merge. Vanwege afhankelijkheidsconcurrentie is het niet verstandig M8a en M8b tegelijk aan dezelfde schema- en constructiebestanden te laten wijzigen. Parallel **ontwerpen** mag wel; parallel **implementeren** alleen na concrete branch-/schema-isolatie.
@@ -265,13 +265,13 @@ Voor de uitvoering: nieuwe featurebranch vanaf een **op dat moment geverifieerde
 ## 8. Beslispunten voor gebruikersgoedkeuring
 
 1. **Aanmaakmethode:** kies twee bestaande punten `A`,`B`, vervolgens een derde *plaatsingsklik* `Q` voor initiële `L`/`θ`, of typ die waarden exact in dezelfde stap; `Q` wordt geen bronpunt.
-2. **Dynamiek:** `L` en `θ` blijven vast bij verplaatsing van `A/B`; `|AB|` is bronafhankelijk. Het resultaat heeft vier vaste vertexindexen.
+2. **Dynamiek:** in vaste modus blijft `L` gelijk en is `|AB|` bronafhankelijk; in `matchAB`-modus is `L=|AB|` blijvend gekoppeld. `θ` blijft in beide modi vast bij verplaatsen van A/B. De vier vertexindexen zijn stabiel.
 3. **Objectmodel:** één gekoppeld `polygon` van vier punten, geen nieuw geometrisch objecttype.
 4. **Hoekbeleid:** gerichte `θ` met beide draairichtingen, intern radialen, gebruikersweergave in de gekozen hoekeenheid; nul/180° zijn ongeldig.
 5. **Maten:** hergebruik `MeasurementGeometry` en individuele `object.measurements`; bij nieuwe parallellogrammen zijn **alle** individuele labels standaard verborgen. De tien polygonmetingen blijven individueel instelbaar. Er is geen aparte M8b-implementatie van `showMeasurement`.
-6. **Versiebeheer:** `constructionSchema:8`; geen nieuw objecttype, `parallelogramSchema` of documentversie 11 uitsluitend voor M8b. GEO-UI-metingen gebruiken documentversie 10/`measurementSchema:1`.
+6. **Versiebeheer:** `constructionSchema:8` voor vaste lengte; `constructionSchema:9` voor de blijvende `matchAB`-modus; geen nieuw objecttype, `parallelogramSchema` of documentversie 11. GEO-UI-metingen gebruiken documentversie 10/`measurementSchema:1`.
 7. **Scopegrens:** drie *blijvend* gekoppelde bronpunten en vrij slepen van berekende hoekpunten blijven aparte latere uitbreidingen.
-8. **Proces:** ontwerpacceptatie **is geen Codex-implementatieautorisatie**; eerst M8b-0, dan afzonderlijke GO voor M8b-1, geen ongeautoriseerde merge.
+8. **Proces:** ontwerpacceptatie en feature-acceptatie worden onderscheiden van de integratiecontrole. M8b-1 en M8b-2/2b/2c zijn inmiddels geaccepteerd en gemerged via PR #21 en #22. Voor M8b-3 is een afzonderlijke finale GO/NO-GO vereist; geen ongeautoriseerde merge.
 
 9. **Hoeknotatie:** zichtbare individuele polygonbinnenhoeken krijgen een afgeleide geometrische boog; exact 90° gebruikt een rechtehoekmarkering. De waarde/tekst blijft een individueel versleepbaar GEO-UI-label. De boog is geen opgeslagen object en `signedAngle` blijft apart van de binnenhoek.
 10. **Naamresolutie:** parallellogramvertex 0/1 gebruikt live de werkelijke namen van de A/B-bronobjecten; vertex 2/3 krijgt de weergavenamen C/D. Zijde- en hoeklabelnamen worden uit deze vier namen afgeleid. Generieke automatische bronnamen mogen bij aanmaak naar A/B worden hernoemd wanneer geen naamconflict bestaat en het bestaande naamcommando is geautoriseerd; bewuste namen blijven staan.
@@ -297,7 +297,7 @@ Tijdens vrije Q-plaatsing gebruikt de gelijke-zijdensnap 8 CSS-pixels activering
 
 De inspector classificeert de actuele vorm als parallellogram, ruit, rechthoek of vierkant als alleen-lezen presentatie. Deze toleranties wijzigen geen geometrie en activeren geen constraint. Live bronpuntnamen blijven de enkele naamresolver voor inspector en maatlabels. Randcontext wordt alleen doorgegeven zolang die bij de huidige, geldige polygonselectie en vertexindex hoort.
 
-**Besluitgeschiedenis:** 16 oktober 2026: v1.3.0 registreert de goedgekeurde M8b-2c-lengtemodus, schema 9, gelijke-zijdensnap met hysterese en samengestelde ±90°-snap. De actieve featurebranchstatus en testresultaten staan in het M8b-2c-implementatieverslag; dit contract markeert geen merge of gebruikersacceptatie.
+**Besluitgeschiedenis:** 16 oktober 2026: v1.3.0 registreert de goedgekeurde M8b-2c-lengtemodus, schema 9, gelijke-zijdensnap met hysterese en samengestelde ±90°-snap. De oorspronkelijke featurebranchstatus en tests staan in het M8b-2c-implementatieverslag; de daaropvolgende gebruikersacceptatie en merge staan geregistreerd via PR #22 en de integratieregistratie in de roadmap.
 
 ## 10. Bronbasis en herkomst van besluiten
 
@@ -312,4 +312,11 @@ De inspector classificeert de actuele vorm als parallellogram, ruit, rechthoek o
 - [`permission-runtime.js`](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/permission-runtime.js): geautoriseerde creatie, constructieparameters en bronrechten.
 - **Goedgekeurde M8a-basis:** lokaal opgesteld document `M8a-Ellipsen-Ontwerpcontract-v1.0.0.md`, door gebruiker in dit project op 15 oktober 2026 goedgekeurd; **geen claim** dat zijn nieuwe schema's al op `main` zijn geïmplementeerd.
 
-**Implementatiestatus:** M8b-1 is op `main`; M8b-2 is geïmplementeerd op de niet-geaccepteerde M8b-2-featurebranch. M8b-2b betreft aanvullende acceptatiewijzigingen op een afzonderlijke featurebranch en is niet in de basisbranch geïntegreerd zolang gebruikersacceptatie ontbreekt.
+**Implementatiestatus:** M8b-1 is op `main` geïntegreerd via PR #21; M8b-2, M8b-2b en M8b-2c zijn door de gebruiker geaccepteerd en via PR #22 op `main` geïntegreerd. De M8b-3-eindconsolidatie wordt afzonderlijk geaudit; zij is nog niet definitief geaccepteerd.
+
+
+## 11. Documentatieconsolidatie M8b-3 (16 oktober 2026)
+
+**Documentversie 1.3.1 — uitsluitend documentatiecorrecties.** Het oorspronkelijke M8b-1- en M8b-2-ontwerp bevatte oudere momentopnamen. De definitieve, later door de gebruiker goedgekeurde eisen zijn: (1) alle maatlabels op nieuwe parallellogrammen standaard verborgen; (2) individueel inschakelbare hoekbogen en rechtehoekmarkeringen; (3) vaste lengte in constructieschema 8, persistente `matchAB`-lengte in schema 9; (4) geen extra objecttypen. De originele beslisgeschiedenis blijft bewaard in de eerdere versies, PR's en implementatieverslagen. Geen productiecode of opgeslagen schema is door deze documentupdate gewijzigd.
+
+Voor de feitelijke uitvoering van de resterende regressie- en acceptatiepoort: [M8b-3 — Consolidatie- en eindacceptatieopdracht](M8b-3-CONSOLIDATION-PLAN.md). Deze verwijzing betekent **niet** dat de finale Node-/Edge-tests al zijn uitgevoerd of dat M8b-3 is goedgekeurd.
