@@ -1,11 +1,11 @@
 # From Zero 2 Infinity — Wiskundige Illustratie Editor
 ## M8b — Dynamische parallellogrammen: wiskundig, functioneel en technisch ontwerpcontract
 
-**Documentversie:** 1.2.0
+**Documentversie:** 1.3.0
 **Datum:** 16 oktober 2026
-**Status:** ontwerp goedgekeurd; M8b-1 is geïntegreerd op `main`; M8b-2/M8b-2b zijn featurebranchwerk en wachten op gebruikersacceptatie
+**Status:** ontwerp uitgebreid voor M8b-2c; M8b-1 is geïntegreerd op `main`; M8b-2/M8b-2b/M8b-2c blijven featurebranchwerk tot afzonderlijke gebruikersacceptatie en merge
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Technisch geverifieerde basis voor versiebeleid:** oorsprong `origin/main` bevat M8b-1 met `constructionSchema:8`; de M8b-2-basisbranch is `c608cbc567edd566c0c68c55473def221cfade78`. M8b-2b-contractwijzigingen vereisen geen schemawijziging.
+**Technisch geverifieerde basis voor versiebeleid:** M8b-1 gebruikt `constructionSchema:8`; M8b-2c introduceert schema 9 uitsluitend voor de persistente lengtemodus `matchAB`. M8b-2c behoudt documentversie 10 en `measurementSchema:1` voor GEO-UI-metingen.
 **Roadmapreferenties:** `tasks-129` t/m `tasks-133` — M8b: twee zijden en ingesloten hoek, live lengte-/hoekaanduiding, degeneraties en roundtrip, test-/acceptatiepoort.  
 **Relatie tot M8a:** M8a-ontwerpcontract v1.0.0 werd op 15 oktober 2026 door de gebruiker goedgekeurd. **M8b verandert dat contract niet**. Schema- en implementatieafhankelijkheden moeten vóór Codex-codering opnieuw op de dan actuele branch worden gecontroleerd.
 
@@ -279,7 +279,27 @@ Voor de uitvoering: nieuwe featurebranch vanaf een **op dat moment geverifieerde
 
 **Besluitgeschiedenis:** 15 oktober 2026: v1.0.0 als ontwerpbasis goedgekeurd. 16 oktober 2026: v1.1.0 legde GEO-UI-metingen en versiebeleid vast. 16 oktober 2026: v1.2.0 wijzigt nieuwe parallellogramlabels naar standaard verborgen en voegt de goedgekeurde hoekboog, naamresolutie, tijdelijke bestaande-Q-plaatsing, ±90°-snap en polygonrandcontext toe. Schema 8/documentversie 10 blijven ongewijzigd. Dit contract op zichzelf markeert geen branch als geaccepteerd of geïntegreerd.
 
-## 9. Bronbasis en herkomst van besluiten
+## 9. M8b-2c — magnetische lengtesnap en blijvende gelijkheid
+
+M8b-2c behoudt het bestaande `parallelogramBySideAngle`-polygonrecept en voegt een optionele persistente parameter toe:
+
+```json
+{"sideLengthMode":"matchAB"}
+```
+
+Wanneer deze parameter ontbreekt, blijft `sideLength` de vaste lengte zoals in schema 8. In `matchAB`-modus is de actuele `|AB|` de enige autoritatieve lengte en wordt die bij iedere oplossing gebruikt voor `AD`; een opgeslagen `sideLength` mag alleen een compatibiliteitswaarde zijn en beïnvloedt de geometrie niet. `matchAB` maakt de vier zijden exact gelijk via de constructieberekening, zonder extra bronreferenties of algemene constraint solver.
+
+De nieuwe opgeslagen betekenis vereist `constructionSchema:9`. Documenten met alleen vaste parallellogrammen blijven schema 8. Schema 8 met `sideLengthMode` wordt afgewezen; schema 9 wordt alleen geaccepteerd wanneer minstens één parallellogram in `matchAB`-modus aanwezig is. Gemengde oudere constructies, ellipsen, regio's en GEO-UI-metingen blijven toegestaan onder schema 9. Documentversie 10 en `measurementSchema:1` blijven ongewijzigd voor individuele metingen; er komt geen documentversie 11.
+
+Bij overschakelen van vast naar `matchAB` blijven A, B en θ behouden en wordt `|AB|` meteen de berekende lengte. Bij terugschakelen naar vast neemt de commandoroute de actuele opgeloste `|AB|` over in `sideLength` en verwijdert de moduskey, zodat de figuur niet springt. Een ongeldige bronlengte blokkeert alleen de overgang naar vast; een bestaande `matchAB`-modus blijft tijdens tijdelijke ongeldigheid opgeslagen en herstelt met dezelfde identiteit.
+
+Tijdens vrije Q-plaatsing gebruikt de gelijke-zijdensnap 8 CSS-pixels activeringsdrempel en 12 CSS-pixels loslaatdrempel, omgerekend via de actuele schermtransformatie. De projectie zet de afstand exact op `|AB|`. De bestaande ±90°-snap blijft onafhankelijk actief; beide kunnen samen een vierkant opleveren. Een expliciet bestaand Q en exacte numerieke invoer krijgen voorrang en activeren geen automatische gelijkheidsvoorwaarde. Een gebruiker kan de blijvende optie afzonderlijk aan- of uitzetten. De geometrische preview en commit gebruiken dezelfde opgeloste parameters.
+
+De inspector classificeert de actuele vorm als parallellogram, ruit, rechthoek of vierkant als alleen-lezen presentatie. Deze toleranties wijzigen geen geometrie en activeren geen constraint. Live bronpuntnamen blijven de enkele naamresolver voor inspector en maatlabels. Randcontext wordt alleen doorgegeven zolang die bij de huidige, geldige polygonselectie en vertexindex hoort.
+
+**Besluitgeschiedenis:** 16 oktober 2026: v1.3.0 registreert de goedgekeurde M8b-2c-lengtemodus, schema 9, gelijke-zijdensnap met hysterese en samengestelde ±90°-snap. De actieve featurebranchstatus en testresultaten staan in het M8b-2c-implementatieverslag; dit contract markeert geen merge of gebruikersacceptatie.
+
+## 10. Bronbasis en herkomst van besluiten
 
 **Repo-onderbouwde bestaande feiten:**
 

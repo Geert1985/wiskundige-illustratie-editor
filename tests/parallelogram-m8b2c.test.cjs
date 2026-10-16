@@ -37,8 +37,8 @@ test('matchAB mode transitions are atomic, preserve shape on exit, and replay wi
 });
 
 test('schema 8 remains fixed; schema 9 stores matchAB and mixes measurements, ellipses and regions',()=>{
- const {MI,e}=setup();const fixed=create(e);assert.equal(e.toJSON().constructionSchema,8);const dynamic=create(e,4,Math.PI/2,'matchAB');assert.equal(e.toJSON().constructionSchema,9);e.update(dynamic.id,{measurements:{schema:1,values:{}}});
- const doc=plain(e.toJSON());assert.equal(doc.version,10);assert.equal(doc.measurementSchema,1);assert.equal(doc.constructionSchema,9);const loaded=new MI.Engine(doc);assert.deepEqual(plain(loaded.toJSON()),doc);assert.equal(loaded.get(dynamic.id).construction.sideLengthMode,'matchAB');assert.equal(loaded.get(fixed.id).construction.sideLengthMode,undefined);
+ const {MI,e}=setup();const fixed=create(e);assert.equal(e.toJSON().constructionSchema,8);const dynamic=create(e,4,Math.PI/2,'matchAB');assert.equal(e.toJSON().constructionSchema,9);const ellipse=e.construct('ellipseByFociAndSum',refs,10)[0],region=e.construct('polygonRegion',[{objectId:fixed.id}])[0];e.update(dynamic.id,{measurements:{schema:1,values:{}}});
+ const doc=plain(e.toJSON());assert.equal(doc.version,10);assert.equal(doc.measurementSchema,1);assert.equal(doc.ellipseSchema,1);assert.equal(doc.regionSchema,1);assert.equal(doc.constructionSchema,9);const loaded=new MI.Engine(doc);assert.deepEqual(plain(loaded.toJSON()),doc);assert.equal(loaded.get(dynamic.id).construction.sideLengthMode,'matchAB');assert.equal(loaded.get(fixed.id).construction.sideLengthMode,undefined);assert.equal(loaded.get(ellipse.id).construction.kind,'ellipseByFociAndSum');assert.equal(loaded.get(region.id).construction.kind,'polygonRegion');
  const invalid=plain(doc);invalid.constructionSchema=8;assert.throws(()=>new MI.Engine(invalid));const unknown=plain(doc);unknown.constructionSchema=10;assert.throws(()=>new MI.Engine(unknown));
 });
 
