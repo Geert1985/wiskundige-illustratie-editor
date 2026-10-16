@@ -9,6 +9,12 @@
 
 De implementatie is opgesplitst in drie controleerbare commits: persistente geometrie/schema/commandvalidatie; interactie, snaps en inspector; tests en statusdocumentatie.
 
+| Commit | Inhoud |
+|---|---|
+| `5b2aee4` | Persistente gelijkheidsmodus, resolver, schema 9, commandvalidatie en Node-regressies |
+| `b3df595` | Snapinteractie, preview, eigenschappenbediening en Edge-regressies |
+| `8a381b7` | Contract/roadmap/statusdocumentatie en mixed-schema-testfixtures |
+
 ## Ontwerp- en opslagbeslissingen
 
 M8b-2c gebruikt uitsluitend het bestaande `polygon`-object, `parallelogramBySideAngle`-recept, de bestaande dependency graph en de bestaande polygon-/render-/commandoinfrastructuur. Een ontbrekende `sideLengthMode` blijft vaste `sideLength` betekenen. De nieuwe persistente modus `sideLengthMode:"matchAB"` lost bij iedere berekening de lengte exact op als actuele `|AB|`; de optionele bewaarde `sideLength` is dan alleen compatibiliteitsinformatie en stuurt de geometrie niet.
