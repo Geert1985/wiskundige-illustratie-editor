@@ -215,9 +215,9 @@
       }
       const transform=this.transform(),point=transform?.screenToMath({x:event.clientX,y:event.clientY});
       const object=painted;
-      if(this.canvasSelectable(object))return {object};
+      if(this.canvasSelectable(object))return {object,...(object.type==='polygon'?{edgeRef:this.polygonEdgeAt(event,object)}:{})};
       const hit=point&&this.engine.selectAt(point.x,point.y,{transform,tolerancePx:8});
-      if(hit&&this.canvasSelectable(hit.object))return hit;
+      if(hit&&this.canvasSelectable(hit.object))return {...hit,...(hit.object.type==='polygon'?{edgeRef:this.polygonEdgeAt(event,hit.object)}:{})};
       // Keep thin circular and linear strokes on the same 8 CSS-pixel pickup
       // rule as other canvas geometry; labels and endpoints remain explicit.
       if(point&&this.tool==='select'&&this.navigationMode!=='pan'&&
@@ -228,6 +228,7 @@
       }
       return null;
     }
+    polygonEdgeAt(event,object){if(!object||object.type!=='polygon'||object.constructionValid===false||!Array.isArray(object.vertices))return null;const t=this.transform(),p={x:event.clientX,y:event.clientY};let best=null,distance=8;for(let i=0;i<object.vertices.length;i++){const a=t.mathToScreen(object.vertices[i]),b=t.mathToScreen(object.vertices[(i+1)%object.vertices.length]),dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy;if(!l)continue;const raw=((p.x-a.x)*dx+(p.y-a.y)*dy)/l,u=Math.max(0,Math.min(1,raw)),d=Math.hypot(p.x-a.x-u*dx,p.y-a.y-u*dy);if(raw>.06&&raw<.94&&d<distance){best={objectId:object.id,part:'edge',index:i};distance=d;}}return best;}
     cursorFor(hit) {
       const state=this.interaction;
       if(!state && this.navigationMode==='pan')return this.allowed('view.pan',{bounds:{...this.engine.renderer.bounds}})?'grab':'default';
@@ -426,7 +427,7 @@
         if(slider?.type==='range'){const value=slider.parentElement.querySelector('output');if(value)value.textContent=slider.value+(slider.dataset.style==='opacity'?'%':' px');}
       });
       for(const node of [n.toolInstructions,n.fullscreenHint])this.on(node,"change",e=>{if(e.target.matches("[data-region-create-extent]")){this.regionExtent=e.target.value;this.renderInstructions();}});
-      for(const node of [n.toolInstructions,n.fullscreenHint]){this.on(node,'input',e=>{const input=e.target.closest('[data-parallelogram-param]'),state=this.interaction;if(!input||!state?.parallelogramPlacement)return;const value=input.value.trim(),unit=state.angleUnit||'deg';state.numericPinned=true;if(input.dataset.parallelogramParam==='sideLength'){state.sideInput=value;state.sideLength=value===''?NaN:Number(value)/(state.lengthScale||1);}else{state.angleInput=value;const numeric=value===''?NaN:Number(value);state.signedAngle=unit==='rad'?numeric:numeric*Math.PI/180;}this.updateParallelogramParameterPreview();this.queueConstructionPlacementPreview();});this.on(node,'click',e=>{if(e.target.closest('[data-parallelogram-confirm]')){e.preventDefault();this.commitParallelogramPlacement();}});}
+      for(const node of [n.toolInstructions,n.fullscreenHint]){this.on(node,'input',e=>{const input=e.target.closest('[data-parallelogram-param]'),state=this.interaction;if(!input||!state?.parallelogramPlacement)return;const value=input.value.trim(),unit=state.angleUnit||'deg';state.numericPinned=true;state.placementQ=null;state.snappedAngle=null;if(input.dataset.parallelogramParam==='sideLength'){state.sideInput=value;state.sideLength=value===''?NaN:Number(value)/(state.lengthScale||1);}else{state.angleInput=value;const numeric=value===''?NaN:Number(value);state.signedAngle=unit==='rad'?numeric:numeric*Math.PI/180;}this.updateParallelogramParameterPreview();this.queueConstructionPlacementPreview();});this.on(node,'click',e=>{if(e.target.closest('[data-parallelogram-confirm]')){e.preventDefault();this.commitParallelogramPlacement();}});}
       this.on(n.selectionPanel, "change", e => {
         const parallelogramField=e.target.closest('[data-parallelogram-property]');if(parallelogramField&&this.selectedId){try{const object=this.engine.get(this.selectedId),key=parallelogramField.dataset.parallelogramProperty,scale=this.engine.model.meta.measurement?.scale||1,angleUnit=this.engine.model.meta.angleMeasurement?.unit==='rad'?'rad':'deg',value=parallelogramField.valueAsNumber;if(!object||object.construction?.kind!=='parallelogramBySideAngle'||!Number.isFinite(value))throw Error('Voer een eindige lengte of hoek in.');const payload={id:object.id,...(key==='sideLength'?{sideLength:value/scale}:key==='signedAngle'?{signedAngle:angleUnit==='rad'?value:value*Math.PI/180}:{})};if(!('sideLength'in payload||'signedAngle'in payload))throw Error('Onbekende parallellogramparameter.');this.changeDocument(()=>this.execute('construction.setParallelogramParameters',payload));}catch(error){this.status(error.message);this.invalidate();}return;}
         const ellipseSum=e.target.closest('[data-ellipse-sum]');if(ellipseSum&&this.selectedId){const object=this.engine.get(this.selectedId),scale=this.engine.model.meta.measurement?.scale||1;try{if(!object||object.type!=='ellipse'||object.construction?.kind!=='ellipseByFociAndSum')throw Error('Alleen de afstandsom van een gekoppelde ellips kan hier worden gewijzigd.');this.changeDocument(()=>this.execute('construction.setSumDistance',{id:object.id,sumDistance:ellipseSum.valueAsNumber/scale}));}catch(error){this.status(error.message);this.invalidate();}return;}
@@ -629,7 +630,7 @@
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
       if(state.radialPlacement||state.pathPlacement){this.radialPathPlacement(point,event,state);return;}
-      if(kind==='parallelogramBySideAngle'&&state.parallelogramPlacement){const result=state.numericPinned?this.updateParallelogramParameterPreview():this.parallelogramPlacementPreview(point);if(result?.valid)this.commitParallelogramPlacement();else{this.status('Kies een geldige plaatsingspositie buiten de lijn AB ('+(result?.reasonCode||'ongeldig')+').');this.invalidate();}return;}
+      if(kind==='parallelogramBySideAngle'&&state.parallelogramPlacement){const result=state.numericPinned?this.updateParallelogramParameterPreview():this.parallelogramPlacementPreview(point,event);if(result?.valid)this.commitParallelogramPlacement();else{this.status('Kies een geldige plaatsingspositie buiten de lijn AB ('+(result?.reasonCode||'ongeldig')+').');this.invalidate();}return;}
       if(kind==='ellipseByFociAndPoint'&&state.sources.length===2){
         const preview=this.ellipsePlacementPreview(point);if(!preview?.valid){this.status('Deze positie geeft geen geldige ellips ('+(preview?.reasonCode||'ONGELDIGE_GEOMETRIE')+'). Kies Q buiten het brandpuntsegment.');this.invalidate();return;}
         const payload={toolId:'construct:ellipseByFociAndPoint',sources:preview.source?[...state.sources.map(ref=>({...ref})),{...preview.source}]:state.sources.map(ref=>({...ref})),...(preview.source?{}:{controlPoint:{...preview.point}})};
@@ -674,23 +675,25 @@
       this.engine.renderer.preview=valid?{type:'ellipse',cx:result.geometry.center.x,cy:result.geometry.center.y,a:result.geometry.a,b:result.geometry.b,rotation:result.geometry.rotation,controlPoint:{...control},controlPointMode:source?'existing':'new',style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5',fill:'none'}}:{type:'ellipse-invalid',foci:foci.map(o=>({x:o.x,y:o.y})),point:{...control}};
       return {valid,reasonCode:result.reasonCode,point:{...control},source:source||null};
     }
-    parallelogramPlacementPreview(point){
+    parallelogramPlacementPoint(event){const transform=this.transform(),tool=this.tool;let best=null,bestDistance=8;for(const candidate of this.engine.model.objects){if(candidate.type!=='point'||!this.engine.isDisplayed(candidate.id)||candidate.visible===false||candidate.constructionValid===false||!this.canvasSelectable(candidate))continue;if(this.runtime){const caps=this.capabilities(candidate.id);if(!caps.read||!caps.display||!caps.sourceTools.includes(tool))continue;}const screen=transform?.mathToScreen({x:candidate.x,y:candidate.y}),distance=screen?Math.hypot(screen.x-event.clientX,screen.y-event.clientY):Infinity;if(distance<bestDistance){best=candidate;bestDistance=distance;}}return best;}
+    parallelogramPlacementPreview(point,event){
       const state=this.interaction;if(!state?.parallelogramPlacement||state.sources.length!==2)return null;
       const a=this.engine.get(state.sources[0].objectId),b=this.engine.get(state.sources[1].objectId);if(!a||!b)return {valid:false,reasonCode:'INVALID_REFERENCE'};
-      if(!state.numericPinned){const q=point,vx=b.x-a.x,vy=b.y-a.y,wx=q.x-a.x,wy=q.y-a.y;state.sideLength=Math.hypot(wx,wy);state.signedAngle=Math.atan2(vx*wy-vy*wx,vx*wx+vy*wy);state.sideInput=Number.isFinite(state.sideLength)?String(Number((state.sideLength*(state.lengthScale||1)).toPrecision(8))):'';state.angleInput=Number.isFinite(state.signedAngle)?String(Number((state.angleUnit==='rad'?state.signedAngle:state.signedAngle*180/Math.PI).toPrecision(8))):'';state.lastPlacementPoint={...point};const side=this.nodes.toolInstructions.querySelector('[data-parallelogram-param="sideLength"]'),angle=this.nodes.toolInstructions.querySelector('[data-parallelogram-param="signedAngle"]');if(side&&this.document.activeElement!==side)side.value=state.sideInput;if(angle&&this.document.activeElement!==angle)angle.value=state.angleInput;}
+      if(!state.numericPinned){const qObject=event&&this.parallelogramPlacementPoint(event),snapped=!qObject?this.snap(point,state.sources.map(ref=>ref.objectId)):null,q=qObject?{x:qObject.x,y:qObject.y}:snapped.point,vx=b.x-a.x,vy=b.y-a.y,wx=q.x-a.x,wy=q.y-a.y;state.sideLength=Math.hypot(wx,wy);let angle=Math.atan2(vx*wy-vy*wx,vx*wx+vy*wy);state.placementQ=qObject?{id:qObject.id,point:q}:null;state.placementSnap=snapped?.snapped?snapped.kind:null;if(!qObject&&Number.isFinite(angle)){const targets=[Math.PI/2,-Math.PI/2],limit=(state.snappedAngle?6:4)*Math.PI/180,nearest=targets.map(value=>({value,distance:Math.abs(Math.atan2(Math.sin(angle-value),Math.cos(angle-value)))})).sort((x,y)=>x.distance-y.distance)[0];if(nearest.distance<=limit){angle=nearest.value;state.snappedAngle=nearest.value;}else state.snappedAngle=null;}else state.snappedAngle=null;state.signedAngle=angle;state.sideInput=Number.isFinite(state.sideLength)?String(Number((state.sideLength*(state.lengthScale||1)).toPrecision(8))):'';state.angleInput=Number.isFinite(state.signedAngle)?String(Number((state.angleUnit==='rad'?state.signedAngle:state.signedAngle*180/Math.PI).toPrecision(8))):'';state.lastPlacementPoint={...q};const side=this.nodes.toolInstructions.querySelector('[data-parallelogram-param="sideLength"]'),angleInput=this.nodes.toolInstructions.querySelector('[data-parallelogram-param="signedAngle"]');if(side&&this.document.activeElement!==side)side.value=state.sideInput;if(angleInput&&this.document.activeElement!==angleInput)angleInput.value=state.angleInput;}
       return this.updateParallelogramParameterPreview();
     }
     updateParallelogramParameterPreview(){
       const state=this.interaction;if(!state?.parallelogramPlacement)return null;const a=this.engine.get(state.sources[0].objectId),b=this.engine.get(state.sources[1].objectId),result=a&&b?MI.ConstructionService.parallelogramPreview(a,b,state.sideLength,state.signedAngle):{geometry:null,reasonCode:'INVALID_REFERENCE'};
-      state.previewValid=result.reasonCode==='VALID';state.previewReason=result.reasonCode;this.engine.renderer.preview=result.geometry?{type:'parallelogram-preview',vertices:result.geometry.vertices,valid:true}:a&&b?{type:'parallelogram-preview',vertices:[{x:a.x,y:a.y},{x:b.x,y:b.y}],valid:false}:null;const message=this.nodes.toolInstructions.querySelector('[data-parallelogram-status]'),confirm=this.nodes.toolInstructions.querySelector('[data-parallelogram-confirm]');if(message)message.textContent=state.previewValid?'L = '+(state.sideLength*(state.lengthScale||1)).toPrecision(5)+' '+(state.lengthUnit||'e')+'; θ = '+(state.angleUnit==='rad'?state.signedAngle:state.signedAngle*180/Math.PI).toPrecision(5)+(state.angleUnit==='rad'?' rad':'°'):'Ongeldige plaatsing: '+result.reasonCode;if(confirm)confirm.disabled=!state.previewValid;return result;
+      state.previewValid=result.reasonCode==='VALID';state.previewReason=result.reasonCode;this.engine.renderer.preview=result.geometry?{type:'parallelogram-preview',vertices:result.geometry.vertices,valid:true,signedAngle:state.signedAngle,snapped:!!state.snappedAngle,placementQ:state.placementQ}:a&&b?{type:'parallelogram-preview',vertices:[{x:a.x,y:a.y},{x:b.x,y:b.y}],valid:false}:null;const message=this.nodes.toolInstructions.querySelector('[data-parallelogram-status]'),confirm=this.nodes.toolInstructions.querySelector('[data-parallelogram-confirm]');if(message)message.textContent=state.previewValid?'L = '+(state.sideLength*(state.lengthScale||1)).toPrecision(5)+' '+(state.lengthUnit||'e')+'; θ = '+(state.angleUnit==='rad'?state.signedAngle:state.signedAngle*180/Math.PI).toPrecision(5)+(state.angleUnit==='rad'?' rad':'°')+(state.placementQ?' · bestaand punt Q':'')+(state.snappedAngle?' · 90°-snap':''):'Ongeldige plaatsing: '+result.reasonCode;if(confirm)confirm.disabled=!state.previewValid;return result;
     }
     commitParallelogramPlacement(){
       const state=this.interaction;if(!state?.parallelogramPlacement)return false;const check=this.updateParallelogramParameterPreview();if(!check?.valid){this.status('De zijde en hoek leveren geen geldig parallellogram op.');this.invalidate();return false;}
       const payload={toolId:'construct:parallelogramBySideAngle',sources:state.sources.map(ref=>({objectId:ref.objectId})),sideLength:state.sideLength,signedAngle:state.signedAngle};this.interaction=null;this.release(state);this.engine.renderer.preview=null;
-      try{this.changeDocument(()=>{const created=this.execute('construction.create',payload).result;this.selectedIds=created.map(o=>o.id);});this.tool='select';this.status('Gekoppeld parallellogram toegevoegd.');}
+      try{this.changeDocument(()=>{const created=this.execute('construction.create',payload).result;this.selectedIds=created.map(o=>o.id);this.nameGenericParallelogramSources(state.sources);});this.tool='select';this.status('Gekoppeld parallellogram toegevoegd.');}
       catch(error){this.interaction={...state,parallelogramPlacement:true,pointerId:null};this.status(error.message);}
       this.invalidate();return !this.interaction;
     }
+    nameGenericParallelogramSources(sources){const names=['A','B'],ids=sources.map(ref=>ref.objectId),objects=ids.map(id=>this.engine.get(id));if(objects.some((o,i)=>!o||o.type!=='point'||o.name!==o.id&&!/^(Punt|Point)\s+\d+$/i.test(o.name||'')))return;for(let i=0;i<2;i++)if(this.engine.model.objects.some(o=>!ids.includes(o.id)&&o.name===names[i]))return;const payloads=objects.map((o,i)=>({ids:[o.id],fields:[{path:'name',value:names[i]}]}));if(payloads.some(p=>!this.allowed('object.setProperties',p)))return;for(const payload of payloads)this.execute('object.setProperties',payload);}
     queueConstructionPlacementPreview(){
       if(this.constructionPreviewFrame!=null||!this.window.requestAnimationFrame)return;
       this.constructionPreviewFrame=this.window.requestAnimationFrame(()=>{this.constructionPreviewFrame=null;if(this.initialized&&this.interaction?.parallelogramPlacement)this.renderPlacementPreview();});
@@ -711,7 +714,7 @@
     // UI-RADIAL-9: generic adapter for any document object accepted by a
     // registered construction contract. The service owns source matching;
     // this controller only stages the existing create/interaction workflow.
-    startContextConstruction(toolId,objectId,planKey){
+    startContextConstruction(toolId,objectId,planKey,sourceRef=null){
       const kind=typeof toolId==='string'&&toolId.startsWith('construct:')?
         toolId.slice(10):null;
       const source=kind&&this.engine.get(objectId);
@@ -722,7 +725,7 @@
         this.status('Deze constructie is niet beschikbaar voor het geselecteerde object.');
         return false;
       }
-      const plan=MI.ConstructionService.contextualPlans(source,kind)
+      const plan=MI.ConstructionService.contextualPlans(source,kind,sourceRef)
         .find(option=>option.key===planKey);
       if(!plan){
         this.status('De geselecteerde constructiebron past niet bij dit gereedschap.');
@@ -753,7 +756,7 @@
         ...(plan.sourceIndex>0?{
           radialPrefill:{index:plan.sourceIndex,source:{...plan.sources[0]}}
         }:{}),
-        ...(plan.mode==='placement'&&kind==='pointOnEllipse'?{radialPlacement:true}:{}),
+        ...(plan.mode==='placement'&&['pointOnEllipse','pointOnSegment'].includes(kind)?{radialPlacement:true}:{}),
         selectionIdsBefore:selectionBefore,pointerId:null
       };
       const hint=plan.mode==='placement'
@@ -1004,7 +1007,7 @@
         if (!this.tool.startsWith('construct:') && this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
         return;
       }
-      if(state.mode==='construction'){if(state.parallelogramPlacement){const point=this.pointer(event);if(point&&!state.numericPinned){this.parallelogramPlacementPreview(point);this.queueConstructionPlacementPreview();}return;}if(state.ellipsePlacement){const point=this.pointer(event);if(point){this.ellipsePlacementPreview(point);this.queueEllipsePlacementPreview();}return;}if((state.pathPlacement||state.radialPlacement)&&this.tool==='construct:pointOnEllipse'){const point=this.pointer(event);if(point){this.ellipsePointPlacementPreview(point);this.queuePointPlacementPreview();}return;}this.queueHover(event);return;}
+      if(state.mode==='construction'){if(state.parallelogramPlacement){const point=this.pointer(event);if(point&&!state.numericPinned){this.parallelogramPlacementPreview(point,event);this.queueConstructionPlacementPreview();}return;}if(state.ellipsePlacement){const point=this.pointer(event);if(point){this.ellipsePlacementPreview(point);this.queueEllipsePlacementPreview();}return;}if((state.pathPlacement||state.radialPlacement)&&this.tool==='construct:pointOnEllipse'){const point=this.pointer(event);if(point){this.ellipsePointPlacementPreview(point);this.queuePointPlacementPreview();}return;}this.queueHover(event);return;}
       if (state.mode==='polygon') { if(event.isPrimary===false || (state.pointerId!=null && event.pointerId!==state.pointerId)) return; const point=this.pointer(event); if(point) { state.result=this.polygonResult(point); this.polygonPreview(); } return; }
       if (event.pointerId !== state.pointerId) return;
       state.lastPointer={clientX:event.clientX,clientY:event.clientY};
@@ -1403,8 +1406,8 @@
       const keys=MI.MeasurementGeometry.measurementKeys(object);
       if(!keys.length||this.selectedIds.length!==1)return '';
       const meta=this.engine.model.meta.measurement||MI.MeasurementUnits.defaults,config=object.measurements?MI.MeasurementGeometry.measurementSettings(object.measurements,object):MI.MeasurementGeometry.defaultMeasurementSettings(object),allowed=!object.locked&&this.allowed('object.setProperties',{ids:[object.id],fields:[{path:'measurements',value:config}]}),disabled=allowed?'':' disabled',esc=MI.escapeXml;
-      const rows=keys.map(key=>{
-        const para=object.construction?.kind==='parallelogramBySideAngle',sideNames=['Zijde AB','Zijde BC','Zijde CD','Zijde DA'],angleNames=['Binnenhoek A','Binnenhoek B','Binnenhoek C','Binnenhoek D'],entry=config.values[key]||{visible:false,precision:null,mode:'computed',text:'',dx:0,dy:0},index=Number(key.split(':')[1]),title=key.startsWith('side:')?(para?sideNames[index]:'Zijde '+(index+1)):key.startsWith('angle:')?(para?angleNames[index]:'Hoek '+(index+1)):({radius:'Straal',diameter:'Diameter',circumference:'Omtrek',area:'Oppervlakte',semiMajor:'Grote halve as',semiMinor:'Kleine halve as',majorAxis:'Grote as',minorAxis:'Kleine as',eccentricity:'Excentriciteit',perimeter:'Omtrek',length:'Lengte',angle:'Hoek'}[key]||key),computedConfig={...config,values:{...config.values,[key]:{...entry,mode:'computed'}}},value=MI.MeasurementGeometry.measurementLabel(object,key,computedConfig,meta,this.engine.model.meta.angleMeasurement);
+      const names=MI.MeasurementGeometry.vertexNames(object,new Map(this.engine.model.objects.map(o=>[o.id,o]))),rows=keys.map(key=>{
+        const para=object.construction?.kind==='parallelogramBySideAngle',index=Number(key.split(':')[1]),title=key.startsWith('side:')?(para?'Zijde '+names[index]+names[(index+1)%4]:'Zijde '+(index+1)):key.startsWith('angle:')?(para?'∠'+names[(index+3)%4]+names[index]+names[(index+1)%4]:'Hoek '+(index+1)):({radius:'Straal',diameter:'Diameter',circumference:'Omtrek',area:'Oppervlakte',semiMajor:'Grote halve as',semiMinor:'Kleine halve as',majorAxis:'Grote as',minorAxis:'Kleine as',eccentricity:'Excentriciteit',perimeter:'Omtrek',length:'Lengte',angle:'Hoek'}[key]||key),entry=config.values[key]||{visible:false,precision:null,mode:'computed',text:'',dx:0,dy:0},computedConfig={...config,values:{...config.values,[key]:{...entry,mode:'computed'}}},value=MI.MeasurementGeometry.measurementLabel(object,key,computedConfig,meta,this.engine.model.meta.angleMeasurement,new Map(this.engine.model.objects.map(o=>[o.id,o])));
         const mode='<label>Weergave<select data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="mode"'+disabled+'><option value="computed"'+(entry.mode==='computed'?' selected':'')+'>Berekende waarde</option><option value="text"'+(entry.mode==='text'?' selected':'')+'>Vrije tekst</option></select></label>';
         const precision='<label>Precisie<input type="number" min="0" max="10" step="1" placeholder="Documentstandaard" value="'+(entry.precision??'')+'" data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="precision"'+disabled+'></label>';
         const freeText=entry.mode==='text'?'<label>Maattekst<input type="text" maxlength="2000" value="'+esc(entry.text)+'" data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="text"'+disabled+'></label><div class="measurement-symbol-picker" role="group" aria-label="Symbool invoegen in '+esc(title)+'">'+['α','β','γ','δ','θ','π','°'].map(symbol=>'<button type="button" class="secondary" data-measurement-symbol="'+symbol+'" data-measurement-symbol-key="'+esc(key)+'" aria-label="'+symbol+' invoegen" title="'+symbol+'"'+disabled+'>'+symbol+'</button>').join('')+'</div>':'';
