@@ -62,7 +62,7 @@
     labels:'<path d="M4 4.5h16M12 4.5V20M9 20h6" stroke-width="2.8"/>',
     actions:'<path d="M10 2.4h4l.65 2.7a8 8 0 0 1 2.1 1.2l2.6-1 2 3.5-2 1.9a8.5 8.5 0 0 1 0 2.5l2 1.9-2 3.5-2.6-1a8 8 0 0 1-2.1 1.2L14 21.6h-4l-.65-2.8a8 8 0 0 1-2.1-1.2l-2.6 1-2-3.5 2-1.9a8.5 8.5 0 0 1 0-2.5l-2-1.9 2-3.5 2.6 1a8 8 0 0 1 2.1-1.2L10 2.4Z"/><circle cx="12" cy="12" r="3.15"/>',
     all:'<circle cx="5.5" cy="12" r="2.15" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="2.15" fill="currentColor" stroke="none"/><circle cx="18.5" cy="12" r="2.15" fill="currentColor" stroke="none"/>',
-    geometry:'<path d="M3 19 11 4l8 15Z"/><circle cx="18.3" cy="7" r="3.3"/><path d="M3 19h18"/>',
+    geometry:'<circle cx="16.2" cy="8.1" r="5.7" opacity=".52"/><path d="M3.5 2.5v19h17.2L3.5 2.5Z"/><path d="M7.4 11.3v6.1h5.7l-5.7-6.1Z"/><path d="M3.5 8.2h2.3M3.5 11.2h1.5M3.5 14.2h2.3M3.5 17.2H5"/>',
     editText:'<path d="M4 5h16M12 5v15M8 20h8" stroke-width="2.5"/>',
     grid:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/>',
     axes:'<path d="M4 20V3M4 20h17M2 6l2-3 2 3M18 18l3 2-3 2"/>',
