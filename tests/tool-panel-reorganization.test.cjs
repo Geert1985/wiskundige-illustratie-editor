@@ -7,8 +7,9 @@ test('UI-T1 places working tools in the eight approved semantic categories witho
  assert.deepEqual(categories.map(m=>m[1]),Object.keys(expected));
  for(const [,id,content] of categories)assert.deepEqual(tools(content).sort(),expected[id].slice().sort(),id);
  const all=categories.flatMap(m=>tools(m[2]));assert.equal(new Set(all).size,all.length);assert.equal(all.length,41);
- const construction=categories.find(m=>m[1]==='constructies')[2],conics=construction.match(/data-tool-subgroup="kegelsneden"[^>]*>(.*?)<\/div><\/div>/s)[1];
- assert.match(conics,/data-tool="construct:circleByCenterPoint"/);assert.match(conics,/data-tool="construct:pointOnEllipse"/);assert.equal((construction.match(/data-tool="construct:circleByCenterPoint"/g)||[]).length,1);assert.equal((construction.match(/data-tool="construct:pointOnEllipse"/g)||[]).length,1);
+ const construction=categories.find(m=>m[1]==='constructies')[2],conics=construction.match(/data-tool-subgroup="kegelsneden"[^>]*>(.*?)<\/div><\/div>/s)[1],points=construction.match(/data-tool-subgroup="puntconstructies"[^>]*>(.*?)<\/div><\/div>/s)[1];
+ assert.match(conics,/data-tool="construct:circleByCenterPoint"/);assert.doesNotMatch(conics,/data-tool="construct:pointOnEllipse"/);assert.equal((construction.match(/data-tool="construct:circleByCenterPoint"/g)||[]).length,1);assert.equal((construction.match(/data-tool="construct:pointOnEllipse"/g)||[]).length,1);
+ assert.ok(points.indexOf('data-tool="construct:pointOnCircle"')<points.indexOf('data-tool="construct:pointOnEllipse"'),'Punt op ellips follows Punt op cirkel in Puntconstructies.');
  assert.doesNotMatch(construction,/cirkelconstructies/);assert.match(construction,/data-tool-subgroup="vectoren"[^>]*>[\s\S]*?Vectoren[\s\S]*?M7-VEC-FUND/);
  assert.doesNotMatch(categories.find(m=>m[1]==='meten')[2],/data-tool="construct:(?:perimeter|area)"/);
  assert.match(categories.find(m=>m[1]==='meten')[2],/combined-measurement-placeholder[^>]*title="Binnenkort beschikbaar"[\s\S]*?Gecombineerde meting/);
