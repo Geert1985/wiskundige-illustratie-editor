@@ -50,7 +50,7 @@ function appRuntime() {
   MI.RadialProperties=class { constructor() {} sync() {} openForAxes() {} dispose() {} };
   vm.runInContext(fs.readFileSync(path.join(root, 'editor.js'), 'utf8'), context);
   const events = new Map();
-  function target() { return { value: '', style: { setProperty() {} }, dataset: {}, attributes: {}, events: new Map(), classList: { add() {}, remove() {}, toggle() {} }, insertBefore() {},
+  function target() { return { value: '', style: { setProperty() {} }, dataset: {}, attributes: {}, events: new Map(), children: [], classList: { add() {}, remove() {}, toggle() {} }, insertBefore() {}, appendChild(child) { this.children.push(child); return child; }, remove() {},
     setAttribute(name, value) { this.attributes[name] = String(value); }, getAttribute(name) { return this.attributes[name] ?? null; },
     addEventListener(type, fn) { (this.events.get(type) || (this.events.set(type, new Set()), this.events.get(type))).add(fn); },
     removeEventListener(type, fn) { this.events.get(type)?.delete(fn); },

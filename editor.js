@@ -903,7 +903,7 @@
       }
       const label = event.target && event.target.closest && event.target.closest(".object-label"), handle = event.target && event.target.closest && event.target.closest(".fzi-line-endpoint");
       if (this.tool === "select" && (label || handle) && !(label && this.selectedIds.length>1 && this.selectedIds.includes(label.getAttribute('data-label-id')))) {
-        const id = (label || handle).getAttribute(label ? "data-label-id" : "data-line-id"), object = this.engine.get(id),measurementKey=label?.getAttribute('data-measurement-kind'),measurementMode=!!measurementKey;
+        const id = (label || handle).getAttribute(label ? "data-label-id" : "data-line-id"), object = this.engine.get(id),measurementKey=label?.getAttribute('data-measurement-kind'),measurementMode=!!object&&MI.MeasurementGeometry.measurementKeys(object).includes(measurementKey);
         const measurementProperty=object?.type==='region'?'areaDisplay.position':'measurements',measurementAllowed=!this.runtime||this.capabilities(id).propertyFields.includes(measurementProperty),labelAllowed=!this.runtime||["labelOffsetX","labelOffsetY"].every(k=>this.capabilities(id).propertyFields.includes(k));
         if (!this.canvasSelectable(object) || object.locked || (handle && object.construction) || (this.runtime && (label?(measurementMode?!measurementAllowed:!labelAllowed):![handle.getAttribute("data-endpoint")==="start"?"x1":"x2",handle.getAttribute("data-endpoint")==="start"?"y1":"y2"].every(k=>this.capabilities(id).geometryFields.includes(k))))) return;
         const measurementConfig=measurementMode&&object.type!=='region'?(object.measurements?MI.MeasurementGeometry.measurementSettings(object.measurements,object):MI.MeasurementGeometry.defaultMeasurementSettings(object)):null,regionPosition=object.type==='region'&&object.areaDisplay?.position?.mode==='offset'?object.areaDisplay.position:{dx:0,dy:0},offset=measurementMode?object.type==='region'?{x:regionPosition.dx||0,y:regionPosition.dy||0}:{x:measurementConfig.values[measurementKey]?.dx||0,y:measurementConfig.values[measurementKey]?.dy||0}:this.labelOffset(object);
@@ -1318,10 +1318,12 @@
       if(!object.construction&&(object.type==='polygon' || object.type==='angle')) object.vertices.forEach((p,i)=>{ for(const key of ['x','y']) html+='<label>Hoekpunt '+(i+1)+' '+key+'<input data-vertex="'+i+'" data-edit="'+key+'" type="number" step="0.01" value="'+displayNumber(p[key])+'"></label>'; });
       if (object.type === "text" && !object.construction && !object.textBinding && !object.textContent) html += '<label>Tekst<input data-edit="text" value="' + MI.escapeXml(object.text) + '"></label>';
       html+='<details data-property-section="labels" open><summary>Label en meting</summary>';
-      if(['line','vector','circle','angle','dimension'].includes(object.type)&&!object.measurements) {
-        if(object.type==='dimension') html+='<label class="style-toggle"><input type="checkbox" data-edit="measurementLabelOnly"'+(object.measurementLabelOnly?' checked':'')+'>Alleen meetlabel tonen</label>';
-        if(!['dimension','angle'].includes(object.type)) html+='<label class="style-toggle"><input type="checkbox" data-edit="showMeasurement"'+(object.showMeasurement?' checked':'')+'>Maat tonen</label>';
-        if(object.showMeasurement || ['dimension','angle'].includes(object.type)) {const mode=object.measurementMode||'computed';html+='<label>Maatweergave<select data-edit="measurementMode"><option value="computed"'+(mode==='computed'?' selected':'')+'>Berekende waarde</option><option value="text"'+(mode==='text'?' selected':'')+'>Vrije tekst</option></select></label>';if(mode==='text')html+='<label>Maattekst<input data-edit="measurementText" value="'+MI.escapeXml(object.measurementText||'')+'"></label><div class="measurement-symbol-picker" role="group" aria-label="Symbool invoegen in maattekst">'+['α','β','γ','δ','θ','π','°'].map(symbol=>'<button type="button" class="secondary" data-measurement-symbol="'+symbol+'" aria-label="Symbool '+symbol+' invoegen" title="'+symbol+'">'+symbol+'</button>').join('')+'</div>';else html+='<p data-measurement-value>'+MI.escapeXml(object.constructionValid===false?'niet beschikbaar':MI.MeasurementGeometry.label(object,this.engine.model.meta.measurement,this.engine.model.meta.angleMeasurement))+'</p>';}
+      if(object.type==='dimension')html+='<label class="style-toggle"><input type="checkbox" data-edit="measurementLabelOnly"'+(object.measurementLabelOnly?' checked':'')+'>Alleen meetlabel tonen</label>';
+      // Vectors stay on their legacy norm label until M7-VEC-FUND. Other
+      // supported families use the independent controls below as their only UI.
+      if(object.type==='vector'&&!object.measurements){
+        html+='<label class="style-toggle"><input type="checkbox" data-edit="showMeasurement"'+(object.showMeasurement?' checked':'')+'>Maat tonen</label>';
+        if(object.showMeasurement){const mode=object.measurementMode||'computed';html+='<label>Maatweergave<select data-edit="measurementMode"><option value="computed"'+(mode==='computed'?' selected':'')+'>Berekende waarde</option><option value="text"'+(mode==='text'?' selected':'')+'>Vrije tekst</option></select></label>';if(mode==='text')html+='<label>Maattekst<input data-edit="measurementText" value="'+MI.escapeXml(object.measurementText||'')+'"></label><div class="measurement-symbol-picker" role="group" aria-label="Symbool invoegen in maattekst">'+['α','β','γ','δ','θ','π','°'].map(symbol=>'<button type="button" class="secondary" data-measurement-symbol="'+symbol+'" aria-label="Symbool '+symbol+' invoegen" title="'+symbol+'">'+symbol+'</button>').join('')+'</div>';else html+='<p data-measurement-value>'+MI.escapeXml(MI.MeasurementGeometry.label(object,this.engine.model.meta.measurement,this.engine.model.meta.angleMeasurement))+'</p>';}
       }
       html+='</details>';
       const style=object.style,esc=MI.escapeXml;
@@ -1366,9 +1368,9 @@
         const mode='<label>Weergave<select data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="mode"'+disabled+'><option value="computed"'+(entry.mode==='computed'?' selected':'')+'>Berekende waarde</option><option value="text"'+(entry.mode==='text'?' selected':'')+'>Vrije tekst</option></select></label>';
         const precision='<label>Precisie<input type="number" min="0" max="10" step="1" placeholder="Documentstandaard" value="'+(entry.precision??'')+'" data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="precision"'+disabled+'></label>';
         const freeText=entry.mode==='text'?'<label>Maattekst<input type="text" maxlength="2000" value="'+esc(entry.text)+'" data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="text"'+disabled+'></label><div class="measurement-symbol-picker" role="group" aria-label="Symbool invoegen in '+esc(title)+'">'+['α','β','γ','δ','θ','π','°'].map(symbol=>'<button type="button" class="secondary" data-measurement-symbol="'+symbol+'" data-measurement-symbol-key="'+esc(key)+'" aria-label="'+symbol+' invoegen" title="'+symbol+'"'+disabled+'>'+symbol+'</button>').join('')+'</div>':'';
-        return '<div class="measurement-entry"><label class="style-toggle"><input type="checkbox" data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="visible"'+(entry.visible?' checked':'')+disabled+'>'+esc(title)+' tonen</label><output>'+esc(value)+'</output><details><summary>Notatie en labelpositie</summary>'+mode+precision+freeText+'<button type="button" class="secondary" data-measurement-reset="'+esc(key)+'"'+disabled+'>Labelpositie herstellen</button></details></div>';
+        return '<div class="measurement-entry"><label class="style-toggle"><input type="checkbox" data-measurement-control data-measurement-key="'+esc(key)+'" data-measurement-field="visible"'+(entry.visible?' checked':'')+disabled+'><span>'+esc(title)+'</span></label><output>'+esc(value)+'</output><details><summary>Notatie en labelpositie</summary>'+mode+precision+freeText+'<button type="button" class="secondary" data-measurement-reset="'+esc(key)+'"'+disabled+'>Labelpositie herstellen</button></details></div>';
       }).join('');
-      return '<details data-property-section="individual-measurements" open><summary>Afzonderlijke metingen</summary>'+rows+'</details>';
+      return '<div class="measurement-list" data-property-section="individual-measurements">'+rows+'</div>';
     }
     organizeGeometryInspector(){
       if(this.inspectorTarget!=='objects'||this.selectedIds.length!==1)return;
@@ -1379,7 +1381,7 @@
       ];
       for(const group of groups){
         let wrapper=panel.querySelector(':scope > details[data-property-section="'+group.id+'"]');
-        if(!wrapper){wrapper=this.document.createElement('details');wrapper.dataset.propertySection=group.id;wrapper.open=true;const summary=this.document.createElement('summary');summary.textContent=group.title;wrapper.append(summary);}
+        if(!wrapper){wrapper=this.document.createElement('details');wrapper.dataset.propertySection=group.id;wrapper.open=true;const summary=this.document.createElement('summary');summary.textContent=group.title;wrapper.appendChild(summary);}
         else wrapper.querySelector(':scope > summary').textContent=group.title;
         for(const section of group.sections){
           const node=Array.from(panel.children).find(child=>child.dataset?.propertySection===section);
@@ -1387,7 +1389,7 @@
             if(section==='geometry'&&node.children.length===1){node.remove();continue;}
             if(section==='geometry')node.querySelector(':scope > summary').textContent='Definitieparameters';
             if(section==='labels')node.querySelector(':scope > summary').textContent='Objectlabel en maat';
-            wrapper.append(node);
+            wrapper.appendChild(node);
           }
         }
         if(wrapper.children.length>1){

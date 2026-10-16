@@ -42,7 +42,7 @@ test('candidate and snap result callers cannot corrupt the internal cached geome
 function editor() {
   const frames = new Map(); let serial = 0;
   const nodes = new Map(); const node = id => {
-    if (!nodes.has(id)) nodes.set(id, { value: '', style: {}, dataset: {}, classList: { add() {}, toggle() {} }, addEventListener() {}, removeEventListener() {}, querySelector: () => null, querySelectorAll: () => [], contains: () => true, getBoundingClientRect: () => ({ left: 0, top: 0 }) });
+    if (!nodes.has(id)) nodes.set(id, { value: '', style: {}, dataset: {}, children: [], classList: { add() {}, toggle() {} }, addEventListener() {}, removeEventListener() {}, appendChild(child) { this.children.push(child); return child; }, remove() {}, querySelector: () => null, querySelectorAll: () => [], contains: () => true, getBoundingClientRect: () => ({ left: 0, top: 0 }) });
     return nodes.get(id);
   };
   node('canvas').querySelector = () => ({ getScreenCTM: () => ({ a: 1, d: 1, b: 0, c: 0, e: 0, f: 0 }) });

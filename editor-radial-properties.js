@@ -598,6 +598,12 @@
       this.panel.hidden=filter==='construct';
       this.pointConstructPanel.hidden=filter!=='construct';
       if(filter==='construct'){this.renderContextConstructions();return;}
+      const groupedSections=this.panel.querySelectorAll(':scope > details[data-property-section="object-geometry"], :scope > details[data-property-section="measurements"]');
+      for(const wrapper of groupedSections){
+        const children=Array.from(wrapper.querySelectorAll(':scope > [data-property-section]'));
+        for(const child of children)child.hidden=filter==='measurement'?wrapper.dataset.propertySection==='object-geometry':filter==='labels'?!['labels','point-projections'].includes(child.dataset.propertySection):false;
+        wrapper.hidden=filter==='measurement'?wrapper.dataset.propertySection==='object-geometry':filter==='labels'?!children.some(child=>!child.hidden):false;
+      }
       for(const el of this.panel.children){
         const section=el.dataset?.propertySection;
         if(el.classList.contains('object-heading')){
@@ -607,6 +613,7 @@
         if(filter==='all'){el.hidden=false;continue;}
         if(filter==='geometry')el.hidden=!(['object-geometry','measurements'].includes(section));
         else if(filter==='measurement')el.hidden=section!=='measurements';
+        else if(filter==='labels')el.hidden=!(['object-geometry','measurements'].includes(section));
         else if(filter==='appearance')el.hidden=section!=='appearance';
         else if(filter==='relations')el.hidden=section!=='relations';
         else el.hidden=true;
@@ -652,6 +659,8 @@
         return;
       }
       const sectionNames=SECTIONS[filter];
+      const nestedWrappers=this.panel.querySelectorAll(':scope > details[data-property-section="object-geometry"], :scope > details[data-property-section="measurements"]');
+      for(const wrapper of nestedWrappers)for(const child of wrapper.querySelectorAll(':scope > [data-property-section]'))child.hidden=false;
       for(const el of this.panel.children){
         if(el.classList.contains('object-heading')){
           el.hidden=!['all','actions','organization','labels'].includes(filter);
@@ -662,10 +671,13 @@
         if(filter==='appearance'&&el.classList.contains('object-style')){el.hidden=false;continue;}
         el.hidden=!(sectionNames&&sectionNames.includes(section));
       }
-      if(filter==='labels')for(const wrapper of this.panel.querySelectorAll(':scope > details[data-property-section="object-geometry"], :scope > details[data-property-section="measurements"]')){
-        for(const child of wrapper.querySelectorAll(':scope > details[data-property-section]'))
-          child.hidden=!['labels','point-projections'].includes(child.dataset.propertySection);
-        wrapper.hidden=!wrapper.querySelector(':scope > details[data-property-section="labels"], :scope > details[data-property-section="point-projections"]');
+      const geometryGroup=this.panel.querySelector(':scope > details[data-property-section="object-geometry"]'),measurementGroup=this.panel.querySelector(':scope > details[data-property-section="measurements"]');
+      if(geometryGroup)geometryGroup.hidden=!['geometry','all','labels'].includes(filter);
+      if(measurementGroup)measurementGroup.hidden=!['geometry','measurement','all','labels'].includes(filter);
+      if(filter==='labels')for(const wrapper of nestedWrappers){
+        const children=Array.from(wrapper.querySelectorAll(':scope > [data-property-section]'));
+        for(const child of children)child.hidden=!['labels','point-projections'].includes(child.dataset.propertySection);
+        wrapper.hidden=!children.some(child=>!child.hidden);
       }
     }
     rename(name){

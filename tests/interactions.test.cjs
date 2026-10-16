@@ -4,15 +4,15 @@ const { runtime, plain } = require('./helpers.cjs');
 function editor() {
   const nodes = new Map(), windowEvents = {}, ready = [];
   const make = id => {
-    if (!nodes.has(id)) nodes.set(id, { value: '', innerHTML: '', textContent: '', style: {}, dataset: {}, events: {},
+    if (!nodes.has(id)) nodes.set(id, { value: '', innerHTML: '', textContent: '', style: {}, dataset: {}, events: {}, children: [],
       classList: { add() {}, remove() {}, toggle() {} }, addEventListener(name, fn) { (this.events[name] ||= []).push(fn); },
-      querySelector: () => null, querySelectorAll: () => [], insertBefore() {}, getBoundingClientRect: () => ({ left: 0, top: 0 }) });
+      querySelector: () => null, querySelectorAll: () => [], insertBefore() {}, appendChild(child) { this.children.push(child); return child; }, remove() {}, getBoundingClientRect: () => ({ left: 0, top: 0 }) });
     return nodes.get(id);
   };
   const svg = { getScreenCTM: () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0, inverse() { return this; } }) };
   make('canvas').querySelector = selector => selector === 'svg' ? svg : null;
   const document = { readyState: 'loading', getElementById: make, querySelector: selector => selector === '#canvas svg' ? svg : null,
-    createElement(tagName) { return { tagName, classList: { add() {}, remove() {}, toggle() {} }, dataset: {}, style: {}, addEventListener() {}, querySelector() { return null; }, querySelectorAll() { return []; } }; },
+    createElement(tagName) { return { tagName, children: [], classList: { add() {}, remove() {}, toggle() {} }, dataset: {}, style: {}, addEventListener() {}, appendChild(child) { this.children.push(child); return child; }, remove() {}, querySelector() { return null; }, querySelectorAll() { return []; } }; },
     querySelectorAll: () => [], addEventListener(name, fn) { if (name === 'DOMContentLoaded') ready.push(fn); } };
   const { MI } = runtime(['model.js', 'renderer.js', 'index.js', 'editor-startup.js', 'editor-adaptive-grid.js', 'editor.js'], {
     document, localStorage: { getItem: () => null }, CSS: { escape: x => x },

@@ -5,7 +5,7 @@ const root = path.join(__dirname, '..');
 function runtime(files = ['model.js', 'renderer.js', 'index.js'], additions = {}) {
   const defaultDocument = {
     readyState: 'loading', addEventListener() {}, getElementById() { return null; }, querySelector() { return null; },
-    createElement(tagName) { return { tagName, classList: { add() {}, remove() {}, toggle() {} }, dataset: {}, style: {}, addEventListener() {}, querySelector() { return null; }, querySelectorAll() { return []; } }; }
+    createElement(tagName) { return { tagName, children: [], classList: { add() {}, remove() {}, toggle() {} }, dataset: {}, style: {}, addEventListener() {}, appendChild(child) { this.children.push(child); return child; }, remove() {}, querySelector() { return null; }, querySelectorAll() { return []; } }; }
   };
   const { document: documentOverride, ...otherAdditions } = additions;
   const context = { console, setTimeout, document: documentOverride ? { ...defaultDocument, ...documentOverride } : defaultDocument, addEventListener() {}, ...otherAdditions };

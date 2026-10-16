@@ -1239,6 +1239,17 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   margin-left:12px;
   margin-right:12px;
 }
+.radial-detail-pane .selection-panel .measurement-list{margin:0;padding:0}
+.radial-detail-pane .selection-panel .measurement-entry{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:6px 10px;padding:6px 2px;border-bottom:1px solid rgba(132,153,168,.22)}
+.radial-detail-pane .selection-panel .measurement-entry:last-child{border-bottom:0}
+.radial-detail-pane .selection-panel .measurement-entry>label.style-toggle{min-width:0;margin:0;gap:7px;font-weight:600}
+.radial-detail-pane .selection-panel .measurement-entry>label.style-toggle span{overflow-wrap:anywhere}
+.radial-detail-pane .selection-panel .measurement-entry>output{justify-self:end;color:#f3d77f;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:12px}
+.radial-detail-pane .selection-panel .measurement-entry>details{grid-column:1/-1;border:0;border-top:1px solid rgba(132,153,168,.16);padding:2px 0 0;margin:0}
+.radial-detail-pane .selection-panel .measurement-entry>details>summary{padding:4px 0;color:#aebdca;font-size:11px;font-weight:500}
+.radial-detail-pane .selection-panel .measurement-entry>details>label{margin:6px 0}
+.radial-detail-pane .selection-panel .measurement-entry>details[open]{padding-bottom:4px}
+@media(max-width:520px){.radial-detail-pane .selection-panel .measurement-entry{grid-template-columns:minmax(0,1fr) auto}.radial-detail-pane .selection-panel .measurement-entry>details{grid-column:1/-1}}
 .radial-detail-pane .selection-panel details[data-property-section]>label:not(.style-toggle){
   display:block;
   margin-top:12px;

@@ -7,9 +7,9 @@ module.exports = async page => {
     await page.reload();
     const versions = await page.evaluate(() => {const rows=Array.from(document.scripts,script=>{const url=new URL(script.src);return [url.pathname.split('/').at(-1),url.searchParams.get('v')];});return Object.fromEntries(rows);});
     assert.ok(Object.values(versions).every(Boolean));
-    assert.deepEqual(new Set(Object.values(versions)),new Set(['m8a1b-control-point-20261015']));
-    assert.equal(versions['editor.js'],'m8a1b-control-point-20261015');
-    assert.equal(versions['editor-radial-properties.js'],'m8a1b-control-point-20261015');
+    assert.deepEqual(new Set(Object.values(versions)),new Set(['geo-ui-regression-20261016']));
+    assert.equal(versions['editor.js'],'geo-ui-regression-20261016');
+    assert.equal(versions['editor-radial-properties.js'],'geo-ui-regression-20261016');
     for (const type of ['line', 'straight', 'ray', 'vector']) {
       await require('./browser-tool-menu.cjs').choose(page,`[data-tool="${type}"]`);
       const start = await page.evaluate(() => FZI.MathIllustration.editor.transform().mathToScreen({ x: -2, y: -1 }));
