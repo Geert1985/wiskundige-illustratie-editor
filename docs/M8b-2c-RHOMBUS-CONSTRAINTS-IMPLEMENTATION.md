@@ -1,11 +1,11 @@
 # M8b-2c — Meetkundige snaps en blijvende vormvoorwaarden
 
-**Documentversie:** 1.0.0  
-**Status:** geïmplementeerd op featurebranch; wacht op code-review en handmatige gebruikersacceptatie  
+**Documentversie:** 1.0.1  
+**Status:** handmatig geaccepteerd en geïntegreerd in `main` via PR #22 op 16 oktober 2026 (zie integratieregistratie onderaan)  
 **Basisbranch:** `codex/m8b-2b-ux-geometry-integration`  
 **Gecontroleerde basiscommit:** `5f5551cc589ed0aff8ad83b9154f3ceb086dc7e0`  
 **Featurebranch:** `codex/m8b-2c-rhombus-constraints`  
-**Merge:** niet uitgevoerd
+**Merge:** uitgevoerd via PR #22; mergecommit `0b8e7a4f9eb50c5f196c33ccdf63cbdbcce773f6`
 
 De implementatie is opgesplitst in drie controleerbare commits: persistente geometrie/schema/commandvalidatie; interactie, snaps en inspector; tests en statusdocumentatie.
 
@@ -101,3 +101,7 @@ Deze correctie wijzigt alleen het plaatsingsveld en voegt geen aparte meet- of s
 ## Technisch oordeel
 
 **Technisch GO voor code-review en handmatige gebruikersacceptatie; geen merge-GO.** Alle gerichte regressies, de volledige Node-suite en de volledige Edge-suite zijn geslaagd. De browsermodule rapporteerde nul page errors. Gebruikersacceptatie en merge blijven open.
+
+## Integratieregistratie — 16 oktober 2026
+
+Na de oorspronkelijke featurebranch-oplevering heeft de gebruiker de M8b-2-, M8b-2b- en M8b-2c-keten handmatig geaccepteerd. De integratie naar `main` is uitgevoerd via [Pull Request #22](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/22) (mergecommit `0b8e7a4f9eb50c5f196c33ccdf63cbdbcce773f6`; laatste featurecommit `9bfbfa2e7fc0b89e7aeef4f99f3f27804af062b6`). De historische implementatie- en teststatussen hierboven hebben betrekking op de oorspronkelijke oplevering. De finale M8b-2c-implementatie omvat aanvullend het correct gesynchroniseerde lengteveld; de zichtbaarheid van drie meetlabels uit het oorspronkelijke M8b-2-ontwerp is in M8b-2b vervangen door standaard verborgen individuele metingen. **M8b-3 blijft open.**
