@@ -1,7 +1,7 @@
 # WIE M8b-2 — Meetweergave en eigenschappen
 
-**Documentversie:** 1.0.0  
-**Status:** featurebranch ter gebruikersacceptatie; niet geïntegreerd in `main`  
+**Documentversie:** 1.0.1  
+**Status:** handmatig geaccepteerd; geïntegreerd in `main` via PR #22 op 16 oktober 2026 (zie integratieregistratie onderaan)  
 **Repository:** `Geert1985/wiskundige-illustratie-editor`  
 **Gecontroleerde basis:** `origin/main` `26d33c0065ed77f9189fe7b9fb69f6ab71733610`  
 **Branch:** `codex/m8b-2-measurements-inspector`  
@@ -78,3 +78,7 @@
 | `npm test` | PASS — 691/691 |
 | `M8B2_ONLY=1 npm run test:edge` | PASS — gerichte suite; geen page errors |
 | `npm run test:edge` | PASS — volledige Edge-suite; geen page errors |
+
+## Integratieregistratie — 16 oktober 2026
+
+Na de oorspronkelijke featurebranch-oplevering heeft de gebruiker de M8b-2-, M8b-2b- en M8b-2c-keten handmatig geaccepteerd. De integratie naar `main` is uitgevoerd via [Pull Request #22](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/22) (mergecommit `0b8e7a4f9eb50c5f196c33ccdf63cbdbcce773f6`; laatste featurecommit `9bfbfa2e7fc0b89e7aeef4f99f3f27804af062b6`). De historische implementatie- en teststatussen hierboven hebben betrekking op de oorspronkelijke oplevering. De finale M8b-2c-implementatie omvat aanvullend het correct gesynchroniseerde lengteveld; de zichtbaarheid van drie meetlabels uit het oorspronkelijke M8b-2-ontwerp is in M8b-2b vervangen door standaard verborgen individuele metingen. **M8b-3 blijft open.**
