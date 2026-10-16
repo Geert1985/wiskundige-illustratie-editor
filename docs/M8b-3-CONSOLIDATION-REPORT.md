@@ -1,11 +1,17 @@
 # M8b-3 — Consolidatie- en eindacceptatierapport
 
-**Documentversie:** 1.0.0  
-**Datum:** 16 oktober 2026  
-**Repository:** `Geert1985/wiskundige-illustratie-editor`  
-**Featurebranch:** `codex/m8b-3-final-consolidation`  
-**Gecontroleerde `main`-basis:** `141f6c6c0722b5adca02d5ab5ff03d836c8b2320`  
-**Baselinecode:** `50a897fbb6a30caf981b499f7fd0b6e86f8a067f`  
+**Documentversie:** 1.0.0
+
+**Datum:** 16 oktober 2026
+
+**Repository:** `Geert1985/wiskundige-illustratie-editor`
+
+**Featurebranch:** `codex/m8b-3-final-consolidation`
+
+**Gecontroleerde `main`-basis:** `141f6c6c0722b5adca02d5ab5ff03d836c8b2320`
+
+**Baselinecode:** `50a897fbb6a30caf981b499f7fd0b6e86f8a067f`
+
 **Uitkomst:** volledige technische regressiepoort PASS; handmatige eindacceptatie blijft bij de gebruiker. Niet gemerged.
 
 ## Samenvatting
@@ -23,7 +29,7 @@ Er is **geen productiecode gewijzigd**. De eindpoort slaagde opnieuw met 705/705
 | `cbb700f` | Contractcorrecties naar v1.3.1 |
 | `50a897f` | Auditplan, contract en roadmapregistratie op featurebranch |
 | `3c18374` | Gecombineerde schema-9-/afhankelijkheidsfixture |
-| Rapportcommit | Dit rapport, de feitelijke roadmapstatus en AGENTS-status; exacte commit is de HEAD na deze documentatiecommit |
+| Documentatiestatuscommit | Dit rapport en de bijgewerkte roadmap/AGENTS-status; laatste commit op de opgeleverde featurebranch |
 
 De initiële testbasis was schoon op `codex/m8b-3-final-consolidation`. `origin/main` is tijdens deze uitvoering opgehaald en bevestigd als `141f6c6`. De featurebranch is daarvan afgeleid. De remote featurebranch is na uitvoering naar dezelfde branch gepusht; `main` is niet gewijzigd.
 
