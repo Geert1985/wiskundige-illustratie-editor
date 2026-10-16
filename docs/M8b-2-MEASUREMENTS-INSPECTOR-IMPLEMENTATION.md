@@ -15,6 +15,7 @@
 - Nieuwe parallellogrammen slaan documentversie 10, `measurementSchema:1` en `constructionSchema:8` op. De bestaande writer bepaalt deze versies automatisch. Oude M8b-1-bestanden zonder `measurements` blijven zonder migratie leesbaar en behouden hun oorspronkelijke zichtbaarheid.
 - De bestaande `construction.setParallelogramParameters` route wordt vanuit de gespecialiseerde geometriesectie aangeroepen. Lengte wordt met de document-schaal één keer omgerekend; de hoek wordt met de documentinstelling tussen graden/radialen en intern radialen omgerekend.
 - De inspector toont constructieparameters apart van berekende waarden. De labels `angle:0` enzovoort blijven binnenhoeken; `signedAngle` is uitsluitend de gerichte invoerparameter.
+- De gedeelde `MeasurementGeometry.measurementLabel()` geeft gekoppelde parallellogrammen vertexnamen (`Zijde AB`, `Zijde DA`, `Binnenhoek A`, enzovoort); gewone polygonen behouden hun bestaande generieke maatnamen.
 - Voor ongeldige gekoppelde geometrie tonen berekende inspectorwaarden `Niet beschikbaar`. De bestaande renderer verbergt individuele labels zolang het recept ongeldig is. Bronidentificatie wordt in restricted modus als afgeschermd getoond wanneer de bronrechten ontbreken.
 - De geometriesectie gebruikt dezelfde bestaande `organizeGeometryInspector()`-groep; de metingen blijven in de gedeelde GEO-UI-sectie en de radiale filters tonen dezelfde controls.
 - Restricted projectie controleert parallellogrambronrechten expliciet: zonder lees-, weergave- en constructiebronrechten verdwijnen figuur, maatwaarden en labels uit de projectie en SVG. JSON-export weigert een zichtbaar gekoppeld parallellogram waarvan bronrechten ontbreken, conform fail-closed gedrag.
@@ -25,8 +26,10 @@
 - `editor.js` — gespecialiseerde parameters en afgeleide meetwaarden, commandobediening, duidelijke polygon-meetnamen.
 - `editor-radial-properties.js` — geometrie-icoon voor de nieuwe inspectorsectie.
 - `permission-runtime.js` — expliciete bronrechten in parallellogramprojectie en fail-closed JSON-export.
+- `measurement-geometry.js` — parallellogramgerichte maatnamen in de bestaande meetlabelgenerator.
 - `tests/parallelogram-m8b.test.cjs` — M8b-1 roundtripverwachting aangepast aan de goedgekeurde M8b-2 standaardmetingen.
-- `tests/parallelogram-m8b2.test.cjs` — gerichte mathematische, model-, command-, historie-, roundtrip-, invaliditeits-, restricted-projectie/export- en snapshottests.
+- `tests/parallelogram-m8b2.test.cjs` — gerichte mathematische, model-, command-, historie-, roundtrip-, invaliditeits-, restricted-projectie/export-, SVG-label- en snapshottests.
+- `tests/geo-ui-measurements.test.cjs` — expliciete regressieasserties voor ongewijzigde generieke polygonlabels.
 - `tests/browser-parallelogram-measurements-m8b2.cjs` — Edge-test voor creatie, standaardlabels, parameters, labelinstellingen, graden/radialen, invaliditeit/herstel en export.
 - `tests/browser.cjs` — gerichte Edge-test beschikbaar als aparte suite en opgenomen in de volledige suite.
 - `docs/DEVELOPMENT-ROADMAP.md` — actuele featurebranchstatus.
@@ -37,6 +40,7 @@
 | Gebied | Testdekking | Resultaat |
 |---|---|---|
 | Wiskundige waarden | Positieve/negatieve hoek, alle vier binnenhoeken, zijden, omtrek, oppervlakte en gedraaide AB | 6 gerichte Node-tests geslaagd |
+| Maatlabeltekst | SVG bevat AB, DA en binnenhoek A; gewone polygonlabels houden bestaande teksten | Gerichte Node-tests geslaagd |
 | Defaults en historie | Exact `side:0`, `side:3`, `angle:0` zichtbaar; één constructie-object; creatie-/parameter-Undo/Redo | 6 gerichte Node-tests geslaagd |
 | GEO-UI-opslag | Individuele zichtbaarheid, vrije tekst, precisie, offset en JSON-roundtrip | Gerichte Node-dekking toegevoegd |
 | Ongeldig/herstel | Geen oude vertices/meetwaarden of labels; stabiele keys na herstel | Gerichte Node-dekking toegevoegd |

@@ -63,6 +63,8 @@ test('independent values use one unit scale and correct L, L², angle, and dimen
   assert.equal(MI.MeasurementGeometry.measurementValue(polygon, 'angle:1'), 90);
   assert.equal(MI.MeasurementGeometry.measurementValue(polygon, 'perimeter'), 12);
   assert.equal(MI.MeasurementGeometry.measurementValue(polygon, 'area'), 6);
+  assert.equal(MI.MeasurementGeometry.measurementLabel(polygon, 'side:0', config, meta), 'Zijde 0: 6,00 cm');
+  assert.equal(MI.MeasurementGeometry.measurementLabel(polygon, 'angle:0', config, meta), 'Hoek 0: 53,13°');
   assert.equal(MI.MeasurementGeometry.measurementLabel(polygon, 'perimeter', config, meta), 'Omtrek: 24,00 cm');
   assert.equal(MI.MeasurementGeometry.measurementLabel(polygon, 'area', config, meta), 'Oppervlakte: 24,00 cm²');
 
