@@ -49,9 +49,9 @@ Tijdens Edge-validatie zijn bestaande UI-tests bijgewerkt om de actuele catalogu
 
 ## 5. Gewijzigde bestanden
 
-Productie: `construction-service.js`, `model.js`, `index.js`, `permission-runtime.js`, `semantic-sequence.js`, `editor.js`, `editor-tool-instructions.js`, `editor.html`, `renderer.js`.
+Productie: `construction-service.js`, `model.js`, `index.js`, `permission-runtime.js`, `semantic-sequence.js`, `editor.js`, `editor-tool-instructions.js`, `editor.html`, `renderer.js`; code-reviewfollow-up: `measurement-geometry.js`.
 
-Tests: `tests/parallelogram-m8b.test.cjs`, `tests/browser-parallelogram-m8b.cjs`, `tests/browser.cjs`, `tests/browser-sidebar-navigation.cjs`, `tests/browser-split-tools.cjs`, `tests/browser-tool-panel-reorganization.cjs`, `tests/left-sidebar-navigation.test.cjs`, `tests/tool-panel-reorganization.test.cjs`.
+Tests: `tests/parallelogram-m8b.test.cjs`, `tests/browser-parallelogram-m8b.cjs`, `tests/browser-m8b-review-fixes.cjs`, `tests/browser.cjs`, `tests/browser-sidebar-navigation.cjs`, `tests/browser-split-tools.cjs`, `tests/browser-tool-panel-reorganization.cjs`, `tests/left-sidebar-navigation.test.cjs`, `tests/tool-panel-reorganization.test.cjs`.
 
 Documentatie: dit implementatieverslag en de feitelijke M8b-1 statusregel in `docs/DEVELOPMENT-ROADMAP.md`.
 
@@ -72,6 +72,20 @@ De drie implementatiecommits zijn:
 2. `9e4a60a` — `feat(editor): add parallelogram placement and commands`
 3. `af41927` — `test(m8b): cover parallelogram integration and regressions`
 
-De documentatie-closeoutcommit bevat dit commitregister en de definitieve status. De uiteindelijke branch-HEAD en pushbevestiging staan in het opleverbericht. Er is niet naar `main` gemerged.
+4. `a5297c5` — `docs(m8b): record implementation commit ledger`
+5. `0ee2a77` — `fix(m8b): redact stale geometry and export schema 8`
+
+De code-reviewfollow-up is na de oorspronkelijke oplevering toegevoegd op dezelfde featurebranch. Het huidige verslag bevat de bijgewerkte regressiestatus; de uiteindelijke branch-HEAD en pushbevestiging staan in het opleverbericht. Er is niet naar `main` gemerged.
 
 **Technisch oordeel:** GO voor code-review en handmatige gebruikersacceptatie van M8b-1: de volledige Node- en Edge-regressies zijn geslaagd. Dit is geen productacceptatie en geen autorisatie voor M8b-2 of M8b-3.
+
+## 8. Code-reviewfollow-up — restricted export en ongeldige geometrie
+
+Na de initiële M8b-1-oplevering zijn twee reviewbevindingen afzonderlijk gereproduceerd en opgelost:
+
+1. `PermissionRuntime.exportData()` projecteerde de parallellogramparameters niet en koos bij gemengde schema's maximaal schema 7. Restricted JSON met M8b kon daardoor onjuist of onleesbaar zijn. De export projecteert nu `sideLength`/`signedAngle`, kiest schema 8 als het geëxporteerde document een M8b-recept bevat, en schrijft documentversie 10 plus `measurementSchema: 1` als GEO-UI-metingen aanwezig zijn. De bestaande controle op alle constructiebronnen blijft vóór export staan en weigert gedeeltelijke export fail-closed.
+2. Bij ongeldige brongeometrie liet `ConstructionService.resolve()` oude parallellogramvertices in het model en daarmee in opslag/projectie/export staan. De resolver verwijdert nu uitsluitend de berekende `vertices` van een ongeldig gekoppeld parallellogram; ID, constructierecept, bronrelaties, parameters en afhankelijke objecten blijven bestaan. `PolygonGeometry.validate()` blijft de enige geldige-geometryvalidator. De importer accepteert voor dit recept een ontbrekende cache, waarna de resolver geldige vertices opnieuw berekent zodra de bronnen herstellen. `MeasurementGeometry` behoudt ondertussen de vaste meetinstellingssleutels `side:0..3` en `angle:0..3`, ook zolang de vertexcache ontbreekt.
+
+De nieuwe Node-regressies zijn eerst uitgevoerd tegen de foutieve toestand: ze faalden doordat `vertices` nog aanwezig was en restricted export schema 7 koos in plaats van 8. Daarna slaagden ze na de correcties. De Edge-regressie controleert ook documentversie 10, metingschema 1, fail-closed bronrechten, het ontbreken van stale vertices in projectie/export/roundtrip en automatisch herstel.
+
+**Nacontrole:** `npm test` PASS (683/683); `npm run test:edge` PASS (volledige Edge-suite, geen page errors); gerichte Node-test PASS (10/10); gerichte Edge-regressie PASS (4/4 reviewcontroles). De reviewcorrecties staan op dezelfde featurebranch en wijzigen geen M8b-2/M8b-3-presentatiecode.
