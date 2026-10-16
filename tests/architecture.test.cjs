@@ -25,6 +25,7 @@ const modules = [
   { file: 'region-geometry.js', provides: ['RegionGeometry'], after: ['model.js', 'polygon-geometry.js', 'measurement-geometry.js'] },
   { file: 'ellipse-geometry.js', provides: ['EllipseGeometry'], after: ['model.js'] },
   { file: 'construction-service.js', provides: ['AxisReferences', 'ConstructionService'], after: ['model.js', 'polygon-geometry.js', 'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js', 'ellipse-geometry.js'] },
+  { file: 'intersection-dispatcher.js', provides: ['IntersectionDispatcher'], after: ['construction-service.js'] },
   { file: 'math-fragments.js', provides: ['MathFragments'], after: ['math-source.js','model.js'] },
   { file: 'text-metrics.js', provides: ['TextMetrics'], after: ['model.js'] },
   { file: 'rich-text-renderer.js', provides: ['RichTextRenderer'], after: ['math-fragments.js','text-metrics.js','model.js'] },
@@ -64,7 +65,7 @@ const modules = [
 function modulesBeforeEditor() {
   return [
     'math-source.js', 'text-values.js', 'text-dependencies.js', 'math-fragments.js', 'text-metrics.js', 'rich-text-renderer.js', 'text-math-input.js', 'text-formula-editor.js', 'text-dynamic-value-editor.js', 'text-symbol-catalog.js', 'text-insert-panel.js', 'export-service.js', 'model.js', 'rich-text-editor-loader.js', 'font-assets.js', 'text-fonts.js', 'persistent-groups.js', 'document-layers.js', 'polygon-geometry.js',
-    'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js', 'ellipse-geometry.js', 'construction-service.js',
+    'linear-geometry.js', 'measurement-geometry.js', 'region-geometry.js', 'ellipse-geometry.js', 'construction-service.js', 'intersection-dispatcher.js',
     'renderer.js', 'index.js', 'semantic-sequence.js', 'coordinate-transform.js',
     'snap-service.js', 'interaction-resolver.js', 'rectangle-selection.js', 'text-content-diff.js',
     'permission-runtime.js', 'editor-startup.js', 'editor-adaptive-grid.js',
