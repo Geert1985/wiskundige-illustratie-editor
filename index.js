@@ -131,8 +131,8 @@
       while(pending.length){const i=pending.findIndex(g=>g.members.every(id=>mapping.has(id)));if(i<0)throw Error('Ongeldige groepshierarchie.');const [g]=pending.splice(i,1);mapping.set(g.id,model.createGroup(g.members.map(id=>mapping.get(id)),g.name+' (kopie)').id);}
       this.model=model;return copies.map(o=>model.get(o.id));
     }
-    construct(kind,sources,parameter,extent) {
-      if(parameter!==undefined&&!MI.ConstructionService.pathKind(kind)&&kind!=='ellipseByFociAndSum')throw Error('Deze constructie heeft geen padparameter.');const recipe={kind,sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.normaliseParameter(kind,parameter)}:{}),...(kind==='ellipseByFociAndSum'?{sumDistance:parameter}:{})};
+    construct(kind,sources,parameter,extent,constructionParameters={}) {
+      if(parameter!==undefined&&!MI.ConstructionService.pathKind(kind)&&kind!=='ellipseByFociAndSum')throw Error('Deze constructie heeft geen padparameter.');const recipe={kind,sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.normaliseParameter(kind,parameter)}:{}),...(kind==='ellipseByFociAndSum'?{sumDistance:parameter}:{}),...(kind==='parallelogramBySideAngle'?constructionParameters:{})};
       if(['lineCircleIntersection','circleCircleIntersection'].includes(kind)) {
         const map=new Map(this.model.all().map(o=>[o.id,o])),solutions=[0,1].map(branch=>({recipe:{...recipe,branch},evaluation:MI.ConstructionService.evaluate({...recipe,branch},map)})).filter(s=>s.evaluation.valid);
         if(!solutions.length)throw Error('Geen uniek snijpunt binnen de gekozen objecten.');
