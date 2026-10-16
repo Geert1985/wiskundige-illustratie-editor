@@ -66,6 +66,12 @@ Documentatie: dit implementatieverslag en de feitelijke M8b-1 statusregel in `do
 
 Validatie op de featurebranch: `npm test` PASS (681/681); `npm run test:edge` PASS (volledige browserchecklijst, nul page errors); `M8B1_ONLY=1 npm run test:edge` PASS (click/Q, numerieke negatieve hoek, geen Q-object, ongeldige invoer/annulering, undo/redo, bronherberekening, schema-roundtrip en SVG/PNG); `node tests/browser-ellipse-interaction.cjs` PASS (nieuw driebronnengereedschap, legacyafstandsomrecepten, Undo/Redo en annulering, nul page errors).
 
-Commit-ID's, definitieve HEAD en pushstatus worden na commits/push ingevuld. Er is niet naar `main` gemerged.
+De drie implementatiecommits zijn:
+
+1. `c64b376` — `feat(model): add schema 8 parallelogram recipe`
+2. `9e4a60a` — `feat(editor): add parallelogram placement and commands`
+3. `af41927` — `test(m8b): cover parallelogram integration and regressions`
+
+De documentatie-closeoutcommit bevat dit commitregister en de definitieve status. De uiteindelijke branch-HEAD en pushbevestiging staan in het opleverbericht. Er is niet naar `main` gemerged.
 
 **Technisch oordeel:** GO voor code-review en handmatige gebruikersacceptatie van M8b-1: de volledige Node- en Edge-regressies zijn geslaagd. Dit is geen productacceptatie en geen autorisatie voor M8b-2 of M8b-3.
