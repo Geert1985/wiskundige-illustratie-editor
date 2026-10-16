@@ -1,8 +1,8 @@
 # M8b-2b — UX- en geometrie-integratie
 
-**Documentversie:** 1.0.0  
+**Documentversie:** 1.0.1  
 **Datum:** 16 oktober 2026  
-**Status:** geïmplementeerd op featurebranch; wacht op gebruikersacceptatie. Niet gemerged.  
+**Status:** handmatig geaccepteerd; geïntegreerd in `main` via PR #22 op 16 oktober 2026 (zie integratieregistratie onderaan).  
 **Basis:** `codex/m8b-2-measurements-inspector`, commit `c608cbc567edd566c0c68c55473def221cfade78`  
 **Featurebranch:** `codex/m8b-2b-ux-geometry-integration`
 
@@ -90,3 +90,7 @@ Featurebranch: `codex/m8b-2b-ux-geometry-integration`. Basiscommit: `c608cbc567e
 HEAD bij oplevering: deze laatste commit op de genoemde featurebranch.
 
 **Technisch oordeel:** GO voor gebruikersacceptatie. De volledige Node- en Edge-regressiesuites zijn PASS. Geen automatische merge; M8b-2b wacht op handmatige acceptatie. M8b-3 blijft open.
+
+## Integratieregistratie — 16 oktober 2026
+
+Na de oorspronkelijke featurebranch-oplevering heeft de gebruiker de M8b-2-, M8b-2b- en M8b-2c-keten handmatig geaccepteerd. De integratie naar `main` is uitgevoerd via [Pull Request #22](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/22) (mergecommit `0b8e7a4f9eb50c5f196c33ccdf63cbdbcce773f6`; laatste featurecommit `9bfbfa2e7fc0b89e7aeef4f99f3f27804af062b6`). De historische implementatie- en teststatussen hierboven hebben betrekking op de oorspronkelijke oplevering. De finale M8b-2c-implementatie omvat aanvullend het correct gesynchroniseerde lengteveld; de zichtbaarheid van drie meetlabels uit het oorspronkelijke M8b-2-ontwerp is in M8b-2b vervangen door standaard verborgen individuele metingen. **M8b-3 blijft open.**
