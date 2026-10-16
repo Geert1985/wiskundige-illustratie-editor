@@ -108,7 +108,7 @@
     if('measurements' in input){if(!['circle','polygon','ellipse','line','dimension','angle'].includes(input.type))throw Error('Individuele metingen zijn niet beschikbaar voor dit objecttype.');MI.MeasurementGeometry.measurementSettings(input.measurements,input);}
     if (!((typeof input.id === "string" && input.id.trim() !== "") || (typeof input.id === "number" && Number.isFinite(input.id)))) throw new Error("Elk illustratie-object heeft een geldige id nodig.");
     const fields = LINEAR.has(input.type) ? ['x1', 'y1', 'x2', 'y2'] : { point: ["x", "y"], circle: ["cx", "cy", "r"], text: ["x", "y", "rotation"] }[input.type];
-    if (input.type === "polygon") MI.PolygonGeometry.validate(input.vertices, options);
+    if (input.type === "polygon" && !(input.construction?.kind==='parallelogramBySideAngle'&&!('vertices'in input))) MI.PolygonGeometry.validate(input.vertices, options);
     if(input.type==='region'){
       if(!input.construction||!['polygonRegion','circleSectorRegion','circleSegmentRegion'].includes(input.construction.kind)||Object.keys(input).some(k=>['vertices','regionGeometry','regionArea','regionStatus','x','y','cx','cy','r'].includes(k)))throw Error('Ongeldig regio-object.');
       if(Object.keys(input).some(k=>!['type','id','name','label','visible','locked','showLabel','labelDx','labelDy','labelOffsetX','labelOffsetY','style','construction','areaDisplay','layerId','constructionValid'].includes(k)))throw Error('Onbekend regio-objectveld.');
@@ -194,7 +194,7 @@
     if (type === "circle") { object.cx = finite(input.cx, 0); object.cy = finite(input.cy, 0); object.r = Math.max(0, finite(input.r, 1)); if (input.label != null) object.label = String(input.label); }
     if (type === 'ellipse' && !input.construction) { for(const key of ['cx','cy','a','b','rotation'])object[key]=Number(input[key]); }
     if (type === "text") { object.x = finite(input.x, 0); object.y = finite(input.y, 0); object.text = String(input.text == null ? "" : input.text); object.rotation = finite(input.rotation, 0); if(input.textContent){object.textContent=validateTextContent(input.textContent);object.text=MI.TextContent.plain(object.textContent);} }
-    if (type === 'polygon') object.vertices = MI.PolygonGeometry.validate(object.vertices, validationOptions);
+    if (type === 'polygon' && 'vertices' in object) object.vertices = MI.PolygonGeometry.validate(object.vertices, validationOptions);
     if(type==='region')object.areaDisplay=MI.RegionGeometry.areaDisplay(input.areaDisplay);
     if (type === 'angle') { object.angleMark = input.angleMark || 'arc'; object.vertices = MI.MeasurementGeometry.validateAngle(object.vertices, object.angleMark); }
     return object;
