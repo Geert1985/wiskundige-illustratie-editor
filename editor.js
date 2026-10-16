@@ -413,6 +413,7 @@
         if(slider?.type==='range'){const value=slider.parentElement.querySelector('output');if(value)value.textContent=slider.value+(slider.dataset.style==='opacity'?'%':' px');}
       });
       for(const node of [n.toolInstructions,n.fullscreenHint])this.on(node,"change",e=>{if(e.target.matches("[data-region-create-extent]")){this.regionExtent=e.target.value;this.renderInstructions();}});
+      for(const node of [n.toolInstructions,n.fullscreenHint]){this.on(node,'input',e=>{const input=e.target.closest('[data-parallelogram-param]'),state=this.interaction;if(!input||!state?.parallelogramPlacement)return;const value=input.value.trim(),unit=state.angleUnit||'deg';state.numericPinned=true;if(input.dataset.parallelogramParam==='sideLength'){state.sideInput=value;state.sideLength=value===''?NaN:Number(value)/(state.lengthScale||1);}else{state.angleInput=value;const numeric=value===''?NaN:Number(value);state.signedAngle=unit==='rad'?numeric:numeric*Math.PI/180;}this.updateParallelogramParameterPreview();this.queueConstructionPlacementPreview();});this.on(node,'click',e=>{if(e.target.closest('[data-parallelogram-confirm]')){e.preventDefault();this.commitParallelogramPlacement();}});}
       this.on(n.selectionPanel, "change", e => {
         const ellipseSum=e.target.closest('[data-ellipse-sum]');if(ellipseSum&&this.selectedId){const object=this.engine.get(this.selectedId),scale=this.engine.model.meta.measurement?.scale||1;try{if(!object||object.type!=='ellipse'||object.construction?.kind!=='ellipseByFociAndSum')throw Error('Alleen de afstandsom van een gekoppelde ellips kan hier worden gewijzigd.');this.changeDocument(()=>this.execute('construction.setSumDistance',{id:object.id,sumDistance:ellipseSum.valueAsNumber/scale}));}catch(error){this.status(error.message);this.invalidate();}return;}
         const individual=e.target.closest('[data-measurement-control]');if(individual&&this.selectedId){try{const object=this.engine.get(this.selectedId),key=individual.dataset.measurementKey,field=individual.dataset.measurementField,settings=object.measurements?MI.MeasurementGeometry.measurementSettings(object.measurements,object):MI.MeasurementGeometry.defaultMeasurementSettings(object);if(!settings.values[key])throw Error('Onbekende meetsoort.');settings.values[key][field]=field==='visible'?individual.checked:field==='precision'?(individual.value===''?null:individual.valueAsNumber):individual.value;this.changeDocument(()=>this.execute('object.setProperties',{ids:[object.id],fields:[{path:'measurements',value:settings}]}));}catch(error){this.status(error.message);this.invalidate();}return;}
@@ -614,6 +615,7 @@
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
       if(state.radialPlacement||state.pathPlacement){this.radialPathPlacement(point,event,state);return;}
+      if(kind==='parallelogramBySideAngle'&&state.parallelogramPlacement){const result=state.numericPinned?this.updateParallelogramParameterPreview():this.parallelogramPlacementPreview(point);if(result?.valid)this.commitParallelogramPlacement();else{this.status('Kies een geldige plaatsingspositie buiten de lijn AB ('+(result?.reasonCode||'ongeldig')+').');this.invalidate();}return;}
       if(kind==='ellipseByFociAndPoint'&&state.sources.length===2){
         const preview=this.ellipsePlacementPreview(point);if(!preview?.valid){this.status('Deze positie geeft geen geldige ellips ('+(preview?.reasonCode||'ONGELDIGE_GEOMETRIE')+'). Kies Q buiten het brandpuntsegment.');this.invalidate();return;}
         const payload={toolId:'construct:ellipseByFociAndPoint',sources:preview.source?[...state.sources.map(ref=>({...ref})),{...preview.source}]:state.sources.map(ref=>({...ref})),...(preview.source?{}:{controlPoint:{...preview.point}})};
@@ -636,10 +638,12 @@
           this.interaction={...state,sources:previousSources.slice(0,1),pointerId:null};this.status('Kies twee verschillende punten met verschillende posities. '+this.constructionHint(kind,1));this.invalidate();return;
         }
       }
+      if(kind==='parallelogramBySideAngle'&&sources.length===2){const first=this.engine.get(sources[0].objectId),second=this.engine.get(sources[1].objectId);if(sources[0].objectId===sources[1].objectId||!first||!second||Math.hypot(second.x-first.x,second.y-first.y)<=1e-9){this.interaction={...state,sources:previousSources.slice(0,1),pointerId:null};this.status('Kies twee verschillende punten met verschillende posities.');this.invalidate();return;}}
       if(kind==='angleDirections'){state.anglePicks=state.anglePicks||[];state.anglePicks.push({...point});}
       state.pointerId=event.pointerId; this.interaction=state;
       if(this.nodes.canvasWrap.setPointerCapture)try{this.nodes.canvasWrap.setPointerCapture(event.pointerId);}catch(_){}
       if(kind==='ellipseByFociAndPoint'&&state.sources.length===2){state.ellipsePlacement=true;this.interaction=state;this.status(this.constructionHint(kind,2));this.invalidate();return;}
+      if(kind==='parallelogramBySideAngle'&&state.sources.length===2){state.parallelogramPlacement=true;state.angleUnit=(this.engine.model.meta.angleMeasurement?.unit==='rad'?'rad':'deg');state.lengthScale=this.engine.model.meta.measurement?.scale||1;state.lengthUnit=this.engine.model.meta.measurement?.unit==='e'?'u':this.engine.model.meta.measurement?.unit||'e';state.sideLength=1;state.signedAngle=Math.PI/3;state.sideInput=String(state.lengthScale);state.angleInput=state.angleUnit==='rad'?String(Math.PI/3):'60';state.numericPinned=false;this.interaction=state;this.status(this.constructionHint(kind,2));this.invalidate();return;}
       if(kind==='pointOnEllipse'&&state.sources.length===1){state.pathPlacement=true;this.interaction=state;this.status(this.constructionHint(kind,1));this.invalidate();return;}
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       if(kind==='angleDirections')state.sources=MI.ConstructionService.selectAngleArms(state.sources,state.anglePicks,new Map(this.engine.model.objects.map(o=>[o.id,o])));
@@ -656,6 +660,28 @@
       this.engine.renderer.preview=valid?{type:'ellipse',cx:result.geometry.center.x,cy:result.geometry.center.y,a:result.geometry.a,b:result.geometry.b,rotation:result.geometry.rotation,controlPoint:{...control},controlPointMode:source?'existing':'new',style:{stroke:'#9a7a32',strokeWidth:2,opacity:1,dash:'7 5',fill:'none'}}:{type:'ellipse-invalid',foci:foci.map(o=>({x:o.x,y:o.y})),point:{...control}};
       return {valid,reasonCode:result.reasonCode,point:{...control},source:source||null};
     }
+    parallelogramPlacementPreview(point){
+      const state=this.interaction;if(!state?.parallelogramPlacement||state.sources.length!==2)return null;
+      const a=this.engine.get(state.sources[0].objectId),b=this.engine.get(state.sources[1].objectId);if(!a||!b)return {valid:false,reasonCode:'INVALID_REFERENCE'};
+      if(!state.numericPinned){const q=point,vx=b.x-a.x,vy=b.y-a.y,wx=q.x-a.x,wy=q.y-a.y;state.sideLength=Math.hypot(wx,wy);state.signedAngle=Math.atan2(vx*wy-vy*wx,vx*wx+vy*wy);state.sideInput=Number.isFinite(state.sideLength)?String(Number((state.sideLength*(state.lengthScale||1)).toPrecision(8))):'';state.angleInput=Number.isFinite(state.signedAngle)?String(Number((state.angleUnit==='rad'?state.signedAngle:state.signedAngle*180/Math.PI).toPrecision(8))):'';state.lastPlacementPoint={...point};const side=this.nodes.toolInstructions.querySelector('[data-parallelogram-param="sideLength"]'),angle=this.nodes.toolInstructions.querySelector('[data-parallelogram-param="signedAngle"]');if(side&&this.document.activeElement!==side)side.value=state.sideInput;if(angle&&this.document.activeElement!==angle)angle.value=state.angleInput;}
+      return this.updateParallelogramParameterPreview();
+    }
+    updateParallelogramParameterPreview(){
+      const state=this.interaction;if(!state?.parallelogramPlacement)return null;const a=this.engine.get(state.sources[0].objectId),b=this.engine.get(state.sources[1].objectId),result=a&&b?MI.ConstructionService.parallelogramPreview(a,b,state.sideLength,state.signedAngle):{geometry:null,reasonCode:'INVALID_REFERENCE'};
+      state.previewValid=result.reasonCode==='VALID';state.previewReason=result.reasonCode;this.engine.renderer.preview=result.geometry?{type:'parallelogram-preview',vertices:result.geometry.vertices,valid:true}:a&&b?{type:'parallelogram-preview',vertices:[{x:a.x,y:a.y},{x:b.x,y:b.y}],valid:false}:null;const message=this.nodes.toolInstructions.querySelector('[data-parallelogram-status]'),confirm=this.nodes.toolInstructions.querySelector('[data-parallelogram-confirm]');if(message)message.textContent=state.previewValid?'L = '+(state.sideLength*(state.lengthScale||1)).toPrecision(5)+' '+(state.lengthUnit||'e')+'; θ = '+(state.angleUnit==='rad'?state.signedAngle:state.signedAngle*180/Math.PI).toPrecision(5)+(state.angleUnit==='rad'?' rad':'°'):'Ongeldige plaatsing: '+result.reasonCode;if(confirm)confirm.disabled=!state.previewValid;return result;
+    }
+    commitParallelogramPlacement(){
+      const state=this.interaction;if(!state?.parallelogramPlacement)return false;const check=this.updateParallelogramParameterPreview();if(!check?.valid){this.status('De zijde en hoek leveren geen geldig parallellogram op.');this.invalidate();return false;}
+      const payload={toolId:'construct:parallelogramBySideAngle',sources:state.sources.map(ref=>({objectId:ref.objectId})),sideLength:state.sideLength,signedAngle:state.signedAngle};this.interaction=null;this.release(state);this.engine.renderer.preview=null;
+      try{this.changeDocument(()=>{const created=this.execute('construction.create',payload).result;this.selectedIds=created.map(o=>o.id);});this.tool='select';this.status('Gekoppeld parallellogram toegevoegd.');}
+      catch(error){this.interaction={...state,parallelogramPlacement:true,pointerId:null};this.status(error.message);}
+      this.invalidate();return !this.interaction;
+    }
+    queueConstructionPlacementPreview(){
+      if(this.constructionPreviewFrame!=null||!this.window.requestAnimationFrame)return;
+      this.constructionPreviewFrame=this.window.requestAnimationFrame(()=>{this.constructionPreviewFrame=null;if(this.initialized&&this.interaction?.parallelogramPlacement)this.renderPlacementPreview();});
+    }
+    renderPlacementPreview(){const svg=this.nodes.canvas.querySelector('svg');if(!svg)return;const r=this.engine.renderer,viewport=this.nodes.canvas.getBoundingClientRect?.(),transform=MI.CoordinateTransform.forViewport(r,viewport),clip=transform?.visibleBounds(viewport),markup=r.renderPreview(clip||r.bounds),current=svg.querySelector('[data-drawing-preview]');if(!markup){current?.remove();return;}const range=this.document.createRange();range.selectNodeContents(svg);const fragment=range.createContextualFragment(markup),next=fragment.firstElementChild;if(current)current.replaceWith(next);else svg.appendChild(next);}
     renderEllipsePlacementPreview(){
       const svg=this.nodes.canvas.querySelector('svg');if(!svg)return;
       const r=this.engine.renderer,viewport=this.nodes.canvas.getBoundingClientRect?.(),transform=MI.CoordinateTransform.forViewport(r,viewport),clip=transform?.visibleBounds(viewport),markup=r.renderPreview(clip||r.bounds),current=svg.querySelector('[data-drawing-preview]');
@@ -713,7 +739,7 @@
         ...(plan.sourceIndex>0?{
           radialPrefill:{index:plan.sourceIndex,source:{...plan.sources[0]}}
         }:{}),
-        ...(plan.mode==='placement'?{radialPlacement:true}:{}),
+        ...(plan.mode==='placement'&&kind==='pointOnEllipse'?{radialPlacement:true}:{}),
         selectionIdsBefore:selectionBefore,pointerId:null
       };
       const hint=plan.mode==='placement'
@@ -964,7 +990,7 @@
         if (!this.tool.startsWith('construct:') && this.tool !== "select" && (!event.target || this.nodes.canvasWrap.contains(event.target))) { const point = this.pointer(event); if (point) { this.feedback = this.snap(point); this.invalidate(true); } }
         return;
       }
-      if(state.mode==='construction'){if(state.ellipsePlacement){const point=this.pointer(event);if(point){this.ellipsePlacementPreview(point);this.queueEllipsePlacementPreview();}return;}if((state.pathPlacement||state.radialPlacement)&&this.tool==='construct:pointOnEllipse'){const point=this.pointer(event);if(point){this.ellipsePointPlacementPreview(point);this.queuePointPlacementPreview();}return;}this.queueHover(event);return;}
+      if(state.mode==='construction'){if(state.parallelogramPlacement){const point=this.pointer(event);if(point&&!state.numericPinned){this.parallelogramPlacementPreview(point);this.queueConstructionPlacementPreview();}return;}if(state.ellipsePlacement){const point=this.pointer(event);if(point){this.ellipsePlacementPreview(point);this.queueEllipsePlacementPreview();}return;}if((state.pathPlacement||state.radialPlacement)&&this.tool==='construct:pointOnEllipse'){const point=this.pointer(event);if(point){this.ellipsePointPlacementPreview(point);this.queuePointPlacementPreview();}return;}this.queueHover(event);return;}
       if (state.mode==='polygon') { if(event.isPrimary===false || (state.pointerId!=null && event.pointerId!==state.pointerId)) return; const point=this.pointer(event); if(point) { state.result=this.polygonResult(point); this.polygonPreview(); } return; }
       if (event.pointerId !== state.pointerId) return;
       state.lastPointer={clientX:event.clientX,clientY:event.clientY};
