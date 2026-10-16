@@ -1042,3 +1042,12 @@ M8a-1b vervangt alleen de gebruikersgerichte nieuwe ellipsconstructie: drie punt
 | Gebruikersacceptatie en integratie naar `main` | Open | Gebruiker voert browsercontrole uit; geen merge naar `main` |
 
 Historische M8a-1/M8a-2 testresultaten en acceptatiestatussen blijven ongewijzigd. Uitgevoerde testresultaten voor M8a-1b worden alleen in het afzonderlijke [implementatieverslag](M8a-1b-ELLIPSE-CONTROL-POINT-IMPLEMENTATION.md) bijgehouden.
+
+## M8b-1 — Dynamische parallellogramconstructie (2026-10-16)
+
+**Branch:** `codex/m8b-1-dynamic-parallelogram`, gebaseerd op `origin/main` `133fd6c998262f7de1f330d358c2f0b3de301525` (PR #20 geïntegreerd). **Status:** M8b-1-implementatie op featurebranch; automatische regressie en technische code-review registreren in [het implementatieverslag](M8b-1-DYNAMIC-PARALLELOGRAM-IMPLEMENTATION.md). Handmatige gebruikersacceptatie en integratie naar `main` blijven open.
+
+- Eén gekoppeld `polygon` met vaste vertices A-B-C-D; `ConstructionService` leidt C/D af uit twee puntbronnen, positieve `sideLength` en gerichte `signedAngle`. Plaatsing gebruikt preview-Q uitsluitend als tijdelijke kandidaat.
+- `constructionSchema: 8` wordt alleen gebruikt voor documenten met `parallelogramBySideAngle`; geen documentversie 11 of afzonderlijk parallellogramschema.
+- Plaatsingsinteractie, preview en atomair geautoriseerde creatie zijn M8b-1. Meetweergave-eigenschappen en volledige L/θ-inspector blijven M8b-2.
+- M8b-2 en M8b-3 zijn **openstaand**. Deze regel beschrijft uitsluitend de feitelijk opgeleverde status op de featurebranch en markeert geen volgende milestone als gestart of afgerond.
