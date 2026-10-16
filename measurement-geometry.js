@@ -74,7 +74,15 @@
     if(object.type==='circle'){if(key==='radius')return {x:object.cx+object.r,y:object.cy};if(key==='diameter')return {x:object.cx,y:object.cy-object.r};if(key==='circumference')return {x:object.cx,y:object.cy+object.r};return {x:object.cx,y:object.cy};}
     if(object.type==='line'||object.type==='dimension')return {x:(object.x1+object.x2)/2,y:(object.y1+object.y2)/2};
     if(object.type==='angle')return object.vertices[1];
-    if(object.type==='ellipse'){const c=object.c||{x:object.cx,y:object.cy},r=object.rotation||0;if(key==='semiMajor')return {x:c.x+object.a*Math.cos(r),y:c.y+object.a*Math.sin(r)};if(key==='majorAxis')return {x:c.x-object.a*Math.cos(r),y:c.y-object.a*Math.sin(r)};if(key==='semiMinor')return {x:c.x-object.b*Math.sin(r),y:c.y+object.b*Math.cos(r)};if(key==='minorAxis')return {x:c.x+object.b*Math.sin(r),y:c.y-object.b*Math.cos(r)};if(key==='eccentricity')return {x:c.x,y:c.y+object.b*1.15};return c;}
+    if(object.type==='ellipse'){
+      const center={x:object.cx,y:object.cy},rotation=object.rotation||0,cos=Math.cos(rotation),sin=Math.sin(rotation),major={x:cos,y:sin},minor={x:-sin,y:cos};
+      if(key==='semiMajor')return {x:center.x+object.a*major.x,y:center.y+object.a*major.y};
+      if(key==='majorAxis')return {x:center.x-object.a*major.x,y:center.y-object.a*major.y};
+      if(key==='semiMinor')return {x:center.x+object.b*minor.x,y:center.y+object.b*minor.y};
+      if(key==='minorAxis')return {x:center.x-object.b*minor.x,y:center.y-object.b*minor.y};
+      if(key==='eccentricity')return {x:center.x+object.b*1.15*minor.x,y:center.y+object.b*1.15*minor.y};
+      return center;
+    }
     if(object.type==='polygon'){if(key.startsWith('side:')){const i=Number(key.split(':')[1]),a=object.vertices[i],b=object.vertices[(i+1)%object.vertices.length],center=MI.PolygonGeometry.anchor(object),mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=mx-center.x,dy=my-center.y,l=Math.hypot(dx,dy)||1;return {x:mx+dx/l*.18,y:my+dy/l*.18};}if(key.startsWith('angle:'))return object.vertices[Number(key.split(':')[1])];if(key==='perimeter'){const vs=object.vertices;return {x:vs.reduce((sum,p)=>sum+p.x,0)/vs.length,y:Math.min(...vs.map(p=>p.y))-.2};}return MI.PolygonGeometry.anchor(object);}
     return {x:0,y:0};
   }

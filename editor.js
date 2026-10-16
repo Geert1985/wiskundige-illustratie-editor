@@ -111,7 +111,7 @@
       for(const [selector,operation] of [['[data-delete-selected]','object.delete'],['[data-duplicate-selection]','object.duplicate']])for(const button of this.document.querySelectorAll(selector))button.disabled=!this.selectedIds.length || !this.allowed(operation,{ids:this.selectedIds});
     }
     updateObject(id,patch) {
-      const object=this.engine.get(id);if(!object)return null;if(!this.runtime){const candidate={...object,...patch,style:patch.style?{...object.style,...patch.style}:object.style};delete candidate.regionGeometry;delete candidate.regionArea;delete candidate.regionStatus;MI.normaliseObject(candidate);}
+      const object=this.engine.get(id);if(!object)return null;if(!this.runtime){const candidate={...object,...patch,style:patch.style?{...object.style,...patch.style}:object.style};delete candidate.regionGeometry;delete candidate.regionArea;delete candidate.regionStatus;if(candidate.type==='ellipse'){for(const key of ['c','e','ellipseArea','ellipseBounds'])delete candidate[key];if(candidate.construction)for(const key of ['cx','cy','a','b','rotation'])delete candidate[key];}MI.normaliseObject(candidate);}
       const fields=MI.PermissionFields.patch(object,Object.fromEntries(Object.entries(patch).filter(([key])=>key!=='id'&&key!=='type'&&key!=='visible'&&key!=='locked'&&key!=='construction'&&key!=='constructionValid'))).filter(f=>{
         const match=f.path.match(/^vertices\[(\d+)\]\.(x|y)$/),value=match?object.vertices[Number(match[1])][match[2]]:f.path.split('.').reduce((o,k)=>o?.[k],object);return JSON.stringify(value)!==JSON.stringify(f.value);
       });
