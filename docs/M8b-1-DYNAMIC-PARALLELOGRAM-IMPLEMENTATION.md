@@ -1,7 +1,7 @@
 # M8b-1 — Dynamische parallellogramconstructie
 
-**Documentversie:** 1.0.0  
-**Status:** implementatie op featurebranch; niet gemerged; handmatige gebruikersacceptatie open  
+**Documentversie:** 1.0.1  
+**Status:** door gebruiker handmatig geaccepteerd op 2026-10-16; via [PR #21](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/21) geïntegreerd in `main`, mergecommit `adc66387ceb21ed99b2b1410834b4823d6fd76a1`  
 **Repository:** `Geert1985/wiskundige-illustratie-editor`  
 **Basis:** `origin/main` `133fd6c998262f7de1f330d358c2f0b3de301525` (PR #20 geïntegreerd)  
 **Branch:** `codex/m8b-1-dynamic-parallelogram`  
@@ -59,7 +59,7 @@ Documentatie: dit implementatieverslag en de feitelijke M8b-1 statusregel in `do
 
 - Volledige individuele lengtelabels, hoeklabelinstellingen en het uitgebreide eigenschappenpaneel zijn M8b-2; M8b-1 introduceert hiervoor geen tweede systeem.
 - In deze fase is numerieke constructie-invoer beschikbaar tijdens de derde plaatsingsstap; een persistente bewerkingservaring komt met M8b-2.
-- De gebruiker moet de acceptatiechecklist handmatig doorlopen: selecteer twee bestaande punten; maak via Q en via numerieke L/θ een parallellogram; controleer beide hoekoriëntaties; versleep A/B; sla op en laad opnieuw; controleer Undo/Redo en export.
+- De gebruiker heeft de functionele test geslaagd verklaard op 2026-10-16; de acceptatiechecklist omvatte: selecteer twee bestaande punten; maak via Q en via numerieke L/θ een parallellogram; controleer beide hoekoriëntaties; versleep A/B; sla op en laad opnieuw; controleer Undo/Redo en export.
 - M8b-2 en M8b-3 zijn niet geïmplementeerd en blijven open.
 
 ## 7. Commits, verificatie en besluit
@@ -75,9 +75,9 @@ De drie implementatiecommits zijn:
 4. `a5297c5` — `docs(m8b): record implementation commit ledger`
 5. `0ee2a77` — `fix(m8b): redact stale geometry and export schema 8`
 
-De code-reviewfollow-up is na de oorspronkelijke oplevering toegevoegd op dezelfde featurebranch. Het huidige verslag bevat de bijgewerkte regressiestatus; de uiteindelijke branch-HEAD en pushbevestiging staan in het opleverbericht. Er is niet naar `main` gemerged.
+De code-reviewfollow-up is na de oorspronkelijke oplevering toegevoegd op dezelfde featurebranch. Het huidige verslag bevat de bijgewerkte regressiestatus; de uiteindelijke branch-HEAD en pushbevestiging staan in het opleverbericht. De oorspronkelijke featurebranch-oplevering werd nog niet gemerged; de latere integratie gebeurde na expliciete gebruikersacceptatie via PR #21 op 2026-10-16.
 
-**Technisch oordeel:** GO voor code-review en handmatige gebruikersacceptatie van M8b-1: de volledige Node- en Edge-regressies zijn geslaagd. Dit is geen productacceptatie en geen autorisatie voor M8b-2 of M8b-3.
+**Eindoordeel:** M8b-1 is handmatig geaccepteerd en geïntegreerd via PR #21. Codex rapporteerde 683/683 Node PASS en de volledige Edge-suite PASS na de reviewcorrecties; deze testresultaten zijn niet onafhankelijk via GitHub Actions op de feature-HEAD geverifieerd. M8b-2 en M8b-3 blijven open en vereisen een nieuwe opdracht.
 
 ## 8. Code-reviewfollow-up — restricted export en ongeldige geometrie
 
