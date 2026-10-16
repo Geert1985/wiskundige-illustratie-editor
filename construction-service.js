@@ -48,11 +48,12 @@
   midpoint:'endpoints',
   perpendicularBisector:'endpoints'
  });
- function contextualPlans(o,kind){
+ function contextualPlans(o,kind,partRef=null){
   if(!o||typeof o.id!=='string'||!o.id)return [];
   const d=contract(kind);
   if(contextualWorkflows[kind]&&contextualWorkflows[kind]!=='side-angle-placement')return [];
   const plans=[];
+  if(partRef?.part==='edge'&&o.type==='polygon'&&o.constructionValid!==false&&Array.isArray(o.vertices)&&Number.isInteger(partRef.index)&&partRef.index>=0&&partRef.index<o.vertices.length){const edge={objectId:o.id,part:'edge',index:partRef.index},a={objectId:o.id,part:'vertex',index:partRef.index},b={objectId:o.id,part:'vertex',index:(partRef.index+1)%o.vertices.length};if(['midpoint','perpendicularBisector'].includes(kind))return [Object.freeze({key:'edge:'+partRef.index,mode:'complete',sourceIndex:0,sources:Object.freeze([a,b])})];if(kind==='pointOnSegment')return [Object.freeze({key:'edge:'+partRef.index,mode:'placement',sourceIndex:0,sources:Object.freeze([edge])})];if(['parallel','perpendicular'].includes(kind))return [Object.freeze({key:'edge:'+partRef.index,mode:'prefill',sourceIndex:0,sources:Object.freeze([edge])})];return [];}
   const pointRoles=d.sourceRoles.length===2&&d.sourceRoles.every(r=>r==='point');
   if(pointRoles&&contextualCompletes[kind]==='endpoints'&&o.type==='line'){
    const refs=referenceOptions(o).point||[];
