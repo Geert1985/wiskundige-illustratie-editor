@@ -1,7 +1,7 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.11 (M8a-1b geïntegreerd, M8b-0b afgerond, 2026-10-16)
-Status: gecontroleerde integratiebasis `origin/main` = `1c787c5`; bevat M8a-1/STAB-1, M8a-2, M8a-1b, REG-2 en GEO-UI-individuele metingen. M8b blijft ontwerp; M8b-1 vereist afzonderlijke gebruikers-GO. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
+Version: 2.8.12 (M8b-1 handmatig geaccepteerd en geïntegreerd, 2026-10-16)
+Status: gecontroleerde integratiebasis `main` = `adc6638` (PR #21). M8b-1 is door de gebruiker handmatig geaccepteerd en geïntegreerd: dynamisch parallellogram via A, B, L en θ, inclusief schema 8, restricted export en ongeldigheidsherstel. M8b-2 en M8b-3 blijven open. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-16
 
 > **Lees eerst:** [AGENTS.md](../AGENTS.md), [UI-RADIAL-9-CONTRACT-DRIVEN.md](UI-RADIAL-9-CONTRACT-DRIVEN.md) en de nieuwste toevoegingen hieronder. De volledige eerdere M1–M20-backlog, FUN-OBJ/MAT-OBJ-voorstellen en historische tests blijven behouden.
@@ -11,17 +11,17 @@ Date: 2026-10-16
 | Traject | Ontwerpstatus | Implementatie-/acceptatiestatus |
 |---|---|---|
 | **M8a — Ellipsen** | **Goedgekeurd**: [contract v1.1.0](M8a-ELLIPSEN-CONTRACT.md) | M8a-1/STAB-1 via PR #15, M8a-2 via PR #16 en M8a-1b permanent besturingspunt Q via PR #17 staan op `main`. `ellipseByFociAndPoint` gebruikt drie puntbronnen en afgeleide S; `ellipseByFociAndSum` blijft beschikbaar voor legacyrecepten en -documenten. Zie [M8a-1b-verslag](M8a-1b-ELLIPSE-CONTROL-POINT-IMPLEMENTATION.md). |
-| **M8b — Parallellogrammen** | **Goedgekeurd**: [contract v1.1.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) | M8b-0 en M8b-0b preflight afgerond; M8b-1 constructie, M8b-2 maten/UI en M8b-3 regressie/acceptatie **nog niet geïmplementeerd**; aparte gebruikers-GO vereist vóór M8b-1 |
+| **M8b — Parallellogrammen** | **Goedgekeurd**: [contract v1.1.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) | M8b-0 en M8b-0b afgerond; **M8b-1 geïmplementeerd, handmatig geaccepteerd en op `main` geïntegreerd via [PR #21](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/21) (`adc6638`)**. Codex rapporteerde `npm test` 683/683 en volledige Edge-suite PASS; onafhankelijke GitHub Actions-checks voor de feature-HEAD ontbraken. Zie [M8b-1-verslag](M8b-1-DYNAMIC-PARALLELLOGRAM-IMPLEMENTATION.md). M8b-2 (metingen/UI) en M8b-3 (consolidatie) zijn open en vereisen afzonderlijke GO. |
 | **M7-VEC-FUND — Vectorfundament** | **Ontwerp v1.0.0 goedgekeurd** op 15 oktober 2026: [contract](M7-VEC-FUND-CONTRACT.md). Historisch label `M7a` vervalt uitsluitend voor vectorfundament. | **Niet geïmplementeerd.** Read-only preflight vereist; afzonderlijke GO nodig voor productiecode, tests en branchwerk. `tasks-146` en `tasks-147` behoren inhoudelijk tot dit traject. |
 | **Parabolen/hyperbolen** | Architectuurvoorstel besproken in *WIE - Kegelsneden* | Nog **geen** afzonderlijk goedgekeurde ontwerpcontracten of implementatieopdrachten |
 | **UI-RADIAL/REG-2** | Bestaande contracten en implementaties | Gemerged op `main` via PR #12; nieuw volledig regressie- en handmatig acceptatiebewijs niet uit deze docs-update afleidbaar |
 | **STAB-1** | Integratie-/regressiecontrole | Opgenomen in de goedgekeurde basis `main` via PR #15; latere featurebranches krijgen hun eigen regressieresultaten |
 
-**Schema-grens:** `origin/main` bevat document v9/`ellipseSchema:1` voor ellipsen en schema 6 voor legacy ellipssom/punt-op-ellipsrecepten; het permanente-Q-recept vereist `constructionSchema:7`. Individuele GEO-UI-metingen gebruiken documentversie 10/`measurementSchema:1`. M8b reserveert schema 8; implementatie blijft afhankelijk van afzonderlijke GO.
+**Schema-grens:** `main` bevat schema 6 voor legacy ellipssom/punt-op-ellipsrecepten, schema 7 voor ellipsen met besturingspunt en **`constructionSchema:8` voor `parallelogramBySideAngle`**. GEO-UI-metingen gebruiken documentversie 10/`measurementSchema:1`; ellipsen `ellipseSchema:1`. Documentversie 11 is niet vereist voor M8b. De verdere M8b-2/M8b-3-implementaties blijven apart.
 
 **Nummerbeleid M7 (besloten voor vectorfundament, 15 oktober 2026):** **M7-VEC-FUND** is de definitieve unieke identifier voor [Vectorfundament v1.0.0](M7-VEC-FUND-CONTRACT.md). Het oudere vectorlabel `M7a` is uitsluitend een historisch synoniem en wordt niet meer voor deze milestone gebruikt. **M7a–c — Starre transformaties** (`tasks-118`–`tasks-123`) behouden hun bestaande nummering. De oorspronkelijke tekst noemt `M7b` voor translatie en `M7f` voor vectoralgebra; de uiteindelijke namen en volgorde van die vervolgtrajecten vereisen nog aparte besluitvorming. De bestaande taakrefs blijven behouden; contractgoedkeuring is geen implementatie-GO.
 
-**Historische notitie:** v2.8.8 was documentatie-only; v2.8.9 registreerde de featurebranchimplementatie; v2.8.10 registreert de gebruikersacceptatie, onafhankelijk groen GitHub CI-bewijs en integratie via PR #16.
+**Historische notitie:** v2.8.8 was documentatie-only; v2.8.9 registreerde de featurebranchimplementatie; v2.8.10 registreerde de gebruikersacceptatie en GitHub CI-bewijs van M8a-2 via PR #16. v2.8.11 registreerde M8b-0b; v2.8.12 registreert de M8b-1-merge via PR #21.
 
 ## Baseline
 User-reported 0A–0D PASS on chatgpt/math-illustration-stabilization, 0D HEAD 297b4d7c834fe0cd9f9b01bc3a43a7d592ef2713, 60/60 Node tests and Edge tests. Verify repository and user's manual acceptance before proceeding. User reports development has advanced beyond phase 0 and already includes bisectors, parallels, perpendiculars, tangents, area and circumference. Do not assume 0E is still pending; inspect actual HEAD and current backlog.
