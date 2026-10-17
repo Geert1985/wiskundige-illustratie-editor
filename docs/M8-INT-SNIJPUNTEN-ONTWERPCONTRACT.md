@@ -1,15 +1,15 @@
 # WIE — M8-INT: Universeel snijpuntgereedschap en snijpunten van kegelsneden
 
-**Documentversie:** 1.1.5
+**Documentversie:** 1.1.6
 **Datum:** 17 oktober 2026  
-**Status:** normatief hoofdcontract — M8-INT.0/.1 geïntegreerd; M8-INT.3-hoofdontwerp goedgekeurd en voor M8-INT.3-A **optie B dynamische trajectvolging gekozen**; technische proof-gate open, geen productiecode-GO  
+**Status:** normatief hoofdcontract — M8-INT.0/.1 op `main`; M8-INT.3-hoofdontwerp goedgekeurd; **optie A als eerste werkende versie gekozen** met **later expliciet mogelijk B-migratietraject**; A0-preflight vereist, geen productiecode-GO  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor (WIE)  
 **Repository:** [`Geert1985/wiskundige-illustratie-editor`](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Referentie:** M8-INT.0 ([PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27)) en M8-INT.1 ([PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28)) zijn op 17 oktober 2026 handmatig geaccepteerd en op `main` geïntegreerd. Het [M8-INT.1-contract v1.0.1](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md) is gerealiseerd. Het [M8-INT.3-hoofdontwerpcontract v1.0.2](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md) is op 17 oktober 2026 goedgekeurd; de vernieuwde [M8-INT.3-A `solutionKey`-/trajectbijlage v2.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) werkt de expliciet gekozen optie B uit. De technische proof-gates staan nog open; roadmap v2.8.32. Controleer bij vervolgwerk actuele branch, HEAD en broncode.  
+**Referentie:** M8-INT.0 ([PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27)) en M8-INT.1 ([PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28)) zijn op 17 oktober 2026 handmatig geaccepteerd en op `main` geïntegreerd. Het [M8-INT.1-contract v1.0.1](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md) is gerealiseerd. Het [M8-INT.3-hoofdcontract v1.0.3](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md) blijft goedgekeurd, met de latere definitieve fasekeuze: **[optie A als MVP](M8-INT-3-A-MVP-IDENTITEITSCONTRACT.md)**; het [optie-B-identiteitsonderzoek](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) wordt bewaard als toekomstige uitbreiding. A1/A2.1/A2.1b zijn afgesloten research, geen verplichte implementatiegate. Roadmap v2.8.35. Controleer bij vervolgwerk actuele branch, HEAD en broncode.  
 **Afhankelijkheid:** bestaande M5b-constructies en M8a-ellipsen; M8b blijft buiten scope.  
 **Gerelateerde afzonderlijke roadmapbeslissing:** *Punt op object*; dit is niet hetzelfde als *Snijpunt* en valt buiten M8-INT.
 
-> **Normatieve status.** Versie 1.1.5 consolideert M8-INT.0/.1 en de goedkeuring van het M8-INT.3-hoofdontwerp, plus de **uitdrukkelijke productkeuze voor optie B (dynamische trajectidentiteit)** in M8-INT.3-A. De goedgekeurde UX geldt voor alle toekomstige paren: **onmiddellijk alle uniek geldige snijpunten na twee ondubbelzinnige bronselecties**, zonder individuele puntkeuze of bevestiging; **na succesvolle constructie automatisch naar `Selecteren`**, bij nul oplossingen blijft het gereedschap actief. M8-INT.2 is gepland; M8-INT.3-A v2.0.0 wacht nog op een onafhankelijke proof-/architectuurvalidatie en de precieze technische uitvoeringsgoedkeuring; optie A is verworpen. Een latere M8-INT.3-B/C-implementatie vereist eigen GO. De historische opdrachttekst verderop is niet opnieuw uit te voeren. Bestaande persistente recepten blijven compatibel.
+> **Normatieve status.** Versie 1.1.6 bevestigt M8-INT.0/.1 als geïntegreerd en legt voor M8-INT.3 de nieuwe gebruikerskeuze vast: **eerst optie A (vaste deterministische plaatsidentiteit) implementeren, optie B uitsluitend later na een nieuw expliciet besluit**. De bestaande UX blijft voor alle toekomstige paren: **na twee ondubbelzinnige bronselecties onmiddellijk alle betrouwbare unieke snijpunten aanmaken**, geen afzonderlijke puntkeuze, bij succes automatisch naar `Selecteren`, bij bewezen nul/onzekerheid actief blijven zonder documentmutatie. Optie A mag een punt bij sectoroverschrijding **tijdelijk herstelbaar ongeldig** maken; ononderbroken 180°-trajectvolging is **geen** huidige MVP-eis. Eerst A0-preflight, vervolgens afzonderlijke code-/merge-GO. Geen wijzigingen aan historische branches, recepten of testacceptatie van .0/.1.
 
 ---
 
@@ -278,18 +278,23 @@ Voor de huidige cirkel/ellipsparen is het voorgestelde rekenpad:
 
 Equivalent robuuste alternatieven (bijv. resultant met gecertificeerde reële wortelisolatie) mogen alleen na aantoonbare gelijkwaardige numerieke acceptatietests worden gekozen. Een robuuste implementatie kan een extra gespecialiseerde tangentiedetector nodig hebben.
 
-### 10.3 Identiteit van 0–4 oplossingstakken
+### 10.3 Identiteit van 0–4 oplossingstakken — huidige MVP: optie A
 
-Het eenvoudige opnieuw sorteren van de **momenteel zichtbare** 0–4 punten kan een bestaande point-ID aan een ander punt koppelen zodra een andere wortel verdwijnt. Dat is **verboden**. Hier geldt een strengere eis dan voor éénmalig tekenen:
+Het eenvoudig opnieuw sorteren van de momenteel zichtbare 0–4 wortels kan punt-ID's verwisselen wanneer wortels ontstaan, verdwijnen of van numerieke rangorde wisselen. Dat is **geen geldige persistente identiteit**.
 
-- Elke gecommitteerde oplossing bewaart een gevalideerde identiteit (`branch`/`solutionKey`) gekoppeld aan de **oorspronkelijke, onveranderde bronrolvolgorde** en een gedocumenteerde, reproduceerbare branchdefinitie.
-- **Voor M8-INT.3 is optie B normatief gekozen:** een immutable `solutionKey` identificeert het gecreëerde punt; **een geautoriseerd, mutable en persistent continuatiecheckpoint** bewaart de laatst betrouwbare taklocatie plus bronframe. Die koppeling volgt aantoonbaar **het afgelegde bronpad**, niet een initieel beperkt hoekgebied. Zie de [identiteitsbijlage v2.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md).
-- Re-evaluatie moet dezelfde eerder veilig **langs het bronpad gevolgde oplossingscomponent** koppelen; een nieuw modelcheckpoint wordt **atomair met de bronmutatie** gecommit. Het verdwijnen/verschijnen van andere kandidaten hernummert dit object nooit.
-- Bij dubbel- of meervoudige wortels is slechts één **uniek zichtbaar geometrisch punt** toegestaan. Andere reeds bestaande takken blijven in de graaf bestaan maar zijn tijdelijk `MERGED_INTERSECTION`, zodat hun ID, stijl, labels en afgeleide kinderen herstelbaar zijn.
-- Bij een topologisch overgangsgeval waar de branchcorrespondentie wiskundig of numeriek niet met voldoende zekerheid kan worden vastgesteld, wordt de betrokken tak **herstelbaar ongeldig** (`AMBIGUOUS_BRANCH` of `NUMERIC_UNRESOLVED`) in plaats van een stilzwijgende puntwissel.
-- Dezelfde **volledige opgeslagen documenttoestand, inclusief continuation registry**, geeft bij import, Undo/Redo, export en heropenen dezelfde branchmapping. Er mag geen **verborgen** muisgeschiedenis als enige waarheid dienen; verschillende geldig opgeslagen checkpoints mogen ondanks identieke eindcontouren een verschillende pad-afhankelijke mapping hebben.
+**Normatieve nieuwe fasekeuze (17 oktober 2026):** de gebruiker heeft **optie A als eerste werkende implementatie** goedgekeurd, met een architectuur die later naar **optie B** kan doorgroeien. Het [M8-INT.3-A-MVP-identiteitscontract v1.0.0](M8-INT-3-A-MVP-IDENTITEITSCONTRACT.md) specificeert een **immutable, strikt gevalideerde versieerbare \`solutionKey\`** die een vaste cyclische **plaatssector op de eerste canonieke bronconic** beschrijft, inclusief bronroloriëntatie en diagnostische signatuur.
 
-**Verplichte gate binnen .3:** optie B is gekozen en de [M8-INT.3-A-bijlage v2.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) legt het nieuwe ontwerp met persisted continuation witness vast. Vóór enige productiecode is een aparte proof-spike noodzakelijk voor de exacte algoritmische stapcertificering, tangent-/merge-/recovery-policy, writer-/readerfeaturegate, transactionele integratie en reële numerieke tests. Simpele branchrangnummers tot vier blijven verboden. De implementatie mag .3 niet afvinken vóór de bijlage en bijbehorende tests geslaagd zijn.
+- Het bestaande \`point.id\`, recept, bronnen, labels, stijl, laag en kinderen blijven bewaard bij iedere beweging en tijdelijke ongeldigheid.
+- Bij herberekening wordt uitsluitend een **ondubbelzinnig herkenbare root binnen de oorspronkelijke plaatssector** geldig; de hele actuele rootset wordt als bron gebruikt, niet slechts het huidige n-de gevonden punt.
+- Het punt **mag tijdelijk ongeldig worden bij grote maar vloeiende vervormingen of rotaties**, ook wanneer elders nog snijpunten bestaan. Dit is de **bewust aanvaarde A-beperking**: identificeer de vaste **oplossingsplaats**, niet een onbeperkt continu fysiek worteltraject.
+- Bij guard-/frame-/tangent-/numerieke ambiguïteit: herstelbaar ongeldig, **geen** fictieve of ongeautoriseerde puntcreatie; bij herstel van de begin-/passende geometrie kan dezelfde vaste key weer geldig worden.
+- Bij bewezen raakcontact mag per constructieset maximaal één zichtbaar punt bestaan; andere betrokken keys blijven bewaard en krijgen alleen \`MERGED_INTERSECTION\` wanneer die classificatie verdedigbaar is, anders \`AMBIGUOUS_BRANCH\`.
+- **Opslaan en heropenen** geven met identieke brondefinities en opgeslagen keys exact dezelfde plaatsmapping zonder editorcache of muishistorie. Een aanvankelijk foutieve import wordt atomair geweigerd.
+- **Geen B-checkpoints in de A-MVP:** geen \`intersectionContinuations\`, mutable witness-registry, pad-/windinglog of gewijzigde transactionele dragsemantiek noodzakelijk voor de eerste versie.
+
+**Toekomstige optie B:** de [historische researchbijlage](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) en rapporten A1/A2.1/A2.1b worden bewaard. Later kan een **expliciet, versieerbaar en getest migratiepad** vanuit A de huidige ondubbelzinnige puntmapping als B-initialisatie gebruiken, met behoud van point-ID's. Oorspronkelijke padgeschiedenis die A nooit opsloeg, wordt **niet gereconstrueerd**. B en haar extra certificeergates zijn **geen voorwaarden** om A te implementeren.
+
+**Voorafgaande poort:** korte A0-read-only preflight voor de exacte key-/guardpolicy, schema-featuregate en voldoende betrouwbare vierwortelgeometrie. Geen production GO uit alleen dit document.
 
 ## 11. Dynamische afhankelijkheid, geometrische geldigheid en lifecycle
 
@@ -445,4 +450,4 @@ Repositoryreferenties, geraadpleegd op 16 oktober 2026; controleer bij implement
 - [docs/M8a-ELLIPSEN-CONTRACT.md](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/docs/M8a-ELLIPSEN-CONTRACT.md)
 - [construction-service.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/construction-service.js), [linear-geometry.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/linear-geometry.js), [ellipse-geometry.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/ellipse-geometry.js), [index.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/index.js), [tool-catalog.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/tool-catalog.js), [editor.html](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/editor.html).
 
-**Einde hoofdcontract v1.1.5 — M8-INT.0/.1 geïntegreerd; M8-INT.3 optie B gekozen, proof-gate voor trajectcontinuatie open; geen productiecode-GO.**
+**Einde hoofdcontract v1.1.6 — M8-INT.0/.1 geïntegreerd; M8-INT.3 optie A eerst, optie B eventueel later; A0-preflight vereist en geen productiecode-GO.**
