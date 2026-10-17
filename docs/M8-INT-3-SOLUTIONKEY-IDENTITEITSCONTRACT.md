@@ -1,299 +1,335 @@
-# WIE — M8-INT.3-A: Duurzame identiteit van maximaal vier snijpunten
+# WIE — M8-INT.3-A: Dynamische trajectidentiteit van maximaal vier snijpunten
 
-**Documentversie:** 1.0.0  
+**Documentversie:** 2.0.0  
 **Datum:** 17 oktober 2026  
-**Status:** technisch identiteitsvoorstel **ter afzonderlijke gebruikersgoedkeuring** — **geen productiecode-GO**  
+**Productkeuze:** **optie B — dynamische trajectvolging**, expliciet gekozen door de gebruiker op 17 oktober 2026. **Optie A (vaste hoeksectoren) is verworpen als definitief productgedrag.**  
+**Status:** nieuw uitgewerkt technisch **ontwerp ter validatie en afzonderlijke acceptatie**; geen toestemming om productiecode/schema's te wijzigen of te mergen.  
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Normatieve basis:** [M8-INT-hoofdcontract v1.1.4](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md); [goedgekeurd M8-INT.3-hoofdontwerpcontract v1.0.1](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md); M8-INT.0/.1 geïntegreerd via PR #27/#28.  
-**Afbakening:** dit document werkt de **open identiteitsgate M8-INT.3-A** uit. Solverimplementatie, gereedschapintegratie, schemawijziging, commit van productiecode en merge behoren nog **niet** tot deze opdracht.
+**Normatieve basis:** [M8-INT-hoofdcontract v1.1.5](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.3-hoofdcontract v1.0.2](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md), [roadmap](DEVELOPMENT-ROADMAP.md), M8-INT.0/.1 op `main` via PR #27/#28.  
+**Vervangt:** identiteitsvoorstel v1.0.0 op ditzelfde pad, dat een *stateless* plaatsidentiteit met immutable hoeksectoren aanraadde. Die eerdere voorgestelde beperking is **niet langer normatief**; de Git-historie blijft als ontwerpgeschiedenis beschikbaar.
 
 ---
 
-## 0. Samenvatting en besluitpunt
+## 1. Waarom optie B en wat wordt gegarandeerd?
 
-Eén geometrisch snijpunt is geen vast bestaand object van de twee broncurven: het wordt berekend uit hun **huidige** stand. Bij vier, later twee, daarna opnieuw vier kruisingen kan een simpele rangorde (`branch:0..3`) een bestaande punt-ID aan een ander geometrisch punt verbinden.
+WIE is een **dynamische geometrie-editor**. Gebruikers mogen een cirkel, een vrije ellips of een via brandpunten/besturingspunt geconstrueerde ellips verslepen, roteren of vervormen. Snijpunten worden bij die bewerking opnieuw berekend en moeten hun afzonderlijke identiteit zoveel mogelijk **langs hun werkelijk doorlopen traject** behouden.
 
-Het bestaande WIE-model herberekent gekoppelde objecten **deterministisch uit hun opgeslagen recept en de huidige brongeometrie**. Het kent geen persistent traject van elke gesleepte tussenpositie. Daarom stellen we een expliciet **begrensd identiteitsmodel** voor:
+**Normatieve garantie:** als de hele bronbeweging langs een voldoende fijn, wiskundig gecertificeerd pad verloopt waarop een snijpunt **eenvoudig en geïsoleerd** blijft, volgt zijn oorspronkelijke `point.id` **ononderbroken die worteltak**. Grote cumulatieve rotaties, een overgang door de parameternaad \(0/2\pi\), het veranderen van de relatieve wortelvolgorde en een terugkeer naar dezelfde eindcontour zijn **geen aanleiding** om de identiteit te resetten.
 
-> **Optie A (aanbevolen als veilige eerste implementatie): vaste, opgeslagen hoeksectoren op de eerste canonieke kegelsnede, aangevuld met een transversale oriëntatiesignatuur, een guard-band en conservatieve invalidatie.** Het `solutionKey` identificeert een **geometrische oplossingsplaats in het brongebonden referentiestelsel**, niet onder alle mogelijke verplaatsingspaden een 'materieel' worteltraject.
+**Begrenzing:** dit is **geen belofte van altijd unieke voortzetting bij elke singulariteit**. Een verdwijning van twee reële wortels bij een raakstand, een meervoudig contact, volledige coincidentie, plotselinge bronteleportatie zonder certificeerbaar pad of een gedegenereerde ellips kan verdere voortzetting onbepaald maken. Bij twijfel **wordt het bestaande punt herstelbaar ongeldig**; WIE verwisselt nooit ongemerkt puntnamen, ID's, labels of downstream constructies.
 
-Dat onderscheid is essentieel: een dynamisch punt blijft alleen zichtbaar zolang de huidige configuratie zijn vaste sleutel **ondubbelzinnig** vervult. Als de koppeling niet bewijsbaar is, blijft het bestaande object bewaard maar wordt het `AMBIGUOUS_BRANCH` (of `NUMERIC_UNRESOLVED`). Het volgt **nooit stilzwijgend de op dit moment 2e/3e/4e wortel**.
+**Belangrijke correctie op optie A:** een snijpunt mag **niet** enkel omdat het buiten een ooit vastgelegde hoeksector komt ongeldig worden. Het moet zijn voortgezette traject volgen zolang dat bewijsbaar is. De limiet is **wiskundige ambiguïteit**, niet een arbitraire oude sectorgrens.
 
-Deze beperkte, stateless definitie is bewust strenger dan een onvoorwaardelijke 'volg elke mogelijke beweging'-belofte. **De gebruiker moet deze afweging afzonderlijk goedkeuren.** Wie absoluut vloeiende wortelvolging over onbeperkte bewegingen eist, heeft een ander (stateful en persistente gebeurtenisgeschiedenis bevattend) productcontract nodig; dat mag Codex niet zelfstandig invoeren.
+De goedgekeurde UX van het universele `Snijpunt` blijft: **twee ondubbelzinnige bronnen, onmiddellijk alle actuele 1–4 betrouwbare verschillende snijpunten in één atomaire actie, en bij succes terug naar `Selecteren`**. Bij nul oplossingen of onzekerheid geen constructie, en Snijpunt blijft actief.
 
-## 1. Architectuurfeiten op huidige main
+## 2. Waarom een stateless sleutel niet voldoende is
 
-Gecontroleerd in `construction-service.js`, `index.js`, `model.js`, `ellipse-geometry.js`, `intersection-dispatcher.js` en `permission-runtime.js`:
-
-1. `ConstructionService.definitions` bevat `circleCircleIntersection` en `lineEllipseIntersection` met `branches:[0,1]`, maar **geen** vierwortelrecept of `solutionKey`-validator.
-2. `Engine.constructIntersection(kind,sources,selectedBranches)` accepteert nu uitsluitend de bestaande vier gespecialiseerde snijpuntrecepten, en evalueert maximaal branches 0 en 1.
-3. `ConstructionService.evaluate/resolve` herleidt afhankelijke coördinaten uit het recept en de actuele bronnen. `IllustrationModel` controleert documenten atomair en de schrijver kent `constructionSchema:10` wanneer `lineEllipseIntersection` bestaat.
-4. `EllipseGeometry.fromDefinition` levert de canonieke actuele contour en parametrisatie; vrije en geconstrueerde ellipsen gebruiken dezelfde geometrische waarheid.
-5. `PermissionRuntime` controleert de gespecialiseerde tool-ID en bronrechten; `IntersectionDispatcher` normaliseert bronvolgorde. Er mag geen tweede autorisatie-, resolver- of historiepad worden geïntroduceerd.
-6. De goedgekeurde UX blijft: **twee ondubbelzinnige bronnen → alle geldige oplossingen in één command → terug naar Selecteren**. Bij nul bewezen punten of onzekerheid: **geen commit, tool blijft actief**.
-
-Dit contract introduceert alleen een **nieuw opslag- en oplossingsidentiteitsprincipe** voor de nieuwe recepten `circleEllipseIntersection` en `ellipseEllipseIntersection`. De bestaande branches en documenten veranderen **niet**.
-
-## 2. Waarom actuele wortels sorteren onjuist is
-
-### 2.1 Parameternaad: reproduceerbaar tegenvoorbeeld
-
-Neem `C`: \(x^2+y^2=16\) en `E`: \(x^2/25+y^2/9=1\). De vier punten zijn
-
+Neem `C`: \(x^2+y^2=16\) en `E`: \(x^2/25+y^2/9=1\). Hun vier kruisingen zijn
 \[
-(\pm5\sqrt7/4,\ \pm9/4).
+X=(\pm5\sqrt7/4,\pm9/4).
 \]
+Roteer `E` continu met \(180^\circ\) rond hetzelfde centrum. De eindcontour is geometrisch weer identiek aan de begincontour, maar de snijpunten zijn langs het rotatiepad naar andere geometrische plaatsen doorgelopen.
 
-Op de eerste bron `C` liggen zij op hoeken \(\pm\alpha,\pi\pm\alpha\), met
+Een algoritme dat uitsluitend de **huidige twee contouren** leest, kan niet weten of het pad nul, een halve of een volledige omwenteling heeft gemaakt. Een actuele sortering op x/y, huidige parametrische hoek of 'oplossing 0–3' kan daardoor geldige bestaande IDs verwisselen. Dit is een *informatietekort*, niet louter een precisieprobleem.
 
-\[
-\alpha=\arctan\!\left(\frac{9}{5\sqrt7}\right)\approx34.2^\circ.
-\]
+**Oplossingsprincipe B:** sla een permanente identiteit én een **actueel persistent continuatiecheckpoint** op dat door **geautoriseerde bronmutaties** mee evolueert. De identiteit blijft immutable, maar het checkpoint verandert atomair met de bronnen. Twee documenten met geometrisch gelijke eindcontouren mogen verschillende geldige point–root-koppelingen hebben als hun **opgeslagen checkpoints** uit verschillende echte continuatiepaden stammen.
 
-Roteer alleen de ellips continu met bijvoorbeeld \(45^\circ\). De vier snijpunten draaien mee op de cirkel en blijven afzonderlijk; **er is geen tangentie**. Eén hoek passeert toch de grens \(0^\circ/360^\circ\), waardoor sortering op genormaliseerde hoek \([0,2\pi)\) onmiddellijk het eerste/laatste label verwisselt. Een opgeslagen rangnummer van 0–3 is dus geen duurzame identiteit.
+**Geen verborgen dynamische cache:** voor correcte import, Undo/Redo, JSON-export en het openen in een nieuwe sessie moet het checkpoint in de huidige documentstaat zijn opgeslagen. Een louter JavaScript-/pointergeheugen-gebaseerd algoritme is verboden.
 
-### 2.2 Geometrisch identieke eindcontour, verschillende wortelverhalen
+## 3. Architectuurfeit en noodzakelijke integratiegrens
 
-Bij dezelfde centrale cirkel en een niet-cirkelvormige ellips geeft een **rotatie van de ellips met \(180^\circ\)** weer exact dezelfde **geometrische contour**. De vier afzonderlijke snijpunten hebben langs het continue rotatiepad echter een halve omwenteling op de cirkel doorlopen en elkaars aanvankelijke plaatsen ingenomen. Een louter uit de **eindcontouren** afgeleide labelregel kan niet tegelijk alle langs-het-pad-identiteiten en dezelfde geometrische eindtoestand als één universeel feit reconstrueren.
+Op de gecontroleerde `main`:
 
-Een ruwe opgeslagen ellips-rotatiewaarde kan bepaalde paden onderscheiden, maar niet alle equivalente parametreringen, bronherbindingen, foci-degeneraties of sprongen tussen opgeslagen toestanden. Daarom is 'geometrisch hetzelfde punt langs om het even welk pad' **geen onvoorwaardelijk bewijsbare stateless eis**.
+- `ConstructionService` heeft `circleCircleIntersection`, `lineEllipseIntersection` en branches [0,1], maar geen familie- of checkpointstructuur voor vierwortelcontinuatie.
+- `Engine.constructIntersection` en `RuntimeSession` behandelen getypeerde snijpuntconstructies. Er is één geautoriseerd command- en historypad.
+- `IllustrationModel.update/load/toJSON` en `ConstructionService.resolve` lossen de volledige dependency-graaf vanuit opgeslagen recepten op; import valideert atomair.
+- `EditorApp.pointerMove/commit/cancel` kennen live interactie, preview en één historytransactie per afgeronde gebruikersbewerking. Restricted mode gebruikt daarnaast runtime-preview en commit.
+- `EllipseGeometry.fromDefinition` levert de actuele modelruimtecurven; samengestelde ellipsen kunnen afhankelijk zijn van meerdere punten.
+- De huidige writer gebruikt `constructionSchema:10` bij `lineEllipseIntersection`. Een nieuwe `solutionKey` en continuatieregister eisen nieuwe expliciete reader-/writergates.
 
-### 2.3 Wat wél aangetoond kan worden
+**Daarom:** niet de editor-muislistener als enige eigenaar van identiteit maken. De **geautoriseerde geometrische mutatie- en modeltransactielaag** coördineert de bronwijziging, één continuatiestap, dependent resolution en checkpointcommit. Zo werkt hetzelfde principe bij drag, numerieke eigenschapswijziging, groepsverplaatsing, Undo/Redo, import en runtimecommando's.
 
-Een opgeslagen **vaste sector met aanvullende signatuur** definieert een **reproduceerbare, padonafhankelijke plaatsidentiteit**. Zij kan worden gevalideerd zonder verborgen scherm-/sleepgeschiedenis. Deze identiteit beweert niet dat hetzelfde analytische worteltraject onbeperkt gevolgd wordt.
+De geometrische wortelisolator blijft **zuiver** en herbruikbaar: hij krijgt een actueel bronpaar en retourneert de volledige gecertificeerde huidige rootset. De continuatie-/matchingcoördinator is een **kleine gespecialiseerde modelservice**, geen tweede algemene geometrie- of permissie-engine.
 
-**Acceptatiegrens:** tijdens onafgebroken ondubbelzinnige geldigheid mag het punt niet springen. Na een expliciete fase `AMBIGUOUS_BRANCH` kan een oplossing weer verschijnen op de **persistente plaatsidentiteit**; dat is geen bewijs dat de voorheen gevolgde continu-wiskundige tak dezelfde is gebleven. Deze beperking moet in producttests en gebruikersdocumentatie zichtbaar zijn.
+## 4. Twee afzonderlijke identiteitslagen
 
-## 3. Voorstel voor persistente `solutionKey`
+### 4.1 Immutable identiteit per punt
 
-### 3.1 Exacte conceptvorm
-
-Voor ieder gecreëerd punt (dus niet op de broncurven zelf):
+Voorgesteld getypeerd opgeslagen recept:
 
 ```json
 {
   "kind": "circleEllipseIntersection",
-  "sources": [
-    {"objectId": "C1"},
-    {"objectId": "E1"}
-  ],
-  "solutionKey": {
-    "schema": 1,
-    "familyId": "ix-42",
-    "slot": 0,
-    "firstFrame": "canonical-conic-v1",
-    "frameKind": "circle-world",
-    "anchorT": 0.0947,
-    "leftReach": 0.072,
-    "rightReach": 0.080,
-    "guardT": 0.004,
-    "crossing": "positive"
-  }
+  "sources": [{"objectId":"C1"},{"objectId":"E1"}],
+  "solutionKey": {"schema":2,"familyId":"ix-42","slot":0}
 }
 ```
 
-**Voorbeeldgetallen zijn illustratief, geen hardcoded productieparameters.** Waarden worden tijdens de ene geautoriseerde constructietransactie volledig **deterministisch uit de gecertificeerde initiële wortels** afgeleid. Er komt geen vrije slider, instelling of zichtbare rootselector.
+Voor het tweede recept `ellipseEllipseIntersection` gelden twee `ellipse`-bronrollen. Bij cirkel–ellips is de opslagvolgorde **altijd [circle, ellipse]**; bij ellips–ellips blijft de **oorspronkelijke gebruikersbronvolgorde** bewaard. Verander die niet door ID-sortering, objectnaam of tekenvolgorde.
 
-| Veld | Betekenis / strikte validatie |
+- `schema:2`: **nieuw sleutelcontract voor optie B**; schema 1 van het nooit geïmplementeerde optie-A-voorstel is geen geldige invoer.
+- `familyId`: documentbreed unieke ID van één constructieactie met aanvankelijk 1–4 punten. Een familie behoudt haar ID bij partiële puntverwijdering.
+- `slot`: immutable integer 0–3, uniek binnen dezelfde familie, toegekend bij **eerste constructie**; geen blijvend huidige geometrische wortelnummer.
+- Geen `anchorT`, `leftReach`, `rightReach`, `guardT` of oude `crossing` als bindende plaatsidentiteit.
+- Een sleutel is geen geautoriseerde gebruikersparameter: de vertrouwde command-engine kent hem toe; een client mag hem niet willekeurig veranderen.
+
+### 4.2 Mutable persistent checkpoint per constructiefamilie
+
+Ontwerpvoorstel voor een **nieuwe canonieke documentsectie**:
+
+```json
+{
+  "intersectionContinuationsSchema": 1,
+  "intersectionContinuations": [{
+    "schema": 1,
+    "familyId": "ix-42",
+    "kind": "circleEllipseIntersection",
+    "sources": [{"objectId":"C1"},{"objectId":"E1"}],
+    "revision": 12,
+    "phase": "CERTIFIED",
+    "sourceFrame": {
+      "first":  {"type":"circle","cx":0,"cy":0,"r":4},
+      "second": {"type":"ellipse","cx":0,"cy":0,"a":5,"b":3,"rotation":0}
+    },
+    "witnesses": [
+      {
+        "slot":0,
+        "state":"SIMPLE",
+        "parameterUnwrapped":0.095,
+        "x":3.307,
+        "y":2.25,
+        "crossing":"positive"
+      }
+    ]
+  }]
+}
+```
+
+**Voorbeeldwaarden zijn illustratief**, geen exacte berekeningsfixture of vrij instelbare instellingen. De definitieve schema-/veldstructuur wordt bij de verplichte preflight en proof-gate vastgezet.
+
+| Veld | Normatieve functie |
 |---|---|
-| `schema` | Exact integer `1`; onbekende versies atomair afwijzen |
-| `familyId` | Door de transactie toegekende unieke, onveranderlijke batchidentiteit; niet afhankelijk van een nog bestaand ander punt-ID |
-| `slot` | Integer in `[0,3]`, unieke index binnen de creatiefamilie; **geen** dynamische rootrang |
-| `firstFrame` | Exact `canonical-conic-v1`; definieert de parameterconventie |
-| `frameKind` | Exact `circle-world` of `ellipse-local`; immutable keuze op creatietijdstip, voorkomt stilzwijgende fasewissel bij `a=b` |
-| `anchorT` | Initiële genormaliseerde \(t=\theta/(2\pi)\), eindig in \([0,1)\) |
-| `leftReach`, `rightReach` | Positieve, eindige cyclische reikwijdten; samen **hoogstens 1**, waarbij de waarde **exact 1 alleen voor een enkelvoudige creatie-root** is toegestaan |
-| `guardT` | Positieve eindige veiligheidszone; `guardT < min(leftReach,rightReach)` |
-| `crossing` | `positive`, `negative` of `tangent`; sign van de afgeleide van de tweede contourfunctie langs de positief gerichte eerste contour op creatietijdstip |
+| `familyId` + `sources` | Verbindt in dezelfde documentstaat de bestaande afhankelijke punten met de correcte broncurven |
+| `revision` | Niet-negatieve monotone teller van **gecommitteerde** continue bron-/checkpointtransacties, geen transactieklok |
+| `sourceFrame` | Volledig gevalideerde analytische brongeometrie waarmee het huidige checkpoint is berekend, geen getekende SVG-cache |
+| `witnesses[].slot` | Originele point–root-koppeling, onafhankelijk van huidige rootsortering |
+| `parameterUnwrapped` | Doorlopende hoekparameter op de eerste bron, **niet modulo één omwenteling gereset**; alleen opslag in eindig, gecontroleerd numeriek bereik |
+| `x,y` | Huidige gecontroleerde puntlocatie als **continuatiegetuige**, nooit onafhankelijke of vrij bewerkbare authoritative pointgeometry |
+| `crossing` | Geconditioneerde eenvoudige-worteloriëntatie (`positive`/`negative`) of gecertificeerd `tangent` |
+| `phase`/`state` | Voortzetbaarheid: `CERTIFIED`, `MERGED`, `LOST`, `AMBIGUOUS`, `SOURCE_INVALID`, `NUMERIC_UNRESOLVED`, `COINCIDENT` volgens de exacte, nog te bewijzen toestandstabel |
 
-**Strikt:** geen extra onbekende velden, `NaN`/`Infinity`, negatieve sectorbreedten, afwijkende bronvolgorde, ongeldige `familyId`, dubbele `slot` binnen een batch, overlappende kernsectoren binnen een familie, gefingeerde `branch` of ongecontroleerd mixen van `branch` en `solutionKey`.
+**Geen onbeperkte log in een document:** alleen het **laatst gecommitteerde bronframe**, de huidige slotgetuigen en noodzakelijke *korte* contact-/ambiguïteitssignaturen worden bewaard. Undo/Redo bewaart de volledige **voor/na-documentmomentopname**, zoals nu. Een auditeerbaar optioneel log is niet vereist voor heropenen. Voor replay van een **commandstream** moet de stream wél exact dezelfde geautoriseerde continuatiestappen of gevalideerde resultaatgetuigen bevatten: zonder padinformatie kun je een pad-afhankelijke uitkomst niet betrouwbaar reproduceren.
 
-Het volledige puntobject blijft het bestaande `point`-type met berekende `x,y`, `constructionValid`, stijl en labels. `solutionKey` is een **onderdeel van `construction`**, geen vrij wijzigbaar objectveld.
+**Strict invariant:** een `CERTIFIED` checkpoint bevat een `sourceFrame` dat overeenkomt met de **actuele via de bronketen opgeloste objectgeometrie** en unieke `witnesses` die geometrisch op **beide** analytische contouren liggen. Bij import worden snapshot en actuele bronnen samen onafhankelijk gevalideerd; corruptie wordt **atomair geweigerd**, niet als een 'oude positie' gehonoreerd. Voor tijdelijk ongeldige brongeometrie houdt de registry een getypeerde `lastCertified`-getuige apart, plus de expliciete ongeldige huidige status; geen fictieve huidige wortel.
 
-### 3.2 Referentiestelsel
+**Documenttype/versie zijn nog niet gereserveerd.** Het normatieve voorstel is om nieuwe `constructionSchema:11` met een expliciete `intersectionContinuationsSchema:1`-featuregate te combineren. Of daarnaast `document.version` van 10 naar 11 moet stijgen, wordt beslist door de echte reader-/writerpreflight; het getal wordt **niet stilzwijgend ingevoerd**. Oude readers moeten de nieuwe definitie atomair afwijzen.
 
-`firstFrame: canonical-conic-v1` betekent:
+## 5. Betrouwbare trajectvolging: algoritme en bewijsvoorwaarden
 
-- **Eerste bron is een cirkel:** gebruik `frameKind:'circle-world'`; \(\theta=\operatorname{atan2}(y-c_y,x-c_x)\), tegen de klok in vanaf de globale positieve x-richting.
-- **Eerste bron is een niet-cirkelvormige ellips:** gebruik `frameKind:'ellipse-local'`; gebruik de actuele canonieke `u/v`-asbasis uit `EllipseGeometry.fromDefinition`; voor contourpunt \(X\):
-  \[
-  \theta=\operatorname{atan2}\!\left(\frac{(X-C)\cdot v}{b},\frac{(X-C)\cdot u}{a}\right).
-  \]
-  De opgeslagen vorm van de **eerste** ellips (inclusief rotatie en bronrolvolgorde) bepaalt de framebetekenis. Verander die niet door object-ID-sortering.
-- **Eerste bron is een cirkelvormige ellips \((a=b)\):** gebruik bij creatie `frameKind:'circle-world'`; neem een ondubbelzinnige, gedocumenteerde canonieke wereldgeoriënteerde fase (\(u=(1,0),v=(0,1)\)) en negeer een fysiek betekenisloze weergaverotatie. Een **overgang** van niet-cirkelvormig naar exact circulair, en omgekeerd, kan de referentiefase discontinu veranderen: bestaande keys worden daar conservatief `AMBIGUOUS_BRANCH` tot de vaste framemapping opnieuw ondubbelzinnig is.
-- **Frameguard:** wanneer een opgeslagen `frameKind` niet overeenkomt met de **actuele** toestand van de eerste bron, is de key `AMBIGUOUS_BRANCH` en is geen nieuwe phase-choice toegestaan. Als de oorspronkelijke geometrische klasse terugkeert, mag de originele key zonder wijziging opnieuw worden beoordeeld.
-- **Geconstrueerde ellips met samenvallende brandpunten:** wanneer de eerdere intrinsieke oriëntatie niet uit de actuele bron kan worden gereconstrueerd, **geen verzonnen voortzetting**; gebruik de equivalente ambiguïteitsstatus in plaats van een willekeurige as.
+### 5.1 Volledige rootsolver als basis
 
-De implementatiebijlage moet de exacte grens `a≈b` versus `a=b` en de bijbehorende binaire getalcondities met onafhankelijke fixtures vastleggen. Geen ongedocumenteerde epsilon of verborgen last-frame-cache. Alle cyclische vergelijkingen gebeuren **modulo 1**; de parameternaad \(t=0/1\) is geen speciaal geometrisch punt.
+Voor iedere tussenconfiguratie moeten cirkel–ellips en ellips–ellips een **complete** verzameling van 0–4 **onderscheiden eindige reële** snijpunten krijgen. Gebruik de in het goedgekeurde hoofdcontract beschreven betrouwbare quartic-/trigonometrische reductie met afzonderlijke \(t=\pi\)-controle, veilige detectie van even-multipliciteitswortels, beide impliciete residuen, schaalnormalisatie en gecontroleerde coördinatenlimieten.
 
-### 3.3 Initieel sectorontwerp
+Als het volledige aantal of een raakstatus niet bewijsbaar is, geeft de solver `NUMERIC_UNRESOLVED`; hij mag geen hypothetische puntkandidaat aan een witness koppelen.
 
-Stel dat na volledige rootisolatie de **N unieke reële** roots bekend zijn, met \(N\in\{1,2,3,4\}\). Bereken hun georiënteerde \(t\)-waarden op de **eerste** bron, sorteer éénmalig bij creatie cyclisch en laat de resulterende `slot`-identiteit daarna **nooit meer variëren**.
+### 5.2 Lokale continuatie bij eenvoudige wortels
 
-Voor \(N\ge2\):
-- Voor slot \(i\) is \(\Delta^-_i\) de positieve cyclische afstand van de vorige wortel naar \(t_i\), \(\Delta^+_i\) die naar de volgende wortel.
-- Definieer `leftReach = Δ^-_i / 2` en `rightReach = Δ^+_i / 2`. Daarmee vormen alle creatieslots **aaneensluitende gesloten geometrische Voronoi-sectoren** rond hun initiële anchors. Een root mag een sector niet overschrijden zonder een guard-/ambiguïteitspoort te passeren.
-- Definieer een conservatieve guard, bijvoorbeeld `guardT = min(Δ^-_i, Δ^+_i)/16`. De **feitelijk geldige kernsector** is \(t_i-\mathrm{leftReach}+\mathrm{guardT} < t < t_i+\mathrm{rightReach}-\mathrm{guardT}\) modulo 1. Rand- en guardpunten zijn **ambigu**, niet automatisch een andere slot.
-- **Bewijsvereiste:** de gekozen guard moet groter zijn dan aantoonbare parameterisolatiefout. Bij niet-certificeerbare nauwe initiële wortels wordt de **hele creatie geweigerd** met `NUMERIC_UNRESOLVED`.
+Laat de eerste bron \(X_A(\theta,\lambda)\) en de tweede impliciete contour \(F_B(X,\lambda)=0\) afhangen van de continue wijzigingsparameter \(\lambda\). Definieer
 
-Voor \(N=1\): gebruik één geankerde sector met `leftReach=rightReach=1/2` en een kleine geconditioneerde guard rond de antipodale rand. Voor \(N=0\): geen sleutel of mutatie. Bij nieuw tangentiepunt: `crossing:'tangent'` en één sleutel, niet twee identieke slots.
+\[
+g(\theta,\lambda)=F_B(X_A(\theta,\lambda),\lambda).
+\]
 
-**Batches:** iedere constructieactie heeft één `familyId`. Later separaat dezelfde bronparen opnieuw construeren geeft een **andere** familie; punt-/familie-identiteit wordt niet uit het geordende paar bron-ID's afgeleid. Een familie houdt de oorspronkelijke ankers ook wanneer enkele aangemaakte punten afzonderlijk worden gewist.
+Wanneer \(g(\theta_0,\lambda_0)=0\) en \(\partial g/\partial\theta\ne0\) geldt voor een eenvoudige wortel lokaal:
 
-## 4. Deterministische evaluatie zonder bewegingshistoriek
+\[
+\frac{d\theta}{d\lambda}=-\frac{\partial g/\partial\lambda}{\partial g/\partial\theta}.
+\]
 
-### 4.1 Volledige roots vóór enige matching
+Die relatie motiveert een **predictor–corrector**, geen ongecontroleerde extrapolatie. Bij elke voldoende kleine bronstap:
 
-`IntersectionDispatcher` en de nieuwe gespecialiseerde conic-solver berekenen **alle** geldige reële wortels van de huidige bronnen, met volledige root-isolatie, residu- en conditietoets. Een onbetrouwbaar aantal roots geeft `NUMERIC_UNRESOLVED` voor de **hele familie**; men mag niet het dichtstbijzijnde pixelpunt accepteren als ersatz-oplossing.
+1. Neem het **laatst gecertificeerde** bronframe en alle actieve familiegetuigen.
+2. Bepaal een pad van dat frame naar het nieuwe bronframe dat overeenkomt met de **werkelijk geautoriseerde bronmutatie**; bij Pointer-drag mag de ingezamelde beweging dit pad vormen.
+3. Verdeel het pad zo nodig **adaptief** in kleinere stappen totdat volledige rootisolatie en veilige matching aantoonbaar zijn.
+4. Gebruik voor elke eenvoudige witness een lokale voorspelling van positie en georiënteerde, **niet geresette** eerste-bronparameter. Is de frame-oriëntatie van een ellips door `a=b`, samenvallende brandpunten of hoek-wrapping ambigu, volg dan de **door de wijziging vastgelegde continue frame-/parameterontwikkeling** of geef `AMBIGUOUS_BRANCH`; verzin geen as uit huidige eindtoestand.
+5. Los op het volgende bronframe opnieuw **alle** wortels op. Match vervolgens **de hele familie als één injectieve toewijzing** met bewezen disjuncte kandidaatgebieden en geconditioneerde residuen. Eén actuele wortel mag nooit twee slot-IDs krijgen.
+6. Accepteer de substep alleen als de gekozen matching **uniek en numeriek onderbouwd** is en geen ongecontroleerde singulariteit overslaat. Anders: stap verkleinen of de betrokken slots `AMBIGUOUS_BRANCH` / `NUMERIC_UNRESOLVED` verklaren.
+7. Bereik bij voldoende certificeerbare stappen de nieuwe eindtoestand; schrijf geüpdatete witnesses en bronframe **samen met de bronmutatie**. Er is geen willekeurige beperking door een oude vaste sector.
 
-Bereken voor elke wortel:
-- modelpositie \(X\) en de eerste-bronparameter \(t(X)\) modulo 1;
-- geconditioneerde transversale afgeleide \(g'(t)\), met \(g(t)=F_B(X_A(t))\);
-- `positive`/`negative` bij overtuigend niet-nul teken, anders `tangent` of `NUMERIC_UNRESOLVED` wanneer de tangentiestatus niet kan worden bepaald;
-- bewezen uniekheid ten opzichte van de andere roots (geen dubbele geometrische kandidaat).
+**Intervalcertificering / bewijscheck verplicht:** een kleine Euclidische afstand tussen twee samples is **geen** bewijs van unieke continuatie. Preflight moet vastleggen welke isolatie- en scheidingsgrenzen, residuen, conditioning en tussentijdse singulariteitscontrole voldoende zijn om een stap veilig te verklaren. Bij onvoldoende zekerheid **fail closed**, niet gokken of rootindex-sorteren.
 
-### 4.2 Match per opgeslagen familie, niet door wortelindex
+### 5.3 Grote bewegingen en interactieve previews
 
-Evaluatie is een **zuivere deterministische functie** van `{huidige bronnen, persistente keys}`. De familieleden worden uit het model getypeerd gegroepeerd op `familyId`; documentvolgorde, tijdelijke renderer-state en history mogen het resultaat niet beïnvloeden.
+- **Live slepen:** gebruik doorlopende tussenstappen zodat punten zichtbaar blijven meebewegen zolang de stappen geldig zijn. Tussenbeelden maken nog **geen afzonderlijke Undo-entries**.
+- **Pointer-up:** commit exact één autoritaire gebruikersmutatie en de bijbehorende continuatiecheckpointdelta. Esc, `pointercancel`, blur, nieuw document of afwijzing herstellen **zowel bronobjecten als oude checkpoints** atomair.
+- **Preview autorisatie:** restricted mode mag alleen met geautoriseerde brongeometrie en dezelfde rules previewen; previewresultaten zijn tijdelijk. Een geweigerde commit laat nooit geadvanceerde identity-state achter.
+- **Numerieke veldwijziging / programma-API / groepsverplaatsing / rebind:** er kan géén volledige pointerserie zijn. Construeer alleen een **contractueel gedefinieerd interpolatiepad van de werkelijke bronparameters**, met constraints, afhankelijke ellipsketens en rotatierichting. Kun je geen uniek en betrouwbaar pad vaststellen, dan mag WIE **niet** beweren dat de continuatie gelukt is: `AMBIGUOUS_BRANCH`, behoud object/ID en leg dit atomair vast.
+- **Geen verplichte pixelafhankelijke nauwkeurigheid:** zoom/pan of CSS pixelafstand mogen de identiteit van een gecommitteerd pad niet veranderen. Een reële bronmutatie met grotere sampleafstand mag adaptief opnieuw worden onderverdeeld op modelruimteniveau.
+- **Performance:** begrens maximale substeps/CPU en definieer een expliciete budget-exhaustion-status. Een time-out produceert geen half bijgewerkte familie. De budgetwaarden worden tijdens preflight gemeten en per test geaccepteerd; geen verzonnen vaste waarden in dit contract.
 
-1. Valideer dat elke key bij dezelfde twee persistente, correct geordende bronrefs hoort en dat familieleden verschillende slots hebben.
-2. Bereken de volledige rootset éénmaal per bronpaar (optioneel binnen een puur per-resolve cache).
-3. Bepaal voor elke key haar **opgeslagen kernsector** op basis van `anchorT`, `leftReach`, `rightReach`, `guardT`. Een kandidaat is alleen lid van de kernsector als die met een bewezen foutmarge **strikt binnen beide grenzen** ligt.
-4. Een **enkele** ruimtelijk en algebraïsch geïsoleerde huidige wortel in precies één kernsector is kandidaat voor die key. Meerdere wortels in dezelfde sector → `AMBIGUOUS_BRANCH`; geen wortel → `AMBIGUOUS_BRANCH` of bewezen `NO_REAL_INTERSECTION` wanneer er globaal geen reële roots zijn.
-5. Voor een simpele wortel moet `crossing` overeenkomen met de oorspronkelijke `positive`/`negative`-signatuur. Een tekenwissel zonder aantoonbare overgang via tangentie betekent **geen match**. Voor initiële tangentie geldt §4.3.
-6. Controleer globale één-op-één-toewijzing: een actuele wortel mag **niet** aan twee verschillende keys uit één familie worden toegekend. Bij dubbele claim of onbeslisbare grens krijgt **geen** van de conflicterende keys een willekeurige winnaar.
-7. Alleen bij een gecertificeerde één-op-één-match wordt `constructionValid=true` en het punt naar die wortel verplaatst. Anders blijft de bestaande definitie, ID, styling en dependency-graaf bewaard en komt de expliciete redenstatus terug.
+### 5.4 Pad-afhankelijkheid en terugkeren naar identieke broncontouren
 
-**Geen dynamische hernummering:** `slot` is **uitsluitend de creatiefamilie-index**, niet 'het huidige k-de punt'. Er worden nooit 'ontbrekende' keys in een eerder gecreëerde familie geïmproviseerd.
+Voer de centrale tegenproef uit: behoud een cirkel en roteer een niet-cirkelvormige ellips gedurende \(180^\circ\) met **vier altijd onderscheiden kruisingen**. Eindcontouren zijn gelijk aan de oorspronkelijke, maar de continuatiegetuigen moeten de vier roottrajecten correct blijven volgen. De uiteindelijke mapping mag dus een permutatie van de startmapping zijn. Opslaan/heropenen mag die permutatie **niet** terugzetten.
 
-### 4.3 Tangentie- en mergebeleid (voorgesteld; proof-gate)
+Dit is het kernverschil met optie A en een harde goedkeuringspoort.
 
-Een dubbelwortelcontact is één zichtbaar geometrisch punt. Op de dynamische herberekeningsstap:
+## 6. Tangenties, verdwijnende takken en echte ambiguïteit
 
-- Een unieke, numeriek bewezen raakwortel **binnen precies één ondubbelzinnige kernsector** kan zichtbaar blijven voor die ene key, als de gespecificeerde tangent-/oriëntatievoorwaarden zijn voldaan.
-- Andere familiekeys mogen niet op dezelfde contactcoördinaat worden weergegeven. Alleen als het aangetoonde combinatorische model aantoont dat zij de **samengevallen buurwortels** representeren, krijgen ze `MERGED_INTERSECTION`; anders **`AMBIGUOUS_BRANCH`**.
-- Ligt het contact in een guard-band of is onbekend welke key een voortzetting heeft, dan is **ook nul zichtbare herstelde keys mogelijk**, en worden zij herstelbaar `AMBIGUOUS_BRANCH`. De **onafhankelijke nieuwe constructieactie op exact die stand** maakt wél één raakpunt aan. Dit is een **expliciete beperking tegenover de sterkere dynamische wens** uit het hoofdcontract; de gebruiker moet ze afzonderlijk accepteren of een ander identiteitsmodel kiezen.
-- `crossing:'tangent'` ontstaat bij een **nieuw** raakpunt. Bij later opsplitsen naar twee simpele roots mag dit bestaande object **hoogstens één** vooraf contractueel gekozen signatuur volgen; de default van dit **voorstel** is **`positive`**, uitsluitend wanneer die wortel uniek in dezelfde kernsector ligt en de continuïteits-/residucontrole dit dekt. De andere wortel creëert geen punt. Zonder bewezen keuze blijft de tangent-key `AMBIGUOUS_BRANCH`.
-- Bij volledig samenvallende broncontouren zijn alle bestaande keys `COINCIDENT_CONICS`, bij herstel worden ze opnieuw beoordeeld vanuit hun onveranderde keys.
+### 6.1 Toestandstabel (ontwerpkeuze; nog formeel te valideren)
 
-**Geen fictieve tangentie:** contact wordt algebraïsch/residugebaseerd vastgesteld, niet door afronding op dezelfde schermpixels of door het blind klemmen van een kleine negatieve discriminant op nul.
-
-## 5. Welke garantie wordt wel/niet gegeven?
-
-| Gewenste eigenschap | Optie A — vaste sectorsleutel |
+| Vorige toestand → geometrisch event | Verplicht gedrag |
 |---|---|
-| Opnieuw openen / replay met exact hetzelfde document | **Ja**, deterministische matching zonder cache |
-| Undo/Redo en identieke bron-/keydata | **Ja** |
-| 0/2π-parameternaad binnen eigen sector | **Ja**, modulo-aritmetiek, geen re-sortering |
-| Geen toewijzing van dezelfde actuele root aan twee keys | **Ja**, bewezen een-op-een-check |
-| Geen zichtbare willekeurige wissel tijdens **onafgebroken geldige, gecertificeerde kernsectorsituatie** | **Ja**, vast lidmaatschap + signatuur |
-| Beperkte bronbeweging binnen initieel geldig slot | **Ja** |
-| Grote bronbeweging; eigen wortel buiten oorspronkelijke sector | **Tijdelijk ongeldig**, geen automatische 'volg de volgende root' |
-| Terugkeer van de oorspronkelijke geometrische configuratie | **Ja**, dezelfde stateless slotkoppeling herstelt |
-| Continue fysieke wortelidentiteit bij **alle** mogelijke verplaatsingspaden | **Nee, niet te bewijzen zonder een sterker stateful/path-contract** |
-| Altijd één oorspronkelijk gekoppeld punt zichtbaar bij elke latere tangentie | **Niet gegarandeerd**; bij sectorambiguïteit conservatieve invalidatie |
-| Alle nieuwe, eenduidige 1–4 punten bij een nieuwe constructie | **Ja**, na certificatie van de volledige rootset |
+| `SIMPLE` → `SIMPLE` met uniek geverifieerd pad | Volgzelfde `slot`, object-ID en afhankelijkheden |
+| Twee eenvoudige takken → bewezen tangentie | **Maximaal één zichtbaar punt** op de contactlocatie; kies zichtbaar eigenaarslot alleen via een exact gedocumenteerde en herhaalbare precontactregel. Andere slot `MERGED_INTERSECTION` |
+| Tangentie → twee eenvoudige reële takken | Herstel beide oorspronkelijke slots **alleen wanneer postcontact-koppeling uit de bewaarde contact-/oriëntatiegetuigen bewijsbaar is**; anders `AMBIGUOUS_BRANCH`, geen stille willekeurige links/rechts-keuze |
+| Twee reële takken → geen reële wortels | Betrokken slots `NO_REAL_INTERSECTION`/`LOST` met persistente laatste betrouwbare contactgegevens; geen puntcreatie |
+| Geen reële takken → nieuw reëel paar | Maak **geen nieuwe punten**; herstel oude slots alleen met bewijsbare voortzetting van hun persistente merge-/verliesgetuigen, anders ongeldig |
+| Meerwortelcontact / volledige coincidentie | `AMBIGUOUS_BRANCH` / `COINCIDENT_CONICS`; geen willekeurige owner of meerdere zichtbare punten op dezelfde plek |
+| Eerste bron wordt tijdelijk geometrisch ongeldig | `SOURCE_INVALID` voor downstream; verlies geen immutable key of `lastCertified` |
+| Numerieke isolatie of pad-matching onbeslisbaar | `NUMERIC_UNRESOLVED` en behoud laatste betrouwbare getuigen zonder gefingeerde sprong |
 
-**Belangrijk:** `AMBIGUOUS_BRANCH` is een **status van een bestaand afhankelijk punt**, geen opdracht om het te wissen of naar een nieuwe wortel te verplaatsen. Tijdens zulke fases bestaat er geen gegarandeerde 'materiële' voortzetting. De gebruiker behoudt de mogelijkheid om een nieuwe constructie te starten op de actuele geometrie.
+Bij één punt dat **oorspronkelijk** op een raakpunt is gecreëerd, is er geen tweede ID. Als later twee oplossingen verschijnen wordt niet automatisch een tweede punt gecreëerd. Voor de oorspronkelijke key definieert de proof-gate een voorspelbare contact-signatuur; als niet eenduidig welke nieuwe tak de voortzetting is, blijft dat punt herstelbaar ongeldig.
 
-### 5.1 Alternatief B — onbeperkt vloeiende trajectvolging
+**Niet beloven:** dat twee punten na verdwijnen in het complexe vlak en later herontstaan altijd op exact hun oorspronkelijke 'fysieke' tak terugkomen. Een reële identiteit kan door de singulariteit fundamenteel onbepaald zijn. Het juiste productgedrag is zichtbaar blijven waar continuïteit certificeerbaar is en anders conservatief terugvallen.
 
-Een ander productontwerp kan tijdens verplaatsingen incrementele gecertificeerde matching gebruiken en **persistente branch-events/continuatiegetuigen** bij bronmutaties bijhouden. Dan:
-- verandert meer van het model-/command-/Undo-contract;
-- worden keyhistorie en transitie-events onderdeel van het **opgeslagen document** (niet louter lokale muiscache);
-- moeten undo, redo, replay, import/export en de permissieruntime die events autoriseren;
-- moet ook dit model bij echte monodromie of meervoudige degeneratie een vastgelegde continuatie-/ambiguïteitsregel hebben.
+### 6.2 Omkering, rebind en framewissel
 
-**Alternatief B is niet gekozen, niet gespecificeerd en niet goedgekeurd.** Noem het alleen als bewuste vervolgkeuze wanneer Optie A bij handmatige UX-proeven te beperkend blijkt.
+- Bronomwisseling bij **reeds bestaande** conic-families mag niet automatisch: de eerste-bronparameter en continuatiegetuigen hebben een bronroloriëntatie. Bij nieuwe cirkel–ellipsparen wordt de volgorde altijd `[circle,ellipse]`; ellips–ellips bewaart de bij creatie gekozen volgorde.
+- Wijzigingen van ellipsoriëntatie, waaronder een controlepunt dat brandpunten doet samenvallen of `a=b`, vereisen een **padgetuige** die de framekeuze veilig voortzet. Er is geen vaste-initiale-sectorblokkering meer. Zonder voortzetbaar frame wordt tijdelijk ongeldig, niet van sleutel gewisseld.
+- Bij expliciet rebind naar **andere** bronnen wordt geen oude slot stilzwijgend op een willekeurige nieuwe wortel geplakt. Valideer bronrollen/permissies en vraag een bewijsbaar rebindpad; anders weigeren of key ongeldig laten en een expliciet nieuw Snijpunt laten construeren.
+- Eerdere `circleCircleIntersection`-brancheconventies en `lineEllipseIntersection`-branch 0/1 blijven onaangeroerd.
 
-## 6. Samenhang met WIE-opslag, schema, autorisatie en history
+## 7. Atomiciteit: model, history, import en replay
 
-### 6.1 Featuregate
+### 7.1 Centrale transactiegrens
 
-Actuele `main` kan `constructionSchema:10` gebruiken voor `lineEllipseIntersection`. De **normatieve ontwerpvoorkeur** is `constructionSchema:11` wanneer ten minste één van de nieuwe .3-recepten aanwezig is; dit is **onder voorbehoud van preflight en afzonderlijke schema-GO**, geen reeds geïmplementeerde waarde.
+Elke autoritaire wijziging die conic-bronnen kan veranderen moet in **dezelfde modeltransactie** vastleggen:
 
-- Schema 11 moet alle geldige eerdere recepten en schema-10-documenten kunnen lezen.
-- Een document met schema 11 hoeft **niet** een lijn–ellipsrecept te bevatten; het moet minstens één nieuw `solutionKey`-recept bevatten.
-- Zonder nieuwe recepten schrijven oud/nieuw identieke minimaal noodzakelijke schema's. De writer mag legacydocumenten niet ongevraagd naar 11 verhogen.
-- Onbekende sleutelversie/-velden, dubbele slots, ongeldig family-/bronverband, NaN en kapotte sectoren zijn atomair af te wijzen.
-- Oude readers moeten de nieuwe versies/recepten atomair weigeren, niet afhankelijke punten als vrije punten laden.
-- Import van een familiedocument vereist **geen oorspronkelijke creatiegeometrie**; de opgeslagen sleutel is de identiteit en de huidige geautoriseerde geometrie bepaalt validiteit.
+1. nieuwe directe objectdefinities / toegestane eigenschappen;
+2. de juiste door topologische resolver berekende broncurven;
+3. voortgang of ongeldigheid van de betrokken families (`intersectionContinuations`);
+4. daarvan afhankelijke puntvaliditeit en hun transitive kinderen;
+5. overeenkomstige history-/permission-/exportstate.
 
-### 6.2 Familie-identiteit en duplicatie
+Een falende update mag nooit wel de bron wijzigen maar niet de continuation state, of omgekeerd. Dit geldt ook voor multi-object patches, vrije en constructieve ellipsen, undo, redo, import, duplicatie, restricted runtime en afgebroken previews.
 
-- `familyId` verwijst **niet** naar een object en veroorzaakt geen verborgen dependency-edge; het is een value-key voor de bij dezelfde constructieactie gecreëerde punten.
-- De ID ontstaat als onderdeel van de **staged** geautoriseerde constructieactie, op een deterministische, botsingsvrije manier volgens het bestaande model-ID-schema. Hij mag niet afhankelijk zijn van `Math.random`, datum of een lokale editor-cache als replay dezelfde documentuitkomst moet geven.
-- Als een enkel punt uit een familie gewist wordt, blijven de overige sleutels geldig. Overige slots worden niet hernummerd.
-- Bij duplicatie van één sleutel moet die duplicaatconstructie een eigen nieuwe `familyId` krijgen; bij atomaire duplicatie van een volledige familie mogen onderling opnieuw gekoppelde kopieën een gezamenlijk **nieuw** `familyId` krijgen. Geen families met dubbele `slot` creëren.
-- Bronherbinding kan de framebetekenis veranderen: herbereken **niet stilzwijgend** de immutable `anchorT` of sector. Als de nieuwe bronnen de opgeslagen sleutel niet eenduidig ondersteunen, is de rebind te weigeren of de bestaande key herstelbaar ongeldig; een expliciete functie 'nieuwe constructie maken' is een afzonderlijke useractie.
-- Een gekoppelde bron die tijdelijk `constructionValid=false` wordt, veroorzaakt `SOURCE_INVALID` downstream, zonder informatieverlies. Layers, locks, labels, stijlen en kinderen blijven behouden.
+**Responsibility split:** de bestaande `ConstructionService` en conic-solver blijven eigenaar van geometrie en validatie; de model-/engine-transaction manager roept een gespecialiseerde `ConicContinuation`-routine aan binnen de bestaande updatepaden. Een afzonderlijke `ConicContinuation` helper mag, maar **geen tweede persistent model of concurrerende resolver**.
 
-### 6.3 Beveiliging, transacties en runtime
+### 7.2 Undo/Redo en commandreplay
 
-- De concrete gespecialiseerde interne tools worden `construct:circleEllipseIntersection` en `construct:ellipseEllipseIntersection`; één zichtbare `construct:intersection` blijft de UI.
-- Permissies moeten per recept en beide bronobjecten gelden bij **contextueel aanbieden, bronselectie, volledige creatie en exportprojectie**. Een `familyId` is **geen** autorisatiebewijs en mag geen restricted-bronnen verklappen.
-- Volledige uitkomsten en keys worden opnieuw berekend tijdens de definitieve `construction.create`-commit. Geen clientvoorgelegde vervalste keys vertrouwen; de engine bepaalt het sleutelstel serverzijdig/binnen de trusted commando-engine.
-- Rootset onbeslisbaar of bronrechten geweigerd → **geen gedeeltelijke objecten, geen Undo-item**, gereedschap blijft actief. Succes → alle keys in **één** history-transactie, terug naar `select`, selectie van alle nieuw gecreëerde punten.
-- Een later ongeldig punt verschijnt niet in SVG/PNG, snap, hit, canvas of restricted JSON-projectie buiten de bestaande rechtenscope. Export houdt de vereiste schema- en familie-integriteit of weigert veilig.
+- History bevat volledige consistente **voor/na-documentstates** inclusief continuatieregistry; Undo herstelt oude bronframes én oude koppelingen. Redo herstelt de nieuwe zonder nieuwe matchingdiscussie.
+- Het gewone **opgeslagen document** hoeft geen onbeperkt padlog te hebben: het laatste geautoriseerde checkpoint is voldoende om correct verder te bewegen en dezelfde huidige bindings te reconstrueren.
+- Als een aparte **command-replay API** exact dezelfde eindstate moet reproduceren, moet het geautoriseerde commando óf een deterministische padbeschrijving bevatten óf een gevalideerde checkpointdelta/continuatiecertificaat. Alleen een eindgeometrie zonder padgetuigen volstaat niet voor pad-afhankelijke identiteit. De runtime genereert/verifieert de delta; willekeurige clientvoorstellen gelden niet als bewijs.
+- Ook preview-na-confirmation en heropenen van JSON volgen dezelfde branchmapping; re-evaluatie op identieke `sourceFrame` mag geen nieuw slot toewijzen.
 
-## 7. Verificatiematrix voor M8-INT.3-A
+### 7.3 Import- en schema-featuregate
 
-**Deze zijn voorlopige ontwerpcases**, geen reeds gedraaide code-/Edge-tests. Gebruik onafhankelijke analytische referenties en bewijs-/eigenschapstests, niet dezelfde implementatieformule aan beide kanten van een assertion.
+`intersectionContinuations` is een nieuwe gestructureerde, gevalideerde top-level registersectie. Bij import:
+
+- controleer `intersectionContinuationsSchema`, familiebatches, referentie-ID's, exacte `solutionKey`-vorm (schema 2), bronrolvolgorde, uniekheid van `slot`, checkpointrevision, numerieke velden en maximale grootte;
+- controleer de **huidige** checkpointbronframe tegen de **actueel geautoriseerd opgeloste** brondefinities. `CERTIFIED` families moeten hun witnesses ondubbelzinnig aan de actuele volledige rootset koppelen; anders **atomair weigeren**. Tijdelijk ongeldige opgeslagen families hebben een expliciete status en een apart `lastCertified`-bewijs, geen onterecht huidige `VALID`;
+- geen afhankelijkheden naar ontbrekende bronnen, onbeschikbare segmenten, verborgen verboden objecten of bronreceptcycli invoeren;
+- geen nieuwe recepttypen via schema 10 toelaten; nieuw schema-11-voorstel moet alle eerdere constructies inclusief matchAB, lijn–ellips en gemengde documentversies kunnen dragen;
+- als de laatste .3-punten verdwijnen, ruim het verwaisde registry-item op. Bij individuele delete, family copy, groepsduplicatie, cascade of restricted export blijft de registry **consistent en minimaal**.
+- weigeren is **atomair**, geen gedeeltelijk geladen oude/fantasie-snijpunten.
+
+Een secure/restricted export neemt alleen geautoriseerde en consistente familie-data mee, behoudt familie/slotbindingen van toegestaan geëxporteerde punten, en sluit niet-toegestane bronframes en getuigen **volledig** uit. Als dat niet kan zonder lek of kapotte referenties, weigert de export veilig.
+
+### 7.4 Family-ID en duplicatie
+
+- `familyId` krijgt een documentbreed unieke, deterministisch reproduceerbare identifier uit de **staged** bestaande ID-allocator of een bewezen equivalente geautoriseerde allocator.
+- Duplicatie van slechts één gekoppeld snijpunt creëert een nieuwe onafhankelijke familie met één slot; duplicatie van een volledige familie kan een nieuwe batch maken met dezelfde onderlinge rootbindingen maar een **nieuwe familyId**.
+- Als bronnen worden meegekopieerd moeten alle source refs, registry frames en checkpoints consequent opnieuw worden verbonden of de duplicatie wordt geweigerd. Geen halve oude/nieuwe families.
+- Verwijderen van een punt maakt geen nieuwe root; verwijderen van een bron volgt de bestaande cascade. Overige slot-ID's worden nooit hernummerd.
+
+## 8. Nauwkeurigheid en numerieke budgetten
+
+- Bereken in modelruimte, onafhankelijk van zoom/pan. `Number` (IEEE-754) is de bestaande numerieke basis; waar dat geen betrouwbare volledige wortelisolatie en matchcertificaat mogelijk maakt, is `NUMERIC_UNRESOLVED` de juiste uitkomst.
+- Verboden: naïef sampled polygoon-, SVG- of 'kortste afstand tussen twee huidige punten'-matchen als enige beslisser.
+- Te testen: wortels met even multipliciteit, extreem dunne of bijna cirkelvormige ellipsen, bijna samenvallende contouren, enorme maar legale modelcoördinaten, langs elkaar bewegende roots, meerdere bijna-gelijktijdige contacten en rotaties van meer dan \(2\pi\).
+- Unwrapped parameters en revisionvelden hebben bewezen grenzen nodig, inclusief extreme lange sessies (geen overflow / `Number.MAX_SAFE_INTEGER`-problematiek). De proof-gate kiest een veilige normalisatie van winding getal zonder identiteitsverlies.
+- Geometrielimiet \(|x|,|y|\le10^{12}\) blijft behouden. Onder druk van een opgelegd rekenbudget: geen partiële family-commit of onjuiste geïsoleerdheid.
+
+## 9. Verplichte M8-INT.3-A proof-/regressiematrix
+
+**Dit zijn eisen voor toekomstige onafhankelijke bewijsfixtures en Node/Edge-tests, geen claim dat ze nu uitgevoerd zijn.**
 
 | ID | Proef | Acceptatie |
 |---|---|---|
-| **SKEY-001** | `C_4` met \(E:x²/25+y²/9=1\) → 4 wortels | Vier unieke keys, slots 0..3, disjuncte kernsectoren |
-| **SKEY-002** | Roteer E \(45^\circ\) bij eerste bron C4 | Oude genormaliseerde-hoeksortering zou labels wisselen; nieuwe sleutel volgt uitsluitend sector-/guardcontract |
-| **SKEY-003** | Rotatie \(\approx 180^\circ\) van E rond C4 | Onderscheid geometrische plaatsidentiteit van onbewijsbare globale trajectidentiteit; geen ongedocumenteerde swapgarantie |
-| **SKEY-004** | Vier roots, elk een andere kernsector, zonder raakpunten | Deterministische 1:1-toewijzing en juiste `crossing`-signatuur |
-| **SKEY-005** | Eén actuele root gaat een guard-band binnen | Betrokken key `AMBIGUOUS_BRANCH`; ID en bronrecept intact |
-| **SKEY-006** | Meerdere roots vallen binnen één opgeslagen sector | Geen willekeurig 'dichtstbijzijnde' keuze; betrokken key ongeldig |
-| **SKEY-007** | Root kruist \(\theta=0/2π\) **binnen dezelfde opgeslagen cyclische sector** | Geen labelwisseling op de parameternaad |
-| **SKEY-008** | \(4\to2\to4\) terug naar initiële stand | Identieke IDs/keys, herstel na veilige matching, geen spontane nieuwe punten |
-| **SKEY-009** | \(4\to3\to4\) met bewezen tangentie binnen een kernsector | Max. één zichtbare contactroot per familie, overig `MERGED_INTERSECTION` alleen wanneer bewezen |
-| **SKEY-010** | \(4\to3\to4\) contact in guard-band | `AMBIGUOUS_BRANCH` toegestaan; geen willekeurige keeper |
-| **SKEY-011** | \(4\to1\to4\) meervoudig contact | Nooit onvoorwaardelijk alle vier herstelbaar; expliciete ambiguity-status waar nodig |
-| **SKEY-012** | Nieuwe constructie op exact tangentcontact | Eén key en één punt; geen duplicate keys |
-| **SKEY-013** | Eén tangent-key gevolgd door twee gescheiden roots | Hoogstens contractuele `positive`-voortzetting, anders `AMBIGUOUS_BRANCH`; geen extra nieuw punt |
-| **SKEY-014** | Cirkel–ellips bronvolgorde omgekeerd in UI | Opgeslagen `[circle,ellipse]`, eerste-frame = cirkel |
-| **SKEY-015** | Ellips–ellips met omgekeerde gebruikersbronvolgorde | Volgorde blijft bewaard binnen nieuwe recepten; geen herschrijven van oude branches |
-| **SKEY-016** | Construeerde ellips degeneratief en terug | `SOURCE_INVALID`, key/IDs blijven, herstel zonder verborgen frame-cache |
-| **SKEY-017** | Ellips wordt exact cirkelvormig of krijgt onbepaalde intrinsieke oriëntatie | `frameKind`-guard: geen impliciete fasewissel; conservatieve status en reproduceerbare heropening |
-| **SKEY-018** | Writer + import van uitsluitend nieuw conic-conic-recept | Nieuwe featuregate zonder verplichte `lineEllipseIntersection`; pure roundtrip |
-| **SKEY-019** | Gemengd document met schema-10-lijn–ellips, matchAB en conic-conic | Correct minimaal schema, oude recipes/branches ongewijzigd |
-| **SKEY-020** | Corrupt/duplicate key, verkeerde familie/slot/sector, onbekende versie | Atomaire weigering; bestaande model onveranderd |
-| **SKEY-021** | Dezelfde keys met omgekeerde documentobjectvolgorde | Identieke evaluatie en zichtbare resultaten |
-| **SKEY-022** | Individuele sleutel wissen, kopiëren, herbind en Undo/Redo | Geen sleutelhernummering, nieuwe family-id waar nodig |
-| **SKEY-023** | Restricted ellips/cirkel, ongeautoriseerde `construction.create` | Geen tool/command/exportlekkage |
-| **SKEY-024** | Onzekerheid in rootisolatie, nauwkeurige bijna-tangent | `NUMERIC_UNRESOLVED` en geen gedeeltelijke nieuwe familie |
-| **SKEY-025** | Nieuwe/legacy snijpuntrecepten in één document, heropenen/replay | `circleCircleIntersection` 0/1, `lineEllipseIntersection` 0/1 blijven exact historisch |
-| **SKEY-026** | Ononderbroken rotatie waarbij twee wortels na guardpassage posities wisselen | Eerst expliciete invalidatie, nooit een ongekwalificeerde geldige handover |
-| **SKEY-027** | Eén bronobject verborgen, beide bronobjecten gelockt, laag verborgen | Bestaande zichtbaarheids-/permissionsemantiek, géén ongeautoriseerde bronselectie |
-| **SKEY-028** | Zelfde opgeslagen document + bronnen na import en na Undo/Redo | Dezelfde punten of dezelfde reasoncodes, onafhankelijk van sessiehistory |
+| **BKEY-001** | C4 vs E(5,3), vier wortels | Vier unieke immutable keys en vier juiste actuele witnesses |
+| **BKEY-002** | Roteer E 45° via voldoende fijne stappen | Alle vier IDs volgen door de \(0/2\pi\)-naad zonder indexswap |
+| **BKEY-003** | Roteer E **180°** via continu gecertificeerd pad, zelfde eindcontour | **Geldige permutatie van slots naar andere puntlocaties**, na save/load behouden; niet reset naar beginsortering |
+| **BKEY-004** | Roteer E 360° | Iedere slot volgt werkelijk doorlopen traject, inclusief eventuele winding |
+| **BKEY-005** | Grote vloeiende translatie / vervorming zonder singulariteit | Geen invalidatie enkel wegens initiële hoeksector overschreden |
+| **BKEY-006** | Plotselinge numerieke sprong zonder aantoonbaar bronpad | Conservatief `AMBIGUOUS_BRANCH`, geen fantoomcontinuatie |
+| **BKEY-007** | 4→3→4 bij bewezen eenvoudige tangentie | Max. één zichtbaar punt op contact, twee IDs bewaard, postcontact alleen gecertificeerde voortzetting |
+| **BKEY-008** | 4→2→4 over geen-reële-wortelinterval | Geen spontane nieuwe IDs; herstel met bewijs of ambigue status, niet willekeurig |
+| **BKEY-009** | 4→1→4, meervoudig contact | Geen ongedocumenteerde continuation, geen swap |
+| **BKEY-010** | Nieuwe constructie op één raakpunt → later twee roots | Slechts bestaande ene ID, juiste policy |
+| **BKEY-011** | Cirkelformige ellips \(a=b\), foci samenvallen, framewisseling | Path-aware voortzetting of status, geen fase-reset |
+| **BKEY-012** | Cirkel–ellips UI beide bronvolgordes | Opslag altijd [circle,ellipse] |
+| **BKEY-013** | Ellips–ellips UI beide bronvolgordes | Bij creatie gekozen eerste ellips blijft eerste |
+| **BKEY-014** | Twee roots worden heel nabij, met kleine tussenstappen | Nooit alleen op pixelafstand matchen; bewijs of unresolved |
+| **BKEY-015** | Drag preview 100 substeps en pointer-up | Eén history-entry, checkpoint en bronframe gecommit |
+| **BKEY-016** | Drag preview → Esc / pointercancel / blur | Bron én witnesses terug naar vorige commit |
+| **BKEY-017** | Restricted runtime-preview; permission verandert vóór commit | Atomic cancel, geen ongeautoriseerde witness-advance |
+| **BKEY-018** | Source property-edit zonder pointertrajectory | Gecontracteerd interpolatiepad of conservatieve invalidatie |
+| **BKEY-019** | Construeerde ellips via F1/F2/Q; bron wordt invalid en herstelt | Downstream invalid/recovery zonder verloren key-ID |
+| **BKEY-020** | Save/reload na permutatie 180° | Exact zelfde actuele identiteit uit opgeslagen checkpoint |
+| **BKEY-021** | Undo/Redo over grote drag en tangentie | Oude/nieuwe checkpoint-permutaties exact hersteld |
+| **BKEY-022** | Replay van commandstream zonder versus mét continuation-witness | Onvoldoende stream afgewezen; gevalideerde stream deterministisch |
+| **BKEY-023** | Corrupt frame, slot, family, witness, revision en onbekende sleutelvelden | Atomair weigeren; geen stale-to-free fallback |
+| **BKEY-024** | Schema met alleen conic-pair, en gemengd met schema10/matchAB | Correcte featuregate; oude lezers weigeren toekomstig schema |
+| **BKEY-025** | Restricted export met verborgen bron / verdwenen family member | Geen lekkage en consistente gereduceerde registry |
+| **BKEY-026** | Enkel slot delete en duplicate, volledig batch copy, layer/group | Nooit slots hernummeren of old-family checkpoint hergebruiken |
+| **BKEY-027** | New document, load en Undo bij actieve preview | Geen stale continuation state |
+| **BKEY-028** | Uitputting iteratie- of numeriek budget | Geen halve familycommit, expliciete unresolved |
+| **BKEY-029** | `circleCircleIntersection` en `lineEllipseIntersection` legacydocs | Volledig oude branch 0/1 behouden |
+| **BKEY-030** | Edge: 4 snijpunten, live rotatie, save/load, Undo, contextmenu | Gecontroleerde identiteit én behoud van Snijpunt→Selecteren |
+| **BKEY-031** | Twee families van hetzelfde bronpaar afzonderlijk aangemaakt | Onafhankelijke familie-ID's/slots en consistente afzonderlijke deltas |
+| **BKEY-032** | Zelfde huidige contouren, twee **verschillende** geldige continuatiecheckpoints | Elk checkpoint herstelt zijn **eigen** historische puntmapping; geen stateless hersortering |
+| **BKEY-033** | Exact raakcontact, technisch exact/nabijheidsfalloff, wisseling van transversaalteken | Bewezen contact of `NUMERIC_UNRESOLVED`, geen fantoompunt |
+| **BKEY-034** | Langdurige rotatie met winding door vele omwentelingen | Unwrapped witness/normalisatie blijft binnen veilige grenzen |
+| **BKEY-035** | Bewerken van bron via model.update, engine.update, runtime, group, rebind | Eén consistent controlepad; geen wijzigingsroute kan checkpoint overslaan |
 
-### Verplichte formele bewijsverplichtingen voor de Codex-preflight
+**Harde bewijschecks vóór productiecode:**
 
-1. **Wiskundig tegenvoorbeeld** voor hoekindex-sortering, inclusief getalsmatige C4/E45°-fixture en aantoonbaar vier eenvoudige roots vóór/na naadpassage.
-2. **Sectoren-invariant:** kerngrenzen van verschillende slots uit dezelfde creatiefamilie zijn disjunct; een huidige root kan niet gelijktijdig door twee geldige kernen worden geclaimd.
-3. **Padonafhankelijke determinisme:** gelijke brondefinities en keys leveren dezelfde mapping en statuses (onder dezelfde numerieke afrondingsconventie).
-4. **Geen ongecertificeerde wortel:** solver garandeert volledigheid en scheidt bewezen nultal van numerieke onbeslisbaarheid.
-5. **Begrensde garantie expliciet:** lever een tegenvoorbeeld waar voortzetting van een fysieke wortel buiten de oorspronkelijke sector valt. De implementatie mag die gebeurtenis niet verhullen als 'sleutel blijft globaal fysiek dezelfde wortel'.
-6. **Transversaalteken:** bewijs dat een niet-nul \(g'(t)\)-teken lokaal behouden blijft langs een eenvoudige worteltak zolang geen tangentie of relevante frame-/rolsingulariteit passeert.
-7. **Stateful-alternatief:** motiveer waarom een onbeperkte voortzettingsgarantie andere persistente/transactionele informatie vereist, en maak dit niet stilzwijgend onderdeel van Optie A.
+1. **Continuatie lokaal:** bewijs dat bij \(\partial g/\partial\theta\neq 0\) een unieke nabije worteltak bestaat; leg de numeriek afdwingbare scheidingsvoorwaarde per geaccepteerde stap vast.
+2. **Globale matchinjectiviteit:** het geautoriseerde familie-algoritme koppelt nooit twee slots aan één huidige wortel.
+3. **Monodromie-test:** bij een gesloten pad in configuratieruimte (zoals 180° centrale ellipsrotatie) kan een niet-triviale slotpermutatie ontstaan. Bewijs dat die via persistent checkpoint behouden blijft.
+4. **Singulariteitsgrens:** documenteer welke raak-/meerwortelovergangen een unieke voortzetting hebben, welke afhankelijk zijn van gekozen voortzettingspolicy en welke fundamenteel ambigu zijn.
+5. **Save/load en Undo:** volledige document- en checkpoint-invariant; geen hidden state, geen hersortering.
+6. **Command/security-boundary:** alle mutatiepaden geaudit; preview is niet authoritative, commit alleen via vertrouwde engine.
+7. **Finite resource policy:** numeriek foutbudget, maximum substeps, robuuste residualcheck en budget exhaustion zijn gedefinieerd en met onafhankelijke fixtures gevalideerd.
 
-## 8. Implementatiepoort, versies en uitvoer
+## 10. Architectuur- en implementatievolgorde
 
-De technische **M8-INT.3-A-voorbereiding** kan later een aparte Codex-opdracht krijgen voor:
-- actuele branch/HEAD en preflight tegen `AGENTS.md`, `ConstructionService`, `Engine`, `model.js`, `EllipseGeometry`, `RuntimeSession`, dispatcher, UI en browserrunner;
-- read-only bewijs-/counterexampleprototypes en onafhankelijke fixturedata **zonder productiemutaties**;
-- finale, geteste numerieke guard-/sector- en tangentietoewijzingsregels;
-- voorstel voor exact `constructionSchema:11` en family-validation, inclusief formele deserialisatiegates;
-- risicoanalyse van de **bewust beperkte** continue-volgsemantiek.
+**M8-INT.3-A1 — onafhankelijke design-/proof-spike.** Op een aparte Codex-featurebranch of strikt geïsoleerde testomgeving: geometrisch tegenvoorbeeld, predictor/corrector-prototype, path checkpoint-spike en alle bovenstaande harde bewijschecks; **geen productiecode of schemawijziging**. Leg noodzakelijke precieze runtime- en opslagvelden vast in een formele implementatiebijlage. Lever inhoudelijk verantwoord **GO/NO-GO** aan gebruiker.
 
-Pas **na** expliciete goedkeuring van deze identiteitskeuze en proof-gate mogen aparte opdrachten voor M8-INT.3-B (cirkel–ellips), M8-INT.3-C (ellips–ellips) en M8-INT.3-D (acceptatie/merge) worden uitgegeven.
+**M8-INT.3-A2 — finale identiteit-/schema-goedkeuring.** Na A1 bekijkt de gebruiker de bewijsrapportage, continuatiebeperkingen, schema-/history-/permission-impact en testgedrag. Alleen bij expliciete GO mogen de schema-/checkpoint-modelwijzigingen worden uitgevoerd.
 
-**Huidige status:** `docs/M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md` is door de gebruiker goedgekeurd. **Dit afzonderlijke M8-INT.3-A-identiteitscontract v1.0.0 is nog uitsluitend een ontwerpvoorstel.** De voorgestelde beperkte slot-identiteit, `solutionKey`-velden, tangent-uitzondering en schema 11 zijn **niet** stilzwijgend reeds geaccepteerd.
+**M8-INT.3-B — cirkel–ellips** achter het bestaande universele Snijpunt, met numeriek complete solver, continuatieregistry, permissions en Node/Edge.
+
+**M8-INT.3-C — ellips–ellips** met rotaties en vrij/geconstrueerd ellipsobject, dezelfde identiteitsengine en extra degeneraties.
+
+**M8-INT.3-D — acceptatie en merge.** Volledige regressies, gebruikersacceptatie, implementatieverslag en afzonderlijke merge-GO.
+
+M8-INT.3 heeft **geen harde afhankelijkheid van M8-INT.2**: de bestaande cirkel en ellips volstaan.
+
+## 11. Open technische bewijsbesluiten (geen impliciete defaults)
+
+De gekozen **productrichting is optie B**. Vóór implementatie moeten Codex' proof-spike en een daaropvolgende expliciete gebruikersgoedkeuring nog exact vastleggen:
+
+1. De gecertificeerde rootisolator, interval-/residualfoutbegroting en stapadaptatie; geen naïeve naaste-buurmatching.
+2. Het concrete serialized checkpointformaat, family's `lastCertified`- en tangentmerge-getuigen, en minimale document-/construction-/continuation-schemaversies.
+3. De foutgrens bij verlies van reële wortels en herstel na singulariteit, inclusief eventueel blijvende `AMBIGUOUS_BRANCH` als continuïteitsbewijs onmogelijk is.
+4. Het transactionele pad van de bestaande runtime-preview, EditorApp-interactie en alle directe mutatie-API's; bij ontbrekende padrepresentatie de voorgestelde fail-closed policy.
+5. De numerieke/ruimtecomplexiteitslimieten en testbewijzen op echte Node/Edge-executie.
+6. De juiste bronframecontinuatie voor vrij/geconstrueerde bijna-cirkelvormige ellipsen, inclusief onbepaalde foci-oriëntatie.
+7. Het gewenste beleid als een gebruiker bewust een volledige bronvervanging uitvoert, waarbij oude familie-identiteit geen betekenisvolle continuatie heeft.
+
+**Niet toegestaan op basis van dit ontwerp alleen:** de vierwortel-solvers, documentschema's, UI of import/export implementeren; de bestaande M8-INT.0/.1-branches wijzigen; optie A-sectorinvalidatie blijven gebruiken; automatisch mergen naar `main`.
 
 ---
 
-**Einde M8-INT.3-A solutionKey-identiteitscontract v1.0.0 — ter afzonderlijke goedkeuring; geen productiecode-GO.**
+**Einde M8-INT.3-A identiteitscontract v2.0.0 — optie B gekozen, architectuur uitgewerkt; bewijsvalidatie en afzonderlijke implementatie-GO nog vereist.**
