@@ -62,4 +62,4 @@ De geselecteerde lifecycle-run slaagde met **12/12 tests**. Beide syntaxchecks e
 
 Resterend verificatierisico: echte browser-eventvolgorde, visuele preview en native pointercapture zijn niet opnieuw in Edge gecontroleerd, conform opdracht. De specifieke failure-injection test gebruikt de bestaande gesimuleerde DOM-fixture, maar faalt binnen de echte candidate-commanduitvoering.
 
-Status bij oplevering wordt bijgewerkt met commit- en pushresultaat; deze fase merge’t niet naar `main` en start L3.3c niet.
+Implementatiecommit: `956fa829d239d54bbed107dbf7c6c9179cfff396`. Branch `codex/wie-tool-l3-3b-ellipse-lifecycle` is naar `origin` gepusht. Er is geen PR of merge naar `main` gestart; L3.3c is niet gestart.
