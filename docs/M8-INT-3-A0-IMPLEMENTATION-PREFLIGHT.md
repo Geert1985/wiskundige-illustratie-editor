@@ -215,8 +215,11 @@ Na die gate is voor B nog aparte gebruikers-GO nodig; C volgt na B-acceptatie en
 ### Verificatie uitgevoerd
 
 - npm test op e0b157fce4a17368016982193cdf9d5f0f04f911: **754/754 PASS**, 0 failed, 0 skipped.
-- npm run test:edge faalde eerst vóór teststart omdat Playwright niet vindbaar was in de schone worktree. Herstart met bestaande repository/node_modules via NODE_PATH begon en doorloopt nog; tot nu toe geen eindcount of PASS geclaimd.
+- De eerste uitvoering van npm run test:edge stopte vóór de eerste suite omdat Playwright niet vindbaar was in de schone worktree.
+- De tweede uitvoering van npm run test:edge gebruikte de bestaande repository/node_modules en Edge-installatie. De run bereikte V2 suite: selection. De volledige run is daarna op expliciet gebruikersverzoek afgebroken; status **incompleet**, geen suite-eindtelling en geen PASS geclaimd.
+- Geen nieuwe M8-INT.3-productietests of solverprototypes uitgevoerd: A0 stond alleen read-only verificatie toe. De bestaande researchresultaten zijn uit de rapporten beoordeeld, niet opnieuw gerund. Geen handmatige UX-acceptatie uitgevoerd.
 
 ---
 
 **A0-resultaat:** read-only implementatiepreflight afgerond. Productiecode ongewijzigd. Wacht op rapportreview en afzonderlijke B-autorisatie.
+
