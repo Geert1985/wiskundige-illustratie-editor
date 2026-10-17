@@ -781,6 +781,30 @@ test('WIE-TOOL-L5.4a all shared draw tools use catalog repeat completion and the
  }
 });
 
+test('WIE-TOOL-L5.4b all multipoint tools complete only valid shapes and reset for the next shape',()=>{
+ const points=[{x:2,y:-1},{x:4,y:-1},{x:3,y:1}],cases=[['triangle',3],['polygon',3],['angle',3],['rightAngle',3]];
+ for(const [tool,pointCount] of cases){
+  const h=appRuntime(),entry=h.app.toolCatalog.getTool(tool);assert.equal(entry.lifecycle,'repeat',tool);assert.equal(entry.interactionAdapter,'polygon',tool);
+  h.app.setTool(tool);const before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app),commands=[],completions=[];
+  h.app.execute=(operation,...args)=>{commands.push(operation);return execute(operation,...args);};h.app.completeToolInteraction=args=>{completions.push(args);return complete(args);};
+  for(let index=0;index<pointCount;index++){
+   h.down(points[index]);
+   if(index<pointCount-1||tool==='polygon'){
+    assert.equal(completions.length,0,tool);assert.equal(h.app.interaction.vertices.length,index+1,tool);assert.deepEqual(plain(h.engine.toJSON()),before,tool);assert.equal(h.app.history.entries.length,0,tool);assert.ok(h.engine.renderer.preview,tool);
+   }
+  }
+  if(tool==='polygon'){assert.equal(completions.length,0);h.app.keyDown({key:'Enter',preventDefault(){}});}
+  const expectedType=['angle','rightAngle'].includes(tool)?'angle':'polygon',created=h.engine.model.objects.filter(object=>object.type===expectedType).at(-1);
+  assert.ok(created,tool);assert.deepEqual(commands,['object.create'],tool);assert.equal(completions.length,1,tool);assert.equal(completions[0].toolId,tool);assert.equal(completions[0].outcome.ok,true);assert.deepEqual(plain(completions[0].selection),[created.id]);
+  assert.equal(h.app.tool,tool);assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.deepEqual(plain(h.app.selectedIds),[created.id]);assert.equal(h.app.history.entries.length,1);
+  const after=plain(h.engine.toJSON());h.down(points[0]);assert.equal(h.app.interaction.vertices.length,1,tool+' fresh gesture');assert.equal(completions.length,1,tool+' intermediate point');
+  h.app.keyDown({key:'Escape',preventDefault(){}});assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.deepEqual(plain(h.engine.toJSON()),after);assert.equal(h.app.history.entries.length,1);
+  assert.equal(h.app.history.undo(),true,tool);assert.deepEqual(plain(h.engine.toJSON()),before,tool);assert.equal(h.app.history.redo(),true,tool);assert.deepEqual(plain(h.engine.toJSON()),after,tool);
+ }
+ const switched=appRuntime();switched.app.setTool('polygon');switched.down(points[0]);const before=plain(switched.engine.toJSON());switched.app.setTool('circle');
+ assert.equal(switched.app.tool,'circle');assert.equal(switched.app.interaction,null);assert.equal(switched.engine.renderer.preview,null);assert.equal(switched.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.deepEqual(plain(switched.engine.toJSON()),before);assert.equal(switched.app.history.entries.length,0);
+});
+
 test('WIE-TOOL-L2 first and second line use central repeat completion exactly once',()=>{
  const h=appRuntime();h.app.setTool('line');const completion=h.app.completeToolInteraction.bind(h.app);let completed=0;
  h.app.completeToolInteraction=(args)=>{completed++;return completion(args);};
