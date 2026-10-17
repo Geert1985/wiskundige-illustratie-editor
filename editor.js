@@ -367,6 +367,12 @@
       if(!outcome?.ok)return false;
       const policy=TOOL_LIFECYCLE[toolId];
       if(!policy)throw new TypeError('Onbekend lifecyclebeleid voor gereedschap: '+toolId);
+      if(origin==='context-complete'){
+        if(selection!==undefined){const ids=Array.isArray(selection)?selection.slice():[];this.selectedId=ids[0]||null;this.selectedIds=ids;}
+        this.status(successMessage||'Gekoppelde constructie toegevoegd.');
+        this.invalidate();
+        return true;
+      }
       const state=this.interaction;
       this.interaction=null;
       this.release(state);
@@ -708,8 +714,12 @@
       if(!result.candidates.length){state.sources=state.sources.slice(0,1);this.engine.renderer.preview=null;this.status('Geen uniek snijpunt binnen deze objecten ('+result.reasonCode+'). Kies een andere tweede bron.');this.renderInstructions();this.invalidate();return;}
       let created=[];
       const outcome=this.changeDocument(()=>{created=this.execute('construction.create',{toolId:recipeTool,sources:result.sources}).result;this.selectedIds=created.map(object=>object.id);return created;},{cancelInteraction:false});
-      if(outcome.ok&&created.length){this.interaction=null;this.release(state);this.engine.renderer.preview=null;this.setTool('select');this.intersectionCompleted=true;this.status(created.length+' snijpunt(en) toegevoegd.');}
+      if(outcome.ok&&created.length){
+        this.completeToolInteraction({toolId:'construct:intersection',outcome,origin:'canvas',selection:created.map(object=>object.id),successMessage:created.length+' snijpunt(en) toegevoegd.'});
+        this.intersectionCompleted=true;
+      }
       else if(!outcome.ok){state.sources=state.sources.slice(0,1);this.release(state);state.pointerId=null;}
+      else {state.sources=state.sources.slice(0,1);this.engine.renderer.preview=null;this.status('De snijpuntconstructie heeft geen object opgeleverd. Kies een andere tweede bron.');this.renderInstructions();}
       this.invalidate();
     }
     intersectionClick(point) {
@@ -850,15 +860,18 @@
       // are already complete, so use the usual document command directly.
       if(plan.mode==='complete'&&!universal){
         try{
+          let created=[],createdIds=[];
           const outcome=this.changeDocument(()=>{
-            this.selectedIds=this.execute('construction.create',{
+            created=this.execute('construction.create',{
               toolId,sources:plan.sources.map(ref=>({...ref}))
-            }).result.map(object=>object.id);
-          });
+            }).result;
+            if(!Array.isArray(created))throw new TypeError('De constructie gaf geen resultatenlijst terug.');
+            createdIds=created.map(object=>object?.id).filter(Boolean);
+            if(createdIds.length){this.selectedId=createdIds[0];this.selectedIds=createdIds;}
+          },{cancelInteraction:false});
           if(!outcome.ok)return false;
-          this.status('Gekoppelde constructie toegevoegd.');
-          this.invalidate();
-          return true;
+          if(!createdIds.length){this.status('De contextconstructie heeft geen object opgeleverd.');this.invalidate();return false;}
+          return this.completeToolInteraction({toolId,outcome,origin:'context-complete',selection:createdIds});
         }catch(error){
           this.status(error.message);this.invalidate();return false;
         }
