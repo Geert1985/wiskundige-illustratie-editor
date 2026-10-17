@@ -1297,7 +1297,7 @@
       if((button=find('[data-select-object]'))){
         const id=button.dataset.selectObject,now=Date.now(),last=this.viewNameClick;
         this.viewNameClick={id,time:now};
-        if(last?.id===id&&now-last.time<500&&this.selectedIds.includes(id)){event.preventDefault();this.beginObjectRename(id);return;}
+        if(event.detail>=2&&last?.id===id&&now-last.time<500&&this.selectedIds.includes(id)){event.preventDefault();this.beginObjectRename(id);return;}
       }
       if((button=find('[data-layer-label]'))){const layer=this.engine.model.layers.find(l=>l.id===button.dataset.layerLabel);if(layer)this.toggleLabels(layer.members);return;}
       if((button=find('[data-layer-add]'))){this.addLayer(this.nodes.viewList.querySelector('[data-layer-new-name]').value);return;}
