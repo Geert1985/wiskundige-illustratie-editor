@@ -1,8 +1,12 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.44 (WIE-TOOL-L3.3b branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
+Version: 2.8.45 (WIE-TOOL-L3.3c branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## WIE-TOOL-L3.3c — Parallellogram op centrale lifecycle (branchstatus 2026-10-17)
+
+Op actuele `origin/main` `3dadfe0` (L3.3b via PR #38) gebruikt `commitParallelogramPlacement()` na het geslaagde `construction.create` de centrale `completeToolInteraction()` met policy `single`. Parameterinvoer en preview blijven tijdelijk; ongeldige waarden en commandofouten voltooien niet en laten herstelbare invoer staan. De optionele bronhernoeming bestaat uit maximaal twee afzonderlijke `object.setProperties`-commando's. Een hernoemfout laat geldige geometrie bestaan en toont een expliciete waarschuwing; lokale EditorHistory groepeert de callback in één undo-stap, terwijl RuntimeHistory gewijzigde commando's afzonderlijk opslaat. Gerichte lifecycle-run 17/17 PASS, plus syntax- en diffcontroles; geen volledige Node-, browser- of Edge-run. Zie [L3.3c-verslag](WIE-TOOL-L3-3C-REPORT.md). Branch `codex/wie-tool-l3-3c-parallelogram-lifecycle`; nog niet gemerged. L3.4 is niet gestart.
 
 ## WIE-TOOL-L3.3b — Ellips op centrale lifecycle (branchstatus 2026-10-17)
 
