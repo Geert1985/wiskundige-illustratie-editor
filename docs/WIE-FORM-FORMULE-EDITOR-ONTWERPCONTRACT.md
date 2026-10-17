@@ -7,7 +7,7 @@
 
 ## 1. Expliciet productbesluit
 
-**WIE-FORM is een afzonderlijke, volwaardige Formule-editor/-werkruimte **binnen** de bestaande Wiskundige Illustratie Editor.** Geen tweede externe applicatie, los project of gekopieerde formule-engine. Dezelfde Formule-editor wordt vanuit verschillende contexten gestart, vergelijkbaar met de beoogde gedeelde wetenschappelijke rekenmachine:
+**WIE-FORM is een afzonderlijke, volwaardige Formule-editor/-werkruimte binnen de bestaande Wiskundige Illustratie Editor.** Geen tweede externe applicatie, los project of gekopieerde formule-engine. Dezelfde Formule-editor wordt vanuit verschillende contexten gestart, vergelijkbaar met de beoogde gedeelde wetenschappelijke rekenmachine:
 
 1. **Vanuit de Wiskundige Teksteditor:** nieuwe formule opstellen, bestaande formule openen/bewerken, resultaat of afleiding invoegen/terugschrijven.
 2. **Als zelfstandige WIE-werkruimte:** formules samenstellen en later uitgebreide vergelijkingen/afleidingen onderzoeken, zonder dat de gebruiker eerst tekst hoeft te maken.
