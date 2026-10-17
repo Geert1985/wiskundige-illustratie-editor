@@ -1,8 +1,14 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.39 (scopecorrectie: uitsluitend WIE-TXT-FORM in WIE; formule-/algebra-editor naar zelfstandige WAT-webapp, 2026-10-17)
+Version: 2.8.40 (TXT-FORM.0 read-only architectuuraudit; ontwerppoorten voor TXT-FORM.1, 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## Roadmap 2.8.40 — TXT-FORM.0 read-only architectuuraudit afgerond (2026-10-17)
+
+**Auditstatus:** read-only bron-/schema-/autorisatie-/testinventarisatie uitgevoerd op `main` commit `39893b8c2c95b5cd08de01b3a9aac27579471df6`. Zie [TXT-FORM.0 architectuuraudit v1.0.0](WIE-TXT-FORM-0-ARCHITECTUURAUDIT-v1.0.0.md). **Conclusie: CONDITIONAL GO voor uitwerken van het technische TXT-FORM.1-contract; NO-GO voor onmiddellijke productiecode.** De bestaande `dynamicValue`-binding en `math`-rendering bieden bruikbare basis, maar een nieuw dynamisch formulefragment vereist expliciete schema-, formulerol-, render-, dependency- en permissionkeuzes. Cirkel `πr²`/`2πr` is aanbevolen als eerste end-to-end slice; rechthoek `ab` volgt pas na bewezen bron-/constraintvoorwaarden. Ellipswaarden en `side:i` bestaan in de meetkern maar nog niet als dynamische tekstbron.
+
+**Poorten:** TXT-FORM.1-contract (G1–G6) → afzonderlijke gebruikers-GO → productie-implementatie en regressietests → handmatige acceptatie → gecontroleerde merge. Geen WIE-FORM/ALG of WAT-uitvoering in WIE. **Er zijn bij deze audit geen tests gedraaid en geen productiecode-/schemas gewijzigd.** Andere recente WIE-roadmapstatussen blijven ongewijzigd.
 
 ## Roadmap v2.8.39 — Scopecorrectie WIE-TXT-FORM versus WAT (2026-10-17)
 
