@@ -95,3 +95,19 @@ test('editor markup declares all 37 existing creation tools and keeps placeholde
   assert.equal(tools.find(entry => entry.id === 'construct:midpoint').id, 'construct:midpoint');
   assert.match(html, /class="tool-placeholder"/);
 });
+
+test('WIE-TOOL-L5.5 specialized tools retain their declared lifecycle and route adapter', () => {
+  const html = fs.readFileSync(path.join(__dirname, '../editor.html'), 'utf8');
+  const expected = new Map([
+    ['construct:intersection', ['single', 'construction']],
+    ['construct:pointOnObject', ['single', 'placement']],
+    ['construct:ellipseByFociAndPoint', ['single', 'placement']],
+    ['construct:parallelogramBySideAngle', ['single', 'placement']],
+    ['text', ['repeat', 'text']],
+  ]);
+  const entries = [...html.matchAll(/<button\b[^>]*\bdata-tool="([^"]+)"[^>]*>/g)]
+    .map(match => ({ id: match[1], lifecycle: match[0].match(/\bdata-lifecycle="([^"]+)"/)?.[1], adapter: match[0].match(/\bdata-interaction-adapter="([^"]+)"/)?.[1] }));
+  for (const [id, [lifecycle, adapter]] of expected) {
+    assert.deepEqual(entries.find(entry => entry.id === id), { id, lifecycle, adapter }, id);
+  }
+});
