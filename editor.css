@@ -1404,3 +1404,13 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 }
 
 .radial-tool-instructions:has(.intersection-source-choices){pointer-events:auto}
+
+/* UI-LAYERS-LABEL-1: compact label controls, including mixed layer state. */
+.layer-header .text-toggle,.view-row .text-toggle{flex:0 0 22px;width:22px;height:24px;padding:0;font-weight:700;color:#aabcc8;background:transparent;border-color:transparent}
+.view-row .text-toggle.active{color:var(--accent)}
+.view-row .text-toggle.mixed{color:var(--accent);text-decoration:underline dotted;text-underline-offset:3px}
+.view-row .text-toggle:not(:disabled):hover{background:#314754;border-color:#607582}
+.view-row .text-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.layer-header .view-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
+
+.layer-objects .text-toggle{height:22px}

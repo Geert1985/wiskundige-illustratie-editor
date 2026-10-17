@@ -486,3 +486,37 @@ test('M2c restricted view settings mutate only authorized session view',()=>{
 test('M2c restricted denied axis setting leaves document and view unchanged',()=>{
  const h=appRuntime(),f=require('./permission-fixtures.cjs').fixture(),{session,owner}=h.MI.RuntimeSession.create(f);h.app.dispose();h.doc.getElementById('canvas').querySelector=()=>null;h.app.runtime=session;h.app.engine=session.engine;h.app.commands=session;h.app.history=new h.MI.RuntimeHistory(h.app);h.app.selectedIds=[];h.app.init();const before=JSON.stringify(owner.inspect());h.app.setPresentationFlag('showGrid',true);assert.equal(JSON.stringify(owner.inspect()),before);assert.equal(session.engine.renderer.showGrid,false);
 });
+
+test('UI-LAYERS-LABEL-1 objects, mixed layers, history, membership and roundtrip',()=>{
+  const {app,engine,MI}=appRuntime();
+  engine.add({id:'q',type:'point',x:3,y:2,showLabel:false});
+  const layer=engine.createLayer('Long layer name');engine.assignLayer(['q'],layer.id);const base=engine.model.layers[0];
+  const before=plain(engine.toJSON()),selection=plain(app.selectedIds);
+  const click=(selector,dataset)=>app.viewClick({target:{closest:s=>s===selector?{dataset}:null}});
+  click('[data-toggle-label]',{toggleLabel:'p'});
+  assert.equal(engine.get('p').showLabel,false);assert.equal(engine.get('l').showLabel,true);
+  assert.equal(app.labelToggleState(base.members).pressed,'mixed');
+  click('[data-layer-label]',{layerLabel:base.id});
+  assert.ok(base.members.every(id=>engine.get(id).showLabel));assert.equal(engine.get('q').showLabel,false);
+  app.travelHistory();assert.equal(engine.get('p').showLabel,false);assert.equal(engine.get('l').showLabel,true);
+  app.travelHistory(true);assert.ok(base.members.every(id=>engine.get(id).showLabel));
+  click('[data-layer-label]',{layerLabel:base.id});assert.ok(base.members.every(id=>!engine.get(id).showLabel));
+  engine.assignLayer(['p'],layer.id);app.toggleLabels(engine.model.layers.find(l=>l.id===layer.id).members);
+  assert.equal(engine.get('p').showLabel,true);assert.equal(engine.get('q').showLabel,true);assert.equal(engine.get('l').showLabel,false);
+  assert.deepEqual(plain(app.selectedIds),selection);
+  assert.deepEqual(plain(new MI.Engine(engine.toJSON()).toJSON()),plain(engine.toJSON()));
+  for(const o of engine.model.objects){const original=before.objects.find(v=>v.id===o.id);for(const key of ['x','y','x1','y1','x2','y2','visible'])assert.equal(o[key],original[key]);}
+  app.renderViewList();assert.match(app.nodes.viewList.innerHTML,/data-toggle-label="p"[^>]*aria-pressed="true"/);
+});
+
+test('UI-LAYERS-LABEL-1 empty, locked and restricted batches have no partial effects',()=>{
+  const {app,engine,MI}=appRuntime();assert.equal(app.labelToggleState([]).enabled,false);
+  engine.update('l',{locked:true});const before=plain(engine.toJSON());
+  assert.equal(app.labelToggleState(['p','l']).enabled,false);app.toggleLabels(['p','l']);assert.deepEqual(plain(engine.toJSON()),before);
+  assert.match(app.labelToggleButton(['p','l'],'data-layer-label','layer'),/ disabled/);
+  assert.equal(app.labelToggleState(['missing']).enabled,false);
+  const options=require('./permission-fixtures.cjs').fixture();options.policy.initialObjectRules.A.propertyFields=['showLabel'];
+  const {session}=MI.RuntimeSession.create(options);app.commands=session;app.engine=session.engine;app.runtime=session;
+  assert.equal(app.labelToggleState(['A']).enabled,true);assert.equal(app.labelToggleState(['A','B']).enabled,false);
+  const saved=plain(session.engine.get('A'));app.toggleLabels(['A','B']);assert.deepEqual(plain(session.engine.get('A')),saved);
+});

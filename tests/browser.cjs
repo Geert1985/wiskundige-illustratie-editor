@@ -25,6 +25,7 @@ const server = http.createServer((req, res) => {
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}/editor.html`);
+    if (process.env.LAYER_LABELS_ONLY === '1') { const labels=await require('./browser-layer-labels.cjs')(page);assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'Edge',labels,pageErrors:errors}));return; }
     if (process.env.M6A_ONLY === '1') { const triangleCenters = await require('./browser-triangle-centers.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', triangleCenters, pageErrors: errors })); return; }
     if (process.env.M6B_ONLY === '1') { const triangleM6b = await require('./browser-triangle-m6b.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', triangleM6b, pageErrors: errors })); return; }
     if (process.env.GTRI1_ONLY === '1') { const gTri1TriangleFromPoints = await require('./browser-g-tri1-triangle-from-points.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', gTri1TriangleFromPoints, pageErrors: errors })); return; }

@@ -108,7 +108,7 @@
       for(const button of this.document.querySelectorAll('[data-object-lock], [data-object-visibility], [data-lock-selection], [data-axis-setting], [data-axis-system], [data-view]'))button.disabled=true;
       for(const control of this.document.querySelectorAll('[data-axis-setting], [data-view]')){const key=control.dataset.axisSetting || {axes:'showAxes',grid:'showGrid'}[control.dataset.view];if(key)control.disabled=!this.allowed('view.configure',{fields:[{path:key,value:!this.engine.renderer[key]}]});}
       for(const button of this.document.querySelectorAll('[data-select-object]'))button.disabled=!this.capabilities(button.dataset.selectObject).selectList;
-      for(const button of this.document.querySelectorAll('[data-toggle-label], [data-color-object]'))button.disabled=!this.capabilities(button.dataset.toggleLabel||button.dataset.colorObject).propertyFields?.includes(button.dataset.toggleLabel?'showLabel':this.engine.get(button.dataset.colorObject)?.type==='text'?'style.fill':'style.stroke');
+      for(const button of this.document.querySelectorAll('[data-toggle-label], [data-color-object]'))button.disabled=button.dataset.toggleLabel?!this.labelToggleState([button.dataset.toggleLabel]).enabled:!this.capabilities(button.dataset.colorObject).propertyFields?.includes(this.engine.get(button.dataset.colorObject)?.type==='text'?'style.fill':'style.stroke');
       for(const [selector,operation] of [['[data-delete-selected]','object.delete'],['[data-duplicate-selection]','object.duplicate']])for(const button of this.document.querySelectorAll(selector))button.disabled=!this.selectedIds.length || !this.allowed(operation,{ids:this.selectedIds});
     }
     updateObject(id,patch) {
@@ -1256,8 +1256,26 @@
       this.nodes.colorDialog.showModal(); this.colorInput.focus();
     }
     setColor(id, color) { const object = this.engine.get(id); if (!object || object.locked) return; this.cancel(); if (!this.editBefore) this.editBefore = this.history.capture(); const patch=this.colorProperty ? {style:{[this.colorProperty]:color}} : this.services.color.patch(object,color);if(patch.style)patch.style=Object.fromEntries(Object.entries(patch.style).filter(([k,v])=>MI.PermissionFields.properties.includes('style.'+k) && JSON.stringify(v)!==JSON.stringify(object.style[k])));if(this.runtime){const paths=this.colorProperty?[this.colorProperty]:object.type==='text'?['fill','stroke']:object.type==='point'?['fill','stroke']:['stroke'];const style=(this.colorProperty?{style:{[this.colorProperty]:color}}:this.services.color.patch(object,color)).style;const fields=paths.map(k=>({path:'style.'+k,value:style[k]}));const payload={ids:[id],fields};if(!this.colorTransaction)this.colorTransaction=this.runtime.begin(this.command('object.setProperties',payload));this.runtime.preview(this.colorTransaction,payload);this.colorPayload=payload;}else this.updateObject(id,patch); this.invalidate(); }
+    labelToggleState(ids) {
+      const objects=ids.map(id=>this.engine.get(id)).filter(Boolean);
+      const count=objects.filter(o=>o.showLabel).length;
+      const value=count!==objects.length;
+      const payload={ids:objects.map(o=>o.id),fields:[{path:'showLabel',value}]};
+      const enabled=objects.length>0 && objects.length===ids.length && objects.every(o=>!o.locked && this.capabilities(o.id).propertyFields?.includes('showLabel')) && this.allowed('object.setProperties',payload);
+      return {payload,enabled,pressed:count===0?'false':count===objects.length?'true':'mixed'};
+    }
+    labelToggleButton(ids, attribute, id) {
+      const state=this.labelToggleState(ids),layer=attribute==='data-layer-label',label=layer?'Labels in laag tonen/verbergen':'Objectlabel tonen/verbergen';
+      const title=state.enabled?label:layer?'Laaglabels niet wijzigbaar: lege laag of onvoldoende rechten voor alle objecten':'Objectlabel niet wijzigbaar';
+      return '<button type="button" class="eye-btn text-btn text-toggle'+(state.pressed==='true'?' active':state.pressed==='mixed'?' mixed':'')+'" '+attribute+'="'+MI.escapeXml(id)+'" title="'+title+'" aria-label="'+label+'" aria-pressed="'+state.pressed+'"'+(state.enabled?'':' disabled')+'>T</button>';
+    }
+    toggleLabels(ids) {
+      const state=this.labelToggleState(ids);
+      if(state.enabled)this.changeDocument(()=>this.execute('object.setProperties',state.payload));
+    }
     viewClick(event) {
       const target = event.target, find = selector => target.closest(selector); let button;
+      if((button=find('[data-layer-label]'))){const layer=this.engine.model.layers.find(l=>l.id===button.dataset.layerLabel);if(layer)this.toggleLabels(layer.members);return;}
       if((button=find('[data-layer-add]'))){this.addLayer(this.nodes.viewList.querySelector('[data-layer-new-name]').value);return;}
       if((button=find('[data-layer-visibility]'))){const l=this.engine.model.layers.find(l=>l.id===button.dataset.layerVisibility);this.changeDocument(()=>this.execute('layer.setVisibility',{id:l.id,value:!l.visible}));return;}
       if((button=find('[data-layer-forward]'))){this.moveLayer(button.dataset.layerForward,1);return;}
@@ -1270,7 +1288,7 @@
       if ((button = find('[data-select-group]'))) {this.selectObject(button.dataset.selectGroup,event.shiftKey||event.ctrlKey||event.metaKey);return;}
       if ((button = find("[data-select-object]"))) { this.selectObject(button.dataset.selectObject,event.shiftKey || event.ctrlKey || event.metaKey); return; }
       if ((button = find("[data-object-visibility]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.objectVisibility); this.execute("object.setVisibility",{ids:[object.id],value:object.visible===false}); }); return; }
-      if ((button = find("[data-toggle-label]"))) { this.changeDocument(() => { const object = this.engine.get(button.dataset.toggleLabel); if(!object.locked)this.updateObject(object.id, { showLabel: !object.showLabel }); }); return; }
+      if ((button = find("[data-toggle-label]"))) { this.toggleLabels([button.dataset.toggleLabel]); return; }
       if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.setPresentationFlag(key,!this.engine.renderer[key]); } }
     }
     viewObject(id) {if(this.runtime && this.colorTransaction){const p=this.runtime.previewObject(this.colorTransaction,id);if(p)return p;}if(this.runtime && this.interaction?.transaction && !this.interaction.rejected){const preview=this.runtime.previewObject(this.interaction.transaction,id);if(preview)return preview;} const object = this.engine.get(id), state = this.interaction; return object && !this.runtime && state && (state.mode === "endpoint" || state.mode==='vertex') && state.id === id && state.resolved ? { ...object, ...state.resolved.patch } : object; }
@@ -1321,7 +1339,7 @@
       const rows=[];
       const layers=this.engine.model.layers||[],esc=MI.escapeXml;
       const objectRow=object=>{
-        return '<div class="view-row'+(this.selectedIds.includes(object.id)?' view-row-selected':'')+'" '+(this.runtime?'':'draggable="true" data-drag-object="'+esc(object.id)+'"')+'><button class="view-name view-select-btn" type="button" data-select-object="'+MI.escapeXml(object.id)+'">'+MI.escapeXml(objectName(object))+'<span class="view-type">'+MI.escapeXml(object.id)+'</span></button><button class="eye-btn" title="Object tonen/verbergen" aria-label="Object tonen/verbergen" type="button" data-object-visibility="'+MI.escapeXml(object.id)+'">'+eyeIcon(object.visible!==false)+'</button></div>';
+        return '<div class="view-row'+(this.selectedIds.includes(object.id)?' view-row-selected':'')+'" '+(this.runtime?'':'draggable="true" data-drag-object="'+esc(object.id)+'"')+'><button class="view-name view-select-btn" type="button" data-select-object="'+MI.escapeXml(object.id)+'">'+MI.escapeXml(objectName(object))+'<span class="view-type">'+MI.escapeXml(object.id)+'</span></button><button class="eye-btn" title="Object tonen/verbergen" aria-label="Object tonen/verbergen" type="button" data-object-visibility="'+MI.escapeXml(object.id)+'">'+eyeIcon(object.visible!==false)+'</button>'+this.labelToggleButton([object.id],'data-toggle-label',object.id)+'</div>';
       };
       const groupsFor=layerId=>{for(const g of this.engine.model.groups||[])if(this.groupRoot(g.id)===g.id && (!layerId||MI.DocumentLayers.index(layers).owner.get(this.groupLeaves(g.id)[0])?.id===layerId)){const leaves=this.groupLeaves(g.id);rows.push('<div class="view-row'+(leaves.every(id=>this.selectedIds.includes(id))?' view-row-selected':'')+'"><button class="view-name view-select-btn" type="button" data-select-group="'+esc(g.id)+'"'+(this.runtime&&!leaves.every(id=>this.capabilities(id).selectList)?' disabled':'')+'>'+esc(g.name)+'<span class="view-type">'+leaves.length+' objecten &middot; '+esc(g.id)+'</span></button></div>');}};
 
@@ -1329,13 +1347,14 @@
 
         const byId=new Map(this.engine.model.objects.map(o=>[o.id,o]));
         for(const l of layers.slice().reverse()){
-          const id=esc(l.id),i=layers.findIndex(layer=>layer.id===l.id);rows.push('<section data-layer-row="'+id+'" class="layer-section'+(!l.visible?' layer-hidden':'')+'"><div class="view-row layer-header">'+(this.runtime?'<strong class="view-name">'+esc(l.name)+'</strong>':'<input type="text" data-layer-name="'+id+'" aria-label="Laagnaam" maxlength="200" value="'+esc(l.name)+'"><button class="eye-btn" type="button" data-layer-visibility="'+id+'" title="Laag tonen/verbergen" aria-label="Laag tonen/verbergen" aria-pressed="'+l.visible+'">'+eyeIcon(l.visible)+'</button><button class="eye-btn" type="button" data-layer-forward="'+id+'" title="Laag naar voren" aria-label="Laag naar voren"'+(i===layers.length-1?' disabled':'')+'>&uarr;</button><button class="eye-btn" type="button" data-layer-backward="'+id+'" title="Laag naar achteren" aria-label="Laag naar achteren"'+(i===0?' disabled':'')+'>&darr;</button><button class="eye-btn" type="button" data-layer-delete="'+id+'" title="Laag verwijderen; objecten behouden" aria-label="Laag verwijderen; objecten behouden"'+(layers.length===1?' disabled':'')+'>&times;</button>')+'</div>');
+          const id=esc(l.id),i=layers.findIndex(layer=>layer.id===l.id);rows.push('<section data-layer-row="'+id+'" class="layer-section'+(!l.visible?' layer-hidden':'')+'"><div class="view-row layer-header">'+(this.runtime?'<strong class="view-name">'+esc(l.name)+'</strong>':'<input type="text" data-layer-name="'+id+'" aria-label="Laagnaam" maxlength="200" value="'+esc(l.name)+'"><button class="eye-btn" type="button" data-layer-visibility="'+id+'" title="Laag tonen/verbergen" aria-label="Laag tonen/verbergen" aria-pressed="'+l.visible+'">'+eyeIcon(l.visible)+'</button><button class="eye-btn" type="button" data-layer-forward="'+id+'" title="Laag naar voren" aria-label="Laag naar voren"'+(i===layers.length-1?' disabled':'')+'>&uarr;</button><button class="eye-btn" type="button" data-layer-backward="'+id+'" title="Laag naar achteren" aria-label="Laag naar achteren"'+(i===0?' disabled':'')+'>&darr;</button><button class="eye-btn" type="button" data-layer-delete="'+id+'" title="Laag verwijderen; objecten behouden" aria-label="Laag verwijderen; objecten behouden"'+(layers.length===1?' disabled':'')+'>&times;</button>')+this.labelToggleButton(l.members,'data-layer-label',l.id)+'</div>');
           rows.push('<div class="layer-objects">');groupsFor(l.id);for(const objectId of l.members.slice().reverse()){const o=byId.get(objectId);if(o)rows.push(objectRow(o));}rows.push('</div></section>');
         }
       }else{rows.push('<section data-unlayered><div class="unlayered-title">Objecten zonder lagen</div>');groupsFor(null);for(const object of this.engine.model.objects)rows.push(objectRow(object));rows.push('</section>');}
       if(!this.engine.model.objects.length)rows.push('<p class="help-text" data-empty-objects>Nog geen objecten. Kies een gereedschap om te tekenen.</p>');
       if(!this.runtime)rows.push('<div class="view-divider"></div><div class="view-row layer-add"><input type="text" data-layer-new-name aria-label="Naam nieuwe laag" maxlength="200" value="Nieuwe laag"><button type="button" class="secondary" data-layer-add aria-label="Laag toevoegen" title="Laag toevoegen">+</button></div>');
-      const host=this.document.getElementById('sidebarLayersPanel'),previousScroll=host?.scrollTop||0;this.nodes.viewList.innerHTML = rows.join("");
+      const host=this.document.getElementById('sidebarLayersPanel'),previousScroll=host?.scrollTop||0,focused=this.document.activeElement,focusAttribute=focused?.dataset?.toggleLabel?'data-toggle-label':focused?.dataset?.layerLabel?'data-layer-label':null,focusId=focusAttribute?focused.getAttribute(focusAttribute):null;this.nodes.viewList.innerHTML = rows.join("");
+      if(focusAttribute)Array.from(this.nodes.viewList.querySelectorAll('['+focusAttribute+']')).find(node=>node.getAttribute(focusAttribute)===focusId)?.focus?.({preventScroll:true});
       if(host){host.scrollTop=previousScroll;const key=JSON.stringify(this.selectedIds);if(key!==this.layerScrollSelectionKey){this.layerScrollSelectionKey=key;const selected=Array.from(this.nodes.viewList.querySelectorAll('[data-select-object]')).find(node=>node.dataset.selectObject===this.selectedId);if(selected){const row=selected.getBoundingClientRect(),bounds=host.getBoundingClientRect();if(row.bottom>bounds.bottom)host.scrollTop+=row.bottom-bounds.bottom+4;else if(row.top<bounds.top)host.scrollTop-=bounds.top-row.top+4;}}}
     }
     dynamicTextInspector(object){
