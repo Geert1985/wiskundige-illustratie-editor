@@ -1414,3 +1414,4 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 .layer-header .view-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
 
 .layer-objects .text-toggle{height:22px}
+.view-name-edit{flex:1 1 0;min-width:0;width:0;padding:3px 5px;border:1px solid var(--accent);border-radius:4px;background:#101a20;color:#fff;font:inherit;outline:2px solid #b6974d55}
