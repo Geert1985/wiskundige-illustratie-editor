@@ -1,18 +1,26 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.41 (WIE-TOOL-L3.1 branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
+Version: 2.8.42 (WIE-TOOL-L3.2 branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
 
-## WIE-TOOL-L3.1 — Vrije tekengereedschappen op centrale lifecycle (branchstatus 2026-10-17)
+## WIE-TOOL-L3.2 — Generieke gekoppelde constructies op centrale lifecycle (branchstatus 2026-10-17)
+
+Vanaf `origin/main` `556ba7b` (met L1, L2 en L3.1; L3.1 via PR #35) gebruikt de gewone canvasroute in `constructionClick()` voor alle generieke gekoppelde constructies `completeToolInteraction()` na een aanvaarde `construction.create`. Gemigreerd in deze gedeelde route: Middenpunt (bestaande L2-regressie), Loodlijn, Middelloodlijn, Bissectrice, Rechte door twee punten, Evenwijdige, Raaklijn, Cirkel met middelpunt en punt, Driehoek uit punten, Zwaartepunt, Omgeschreven middelpunt, Hoogtepunt, Ingeschreven middelpunt, Ingeschreven cirkel, Eulerrechte, Negenpuntscirkel, Hoek uit punten, Hoek uit richtingen, Veelhoekgebied, Cirkelsector en Cirkelsegment.
+
+De generieke route bewaart de selectie van alle geretourneerde objecten. De centrale completion zette voorheen via `selectedId` die meervoudige selectie terug tot één ID; de volgorde is gecorrigeerd en Raaklijn (twee uitkomsten) dekt dit regressiepad. Commandofouten geven geen completion; bronnen blijven herstelbaar en pointercapture wordt vrijgegeven. Snijpunt, Punt op object, Ellips, Parallellogram, directe contextacties, tekst en vrije tekengereedschappen houden hun eigen bestaande routes.
+
+Gerichte verificatie: geselecteerde lifecycle-tests plus `node --check editor.js`, `node --check tests/lifecycle.test.cjs` en `git diff --check`; geen volledige Node/browser-/Edge-run. Zie [WIE-TOOL-L3.2-verslag](WIE-TOOL-L3-2-REPORT.md). Branch `codex/wie-tool-l3-2-generic-constructions`; implementatie en mergebeoordeling zijn branchstatus.
+
+## WIE-TOOL-L3.1 — Vrije tekengereedschappen op centrale lifecycle
 
 Vanaf actuele `origin/main` `dcb631e` (L1 via PR #33 en L2 via PR #34) zijn de tien overige vrije tools `point`, `straight`, `ray`, `vector`, `circle`, `triangle`, `polygon`, `angle`, `rightAngle` en `dimension` gemigreerd naar de bestaande `completeToolInteraction()`. `line` blijft de L2-regressieroute. De tien tools behouden hun `repeat`-policy; `finishPolygon()` voltooit pas na de definitieve geometrievalidatie en succesvolle `object.create`. Commandofouten behouden de actieve tool, en bij een mislukte polygoncreatie blijven vertices herstelbaar terwijl pointercapture wordt vrijgegeven. Lengtemaat houdt het bestaande `dimension`-model en de zichtbare berekende lengte.
 
-Gerichte verificatie: 16/16 geselecteerde lifecycle-tests PASS, plus syntax- en diffcontroles; geen volledige Node-, browser- of Edge-run uitgevoerd. Zie [WIE-TOOL-L3.1-verslag](WIE-TOOL-L3-1-REPORT.md). Tekst, constructies, Punt op object, Ellips, Parallellogram, contextacties en Esc-prioriteit blijven buiten deze fase. Dit is branchstatus; nog niet handmatig geaccepteerd, als PR ingediend of gemerged.
+Gerichte verificatie destijds: 16/16 geselecteerde lifecycle-tests PASS plus syntax- en diffcontroles; geen volledige Node-, browser- of Edge-run uitgevoerd. Zie [WIE-TOOL-L3.1-verslag](WIE-TOOL-L3-1-REPORT.md). L3.1 is later via PR #35 naar `main` gemerged. Tekst, gekoppelde constructies, Punt op object, Ellips, Parallellogram, contextacties en Esc-prioriteit vielen buiten L3.1.
 
 ## WIE-TOOL-L2 — Centrale gereedschapslevenscyclus (branchstatus 2026-10-17)
 
-L2 is uitgevoerd op afzonderlijke branch `codex/wie-tool-l2-central-lifecycle`, gebaseerd op de actuele `origin/main` na L1-merge. Een expliciet beleid registreert alle 37 zichtbare geïmplementeerde gereedschappen: 12 herhaalbaar en 25 eenmalig. De succesbewuste `completeToolInteraction()` is toegevoegd en uitsluitend vrije lijncreatie en canvas-Middenpunt zijn ernaar gemigreerd; andere routes, waaronder Snijpunt en objectafhankelijke contextacties, behouden hun bestaande afhandeling. Gerichte lifecycle-suite: 112/112 PASS; `node --check editor.js` en `git diff --check` PASS. Geen volledige Node-suite of browser-/Edge-run uitgevoerd. Zie [L2-verslag](WIE-TOOL-L2-REPORT.md), [L1-verslag](WIE-TOOL-L1-REPORT.md) en [levenscycluscontract v1.0.0](WIE-GEREEDSCHAPSLEVENSCYCLUS-Contract-v1.0.0.md). Branch is naar GitHub gepusht; nog niet handmatig geaccepteerd, als PR ingediend of gemerged. L3 blijft buiten scope.
+L2 registreert alle 37 zichtbare geïmplementeerde gereedschappen: 12 `repeat` en 25 `single`. `completeToolInteraction()` migreerde toen alleen vrije lijncreatie en canvas-Middenpunt; Snijpunt en contextacties behielden eigen afhandeling. Gerichte lifecycle-suite: 112/112 PASS; syntax- en diffcontroles PASS. L2 is via PR #34 naar `main` geïntegreerd. Zie [L2-verslag](WIE-TOOL-L2-REPORT.md), [L1-verslag](WIE-TOOL-L1-REPORT.md) en [levenscycluscontract v1.0.0](WIE-GEREEDSCHAPSLEVENSCYCLUS-Contract-v1.0.0.md).
 
 ## Roadmap 2.8.40 — TXT-FORM.0 read-only architectuuraudit afgerond (2026-10-17)
 
