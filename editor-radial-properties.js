@@ -531,7 +531,7 @@
       if(!this.singleSourceContext(ctx))return [];
       const source=ctx.objects[0],app=this.app;
       const entries=app.toolCatalog.list('sidebar').flatMap(category=>category.entries)
-        .filter(entry=>entry.status==='implemented'&&entry.id.startsWith('construct:'))
+        .filter(entry=>entry.status==='implemented'&&entry.id.startsWith('construct:')&&entry.id!=='construct:intersection')
         .filter(entry=>app.toolAllowed(entry.id)&&
           (!app.runtime||app.capabilities(source.id).sourceTools.includes(entry.id)));
       const out=[];
