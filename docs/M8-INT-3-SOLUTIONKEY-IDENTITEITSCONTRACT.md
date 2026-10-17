@@ -4,7 +4,7 @@
 **Datum:** 17 oktober 2026  
 **Status:** technisch identiteitsvoorstel **ter afzonderlijke gebruikersgoedkeuring** — **geen productiecode-GO**  
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Normatieve basis:** [M8-INT-hoofdcontract v1.1.3](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md); [goedgekeurd M8-INT.3-hoofdontwerpcontract v1.0.1](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md); M8-INT.0/.1 geïntegreerd via PR #27/#28.  
+**Normatieve basis:** [M8-INT-hoofdcontract v1.1.4](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md); [goedgekeurd M8-INT.3-hoofdontwerpcontract v1.0.1](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md); M8-INT.0/.1 geïntegreerd via PR #27/#28.  
 **Afbakening:** dit document werkt de **open identiteitsgate M8-INT.3-A** uit. Solverimplementatie, gereedschapintegratie, schemawijziging, commit van productiecode en merge behoren nog **niet** tot deze opdracht.
 
 ---
