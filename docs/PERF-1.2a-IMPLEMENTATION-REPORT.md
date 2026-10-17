@@ -4,7 +4,7 @@
 - Branch: `codex/perf-1-2a-render-invalidation`
 - Basis: `939af5f86a60d6894a3e109a5c2396de31e315be` (PERF-1.1 gemerged in `main`)
 - Uitvoering: 17 oktober 2026
-- Commit: in te vullen na commit
+- Implementatiecommit: `31f184a` (`perf: skip unchanged panels during navigation`)
 
 ## Resultaat
 
