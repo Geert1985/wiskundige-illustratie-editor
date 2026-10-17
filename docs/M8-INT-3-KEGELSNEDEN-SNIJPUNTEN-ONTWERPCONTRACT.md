@@ -1,12 +1,12 @@
 # WIE — M8-INT.3: Snijpunten tussen twee kegelsneden — ontwerp- en implementatiecontract
 
-**Documentversie:** 1.0.1  
+**Documentversie:** 1.0.2  
 **Datum:** 17 oktober 2026  
-**Status:** **hoofdontwerp goedgekeurd door gebruiker op 17 oktober 2026**; de afzonderlijke identiteitsbijlage M8-INT.3-A v1.0.0 is opgesteld **ter afzonderlijke goedkeuring** — **geen productiecode- of merge-GO**  
+**Status:** **hoofdontwerp goedgekeurd door gebruiker op 17 oktober 2026**; gebruikerskeuze **optie B — dynamische trajectvolging** bevestigd. De bijlage [M8-INT.3-A v2.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) beschrijft dit als een nieuw ontwerp met verplichte proof-gate; **geen productiecode- of merge-GO**.  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor  
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Normatieve basis:** [M8-INT-hoofdcontract v1.1.4](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.1-contract v1.0.1](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md), [Development Roadmap](DEVELOPMENT-ROADMAP.md), M8a-ellipsen, M8-INT.0 en M8-INT.1 geïntegreerd op `main` via PR #27 en PR #28.  
-**Besluitgrens:** het hoofdontwerp is door de gebruiker goedgekeurd. De [M8-INT.3-A `solutionKey`-identiteitsbijlage v1.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) is nu als **afzonderlijk ontwerpvoorstel** opgesteld. Haar conservatieve plaatsidentiteit, beperkingen bij grote bronbeweging en tangent-/ambiguïteitspolicy zijn nog **niet** goedgekeurd of bewezen door uitvoerbare tests. Productiecode, schema's, bestaande tests en merge naar `main` blijven ongewijzigd totdat daarvoor apart GO is gegeven.
+**Normatieve basis:** [M8-INT-hoofdcontract v1.1.5](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.1-contract v1.0.1](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md), [Development Roadmap](DEVELOPMENT-ROADMAP.md), M8a-ellipsen, M8-INT.0 en M8-INT.1 geïntegreerd op `main` via PR #27 en PR #28.  
+**Besluitgrens:** het hoofdontwerp is goedgekeurd, en de gebruiker heeft expliciet **optie B** gekozen in plaats van de eerder voorgestelde vaste-sectoroptie A. De [bijlage M8-INT.3-A v2.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) beschrijft een immutable `solutionKey` met **persistente, transactioneel voortgezette root-checkpoints**. Deze technische specificatie is nog een ontwerp, niet wiskundig/operationeel bewezen. De afzonderlijke proof-spike en implementatie-GO blijven vereist; geen productiecode-, schema-, test- of mergewijzigingen op grond van deze documentatie alleen.
 
 ---
 
@@ -138,19 +138,20 @@ Een gecertificeerde alternatieve strategie (resultant + gecertificeerde isolatie
 6. Na beweging naar een ondubbelzinnige configuratie mag een ongeldige key **alleen** herstelbaar geldig worden op basis van zijn contractuele identiteit. Niets mag uit een niet-persistent muistraject of eerdere schermcoördinaten worden afgeleid.
 7. Source rebind, duplicatie, verwijderen/herstellen via Undo, verborgen/locked objecten, lagen en restricted export behouden hetzelfde identiteitsschema.
 
-### 5.2 Ontwerprichting voor de nog te schrijven bijlage
+### 5.2 Gekozen productrichting: optie B — persistente trajectcontinuatie
 
-Onderzoek een **immutable, gevalideerde verankering** aan de initiële analytische parameter van de eerste bron, aangevuld met onderscheidende tak-/transversaliteitinformatie en een **deterministische, conservatieve matchingregel**. Dit is een **kandidaatontwerp**, **geen reeds goedgekeurde of bewezen solutionKey**.
+**Optie B is expliciet door de gebruiker gekozen.** Een immutable `solutionKey` identificeert een oorspronkelijk aangemaakt punt; een **mutable, persistente continuatiegetuige** bewaart de laatste geautoriseerde, betrouwbaar gevolgde tak en het bijhorende bronframe. De identiteit wordt tijdens **het volledige werkelijke bronwijzigingspad** gevolgd via adaptieve, gevalideerde tussenstappen, niet door actuele roots van 0 tot 3 te hersorteren.
 
-Onderzoek minstens:
-- een stabiel `anchorParameter` op de **canonieke eerste bron** plus zo nodig gestructureerde signatuur/isolatiegegevens;
-- matching van het **volledige stel bestaande sleutels** tegen alle actuele wortels als één gemeenschappelijk probleem, niet onafhankelijk 'dichtstbijzijnde punt per object', en geen afhankelijkheid van modelobjectvolgorde;
-- noodzakelijke overlap-/winding-/oriëntatie-/discriminantinformatie en de beperking daarvan wanneer bronnen roteren of rootbanen rond de contour bewegen;
-- eenduidige uitkomst bij import in een willekeurige toestand **zonder** opgeslagen bewegingshistoriek;
-- herstel/afwijzing bij 4→2→4, 4→3→4, 4→1→4, passage over \(\theta=0\) en bij herhaald heen-en-weer bewegen;
-- vergelijking met een exact/algebraïsch alternatief voor stateless sleutelmatching en de aantoonbare grenzen van beide benaderingen.
+- **Dynamiek:** ook grote, vloeiende rotaties of vervormingen blijven de originele IDs volgen zolang het pad uit eenvoudige, geïsoleerde, numeriek verifieerbare wortels bestaat. Geen willekeurige vaste hoeksectorgrens.
+- **Pad-afhankelijkheid:** identieke eindcurven kunnen na verschillende afgelegde bronpaden tot verschillende geldige root–ID-bindingen leiden. Een checkpoint moet daarom **deel van de documentstaat** zijn, met bronframe en per-key getuigen.
+- **Modeltransactie:** update van brongeometrie, progressie van alle betrokken familiegetuigen, topologische resolver en history vinden atomair plaats. Preview-stappen zijn niet afzonderlijk persistent, maar hun geldige padgetuige kan bij de ene finale commit worden vastgelegd.
+- **Wiskundige basis:** volledige isolatie van alle huidige roots, lokaal predictor–corrector volgens impliciete functiestelling, adaptieve rootmatching als injectieve familietoewijzing en expliciete numerieke fout-/budgetgrenzen.
+- **Singulariteiten:** bij tangentie, verdwenen reële roots, samenvallende contouren of oncontroleerbare sprongen is een vervolg niet altijd uniek. In zulke gevallen worden betrokken objecten tijdelijk herstelbaar ongeldig, niet stilzwijgend hernummerd.
+- **Opslag/replay:** opgeslagen laatste checkpoints volstaan voor het **huidige** document en voortzetting vanuit die toestand; afzonderlijk commandreplay vereist juist de gedocumenteerde padstappen of hun gevalideerde resultaatgetuigen.
 
-**Bewijsverplichting:** lever expliciete tegenvoorbeelden én positieve invarianten. Als globale stateless tracking bij een bepaalde geometrische configuratie **niet identificeerbaar** is, moet de bijlage die grens aantonen en een duidelijke, door de gebruiker goed te keuren **conservatieve invalidatiepolicy** specificeren. Claim geen onvoorwaardelijke globale branchcontinuïteit zonder bewijs; forceer bij onzekerheid geen willekeurige oplossing.
+**Bewijsverplichting vóór implementatie:** een onafhankelijke proof-spike moet onder meer een continue rotatie van 180° met vier afzonderlijke snijpunten doorrekenen. Ondanks dezelfde eindcontour moeten de roots hun **opgebouwde trajectidentiteit** behouden, ook na save/load. Bovendien moeten alle import-/rebind-/permission-/Undo-paden controleerbaar zijn.
+
+Zie het volledige, afzonderlijke [M8-INT.3-A identiteitscontract v2.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md). De gekozen productrichting is normatief; de concrete algorithmische certificaten, checkpointvelden en schemawijzigingen zijn nog niet uitvoeringsgoedgekeurd.
 
 ### 5.3 Afzonderlijke goedkeuringsgate: M8-INT.3-A
 
@@ -160,19 +161,19 @@ Maak vóór productie-implementatie het document:
 
 Dit document moet minstens bevatten:
 - exacte persistente vorm/versie van `solutionKey`, bronroloriëntatie, validatie en normalisatie;
-- toetsbare deterministische sleuteltoewijzing bij creatie van 1–4 punten;
-- getypeerd algoritme voor re-evaluatie **zonder opgeslagen dynamische cache**;
+- toetsbare immutable sleuteltoewijzing bij creatie van 1–4 punten én persistente voortzettingscheckpoints;
+- getypeerd algoritme met **persistente, transactionele continuatiegetuigen** en zonder verborgen sessiecache;
 - voorschriften voor raakpunt, verdwijnende sleutel, terugkerende sleutel, nahechte wortels, 4→2→4, 4→3→4 en 0/2π-overgang;
 - gedrag bij bronrebind/source swap, import/export, duplicates, undo/redo, transitive dependencies en permissions;
 - bewijs/tegenvoorbeelden en onafhankelijke fixtures die aantonen dat sleutelverwisseling niet kan optreden in de ondersteunde gevallen;
 - expliciete restbeperkingen en een acceptatiebesluit voor onoplosbare ambiguïteit;
 - de bijbehorende exacte schema-featuregate en command/engine-lifecycle.
 
-**M8-INT.3-A is verplicht en vereist afzonderlijke inhoudelijke gebruikersgoedkeuring vóór M8-INT.3-B/C.** Dit fasecontract autoriseert Codex dus niet alvast een `branch:0..3`-oplossing te bouwen.
+**M8-INT.3-A is verplicht.** De productkeuze voor dynamische trajectvolging is goedgekeurd, maar de [technische identiteitsbijlage v2.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) moet via een onafhankelijke proof-spike en een apart beslismoment worden gevalideerd voordat M8-INT.3-B/C mag starten. Codex mag geen `branch:0..3`-oplossing als vervanging bouwen.
 
 ## 6. Dynamische afhankelijkheden, transacties en herstel
 
-- Bewaar iedere snijpuntconstructie als afzonderlijk afhankelijk `point`-object met gespecialiseerd `construction.kind`, twee bronrefs en gevalideerde `solutionKey`.
+- Bewaar iedere snijpuntconstructie als afzonderlijk afhankelijk `point`-object met gespecialiseerd `construction.kind`, twee bronrefs en immutable `solutionKey`; bewaar daarnaast een **persistente, door bronmutaties geüpdatete continuatiefamilie** met checkpoints en correct geautoriseerd bronframe.
 - De bestaande topologische `ConstructionService.resolve/evaluate` blijft de enige bron voor herberekende afgeleide coördinaten en `constructionValid/reasonCode`.
 - Bronupdate, rotatie, vrije/brandpuntgestuurde ellipsbeweging, tijdelijke ellipsdegeneratie en recovery moeten afhankelijke puntobjecten en hun kinderen correct meenemen.
 - `COINCIDENT_CONICS` betekent nul *geïsoleerde* nieuwe punten; bestaande sleutelobjecten kunnen tijdelijk ongeldig worden en later herstellen. Dit is geen vernietiging van hun recepten.
@@ -186,9 +187,9 @@ Dit document moet minstens bevatten:
 
 ### 7.1 Opslagcontract
 
-De actuele `main` gebruikt `constructionSchema:10` zodra minstens één `lineEllipseIntersection` in het document voorkomt. Nieuwe recepten met `solutionKey` moeten een **nieuwe expliciete featuregate** krijgen. **Voorstel** `constructionSchema:11` voor documenten met ten minste één `circleEllipseIntersection` of `ellipseEllipseIntersection`.
+De actuele `main` gebruikt `constructionSchema:10` zodra minstens één `lineEllipseIntersection` in het document voorkomt. Nieuwe recepten met `solutionKey` **en een nieuw persistent continuatieregister** moeten een expliciete gezamenlijke reader-/writerfeaturegate krijgen. **Voorstel** `constructionSchema:11` voor documenten met ten minste één `circleEllipseIntersection` of `ellipseEllipseIntersection`.
 
-Dit voorstel is **niet gereserveerd of definitief goedgekeurd**; de preflight en de M8-INT.3-A-bijlage leggen het exacte benodigde schema vast. Onderlinge combinatie van 10/11 én legacyrecepten moet aantoonbaar correct werken.
+Dit voorstel is **niet gereserveerd of definitief goedgekeurd**; de preflight en M8-INT.3-A v2.0.0 onderzoeken daarnaast `intersectionContinuationsSchema:1` en of de top-level documentversie een verhoging vereist. Nieuwe keys én continuatiedata moeten samen atomair valideerbaar zijn. Onderlinge combinatie van 10/11 én legacyrecepten moet aantoonbaar correct werken.
 
 Voorwaarden:
 - Het gekozen nieuwe schema ondersteunt daarnaast alle eerdere geldige `constructionSchema:1..10`-constructies, inclusief `matchAB`, bestaande lijn–ellips-branches, gekoppelde ellipsen, regio's en asreferenties.
@@ -277,7 +278,7 @@ Codex rapporteert het exacte aantal tests, mislukkingen, skips, wijzigingen aan 
 
 ## 12. Nog openstaande besluiten
 
-1. **Verplicht vóór implementatie:** exacte, bewezen `solutionKey`-representatie en bijbehorende matching-/ambiguïteitspolicy in het afzonderlijke M8-INT.3-A-identiteitscontract.
+1. **Verplicht vóór implementatie:** de exacte, bewezen `solutionKey`- en **persistente trajectcheckpointrepresentatie** plus matching-/ambiguïteitspolicy in M8-INT.3-A v2.0.0. De productkeuze voor optie B is al vastgelegd; preflight/proof-gates en afzonderlijke code-GO blijven vereist.
 2. Exacte nieuwe constructionSchema-gate (voorstel 11) en strikt export-/import-/replaygedrag na actuele preflight.
 3. Concreet quartic-isolatiealgoritme en bewijs van volledige enumeratie/tangentiedetectie onder de numerieke foutbegroting.
 4. Definitieve opsplitsing van cirkel–ellips en ellips–ellips in Codex-branches/commits, met behoud van de huidige universele Snijpunt-architectuur.
@@ -286,4 +287,4 @@ Codex rapporteert het exacte aantal tests, mislukkingen, skips, wijzigingen aan 
 
 ---
 
-**Einde M8-INT.3-hoofdcontract v1.0.1 — inhoudelijk goedgekeurd; identiteitsbijlage M8-INT.3-A ter afzonderlijke goedkeuring; geen implementatie-GO.**
+**Einde M8-INT.3-hoofdcontract v1.0.2 — optie B gekozen; M8-INT.3-A v2.0.0 uitgewerkt voor proof-gate; geen implementatie-GO.**
