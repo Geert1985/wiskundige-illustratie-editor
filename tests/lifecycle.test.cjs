@@ -727,3 +727,48 @@ test('WIE-TOOL-L2 Snijpunt and context-complete remain outside central completio
  h.app.setTool('construct:intersection');h.app.interaction={mode:'construction',sources:[],selectionIdsBefore:[]};h.app.acceptIntersectionSource({objectId:'S'});h.app.acceptIntersectionSource({objectId:'C'});assert.equal(completions,0);assert.equal(h.app.intersectionCompleted,true);assert.equal(h.app.selectedIds.length,2);
  const g=appRuntime();g.app.setTool('line');g.app.selectedId='l';g.app.toolCatalog={...g.app.toolCatalog,getTool:id=>({id})};const plan=g.MI.ConstructionService.contextualPlans(g.engine.get('l'),'midpoint').find(p=>p.mode==='complete');assert.equal(g.app.startContextConstruction('construct:midpoint','l',plan.key),true);assert.equal(completions,0);assert.equal(g.app.tool,'line');
 });
+
+test('WIE-TOOL-L3.1 free point and shared draw routes keep repeat tools active',()=>{
+ const point=appRuntime();point.app.setTool('point');for(const p of [{x:3,y:1},{x:3,y:-1}]){point.down(p);assert.equal(point.app.tool,'point');assert.equal(point.app.interaction,null);assert.equal(point.engine.renderer.preview,null);}assert.equal(point.engine.model.objects.filter(o=>o.type==='point').length,3);assert.equal(point.app.history.entries.length,2);
+ for(const tool of ['straight','ray','vector','circle','dimension']){
+  const h=appRuntime();h.app.setTool(tool);
+  for(const [index,y] of [1,-1].entries()){h.down({x:2,y});h.move({x:4,y:y+.75});h.app.commit();assert.equal(h.app.tool,tool,tool+' completion '+index);assert.equal(h.app.interaction,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.engine.renderer.preview,null);}
+  assert.equal(h.engine.model.objects.filter(o=>o.type===tool).length,2,tool);assert.equal(h.app.history.entries.length,2,tool);
+  if(tool==='dimension'){const measured=h.engine.model.objects.filter(o=>o.type==='dimension'),settings=h.MI.MeasurementGeometry.defaultMeasurementSettings(measured[0]);assert.equal(h.MI.MeasurementGeometry.measurementValue(measured[0],'length'),Math.hypot(measured[0].x2-measured[0].x1,measured[0].y2-measured[0].y1));assert.equal(settings.values.length.visible,true);}
+  const after=plain(h.engine.toJSON());assert.equal(h.app.history.undo(),true,tool+' undo');assert.equal(h.engine.model.objects.filter(o=>o.type===tool).length,1,tool);assert.equal(h.app.history.redo(),true,tool+' redo');assert.deepEqual(plain(h.engine.toJSON()),after,tool);
+ }
+});
+
+test('WIE-TOOL-L3.1 triangle polygon angle and right angle complete only on their final input',()=>{
+ for(const tool of ['triangle','angle','rightAngle']){
+  const h=appRuntime();h.app.setTool(tool);h.down({x:2,y:-1});assert.ok(h.app.interaction);h.down({x:3,y:0});assert.ok(h.app.interaction);h.down({x:4,y:-1});
+  assert.equal(h.app.tool,tool);assert.equal(h.app.interaction,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.history.entries.length,1);
+  const created=h.engine.model.objects.filter(o=>o.type===(tool==='triangle'?'polygon':'angle'));assert.equal(created.length,1);assert.equal(h.app.selectedId,created[0].id);assert.deepEqual(plain(h.app.selectedIds),[created[0].id]);
+ }
+ const h=appRuntime();h.app.setTool('polygon');for(const p of [{x:2,y:-1},{x:4,y:-1},{x:4,y:1}])h.down(p);assert.ok(h.app.interaction);assert.equal(h.app.history.entries.length,0);h.app.keyDown({key:'Enter',preventDefault(){}});
+ assert.equal(h.app.tool,'polygon');assert.equal(h.app.interaction,null);assert.equal(h.app.engine.renderer.preview,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.engine.model.objects.filter(o=>o.type==='polygon').length,1);assert.equal(h.app.history.entries.length,1);
+});
+
+test('WIE-TOOL-L3.1 command failures do not complete or add geometry and can be retried',()=>{
+ const cases=[
+  {tool:'point',place(h){h.down({x:3,y:1});}},
+  {tool:'line',place(h){h.down({x:2,y:-1});h.move({x:4,y:0});h.app.commit();}},
+  {tool:'straight',place(h){h.down({x:2,y:-1});h.move({x:4,y:0});h.app.commit();}},
+  {tool:'polygon',place(h){for(const p of [{x:2,y:-1},{x:4,y:-1},{x:4,y:1}])h.down(p);h.app.keyDown({key:'Enter',preventDefault(){}});},retry(h){h.app.keyDown({key:'Enter',preventDefault(){}});}}
+ ];
+ for(const scenario of cases){
+  const h=appRuntime();h.app.setTool(scenario.tool);const before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app),completion=h.app.completeToolInteraction.bind(h.app);let successes=0;
+  h.app.completeToolInteraction=args=>{const result=completion(args);if(args.outcome?.ok&&result)successes++;return result;};h.app.execute=()=>{throw Error('L3.1 denied '+scenario.tool);};scenario.place(h);
+  assert.equal(h.app.tool,scenario.tool,scenario.tool);assert.equal(successes,0,scenario.tool);assert.deepEqual(plain(h.engine.toJSON()),before,scenario.tool);assert.equal(h.app.history.entries.length,0,scenario.tool);assert.match(h.app.nodes.status.textContent,/L3\.1 denied/);
+  if(scenario.tool==='polygon'){assert.equal(h.app.interaction.mode,'polygon');assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);}
+  h.app.execute=execute;(scenario.retry||scenario.place)(h);assert.equal(successes,1,scenario.tool);assert.equal(h.app.tool,scenario.tool,scenario.tool);assert.equal(h.app.interaction,null,scenario.tool);assert.equal(h.app.history.entries.length,1,scenario.tool);
+  const after=plain(h.engine.toJSON());assert.equal(h.app.history.undo(),true,scenario.tool);assert.deepEqual(plain(h.engine.toJSON()),before,scenario.tool);assert.equal(h.app.history.redo(),true,scenario.tool);assert.deepEqual(plain(h.engine.toJSON()),after,scenario.tool);
+ }
+});
+
+test('WIE-TOOL-L3.1 invalid triangle geometry remains distinct from a command refusal',()=>{
+ const h=appRuntime();h.app.setTool('triangle');let successes=0;const completion=h.app.completeToolInteraction.bind(h.app);h.app.completeToolInteraction=args=>{const result=completion(args);if(args.outcome?.ok&&result)successes++;return result;};
+ for(const p of [{x:2,y:0},{x:3,y:0},{x:4,y:0}])h.down(p);assert.equal(h.app.tool,'triangle');assert.equal(h.app.interaction.mode,'polygon');assert.equal(successes,0);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.status.textContent,/driehoek|hoekpunt|oppervlakte|geldig|zijden mogen niet teruglopen/i);
+ h.emit(h.win,'pointerup',{pointerId:1});assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);h.app.keyDown({key:'Backspace',preventDefault(){}});h.down({x:3,y:1});
+ assert.equal(h.app.tool,'triangle');assert.equal(h.app.interaction,null);assert.equal(successes,1);assert.equal(h.engine.model.objects.filter(o=>o.type==='polygon').length,1);assert.equal(h.app.history.entries.length,1);
+});

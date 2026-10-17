@@ -1,8 +1,14 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.40 (TXT-FORM.0 read-only architectuuraudit; ontwerppoorten voor TXT-FORM.1, 2026-10-17)
+Version: 2.8.41 (WIE-TOOL-L3.1 branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## WIE-TOOL-L3.1 — Vrije tekengereedschappen op centrale lifecycle (branchstatus 2026-10-17)
+
+Vanaf actuele `origin/main` `dcb631e` (L1 via PR #33 en L2 via PR #34) zijn de tien overige vrije tools `point`, `straight`, `ray`, `vector`, `circle`, `triangle`, `polygon`, `angle`, `rightAngle` en `dimension` gemigreerd naar de bestaande `completeToolInteraction()`. `line` blijft de L2-regressieroute. De tien tools behouden hun `repeat`-policy; `finishPolygon()` voltooit pas na de definitieve geometrievalidatie en succesvolle `object.create`. Commandofouten behouden de actieve tool, en bij een mislukte polygoncreatie blijven vertices herstelbaar terwijl pointercapture wordt vrijgegeven. Lengtemaat houdt het bestaande `dimension`-model en de zichtbare berekende lengte.
+
+Gerichte verificatie: 16/16 geselecteerde lifecycle-tests PASS, plus syntax- en diffcontroles; geen volledige Node-, browser- of Edge-run uitgevoerd. Zie [WIE-TOOL-L3.1-verslag](WIE-TOOL-L3-1-REPORT.md). Tekst, constructies, Punt op object, Ellips, Parallellogram, contextacties en Esc-prioriteit blijven buiten deze fase. Dit is branchstatus; nog niet handmatig geaccepteerd, als PR ingediend of gemerged.
 
 ## WIE-TOOL-L2 — Centrale gereedschapslevenscyclus (branchstatus 2026-10-17)
 
