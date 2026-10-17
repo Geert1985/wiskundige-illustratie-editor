@@ -18,7 +18,7 @@ test('UI-LEFT-1 exposes the tools/layers tabs and searchable standalone tools',(
 test('UI-LEFT-1 leaves tool IDs and fullscreen catalog unaffected, scopes hidden results to sidebar',()=>{
   const allIds=[...html.matchAll(/data-tool="([^"]+)"/g)].map(match=>match[1]);
   assert.equal(new Set(allIds).size,allIds.length);
-  assert.equal(allIds.filter(id=>id!=='select').length,42);
+  assert.equal(allIds.filter(id=>id!=='select').length,39);
   assert.match(html,/data-tool-subgroup="vectoren"[^>]*>[\s\S]*?Vectoren[\s\S]*?M7-VEC-FUND/);
   assert.match(html,/Gecombineerde meting/);
   assert.match(script,/root\.querySelectorAll\(':scope > \[data-tool-category\]'\)/);
