@@ -1,9 +1,9 @@
 # WIE-TXT-FORM — Dynamische formules en meetwaarden
 
-**Ontwerpcontract v1.2.0 — 17 oktober 2026**  
+**Ontwerpcontract v1.3.0 — 17 oktober 2026**  
 **Status:** functioneel concept door gebruiker bevestigd; vastgelegd als documentatie. **Geen implementatie-GO; TXT-FORM.0 (read-only preflight) verplicht.**  
 **Repository:** `Geert1985/wiskundige-illustratie-editor`  
-**Relaties:** [WIE-FORM — gedeelde Formule-editor](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md); [WIE-ALG — interactieve algebra](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md); [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md).
+**Relaties:** [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md). De volwaardige Formule-editor en interactieve algebra behoren tot het **afzonderlijke webappproject WAT — Wiskundige Analyse- en Transformatietool**. De historisch opgestelde [WIE-FORM](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md)- en [WIE-ALG](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md)-voorstellen zijn voor WIE vervallen.
 
 ## 1. Productdoel
 
@@ -15,7 +15,7 @@ Een gekoppelde geometrische eigenschap kan in de bestaande Wiskundige Tekstedito
 
 De presentatie blijft dynamisch gekoppeld aan bronobject, broneigenschap, de relevante zijderollen, de eenheden en de toegestane labels. Een ongeldige of verboden bron toont **niet beschikbaar**, zonder identiteit te verliezen of informatie prijs te geven.
 
-**Aangescherpt ontwerpbesluit v1.2.0:** TXT-FORM is de dynamische geometrische **inhouds- en presentatieadapter** voor de gedeelde **WIE-FORM-werkruimte**, met behoud van het bestaande waarde-invoegpad. De basisfuncties kunnen gefaseerd al in de huidige teksteditor beschikbaar komen vóór de aparte FORM-werkruimte is gebouwd. WIE-ALG wordt later als interactieve algebraïsche uitbreidingslaag **in dezelfde WIE-FORM-werkruimte** geïntegreerd. TXT-FORM bevat zelf **geen** termselectie, slepen tussen leden, vergelijkingoplossing, automatische vereenvoudiging, symbolisch bewijzen, CAS of tweerichtingsbewerkingen op geometrie.
+**Definitief scopebesluit v1.3.0 (vervangt v1.2.0):** **Uitsluitend WIE-TXT-FORM** wordt binnen de bestaande Wiskundige Teksteditor ontwikkeld. Het biedt dynamische koppelingen tussen geometrische eigenschappen en drie weergaven: numerieke waarde, symbolische formule en gecontroleerde uitwerking. Er komt **geen** zelfstandige of ingebouwde geavanceerde Formule-editor, algebra-werkruimte of CAS binnen WIE. De volwaardige interactieve Formule-editor, symbolische transformaties, termen verslepen, vergelijkingen oplossen en didactische algebra worden in **WAT**, een **afzonderlijke webapplicatie binnen From Zero 2 Infinity**, ontworpen. WIE-TXT-FORM is volledig **zelfstandig bruikbaar zonder WAT**. Een latere optionele gegevensuitwisseling vereist een apart interoperabiliteitscontract en vormt nu geen scope of dependency.
 
 ## 2. Bestaande basis en integratie
 
@@ -28,7 +28,7 @@ Actuele relevante code (te verifiëren tegen HEAD in TXT-FORM.0): `text-values.j
 
 ## 3. Gebruikerservaring
 
-**Eerste invoerpad:** `Wiskundige Teksteditor → Toevoegen → Waarde` uitbreiden, zonder de huidige tab `Formule` voor handmatige LaTeX te verwijderen. **Toekomstige gedeelde invoerroute:** nieuwe of bestaande getypeerde formule openen via WIE-FORM en het resultaat via een hostadapter atomair invoegen/terugplaatsen; de eenvoudige TXT-FORM-waarde-invoer mag onafhankelijk eerder worden geleverd.
+**Enige nieuwe invoerpad voor dit traject:** `Wiskundige Teksteditor → Toevoegen → Waarde` uitbreiden met de drie weergavemodi. De bestaande tab `Formule` voor handmatige, statische LaTeX blijft behouden en wordt **niet** uitgebouwd tot een volwaardige symbolische editor. Een WAT-integratie, externe formuleoverdracht of WAT-openknop wordt in deze fasen **niet** geïmplementeerd.
 
 1. Selecteer bronobject (bijv. rechthoek ABCD).
 2. Selecteer toegestane broneigenschap (oppervlakte, omtrek, lengte enz.).
@@ -48,7 +48,7 @@ Maak onderscheid tussen **stabiele object-ID**, **geometrische onderdeel-/zijder
 - Een gebruiker mag `a` naar bijvoorbeeld `l` aanpassen, met behoud van de **rolbinding**. Puntnaamnotatie volgt hernoemde echte punten; dubbele namen geven geen ambiguë bronbinding.
 - Bij herordening, vervangen of vervormen van vertices blijft de formule alleen geldig als het recept en de bronrollen nog aantoonbaar overeenkomen; geen stille herbinding naar een willekeurige zijde.
 
-**WIE-ALG-voorbereiding:** leg de semantische identiteit van formuleonderdelen vast via getypeerde operatoren, rolverwijzingen en versievaste formule-/receptidentiteit; sla **niet uitsluitend gerenderde LaTeX** op als latere enige bron voor structurele algebra. TXT-FORM.0 bepaalt de kleinste compatibele representatie; dit is geen opdracht om meteen een algemene symbolische AST in te voeren.
+**WIE-TXT-FORM-modelgrens:** bewaar getypeerde bron-/zijderollen en versievaste, gecontroleerde formule-/receptidentiteit uitsluitend voor betrouwbare **geometrische weergave en herberekening in WIE**. Een algemene symbolische AST voor variabelen, vergelijkingoplossingen, algebraïsche rewrites of mathematische bewijssystemen hoort bij **WAT** en is **geen** ontwikkelvoorwaarde voor TXT-FORM.0–.3. Het opslaan van uitsluitend gerenderde LaTeX als dynamische bronwaarheid blijft ongeschikt; dat rechtvaardigt evenwel **geen** CAS-architectuur in WIE.
 
 ## 5. Formulecatalogus en wiskundige juistheid
 
@@ -109,9 +109,9 @@ Verplaatste/geschaalde bronnen berekenen opnieuw; ontbrekende of ongeldige bron 
 | **TXT-FORM.0** | Read-only audit: daadwerkelijke `main`-HEAD, tekstschema's, exacte object-/zijderollen, proven-shape capabilities, formulemodel, scriptmanifest, opslag, renderer, veiligheid en tests; keuze nieuw veld versus uitbreiding | **volgende aanbevolen stap, geen productiecode** |
 | **TXT-FORM.1** | Eerste end-to-end dynamische numerieke/symbolische presentaties op aantoonbaar geschikte typen; beperkte catalogus, live-preview, SVG, JSON, tests | gepland, aparte GO |
 | **TXT-FORM.2** | Uitwerking, factorwaarden, dimensies, precisie, rolnamen, puntnamen, uitbreiding catalogus, vollediger UI | gepland, aparte GO |
-| **TXT-FORM.3** | Integratieadapter naar **WIE-FORM**, rekenmachine, gecombineerde meting; gereedmaken voor WIE-ALG zonder eigen editor/CAS | gereserveerd |
+| **TXT-FORM.3** | Hergebruik van dezelfde geometrische formule-/metingpresentaties in bestaande WIE-componenten (bijv. gecombineerde metingen of rekenmachine) indien afzonderlijk goedgekeurd; **geen WAT-integratie** | gereserveerd, aparte GO |
 
-**Afhankelijkheidsregel:** TXT-FORM mag een uitbreidbare semantische formulerepresentatie voorbereiden, maar bouwt **geen tweede formulewerkruimte** en geen WIE-ALG-transformatie-engine. FORM.0 en TXT-FORM.0 moeten de datagrenzen coördineren; de eerste dynamische waarde-/formuleweergave hoeft niet op FORM.1 te wachten. WIE-ALG bouwt later in WIE-FORM op de gevalideerde structuur voort, niet op losgesleepte LaTeX-fragmenten.
+**Afhankelijkheidsregel:** **TXT-FORM.0 is de enige vereiste preflight** voor dit WIE-traject. FORM.0/FORM.1–.3 en ALG.0–.4 zijn **vervallen als WIE-milestones**; aan WAT worden in deze repository geen implementatiestappen of verplichtingen opgelegd. Alle TXT-FORM-fasen gebruiken uitsluitend bestaande WIE-tekst-, meet-, document-, render- en rechtenservices, eventueel met een smalle, getypeerde geometrische formuleservice. Geen nieuwe formulewerkruimte, algebra-engine of externe webappkoppeling.
 
 ## 9. Verplichte test- en acceptatiematrix
 
@@ -124,6 +124,6 @@ Verplaatste/geschaalde bronnen berekenen opnieuw; ontbrekende of ongeldige bron 
 7. Legacy `textBinding`, `dynamicValue`, `math`, document- en tekstschema's, JSON roundtrip, import/replay.
 8. Identieke betekenis op canvas, rijke editor en export, met toegankelijkheid, toetsenbord en volledige Node-/Edge-regressies.
 9. Formule-/receptidentiteit over opslaan/herladen en toekomstige formulecataloguswijzigingen.
-10. Geen veronderstelde algebra-bewerkingen, drag/drop van termen of geometrische mutaties in TXT-FORM.1/.2.
+10. Geen algebra-bewerkingen, drag/drop van termen, standalone formulewerkruimte, WAT-startknop, externe WAT-koppeling of geometrische mutaties in TXT-FORM.0–.3.
 
 **Definitie gereed:** afzonderlijke contract-GO, implementatie, werkelijk uitgevoerde tests, handmatige acceptatie en merge naar `main` worden elk expliciet onderscheiden. Dit document creëert **geen** van die volgende statussen.

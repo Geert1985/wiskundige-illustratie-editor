@@ -1,8 +1,25 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.38 (M-PATH.0 definitief gemerged met geaccepteerd regressierestrisico; 2026-10-17)
+Version: 2.8.39 (scopecorrectie: uitsluitend WIE-TXT-FORM in WIE; formule-/algebra-editor naar zelfstandige WAT-webapp, 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## Roadmap v2.8.39 — Scopecorrectie WIE-TXT-FORM versus WAT (2026-10-17)
+
+**Actueel en doorslaggevend productbesluit:** we ontwikkelen in de Wiskundige Illustratie Editor uitsluitend **WIE-TXT-FORM**: dynamische geometrische waarden, symbolische formules (waaronder gekoppelde zijdenamen) en gecontroleerde uitwerkingen **in de bestaande Wiskundige Teksteditor**. De eerder voorgestelde WIE-FORM-werkruimte en WIE-ALG-transformatie-engine worden **niet in WIE gebouwd**. De volwaardige formule-, vergelijking- en interactieve algebra-editor is een **zelfstandig webapp-project WAT — Wiskundige Analyse- en Transformatietool**, met eigen Masterontwerp en eigen ontwikkeltraject buiten deze WIE-roadmap. [Actief WIE-TXT-FORM-contract v1.3.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md).
+
+**Supersessie:** de eerdere v2.8.34-sectie (en de daarin beschreven `FORM.0–.3` en `ALG.0–.4` in WIE) is **historisch en vervallen**; de bijbehorende [WIE-FORM](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md)- en [WIE-ALG](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md)-contracten zijn als archief gemarkeerd. Er is geen WIE-formulewerkruimte, CAS, symbolische solver, slepen van termen, WAT-invoegadapter of automatische koppeling gepland via deze milestones. De bestaande handmatige `Formule`-tab en alle overige WIE-tekstfunctionaliteit blijven ongewijzigd.
+
+| Fase | Enige actieve WIE-TXT-FORM-scope | Status |
+|---|---|---|
+| **TXT-FORM.0** | Read-only audit van bestaande tekstbindingen, veilige formulepresentatie, geometrische bron-/zijderollen, compatibiliteit, rechten en rendering | **volgende aanbevolen poort, nog niet gestart** |
+| **TXT-FORM.1** | Gekoppelde numerieke en symbolische weergave in de bestaande teksteditor | gepland, aparte implementatie-GO |
+| **TXT-FORM.2** | Dynamische formule-uitwerking, factorwaarden, naamgeving, eenheden en uitgebreider aanbod | gepland, aparte implementatie-GO |
+| **TXT-FORM.3** | Optioneel hergebruik binnen bestaande WIE-onderdelen, indien apart geautoriseerd; **geen WAT-afhankelijkheid** | gereserveerd |
+
+**Samenwerkingsgrens:** WIE en WAT zijn onafhankelijke webapp-projecten onder From Zero 2 Infinity. Eventuele latere uitwisseling van formules of objectgegevens vraagt een afzonderlijk, versieerbaar interoperabiliteits- en veiligheidscontract na besluitvorming in **beide** projecten; deze scopecorrectie implementeert of autoriseert die koppeling niet. De ontwikkeling van TXT-FORM mag er niet door worden vertraagd.
+
+**Status:** alleen documentatiecorrectie op `main`; geen productiecode, schemawijziging, testuitvoering of implementatie-GO. Alle recente niet-gerelateerde roadmapstatussen (waaronder M-PATH.0) blijven ongewijzigd.
 
 ## Roadmap v2.8.38 — M-PATH.0 afgerond en gemerged (2026-10-17)
 
@@ -30,7 +47,9 @@ Bronnen: [handmatige acceptatie](M-PATH-0-A-HANDMATIGE-ACCEPTATIE.md), [A2-omsch
 
 **Grenzen:** bestaande gespecialiseerde punt-op-* menu-ingangen blijven in M-PATH.0-I toegankelijk als regressie- en pariteitsreferentie; eventuele tijdelijke dubbele menu-items zijn dus bewust. Verwijdering volgt pas in `M-PATH.0-A` na `M-PATH.0-V` (gerichte plus toepasselijke Node-/Edge-regressies) en expliciete gebruikersacceptatie. Rechten/halfrechten, polygonzijdewisseling, punt in gevuld gebied en nieuwe krommen blijven buiten scope. Geen automatische merge of impliciete vrijgave van M-PATH.1–3. Deze paragraaf is het **actuele statusaddendum** en vervangt uitsluitend de vroegere melding "geen productiecode-GO" in de historische v2.8.21-M-PATH-sectie hieronder.
 
-## Roadmap v2.8.34 — WIE-FORM, TXT-FORM en WIE-ALG (2026-10-17)
+## Roadmap v2.8.34 — HISTORISCH / VERVALLEN: WIE-FORM, TXT-FORM en WIE-ALG (2026-10-17)
+
+> **Superseded door v2.8.39.** De onderstaande voorstellen voor een ingebouwde WIE-FORM-editor, FORM.0–.3 en ALG.0–.4 zijn volledig vervallen als WIE-planning. Raadpleeg de actuele v2.8.39-sectie voor de scheiding **WIE-TXT-FORM** versus zelfstandige **WAT**. Historische tekst uitsluitend ter traceerbaarheid behouden.
 
 **Nieuw goedgekeurd productbesluit (supersedeert de organisatorische formulering in v2.8.33):** **WIE-FORM** wordt één zelfstandige **Formule-editor/-werkruimte binnen de Wiskundige Illustratie Editor**, géén tweede externe applicatie. **Dezelfde werkruimte** is bereikbaar vanuit (1) de Wiskundige Teksteditor, (2) WIE als onafhankelijke formulewerkruimte en (3) een geometrisch object / gekoppelde meting. Startcontext, formule, bronrollen, rechten en terugkeerdoel worden in één host-aware sessie doorgegeven. Zie [WIE-FORM-contract v1.0.0](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md).
 
