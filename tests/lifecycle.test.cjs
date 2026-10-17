@@ -722,6 +722,45 @@ test('WIE-TOOL-L2 non-migrated parallel retains its L1 completion route',()=>{
  assert.equal(completions,0);assert.equal(h.app.tool,'select');assert.equal(h.engine.get(h.app.selectedId).construction.kind,'parallel');assert.equal(h.app.history.entries.length,1);
 });
 
+test('WIE-TOOL-L3.2 generic linked constructions use central single completion and select every result',()=>{
+ const cases=[
+  {tool:'perpendicular',prepare(h){h.engine.add({id:'Q',type:'point',x:2,y:2});},clicks:[{x:.5,y:1},{x:2,y:2}]},
+  {tool:'parallel',prepare(h){h.engine.add({id:'Q',type:'point',x:2,y:2});},clicks:[{x:.5,y:1},{x:2,y:2}]},
+  {tool:'perpendicularBisector',prepare(h){h.engine.add({id:'Q',type:'point',x:2,y:0});},clicks:[{x:0,y:0},{x:2,y:0}]},
+  {tool:'bisector',prepare(h){h.engine.add({id:'Q',type:'point',x:1,y:0});h.engine.add({id:'R',type:'point',x:1,y:1});},clicks:[{x:0,y:0},{x:1,y:0},{x:1,y:1}]},
+  {tool:'circleByCenterPoint',prepare(h){h.engine.add({id:'Q',type:'point',x:2,y:0});},clicks:[{x:0,y:0},{x:2,y:0}]},
+  {tool:'triangleFromPoints',prepare(h){h.engine.add({id:'Q',type:'point',x:4,y:0});h.engine.add({id:'R',type:'point',x:0,y:3});},clicks:[{x:0,y:0},{x:4,y:0},{x:0,y:3}]},
+  {tool:'centroid',prepare(h){h.engine.add({id:'T',type:'polygon',vertices:[{x:5,y:0},{x:8,y:0},{x:5,y:3}]});},clicks:[{x:6,y:1}]},
+  {tool:'tangent',prepare(h){h.engine.add({id:'C',type:'circle',cx:0,cy:0,r:2});h.engine.add({id:'Q',type:'point',x:4,y:0});},clicks:[{x:2,y:0},{x:4,y:0}],expectedCount:2},
+  {tool:'angleDirections',prepare(h){h.engine.add({id:'H',type:'line',x1:-10,y1:0,x2:10,y2:0});h.engine.add({id:'V',type:'line',x1:0,y1:-10,x2:0,y2:10});},clicks:[{x:5,y:0},{x:0,y:5}]},
+  {tool:'polygonRegion',prepare(h){h.engine.add({id:'P',type:'polygon',vertices:[{x:2,y:0},{x:4,y:0},{x:4,y:2},{x:2,y:2}]});},clicks:[{x:3,y:1}]},
+  {tool:'circleSectorRegion',prepare(h){h.engine.add({id:'C',type:'circle',cx:0,cy:0,r:100});h.engine.add({id:'A',type:'point',x:100,y:0});h.engine.add({id:'B',type:'point',x:0,y:100});},clicks:[{x:100,y:0},{x:100,y:0},{x:0,y:100}]},
+  {tool:'circleSegmentRegion',prepare(h){h.engine.add({id:'C',type:'circle',cx:0,cy:0,r:100});h.engine.add({id:'A',type:'point',x:100,y:0});h.engine.add({id:'B',type:'point',x:0,y:100});},clicks:[{x:100,y:0},{x:100,y:0},{x:0,y:100}]}
+ ];
+ for(const scenario of cases){
+  const h=appRuntime();scenario.prepare(h);h.app.setTool('construct:'+scenario.tool);const complete=h.app.completeToolInteraction.bind(h.app);let completions=0,lastCompletion=null;
+  h.app.completeToolInteraction=args=>{completions++;lastCompletion=args;return complete(args);};
+  for(const point of scenario.clicks)h.down(point);
+  const created=h.engine.model.objects.filter(o=>o.construction?.kind===scenario.tool);
+  const createdIds=Array.from(created,o=>o.id);assert.equal(created.length,scenario.expectedCount||1,scenario.tool);assert.equal(completions,1,scenario.tool);assert.equal(lastCompletion.toolId,'construct:'+scenario.tool);assert.equal(lastCompletion.outcome.ok,true);assert.deepEqual(plain(lastCompletion.selection),createdIds,scenario.tool);
+  assert.equal(h.app.tool,'select',scenario.tool);assert.equal(h.app.interaction,null,scenario.tool);assert.equal(h.app.selectedId,created[created.length-1].id,scenario.tool);assert.deepEqual(plain(h.app.selectedIds),createdIds,scenario.tool);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false,scenario.tool);assert.equal(h.engine.renderer.preview,null,scenario.tool);assert.equal(h.app.history.entries.length,1,scenario.tool);
+  const after=plain(h.engine.toJSON());assert.equal(h.app.history.undo(),true,scenario.tool);assert.equal(h.engine.model.objects.some(o=>o.construction?.kind===scenario.tool),false,scenario.tool);assert.equal(h.app.history.redo(),true,scenario.tool);assert.deepEqual(plain(h.engine.toJSON()),after,scenario.tool);
+ }
+});
+
+test('WIE-TOOL-L3.2 generic construction command refusal preserves sources for retry without completion',()=>{
+ const h=appRuntime();h.engine.add({id:'Q',type:'point',x:2,y:2});h.app.setTool('construct:parallel');h.down({x:.5,y:1});const sources=plain(h.app.interaction.sources),before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;
+ h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.app.execute=(operation,...args)=>{if(operation==='construction.create')throw Error('L3.2 denied');return execute(operation,...args);};h.down({x:2,y:2});
+ assert.equal(completions,0);assert.equal(h.app.tool,'construct:parallel');assert.deepEqual(plain(h.app.interaction.sources),sources);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.match(h.app.nodes.status.textContent,/L3\.2 denied/);
+ h.app.execute=execute;h.down({x:2,y:2});assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.model.objects.filter(o=>o.construction?.kind==='parallel').length,1);
+});
+
+test('WIE-TOOL-L3.2 incomplete and invalid generic inputs do not complete',()=>{
+ const h=appRuntime();h.app.setTool('construct:lineBetweenPoints');let completions=0;const complete=h.app.completeToolInteraction.bind(h.app);h.app.completeToolInteraction=args=>{completions++;return complete(args);};
+ h.down({x:0,y:0});assert.equal(completions,0);assert.equal(h.app.tool,'construct:lineBetweenPoints');assert.equal(h.app.interaction.sources.length,1);assert.equal(h.app.history.entries.length,0);
+ h.down({x:0,y:0});assert.equal(completions,0);assert.equal(h.app.tool,'construct:lineBetweenPoints');assert.equal(h.app.interaction.sources.length,1);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.status.textContent,/verschillende punten/);
+});
+
 test('WIE-TOOL-L2 Snijpunt and context-complete remain outside central completion',()=>{
  const h=appRuntime();h.engine.add({id:'S',type:'straight',x1:-3,y1:1,x2:3,y2:1});h.engine.add({id:'C',type:'circle',cx:0,cy:1,r:2});const complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};
  h.app.setTool('construct:intersection');h.app.interaction={mode:'construction',sources:[],selectionIdsBefore:[]};h.app.acceptIntersectionSource({objectId:'S'});h.app.acceptIntersectionSource({objectId:'C'});assert.equal(completions,0);assert.equal(h.app.intersectionCompleted,true);assert.equal(h.app.selectedIds.length,2);

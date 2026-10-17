@@ -371,7 +371,7 @@
       this.interaction=null;
       this.release(state);
       this.engine.renderer.preview=null;this.feedback=null;
-      if(selection!==undefined){this.selectedIds=Array.isArray(selection)?selection.slice():[];this.selectedId=this.selectedIds[0]||null;}
+      if(selection!==undefined){const ids=Array.isArray(selection)?selection.slice():[];this.selectedId=ids[0]||null;this.selectedIds=ids;}
       if(policy==='single')this.setTool('select');
       else {this.renderInstructions();this.invalidate();}
       if(origin==='canvas'&&policy==='single')this.status('Gekoppelde constructie toegevoegd.');
@@ -764,15 +764,8 @@
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       if(kind==='angleDirections')state.sources=MI.ConstructionService.selectAngleArms(state.sources,state.anglePicks,new Map(this.engine.model.objects.map(o=>[o.id,o])));
       const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{}),...(state.extent?{extent:state.extent}:{})}).result;this.selectedIds=created.map(o=>o.id);return created;},{cancelInteraction:false});
-      if(kind==='midpoint'){
-        if(outcome.ok)this.completeToolInteraction({toolId:'construct:midpoint',outcome,origin:'canvas',selection:this.selectedIds});
-        else {this.release(state);state.pointerId=null;state.sources=previousSources;}
-      }else{
-        this.release(state);state.pointerId=null;
-        if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}
-        else {state.sources=previousSources;if(kind==='angleDirections')state.anglePicks.pop();}
-        this.invalidate();
-      }
+      if(outcome.ok)this.completeToolInteraction({toolId:'construct:'+kind,outcome,origin:'canvas',selection:this.selectedIds});
+      else {this.release(state);state.pointerId=null;state.sources=previousSources;if(kind==='angleDirections')state.anglePicks.pop();this.invalidate();}
     }
     ellipsePlacementPreview(point){
       const state=this.interaction;if(!state||!state.ellipsePlacement||state.sources.length!==2)return null;
