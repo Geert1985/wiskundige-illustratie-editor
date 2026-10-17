@@ -220,7 +220,7 @@ Voorwaarden:
 
 ## 9. Onafhankelijke wiskundige acceptatiematrix
 
-Verplichte analytisch onafhankelijke testorakels — controleer behalve coördinaten ook **aantal unieke punten**, redenstatus, gekozen bronrolvolgorde, sleutels, persistente IDs, Undo/Redo en herstel. `C_r` duidt de cirkel met straal \(r\) in de oorsprong aan; `E\) is de ellips \(x^2/25+y^2/9=1\), tenzij anders vermeld.
+Verplichte analytisch onafhankelijke testorakels — controleer behalve coördinaten ook **aantal unieke punten**, redenstatus, gekozen bronrolvolgorde, sleutels, persistente IDs, Undo/Redo en herstel. `C_r` duidt de cirkel met straal \(r\) in de oorsprong aan; `E` is de ellips \(x^2/25+y^2/9=1\), tenzij anders vermeld.
 
 | Test | Geometrie | Verwachte verschillende reële oplossingen |
 |---|---|---|
