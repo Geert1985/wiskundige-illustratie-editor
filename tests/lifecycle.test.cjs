@@ -681,3 +681,49 @@ test('WIE-TOOL-L1 geometrically impossible tangent is rejected by the real comma
  const h=appRuntime();h.engine.add({id:'C',type:'circle',cx:0,cy:0,r:2});const before=plain(h.engine.toJSON());h.app.setTool('construct:tangent');h.down({x:2,y:0});h.down({x:0,y:0});
  assert.equal(h.app.tool,'construct:tangent');assert.deepEqual(plain(h.app.interaction.sources),[{objectId:'C'}]);assert.equal(h.app.history.entries.length,0);assert.deepEqual(plain(h.engine.toJSON()),before);assert.match(h.app.nodes.status.textContent,/bestaat niet/);
 });
+
+test('WIE-TOOL-L2 registers every visible catalog tool explicitly',()=>{
+ const {MI,context}=runtime();vm.runInContext(fs.readFileSync(path.join(root,'editor.js'),'utf8'),context);
+ const html=fs.readFileSync(path.join(root,'editor.html'),'utf8'),ids=[...html.matchAll(/data-tool="([^"]+)"/g)].map(match=>match[1]).filter(id=>id!=='select');
+ assert.equal(ids.length,37);assert.deepEqual([...ids].sort(),Object.keys(MI.ToolLifecyclePolicies).sort());
+ assert.equal(MI.ToolLifecyclePolicies.line,'repeat');assert.equal(MI.ToolLifecyclePolicies.dimension,'repeat');assert.equal(MI.ToolLifecyclePolicies.text,'repeat');
+ assert.equal(MI.ToolLifecyclePolicies['construct:midpoint'],'single');assert.equal(MI.ToolLifecyclePolicies['construct:intersection'],'single');
+});
+
+test('WIE-TOOL-L2 completion requires success and rejects unknown policies',()=>{
+ const {app}=appRuntime();app.setTool('line');
+ assert.equal(app.completeToolInteraction({toolId:'line',outcome:{ok:false,error:Error('denied')},origin:'canvas'}),false);assert.equal(app.tool,'line');
+ assert.throws(()=>app.completeToolInteraction({toolId:'construct:legacy',outcome:{ok:true},origin:'canvas'}),/Onbekend lifecyclebeleid/);
+});
+
+test('WIE-TOOL-L2 first and second line use central repeat completion exactly once',()=>{
+ const h=appRuntime();h.app.setTool('line');const completion=h.app.completeToolInteraction.bind(h.app);let completed=0;
+ h.app.completeToolInteraction=(args)=>{completed++;return completion(args);};
+ for(const [index,y] of [2,3].entries()){h.down({x:2,y});h.move({x:4,y});h.app.commit();assert.equal(completed,index+1);assert.equal(h.app.tool,'line');assert.equal(h.app.interaction,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.engine.renderer.preview,null);}
+ assert.equal(h.engine.model.objects.filter(o=>o.type==='line').length,3);assert.equal(h.app.history.entries.length,2);
+});
+
+test('WIE-TOOL-L2 failed line command never completes or creates history',()=>{
+ const h=appRuntime();h.app.setTool('line');h.down({x:2,y:2});h.move({x:4,y:2});const before=plain(h.engine.toJSON()),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};
+ h.app.execute=()=>{throw Error('L2 line denied');};h.app.commit();
+ assert.equal(completions,1);assert.equal(h.app.tool,'line');assert.match(h.app.nodes.status.textContent,/L2 line denied/);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+});
+
+test('WIE-TOOL-L2 canvas midpoint uses single completion, preserves selection and retries once',()=>{
+ const h=appRuntime();h.engine.add({id:'Q',type:'point',x:2,y:0});h.app.setTool('construct:midpoint');h.down({x:0,y:0});const source=plain(h.app.interaction.sources),before=plain(h.engine.toJSON()),selection=plain(h.app.selectedIds),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};
+ h.app.execute=()=>{throw Error('L2 midpoint denied');};h.down({x:2,y:0});
+ assert.equal(completions,0);assert.equal(h.app.tool,'construct:midpoint');assert.equal(h.app.interaction.sources.length,1);assert.deepEqual(plain(h.app.interaction.sources),source);assert.deepEqual(plain(h.app.selectedIds),selection);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.status.textContent,/L2 midpoint denied/);
+ h.app.execute=h.MI.EditorApp.prototype.execute.bind(h.app);h.down({x:2,y:0});
+ assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'midpoint');assert.deepEqual(plain(h.app.selectedIds),[h.app.selectedId]);assert.equal(h.app.history.entries.length,1);assert.equal(h.app.engine.renderer.preview,null);h.app.travelHistory();assert.deepEqual(plain(h.engine.toJSON()),before);h.app.travelHistory(true);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'midpoint');
+});
+
+test('WIE-TOOL-L2 non-migrated parallel retains its L1 completion route',()=>{
+ const h=appRuntime();h.app.setTool('construct:parallel');h.down({x:.5,y:1});const complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.down({x:0,y:0});
+ assert.equal(completions,0);assert.equal(h.app.tool,'select');assert.equal(h.engine.get(h.app.selectedId).construction.kind,'parallel');assert.equal(h.app.history.entries.length,1);
+});
+
+test('WIE-TOOL-L2 Snijpunt and context-complete remain outside central completion',()=>{
+ const h=appRuntime();h.engine.add({id:'S',type:'straight',x1:-3,y1:1,x2:3,y2:1});h.engine.add({id:'C',type:'circle',cx:0,cy:1,r:2});const complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};
+ h.app.setTool('construct:intersection');h.app.interaction={mode:'construction',sources:[],selectionIdsBefore:[]};h.app.acceptIntersectionSource({objectId:'S'});h.app.acceptIntersectionSource({objectId:'C'});assert.equal(completions,0);assert.equal(h.app.intersectionCompleted,true);assert.equal(h.app.selectedIds.length,2);
+ const g=appRuntime();g.app.setTool('line');g.app.selectedId='l';g.app.toolCatalog={...g.app.toolCatalog,getTool:id=>({id})};const plan=g.MI.ConstructionService.contextualPlans(g.engine.get('l'),'midpoint').find(p=>p.mode==='complete');assert.equal(g.app.startContextConstruction('construct:midpoint','l',plan.key),true);assert.equal(completions,0);assert.equal(g.app.tool,'line');
+});
