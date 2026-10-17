@@ -674,7 +674,7 @@ test('WIE-TOOL-L1 invalid path placement and numeric input never commit or reset
 
 test('WIE-TOOL-L1 optional source naming failure cannot turn committed geometry into a retry',()=>{
  const h=l1Placement('parallelogramBySideAngle');h.app.nameGenericParallelogramSources=()=>{throw Error('naming denied');};h.down({x:3,y:4});
- assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'parallelogramBySideAngle');assert.match(h.app.nodes.status.textContent,/bronpunten konden niet worden hernoemd/);
+ assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'parallelogramBySideAngle');assert.match(h.app.nodes.status.textContent,/bronpunten konden niet allemaal worden hernoemd/);
 });
 
 test('WIE-TOOL-L1 geometrically impossible tangent is rejected by the real command and keeps the circle',()=>{
@@ -819,6 +819,46 @@ test('WIE-TOOL-L3.3b failure after candidate Q creation is atomic and retry comp
  try{h.down({x:50,y:40});}finally{h.MI.Engine.prototype.add=add;h.MI.Engine.prototype.construct=construct;}
  assert.equal(constructCalls,1);assert.equal(completions,0);assert.equal(h.app.tool,'construct:ellipseByFociAndPoint');assert.equal(h.app.interaction,state);assert.deepEqual(plain(state.sources),[{objectId:'p'},{objectId:'F2'}]);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.engine.renderer.preview.type,'ellipse');assert.match(h.app.nodes.status.textContent,/injected ellipse failure/);
  h.down({x:50,y:40});const ellipse=h.engine.model.objects.find(object=>object.construction?.kind==='ellipseByFociAndPoint');assert.ok(ellipse);assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.model.objects.filter(object=>object.type==='point'&&object.x===50&&object.y===40).length,1);
+});
+
+function inputParallelogramParameter(h,name,value){
+ const target={value,dataset:{parallelogramParam:name},closest(selector){return selector==='[data-parallelogram-param]'?this:null;}};h.emit(h.app.nodes.toolInstructions,'input',{target});
+}
+
+function setValidParallelogramParameters(h){inputParallelogramParameter(h,'sideLength','3');inputParallelogramParameter(h,'signedAngle','60');}
+
+test('WIE-TOOL-L3.3c parallelogram preview and parameter input complete centrally',()=>{
+ const h=appRuntime();h.engine.add({id:'A',type:'point',x:2,y:2});h.engine.add({id:'B',type:'point',x:4,y:2});h.app.setTool('construct:parallelogramBySideAngle');const complete=h.app.completeToolInteraction.bind(h.app);let completions=0,last=null;h.app.completeToolInteraction=args=>{completions++;last=args;return complete(args);};
+ h.down({x:2,y:2});assert.equal(completions,0);assert.equal(h.app.tool,'construct:parallelogramBySideAngle');assert.equal(h.app.history.entries.length,0);h.down({x:4,y:2});assert.equal(completions,0);assert.equal(h.app.interaction.parallelogramPlacement,true);assert.equal(h.app.history.entries.length,0);const before=plain(h.engine.toJSON());
+ setValidParallelogramParameters(h);const state=h.app.interaction;assert.equal(state.sideLength,3);assert.ok(Math.abs(state.signedAngle-Math.PI/3)<1e-12);assert.equal(h.engine.renderer.preview.type,'parallelogram-preview');assert.equal(h.engine.renderer.preview.valid,true);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.equal(completions,0);
+ assert.equal(h.app.commitParallelogramPlacement(),true);const shape=h.engine.model.objects.find(object=>object.construction?.kind==='parallelogramBySideAngle');assert.ok(shape);assert.equal(shape.construction.sideLength,3);assert.ok(Math.abs(shape.construction.signedAngle-Math.PI/3)<1e-12);assert.equal(completions,1);assert.equal(last.toolId,'construct:parallelogramBySideAngle');assert.equal(last.origin,'canvas');assert.equal(last.outcome.ok,true);assert.deepEqual(plain(last.selection),[shape.id]);
+ assert.deepEqual(plain(h.app.selectedIds),[shape.id]);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.app.history.entries.length,1);
+ const saved=plain(h.engine.toJSON()),vertices=plain(shape.vertices);h.app.travelHistory();assert.deepEqual(plain(h.engine.toJSON()),before);h.app.travelHistory(true);assert.deepEqual(plain(h.engine.toJSON()),saved);assert.equal(h.engine.get(shape.id).construction.sources[0].objectId,'A');h.engine.update('A',{x:3});assert.notDeepEqual(plain(h.engine.get(shape.id).vertices),vertices);
+});
+
+test('WIE-TOOL-L3.3c invalid parallelogram parameters do not complete and can be corrected',()=>{
+ const h=l1Placement('parallelogramBySideAngle'),state=h.app.interaction,complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};const before=plain(h.engine.toJSON());
+ inputParallelogramParameter(h,'sideLength','0');inputParallelogramParameter(h,'signedAngle','60');assert.equal(h.engine.renderer.preview.valid,false);assert.equal(h.app.commitParallelogramPlacement(),false);assert.equal(completions,0);assert.equal(h.app.tool,'construct:parallelogramBySideAngle');assert.equal(h.app.interaction,state);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+ setValidParallelogramParameters(h);assert.equal(h.engine.renderer.preview.valid,true);assert.equal(h.app.commitParallelogramPlacement(),true);assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.engine.model.objects.filter(object=>object.construction?.kind==='parallelogramBySideAngle').length,1);assert.equal(h.app.history.entries.length,1);
+});
+
+test('WIE-TOOL-L3.3c Escape cancels parameter placement without document history',()=>{
+ const h=l1Placement('parallelogramBySideAngle'),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};const before=plain(h.engine.toJSON());setValidParallelogramParameters(h);assert.equal(h.engine.renderer.preview.valid,true);
+ h.app.keyDown({key:'Escape',preventDefault(){}});assert.equal(completions,0);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+});
+
+test('WIE-TOOL-L3.3c command refusal preserves numeric placement for retry',()=>{
+ const h=l1Placement('parallelogramBySideAngle'),state=h.app.interaction,before=plain(h.engine.toJSON()),complete=h.app.completeToolInteraction.bind(h.app),execute=h.app.execute.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};setValidParallelogramParameters(h);const params=[state.sideLength,state.signedAngle,state.sideInput,state.angleInput];
+ h.app.execute=(operation,...args)=>{if(operation==='construction.create')throw Error('L3.3c command denied');return execute(operation,...args);};assert.equal(h.app.commitParallelogramPlacement(),false);
+ assert.equal(completions,0);assert.equal(h.app.tool,'construct:parallelogramBySideAngle');assert.equal(h.app.interaction,state);assert.deepEqual([state.sideLength,state.signedAngle,state.sideInput,state.angleInput],params);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.engine.renderer.preview.valid,true);assert.match(h.app.nodes.status.textContent,/L3\.3c command denied/);
+ h.app.execute=execute;assert.equal(h.app.commitParallelogramPlacement(),true);assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.model.objects.filter(object=>object.construction?.kind==='parallelogramBySideAngle').length,1);
+});
+
+test('WIE-TOOL-L3.3c optional source rename failure is explicit and does not retry valid geometry',()=>{
+ const h=appRuntime();h.engine.add({type:'point',x:2,y:2});h.engine.add({type:'point',x:4,y:2});h.app.setTool('construct:parallelogramBySideAngle');h.down({x:2,y:2});h.down({x:4,y:2});const complete=h.app.completeToolInteraction.bind(h.app),execute=h.app.execute.bind(h.app);let completions=0,renameCommands=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};setValidParallelogramParameters(h);
+ h.app.execute=(operation,...args)=>{if(operation==='object.setProperties'&&args[0]?.ids?.length===1){renameCommands++;if(renameCommands===2)throw Error('second optional rename denied');}return execute(operation,...args);};
+ assert.equal(h.app.commitParallelogramPlacement(),true);const shape=h.engine.model.objects.find(object=>object.construction?.kind==='parallelogramBySideAngle');assert.ok(shape);assert.equal(completions,1);assert.equal(renameCommands,2);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.deepEqual(plain(h.app.selectedIds),[shape.id]);assert.match(h.app.nodes.status.textContent,/bronpunten konden niet allemaal worden hernoemd/);assert.equal(h.app.history.entries.length,1);
+ const sourceA=h.engine.get('point-1'),sourceB=h.engine.get('point-2');assert.equal(sourceA.name,'A');assert.equal(sourceB.name,'point-2');const saved=plain(h.engine.toJSON());h.app.travelHistory();assert.equal(h.engine.get(shape.id),null);assert.equal(h.engine.get('point-1').name,'point-1');h.app.travelHistory(true);assert.deepEqual(plain(h.engine.toJSON()),saved);assert.equal(h.app.commitParallelogramPlacement(),false);assert.equal(h.app.history.entries.length,1);
 });
 
 test('WIE-TOOL-L3.3a point-on-object command failure and invalid projection preserve retry state',()=>{

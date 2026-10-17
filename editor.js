@@ -363,7 +363,7 @@
       catch(error) {this.status(error.message);return {ok:false,result:null,error};}
       finally { this.history.record(before); this.invalidate(); }
     }
-    completeToolInteraction({toolId=this.tool,outcome,origin='canvas',selection}={}) {
+    completeToolInteraction({toolId=this.tool,outcome,origin='canvas',selection,successMessage}={}) {
       if(!outcome?.ok)return false;
       const policy=TOOL_LIFECYCLE[toolId];
       if(!policy)throw new TypeError('Onbekend lifecyclebeleid voor gereedschap: '+toolId);
@@ -374,7 +374,7 @@
       if(selection!==undefined){const ids=Array.isArray(selection)?selection.slice():[];this.selectedId=ids[0]||null;this.selectedIds=ids;}
       if(policy==='single')this.setTool('select');
       else {this.renderInstructions();this.invalidate();}
-      if(origin==='canvas'&&policy==='single')this.status('Gekoppelde constructie toegevoegd.');
+      if(origin==='canvas'&&policy==='single')this.status(successMessage||'Gekoppelde constructie toegevoegd.');
       return true;
     }
     travelHistory(redo = false) {
@@ -795,9 +795,9 @@
       const payload={toolId:'construct:parallelogramBySideAngle',sources:state.sources.map(ref=>({objectId:ref.objectId})),sideLength:state.matchAB?state.previewSideLength:state.sideLength,signedAngle:state.signedAngle,...(state.matchAB?{sideLengthMode:'matchAB'}:{})};
       let namingError=null;
       const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',payload).result;this.selectedIds=created.map(o=>o.id);try{this.nameGenericParallelogramSources(state.sources);}catch(error){namingError=error;}return created;},{cancelInteraction:false});
-      this.release(state);state.pointerId=null;
-      if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status(namingError?'Parallellogram toegevoegd; bronpunten konden niet worden hernoemd.':'Gekoppeld parallellogram toegevoegd.');}
-      this.invalidate();return outcome.ok;
+      if(outcome.ok)this.completeToolInteraction({toolId:payload.toolId,outcome,origin:'canvas',selection:this.selectedIds,...(namingError?{successMessage:'Parallellogram toegevoegd; bronpunten konden niet allemaal worden hernoemd.'}:{})});
+      else {this.release(state);state.pointerId=null;this.invalidate();}
+      return outcome.ok;
     }
     nameGenericParallelogramSources(sources){const names=['A','B'],ids=sources.map(ref=>ref.objectId),objects=ids.map(id=>this.engine.get(id));if(objects.some((o,i)=>!o||o.type!=='point'||o.name!==o.id&&!/^(Punt|Point)\s+\d+$/i.test(o.name||'')))return;for(let i=0;i<2;i++)if(this.engine.model.objects.some(o=>!ids.includes(o.id)&&o.name===names[i]))return;const payloads=objects.map((o,i)=>({ids:[o.id],fields:[{path:'name',value:names[i]}]}));if(payloads.some(p=>!this.allowed('object.setProperties',p)))return;for(const payload of payloads)this.execute('object.setProperties',payload);}
     queueConstructionPlacementPreview(){
