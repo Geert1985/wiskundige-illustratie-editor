@@ -1,8 +1,28 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.32 (M8-INT.3-A optie B dynamische trajectvolging gekozen; identiteitscontract v2.0.0 en proof-gate, 2026-10-17)
+Version: 2.8.33 (TXT-FORM/WIE-ALG ontwerptrajecten toegevoegd, 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## Roadmap v2.8.33 — TXT-FORM en WIE-ALG (2026-10-17)
+
+**Nieuw vastgelegde productrichting:** de Wiskundige Teksteditor krijgt in **TXT-FORM** dynamische geometrische metingen met drie presentaties: numerieke waarde, symbolische formule en formule met gecontroleerde uitwerking. De gebruiker heeft daarnaast het langetermijnconcept **WIE-ALG — Interactieve Algebra- en Vergelijkingseditor** bevestigd: semantische formuleonderdelen selecteren, meerdere termen groeperen en vereenvoudigen, contextafhankelijk slepen tussen vergelijkingsleden, geldige bewerkingen op beide leden, voorwaarden, oplossingscontrole en didactische afleidingsstappen. [TXT-FORM-contract v1.1.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) · [WIE-ALG-conceptcontract v1.0.0](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md).
+
+**Architectuurgrens:** de huidige statische LaTeX-presentatie is geen semantische symbolische AST; de bestaande T5a-numerieke expressie-AST is geen CAS. TXT-FORM moet voldoende stabiele formule-, bronrol- en receptidentiteit bewaren om toekomstige structurele algebra mogelijk te maken, **zonder** nu een CAS of drag-and-drop-engine te implementeren. ALG vraagt later een afzonderlijk gevalideerd symbolisch model, getypeerde transformatie-/voorwaarden- en equivalentiecontrole, geschiedenis en permissies. Algebra wijzigt brongeometrie nooit stilzwijgend.
+
+| Traject | Afbakening | Status |
+|---|---|---|
+| **TXT-FORM.0** | Read-only preflight, capability- en schema-/permissionmatrix | **aanbevolen eerstvolgende ontwerp-/auditpoort; niet gestart** |
+| **TXT-FORM.1** | Numerieke en symbolische dynamische formulepresentatie | gepland, afzonderlijke GO vereist |
+| **TXT-FORM.2** | Uitwerkingen, symbolen, referenties en eenheden | gepland, afzonderlijke GO vereist |
+| **TXT-FORM.3** | Integratievoorbereiding richting rekenmachine/GM/WIE-ALG | gereserveerd, geen CAS-scope |
+| **ALG.0** | Read-only algebra-/symbolische-AST-/rewrite-/bewijs- en UX-onderzoek | toekomstig ontwerp, niet gestart |
+| **ALG.1** | Structurele algebra-selecties en beperkte geldige herschrijfregels | toekomstig, afzonderlijke GO |
+| **ALG.2** | Drag-and-drop, beideledenbewerkingen, voorwaarden en previews | toekomstig, afzonderlijke GO |
+| **ALG.3** | Didactische stapgeschiedenis, uitgebreidere regels en oplossingscontrole | toekomstig, afzonderlijke GO |
+| **ALG.4** | Integratie met meetkunde en calculator; tweerichtingsconstraints uitsluitend via nieuw contract | toekomstig, afzonderlijke GO |
+
+**Statusgrens:** op 17 oktober 2026 zijn uitsluitend ontwerpdocumenten en roadmap bijgewerkt. Er is geen productiefunctie geleverd, geen schema opgehoogd, geen wiskundige solver/CAS geïmplementeerd en geen tests of handmatige acceptatie voor TXT-FORM/ALG geclaimd. De andere roadmaptrajecten houden hun bestaande status en prioriteit.
 
 ## Gereedschapscatalogus en classificatie
 

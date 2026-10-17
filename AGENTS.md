@@ -78,3 +78,10 @@
 **Geïmplementeerd op branch**, **handmatig door de gebruiker beoordeeld**, **geautomatiseerd getest** en **gemerged naar main** zijn vier verschillende statussen. Voor UI-RADIAL-1 t/m 9 is eerder op verzoek **geen automatische test-/browser-suite door de assistent gedraaid**; gebruikersfeedback bevestigt werking van onderdelen, niet volledige regressie. Een documentatie-only wijziging mag geen fictieve PASS claimen. Respecteer expliciete verzoeken om tests over te slaan en markeer SKIP met reden.
 
 **Documentatiehiërarchie:** dit bestand (werkafspraken) → UI-RADIAL-9 (actueel functioneel/technisch contract) → CORE-1 (servicearchitectuur) → roadmap (status en planning) → tijdgebonden historische rapporten.
+
+
+## TXT-FORM / WIE-ALG — gereserveerde ontwerprichtingen (2026-10-17)
+
+- **Actuele ontwerpreferenties:** [TXT-FORM v1.1.0](docs/WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) en [WIE-ALG v1.0.0](docs/WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md). Beide zijn documentatie/roadmap; **geen productiecode-, migratie- of CAS-GO**. TXT-FORM.0 en ALG.0 zijn afzonderlijke read-only onderzoekspoorten.
+- **Blijf binnen de bestaande services:** numerieke meet- en T5a-AST-kern, bronnen/permissions, rich-text, export en history hergebruiken; `MathSource` is presentatie en geen symbolische algebra-evaluator. Nieuwe algebra vereist gecontroleerde symbolische AST plus herschrijf-/equivalentievoorwaarden, niet louter tekst-/LaTeX-manipulatie.
+- **Toekomstvast maar beperkt:** TXT-FORM bewaart betekenisvolle geometrische bron-/rolreferenties en formule-identiteit; implementeer **geen** algebra drag/drop, CAS, verborgen bewijsveronderstellingen of algebra→geometrie-writeback onder het mom van formuleweergave. Afzonderlijk goedgekeurd contract en testgate verplicht.
