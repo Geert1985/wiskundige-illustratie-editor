@@ -287,6 +287,22 @@ test('WIE-TOOL-L3.5 editing existing text does not invoke creation completion',a
  const h=appRuntime();h.engine.add({id:'T',type:'text',x:2,y:1,text:'Oud'});h.app.setTool('line');h.app.selectedId='T';h.app.selectedIds=['T'];const complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.app.nodes.textValue.focus=()=>{};await h.app.openRichText('T');await new Promise(resolve=>setTimeout(resolve,0));const interaction={mode:'independent-edit',pointerId:25},preview={type:'line',start:{x:0,y:0},end:{x:1,y:1}},feedback={type:'sentinel'};h.app.interaction=interaction;h.app.nodes.canvasWrap.setPointerCapture(25);h.engine.renderer.preview=preview;h.app.feedback=feedback;h.app.nodes.textValue.value='Nieuw';await h.app.submitText();
  assert.equal(h.engine.model.objects.length,3);assert.equal(h.engine.get('T').text,'Nieuw');assert.equal(completions,0);assert.equal(h.app.tool,'line');assert.equal(h.app.selectedId,'T');assert.deepEqual(plain(h.app.selectedIds),['T']);assert.equal(h.app.history.entries.length,1);assert.equal(h.app.interaction,interaction);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(25),true);assert.equal(h.engine.renderer.preview,preview);assert.equal(h.app.feedback,feedback);h.app.travelHistory();assert.equal(h.engine.get('T').text,'Oud');h.app.travelHistory(true);assert.equal(h.engine.get('T').text,'Nieuw');assert.equal(h.app.tool,'line');assert.deepEqual(plain(h.app.selectedIds),['T']);
 });
+test('WIE-TOOL-L5.5 concurrent text submits complete only the first pending async validation',async()=>{
+ const h=appRuntime(),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};
+ h.MI.MathFragments={has:()=>false,load:async()=>{},box:()=>({}),ready:()=>true};h.app.nodes.textValue.focus=()=>{};h.app.setTool('text');h.down({x:2,y:2});await new Promise(resolve=>setTimeout(resolve,0));
+ h.app.richTextEditor.get=()=>({schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:'Dubbel verzenden',marks:{}}]}]});
+ const resolvers=[];h.MI.MathFragments.has=()=>true;h.MI.MathFragments.load=()=>new Promise(resolve=>resolvers.push(resolve));
+ const first=h.app.submitText(),second=h.app.submitText();assert.equal(resolvers.length,2);assert.equal(h.engine.model.objects.length,2);resolvers.forEach(resolve=>resolve());await Promise.all([first,second]);
+ assert.equal(h.engine.model.objects.length,3);assert.equal(h.engine.get(h.app.selectedId).text,'Dubbel verzenden');assert.equal(completions,1);assert.equal(h.app.history.entries.length,1);assert.equal(h.app.tool,'text');assert.equal(h.app.nodes.textDialog.open,false);
+});
+test('WIE-TOOL-L5.5 late text validation after tool switch does not commit',async()=>{
+ const h=appRuntime(),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};
+ h.MI.MathFragments={has:()=>false,load:async()=>{},box:()=>({}),ready:()=>true};h.app.nodes.textValue.focus=()=>{};h.app.setTool('text');h.down({x:2,y:2});await new Promise(resolve=>setTimeout(resolve,0));
+ h.app.richTextEditor.get=()=>({schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:'Late invoer',marks:{}}]}]});
+ let resolveLoad;h.MI.MathFragments.has=()=>true;h.MI.MathFragments.load=()=>new Promise(resolve=>{resolveLoad=resolve;});const pending=h.app.submitText();assert.equal(h.engine.model.objects.length,2);
+ h.app.setTool('line');assert.equal(h.app.nodes.textDialog.open,false);resolveLoad();await pending;
+ assert.equal(h.engine.model.objects.length,2);assert.equal(completions,0);assert.equal(h.app.history.entries.length,0);assert.equal(h.app.tool,'line');assert.equal(h.app.pendingText,null);
+});
 test('triangle and multi-click polygon use one owner and one undo step; Enter and Escape clean up',()=>{
   for(const tool of ['triangle','polygon']) {
     const {app,engine,down,emit,win}=appRuntime(); app.setTool(tool);
