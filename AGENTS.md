@@ -93,3 +93,11 @@
 - Laagactie is alles-of-niets: uitgeschakeld voor lege lagen, locks of onvoldoende autorisatie voor alle leden. Houd render- en uitvoeringscontrole via capabilities en `allowed` gelijk; geen gedeeltelijke updates.
 - Behoud native toetsenbordbediening, focusherstel, `aria-pressed` inclusief `mixed`, oogonafhankelijkheid en compacte afmetingen.
 - Status: featurebranch, 737/737 Node en gerichte Edge PASS; gebruikersacceptatie open, niet gemerged. Zie [implementatierapport](docs/UI-LAYERS-LABEL-1-REPORT.md).
+
+## UI-LAYERS-TEXT-1 — Automatische tekstlaag (2026-10-17)
+
+- Nieuwe tekst gebruikt `DocumentLayers.creationPlan` via `IllustrationModel.add`; toekomstige tekstgereedschappen gebruiken hetzelfde pad. Geen tijdelijke actieve-laagwissel of naamherkenning.
+- `meta.automaticTextLayerId` is een gevalideerde bestaande laag-ID; hernoemen/reorder behouden haar, verwijderen/clear wissen haar. Laagrecords en schema 1 blijven gelijk. Import migreert bestaande tekst niet.
+- Nieuwe geometrie kiest de bovenste zichtbare gewone laag. Bestaande tekstbewerkingen en handmatige toewijzing behouden de laag. Duplicatie behoudt oorspronkelijke laag/groepsstructuur via interne kopieplaatsing; verborgen tekstdoel weigeren.
+- Eerste tekst + automatische laag is één atomaire command/historyactie. Beperkte modus mag geen impliciete laag creëren; bestaande zichtbare tekstlaag hergebruiken blijft onder creatie-/bronrechten vallen.
+- Status: featurebranch, 742/742 Node PASS en zeven gerichte Edge-suites PASS; gebruikersacceptatie open, niet gemerged. Zie [rapport](docs/UI-LAYERS-TEXT-1-REPORT.md).

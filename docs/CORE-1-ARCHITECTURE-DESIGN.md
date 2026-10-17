@@ -252,3 +252,9 @@ REG-1 v1.0.1 legt minor/major, degeneratie, bronrecepten, schema's, eenheden, gr
 ## 9. Acceptatiepoort
 
 CORE-1 is geactualiseerd tegen code op `main`: M6a/M6b/G-TRI1 en `MI.ToolCatalog` zijn bestaande infrastructuur, geen toekomstige implementatie. `REG-1-CONTRACT.md` is de normatieve ontwerpuitwerking voor regio's. De bijgewerkte roadmap stelt de volgorde CORE-1 → REG-1 → REG-2 → UI-R1 → UI-R2 vast. Deze documentatie geeft geen toestemming om REG-2, UI-R1/UI-R2 of andere productiecode te implementeren; REG-2 wacht op afzonderlijke expliciete goedkeuring van het contract.
+
+## UI-LAYERS-TEXT-1 — Centrale creatieroutering (2026-10-17)
+
+Actuele featurebranchaanvulling: `DocumentLayers.creationPlan` plant de objectgerichte doellaag; `IllustrationModel.add` valideert en publiceert objecten, lagen en `meta.automaticTextLayerId` samen. Alle toekomstige tekstcreatie gebruikt deze grens, ook via `text.commit` en constructies. Geen UI-laagwissel of tweede modelservice. Geometrie kiest de bovenste zichtbare gewone laag; bewerken en handmatige toewijzing routeert niet opnieuw. Kopieplaatsing bewaart originele lagen/groepen.
+
+De bestaande command-kandidaat, autorisatie en history blijven eigenaar van atomiciteit. Beperkte sessies mogen geen impliciete laag-ID's toevoegen; reeds voorbereide zichtbare tekstlagen volgen gewone creatierechten. Import valideert de optionele metadatareferentie en migreert bestaande tekst niet; laagschema 1 blijft gelijk. Zie [ontwerp-/implementatieverslag](UI-LAYERS-TEXT-1-REPORT.md) en de aanvulling op [M3c ADR](M3c-LAYER-SCHEMA-ADR.md). Status: implementatie op featurebranch, gebruikersacceptatie/merge open.

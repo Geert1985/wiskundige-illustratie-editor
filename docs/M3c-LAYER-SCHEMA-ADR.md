@@ -29,3 +29,11 @@ Restricted projections expose readable object membership only; completely unread
 ## Acceptance
 
 Keep all 238 Node tests, the full real Edge suite and golden fixtures. Test schema rejection/allocator atomicity, legacy documents/extensions, nested groups/locks/dependencies, create/rename/order/assignment/delete, stable paint-hit-export order, hidden snapping/source/hover/handles, effective visibility, preview/cancel/history, save/reload/import/export and negative restricted commands. Stop after M3c and await manual acceptance.
+
+## UI-LAYERS-TEXT-1 amendment — 2026-10-17
+
+This supersedes only the original default creation routing above. `DocumentLayers.creationPlan` is the shared pure planner called by `IllustrationModel.add`: new `text` objects use the layer identified by optional validated `meta.automaticTextLayerId`, creating one ordinary layer named Tekst when absent. With no explicit layers, a Basislaag containing existing objects is planned first. New non-text objects use the highest visible layer excluding that automatic layer; no active UI layer is introduced. Future text tools must use this central path, including typed text commits and construction outputs.
+
+Layer records remain closed and `layerSchema:1` unchanged. The metadata ID must reference an existing layer; invalid imports are rejected atomically. Rename/reorder preserve identity, deletion/clear remove it, and undo/redo restore it with the document. Loading does not route or migrate existing text. Existing edits/manual assignments remain untouched. Copies retain their original layer and group hierarchy through explicit internal placement; copying text to a hidden target is refused. Hidden automatic text targets refuse creation without fallback. The first text/layer action is one existing command/history transaction.
+
+Restricted commands cannot implicitly create layer IDs. The author must prepare the automatic layer; normal creation into an existing visible automatic layer retains all tool/text/source permission checks. Layer assignment of existing objects stays author-only. JSON export retains the ID only through the existing fully authorized membership export. See [implementation and tests](UI-LAYERS-TEXT-1-REPORT.md); featurebranch only, no merge or manual acceptance claimed.

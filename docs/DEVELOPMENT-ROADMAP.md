@@ -1161,3 +1161,9 @@ Historische M8a-1/M8a-2 testresultaten en acceptatiestatussen blijven ongewijzig
 Geïmplementeerd op `codex/ui-layers-label-toggle`, vanaf actuele main `7a67837`; implementatiecommit `f52fe7d`. T per object en laag, gouden actieve status en gemengde indicatie, bestaande `showLabel`, atomair `object.setProperties`, één Undo/Redo-stap. Veilige alles-of-niets-autorisatie bij locks of beperkte rechten; geen schemawijziging.
 
 Validatie: 737/737 Node PASS en gerichte Edge PASS (keyboard/focus, mixed, history, zichtbaarheid, locks en smalle layout). Gebruikersacceptatie open; geen merge naar main. Details: [implementatierapport](UI-LAYERS-LABEL-1-REPORT.md). Historische test- en integratiestatussen blijven behouden.
+
+## UI-LAYERS-TEXT-1 — Automatische tekstlaag (2026-10-17)
+
+Op `codex/ui-layers-label-toggle`, vanaf HEAD `65a360d`; implementatie `405b944`. Eén centrale modelrouter voor nieuwe tekst (inclusief rijke tekst en tekstproducerende constructies), duurzame identiteit via gevalideerde `meta.automaticTextLayerId`, bovenste zichtbare gewone laag voor geometrie. Geen migratie op load, geen nieuwe documentversie of laagschema, bestaande T-knoppen behouden.
+
+Eerste tekst en laag delen één historyactie. Verborgen tekstdoelen weigeren; beperkte gebruikers kunnen geen automatische laag creëren. Duplicaten behouden de oorspronkelijke laag en groepen. Validatie: 742/742 Node PASS; gerichte Edge voor automatische tekstlaag, rijke tekst, formules, dynamische waarden, lagen, labels en cachecompatibiliteit PASS. Handmatige acceptatie en merge open; volledige gecombineerde Edge-suite niet uitgevoerd. Zie [verslag](UI-LAYERS-TEXT-1-REPORT.md).
