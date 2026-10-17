@@ -1,0 +1,18 @@
+const test=require('node:test'),assert=require('node:assert/strict'),{runtime}=require('./helpers.cjs');
+function service(){return runtime(['model.js','renderer.js','index.js']).MI.ConstructionService;}
+const ellipse={type:'ellipse',cx:0,cy:0,a:5,b:3,rotation:0};
+function line(x1,y1,x2,y2,type='straight'){return {type,x1,y1,x2,y2};}
+function solve(solver,l,e=ellipse,branch=0,ref={objectId:'L'}){return solver.lineEllipseIntersection({kind:'lineEllipseIntersection',sources:[ref,{objectId:'E'}],branch},[l,e]);}
+function point(result,expected){assert.equal(result.reasonCode,'VALID');assert.ok(result.geometry);assert.ok(Math.abs(result.geometry.x-expected[0])<1e-10,`x ${result.geometry.x} != ${expected[0]}`);assert.ok(Math.abs(result.geometry.y-expected[1])<1e-10,`y ${result.geometry.y} != ${expected[1]}`);}
+
+test('INT-101 exact horizontal ellipse intersections use directed branches',()=>{const s=service(),l=line(-6,0,6,0);point(solve(s,l,ellipse,0),[-5,0]);point(solve(s,l,ellipse,1),[5,0]);});
+test('INT-102 exact tangent produces one unique branch 0',()=>{const s=service(),l=line(5,-4,5,4);point(solve(s,l,ellipse,0),[5,0]);assert.equal(solve(s,l,ellipse,1).reasonCode,'MERGED_INTERSECTION');});
+test('INT-103 separated line has no real solution',()=>{const s=service();assert.equal(solve(s,line(-6,4,6,4)).reasonCode,'NO_REAL_INTERSECTION');});
+test('INT-104 shifted rotated major-axis intersections use directed order',()=>{const s=service(),theta=Math.PI/4,u={x:Math.cos(theta),y:Math.sin(theta)},e={...ellipse,cx:7,cy:-2,rotation:theta},l=line(e.cx-8*u.x,e.cy-8*u.y,e.cx+8*u.x,e.cy+8*u.y);point(solve(s,l,e,0),[e.cx-5*u.x,e.cy-5*u.y]);point(solve(s,l,e,1),[e.cx+5*u.x,e.cy+5*u.y]);});
+test('INT-105 finite segment preserves branch 1 after domain filtering',()=>{const s=service(),r=solve(s,line(0,0,6,0,'line'),ellipse,1);point(r,[5,0]);assert.equal(solve(s,line(0,0,6,0,'line'),ellipse,0).reasonCode,'OUTSIDE_DOMAINS');});
+test('INT-106 leftward ray filters branch 0 and retains branch 1',()=>{const s=service(),l=line(0,0,-1,0,'ray');point(solve(s,l,ellipse,1),[-5,0]);assert.equal(solve(s,l,ellipse,0).reasonCode,'OUTSIDE_DOMAINS');});
+test('INT-107 exact top tangency is one branch 0 point',()=>{const s=service(),e={...ellipse,b:3},l=line(-6,3,6,3);point(solve(s,l,e,0),[0,3]);assert.equal(solve(s,l,e,1).reasonCode,'MERGED_INTERSECTION');});
+test('near-tangent discriminant inside its floating-point error bound is unresolved, never a phantom',()=>{const s=service(),r=solve(s,line(-6,3+1e-14,6,3+1e-14));assert.equal(r.reasonCode,'NUMERIC_UNRESOLVED');assert.equal(r.geometry,null);});
+test('INT-110 thin ellipse with large legal translation remains finite with small residual',()=>{const s=service(),theta=.3,e={type:'ellipse',cx:1000000,cy:-2000000,a:5,b:1e-5,rotation:theta},v={x:-Math.sin(theta),y:Math.cos(theta)},l=line(e.cx-10*v.x,e.cy-10*v.y,e.cx+10*v.x,e.cy+10*v.y);const r=solve(s,l,e,0);assert.equal(r.reasonCode,'VALID');assert.ok(Math.abs(r.geometry.x-e.cx)<1e-3);assert.ok(Math.abs(r.geometry.y-(e.cy-1e-5))<1e-3);});
+test('INT-111 circle-shaped ellipse intersections match exact radius',()=>{const s=service(),e={type:'ellipse',cx:2,cy:-1,a:4,b:4,rotation:1.2};point(solve(s,line(2,-8,2,8),e,0),[2,-5]);point(solve(s,line(-5,-1,10,-1),e,1),[6,-1]);});
+test('zero direction, invalid ellipse and coordinate-limit results fail closed',()=>{const s=service();assert.equal(solve(s,line(1,1,1,1)).reasonCode,'DEGENERATE_DIRECTION');assert.equal(solve(s,line(-6,0,6,0),{...ellipse,b:0}).reasonCode,'SOURCE_INVALID');assert.equal(solve(s,line(-6,0,6,0),{...ellipse,cx:1e12}).reasonCode,'COORDINATE_LIMIT');});
