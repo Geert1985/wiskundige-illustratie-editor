@@ -63,4 +63,4 @@ De geselecteerde lifecycle-run slaagde met **17/17 tests** (inclusief de nieuwe 
 
 Resterend risico: echte browser-eventvolgorde, DOM-disable-state van de bevestigingsknop en native pointercapture zijn niet met Edge gevalideerd, conform opdracht. Runtime-history is bronmatig gecontroleerd; de lifecyclefixture gebruikt lokale `EditorHistory` voor de gedeeltelijke-hernoemtest.
 
-Commit- en pushstatus worden bij oplevering in dit verslag ingevuld. Er wordt niet naar `main` gemerged en L3.4 wordt niet gestart.
+Implementatiecommit: `4abf44aff69e3107be5893b18fc374b49e4e0099`. Branch `codex/wie-tool-l3-3c-parallelogram-lifecycle` is naar `origin` gepusht. Er is geen merge naar `main` gestart; L3.4 is niet gestart.
