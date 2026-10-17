@@ -1,5 +1,15 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {runtime}=require('./helpers.cjs');
+test('alias context plans exclude vectors and dimensions and retain explicit polygon edges',()=>{
+ const MI=runtime(['model.js','renderer.js','index.js','editor.js']).MI,app=Object.create(MI.EditorApp.prototype);app.toolAllowed=()=>true;app.runtime=null;
+ for(const type of ['vector','dimension','straight','ray','point'])assert.equal(app.pointOnObjectPlans({id:'S',type,x1:0,y1:0,x2:2,y2:0,x:0,y:0}).length,0,type);
+ assert.equal(app.pointOnObjectPlans({id:'L',type:'line',x1:0,y1:0,x2:2,y2:0})[0].concreteKind,'pointOnSegment');
+ const polygon={id:'P',type:'polygon',vertices:[{x:0,y:0},{x:2,y:0},{x:0,y:2}]},ref={objectId:'P',part:'edge',index:1};assert.equal(app.pointOnObjectPlans(polygon).length,0);assert.equal(app.pointOnObjectPlans(polygon,ref)[0].sources[0].index,1);
+});
+test('polygon highlight uses SVG coordinates independently of viewport screen offsets',()=>{
+ const MI=runtime(['model.js','renderer.js','index.js','editor.js']).MI,app=Object.create(MI.EditorApp.prototype),attrs={},svg={querySelector:()=>null,appendChild:()=>{}},source={id:'P',type:'polygon',vertices:[{x:1,y:2},{x:3,y:4},{x:0,y:0}]};
+ app.nodes={canvas:{querySelector:()=>svg}};app.document={createElementNS:()=>({setAttribute:(k,v)=>attrs[k]=v})};app.engine={get:()=>source,renderer:{renderPreview:()=>'',mapX:x=>10*x,mapY:y=>100-10*y}};app.interaction={sources:[{objectId:'P',part:'edge',index:0}]};app.transform=()=>{throw Error('Screen transform must not be used for SVG coordinates');};app.renderPointPlacementPreview();assert.equal(attrs.x1,10);assert.equal(attrs.y1,80);assert.equal(attrs.x2,30);assert.equal(attrs.y2,60);
+});
 const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'editor.html'),'utf8'),editor=fs.readFileSync(path.join(root,'editor.js'),'utf8'),service=fs.readFileSync(path.join(root,'construction-service.js'),'utf8');
 test('universal point is a UI adapter and dispatches only to existing concrete path recipes',()=>{
  assert.match(html,/data-tool="construct:pointOnObject"[^>]*>[\s\S]*?Punt op object/);

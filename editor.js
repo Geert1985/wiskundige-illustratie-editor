@@ -604,13 +604,17 @@
       const nondegenerate=kind==='pointOnSegment'?(()=>{const line=MI.ConstructionService.line(source,ref);return Math.hypot(line.x2-line.x1,line.y2-line.y1)>1e-9})():kind==='pointOnCircle'?source.r>0:kind==='pointOnEllipse'?MI.EllipseGeometry.fromDefinition(source).reasonCode==='VALID':false;
       return {kind,sourceRef:{...ref},parameter,point:projected,distancePx,valid:!!projected&&nondegenerate&&Number.isFinite(distancePx)&&distancePx<=12&&source.constructionValid!==false};
     }
+    pointOnObjectReference(source,ref){return source.type==='line'&&!ref.part||source.type==='polygon'&&ref.part==='edge'||['circle','ellipse'].includes(source.type)&&!ref.part;}
+    pointOnObjectPlans(source,sourceRef=null){
+      return ['pointOnSegment','pointOnCircle','pointOnEllipse'].flatMap(kind=>this.toolAllowed('construct:'+kind)&&(!this.runtime||this.capabilities(source.id).sourceTools.includes('construct:'+kind))?MI.ConstructionService.contextualPlans(source,kind,sourceRef).filter(plan=>plan.sources.every(ref=>this.pointOnObjectReference(source,ref))).map(plan=>({...plan,key:kind+':'+plan.key,concreteKind:kind})):[]);
+    }
     pointOnObjectCandidates(point){
       const out=[];
       for(const [kind,role] of [['pointOnSegment','segment'],['pointOnCircle','circle'],['pointOnEllipse','ellipse']]){
         const toolId='construct:'+kind;if(!this.toolAllowed(toolId))continue;
         for(const ref of this.constructionPick(point,role,0,kind,true)){
           const source=this.engine.get(ref.objectId);if(!source)continue;
-          if(kind==='pointOnSegment'&&!(source.type==='line'||source.type==='polygon'&&ref.part==='edge'))continue;
+          if(!this.pointOnObjectReference(source,ref))continue;
           if(kind==='pointOnCircle'&&source.type!=='circle'||kind==='pointOnEllipse'&&source.type!=='ellipse')continue;
           if(this.runtime&&(!this.capabilities(ref.objectId).sourceTools.includes(toolId)||!this.capabilities(ref.objectId).read||!this.capabilities(ref.objectId).display))continue;
           const projection=this.projectPath(kind,source,ref,point);if(projection.valid)out.push({kind,ref,projected:projection.point,distance:projection.distancePx});
@@ -806,7 +810,7 @@
         return false;
       }
       const universal=kind==='pointOnObject';
-      const plan=universal?['pointOnSegment','pointOnCircle','pointOnEllipse'].filter(concrete=>this.toolAllowed('construct:'+concrete)&&(!this.runtime||this.capabilities(objectId).sourceTools.includes('construct:'+concrete))).flatMap(concrete=>MI.ConstructionService.contextualPlans(source,concrete,sourceRef).map(option=>({...option,concreteKind:concrete,key:concrete+':'+option.key}))).find(option=>option.key===planKey):MI.ConstructionService.contextualPlans(source,kind,sourceRef).find(option=>option.key===planKey);
+      const plan=universal?this.pointOnObjectPlans(source,sourceRef).find(option=>option.key===planKey):MI.ConstructionService.contextualPlans(source,kind,sourceRef).find(option=>option.key===planKey);
       if(!plan){
         this.status('De geselecteerde constructiebron past niet bij dit gereedschap.');
         return false;
@@ -910,7 +914,7 @@
       svg.querySelector('[data-point-source-highlight]')?.remove();
       const state=this.interaction,ref=state?.sources?.[0],source=ref&&this.engine.get(ref.objectId);if(!source)return;
       if(source.type==='polygon'&&ref.part==='edge'){
-        const transform=this.transform(),a=transform.mathToScreen(source.vertices[ref.index]),b=transform.mathToScreen(source.vertices[(ref.index+1)%source.vertices.length]),line=this.document.createElementNS('http://www.w3.org/2000/svg','line');
+        const r=this.engine.renderer,first=source.vertices[ref.index],last=source.vertices[(ref.index+1)%source.vertices.length],a={x:r.mapX(first.x),y:r.mapY(first.y)},b={x:r.mapX(last.x),y:r.mapY(last.y)},line=this.document.createElementNS('http://www.w3.org/2000/svg','line');
         line.setAttribute('data-point-source-highlight','');line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);line.setAttribute('stroke','#d5ad45');line.setAttribute('stroke-width','4');line.setAttribute('stroke-linecap','round');line.setAttribute('pointer-events','none');svg.appendChild(line);
       }else{
         const group=Array.from(svg.querySelectorAll('[data-object-id]')).find(node=>node.getAttribute('data-object-id')===source.id);group?.classList.add('point-source-highlight');

@@ -542,7 +542,7 @@
         });
       const out=[];
       for(const entry of entries){
-        const plans=entry.id==='construct:intersection'?app.intersectionContextPlans(source,ctx.edgeRef):entry.id==='construct:pointOnObject'?['pointOnSegment','pointOnCircle','pointOnEllipse'].flatMap(kind=>app.toolAllowed('construct:'+kind)&&(!app.runtime||app.capabilities(source.id).sourceTools.includes('construct:'+kind))?MI.ConstructionService.contextualPlans(source,kind,ctx.edgeRef).map(plan=>({...plan,key:kind+':'+plan.key,concreteKind:kind})):[]):MI.ConstructionService.contextualPlans(source,entry.id.slice(10),ctx.edgeRef);
+        const plans=entry.id==='construct:intersection'?app.intersectionContextPlans(source,ctx.edgeRef):entry.id==='construct:pointOnObject'?app.pointOnObjectPlans(source,ctx.edgeRef):MI.ConstructionService.contextualPlans(source,entry.id.slice(10),ctx.edgeRef);
         // Keep one discoverable entry for each construction. A composite
         // endpoint recipe takes precedence when defined by the service.
         if(plans.length)out.push({entry,plan:plans[0]});
