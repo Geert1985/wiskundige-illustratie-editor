@@ -1,12 +1,20 @@
 # WIE — M8-INT.3-A: Dynamische trajectidentiteit van maximaal vier snijpunten
 
-**Documentversie:** 2.0.0  
+**Documentversie:** 2.0.1  
 **Datum:** 17 oktober 2026  
-**Productkeuze:** **optie B — dynamische trajectvolging**, expliciet gekozen door de gebruiker op 17 oktober 2026. **Optie A (vaste hoeksectoren) is verworpen als definitief productgedrag.**  
-**Status:** nieuw uitgewerkt technisch **ontwerp ter validatie en afzonderlijke acceptatie**; geen toestemming om productiecode/schema's te wijzigen of te mergen.  
+**Historisch productbesluit:** optie B werd op 17 oktober 2026 oorspronkelijk gekozen als einddoel. **Dit besluit is voor de eerste implementatiefase vervangen door het recentere gebruikersbesluit: optie A als MVP, optie B uitsluitend als mogelijke afzonderlijke latere uitbreiding.**  
+**Status:** **uitgesteld historisch research-/toekomstcontract; NIET normatief voor de A-MVP**. Dit document bevat de eerdere B-onderzoeksarchitectuur en is alleen opnieuw uitvoeringsnormatief na afzonderlijk expliciet gebruikersbesluit. Geen productiecode/schema-/merge-GO.  
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Normatieve basis:** [M8-INT-hoofdcontract v1.1.5](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.3-hoofdcontract v1.0.2](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md), [roadmap](DEVELOPMENT-ROADMAP.md), M8-INT.0/.1 op `main` via PR #27/#28.  
+**Normatieve basis:** [M8-INT-hoofdcontract v1.1.6](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.3-hoofdcontract v1.0.3](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md), [roadmap](DEVELOPMENT-ROADMAP.md), M8-INT.0/.1 op `main` via PR #27/#28.  
 **Vervangt:** identiteitsvoorstel v1.0.0 op ditzelfde pad, dat een *stateless* plaatsidentiteit met immutable hoeksectoren aanraadde. Die eerdere voorgestelde beperking is **niet langer normatief**; de Git-historie blijft als ontwerpgeschiedenis beschikbaar.
+
+---
+
+## Actuele beslissing — voorrang van optie A als MVP
+
+**Op 17 oktober 2026 heeft de gebruiker na A1, A2.1 en A2.1b expliciet gekozen om de eerste werkende M8-INT.3-versie met optie A te bouwen**, en een architecturale doorgroeimogelijkheid naar B open te laten. Vanaf dit besluit geldt **uitsluitend** het [nieuwe M8-INT.3-A-MVP-identiteitscontract](M8-INT-3-A-MVP-IDENTITEITSCONTRACT.md) als uitvoeringsrichting voor de eerste release. De onderstaande secties beschrijven de **voorheen voorgestelde** B-aanpak en zijn **niet verplicht** voor de A-MVP, ongeacht historische formuleringen als "normatief", "gekozen" of "verplicht".
+
+A-MVP gebruikt een immutable plaatssector-`solutionKey` en **geen** `intersectionContinuations`-registry, mutable checkpoint, path event of workertrajectbewijs. De historische onderzoeken A1/A2.1/A2.1b zijn waardevolle referenties, maar geen A-MVP-acceptatiegates. Een eventueel later B-project vergt een expliciete product-, schema-/migratie-, permission-, history- en implementatie-GO; de originele A-point-ID's blijven behouden en niet-opgeslagen B-bewegingshistorie wordt nooit gefingeerd.
 
 ---
 
@@ -332,4 +340,4 @@ De gekozen **productrichting is optie B**. Vóór implementatie moeten Codex' pr
 
 ---
 
-**Einde M8-INT.3-A identiteitscontract v2.0.0 — optie B gekozen, architectuur uitgewerkt; bewijsvalidatie en afzonderlijke implementatie-GO nog vereist.**
+**Einde M8-INT.3-A identiteits-/researchcontract v2.0.1 — B uitgesteld; A-MVP v1.0.0 heeft voorrang.**
