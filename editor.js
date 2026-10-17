@@ -364,6 +364,7 @@
       finally { this.history.record(before); this.invalidate(); }
     }
     completeToolInteraction({toolId=this.tool,outcome,origin='canvas',selection,successMessage}={}) {
+      // Supported origins: canvas (owned interaction cleanup/policy) and context-complete (preserve the active tool and independent interaction).
       if(!outcome?.ok)return false;
       const policy=TOOL_LIFECYCLE[toolId];
       if(!policy)throw new TypeError('Onbekend lifecyclebeleid voor gereedschap: '+toolId);
@@ -589,8 +590,36 @@
     textSourceOptions(){return this.engine.model.objects.filter(o=>MI.DynamicText.propertiesFor(o).length).map(o=>({id:o.id,name:o.name||o.id,properties:MI.DynamicText.propertiesFor(o).filter(property=>!this.runtime||this.engine.textSourceAllowed(o.id,property))})).filter(o=>o.properties.length);}
     closeText() { this.textWorkspace?.destroy();this.textWorkspace=null;if(this.textTransaction){this.runtime?.cancel(this.textTransaction);this.textTransaction=null;}this.nodes.richColorMenu&&(this.nodes.richColorMenu.hidden=true);this.nodes.richColor?.setAttribute?.('aria-expanded','false');this.textMigrateLegacy=false;this.textEditorRequest++;this.pendingText = null;this.textInsertPanel?.destroy();this.textInsertPanel=null;this.richTextEditor?.destroy();this.richTextEditor=null;this.textEditId=null;if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close();const focus=this.textReturnFocus;this.textReturnFocus=null;if(focus?.isConnected)focus.focus(); this.renderInstructions(); }
     async submitText() {
-      if(this.textInsertPanel?.isOpen()){this.textInsertPanel.announcePending();this.nodes.textEditorStatus.textContent='Bevestig of annuleer eerst de openstaande formule of dynamische waarde.';return;}if(this.runtime&&this.textPermissionEpoch!==this.runtime.permissionEpoch){this.status('De toegangsrechten zijn gewijzigd. Open de tekst opnieuw.');return;}
-      const pending=this.pendingText,id=this.textEditId;if(!id){const layer=MI.DocumentLayers.automaticTextLayer(this.engine.model.layers,this.engine.model.meta);if(layer?.visible===false){this.status('De tekstlaag is verborgen. Maak deze eerst zichtbaar.');return;}}let content;try{content=this.richTextEditor?.get();}catch(error){this.status(error.message);return;}if(!content&&this.nodes.textValue.value.trim()){content={schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:this.nodes.textValue.value.trim(),marks:{}}]}]};}if(!content)return;const text=MI.TextContent.plain(content);if(!text.trim())return;const request=this.textEditorRequest;try{if(MI.MathFragments.has([{textContent:content}])){await MI.MathFragments.load();for(const p of content.paragraphs)for(const r of p.runs)if(r.kind==='math')MI.MathFragments.box(r.source);}}catch(error){this.status(error.message);return;}if(request!==this.textEditorRequest)return;const target=id?{kind:'existing',id}:{kind:'new',position:{x:pending.point.x,y:pending.point.y}},command={schema:1,operation:'text.commit',expectedDocumentRevision:this.textExpectedRevision,payload:{target,content,...(this.textMigrateLegacy?{migrateLegacy:true}:{})}},decision=this.commands.canExecute(command);if(!decision.allowed){this.status(decision.code==='STALE_TRANSACTION'?'De illustratie is intussen gewijzigd. Sluit de teksteditor en open hem opnieuw.':decision.code==='MODE_DENIED'&&!id?'Automatische tekstlaagcreatie is in deze modus niet toegestaan.':'Tekstwijziging niet toegestaan: '+decision.code);return;}const handle=this.textTransaction;this.textTransaction=null;this.closeText();this.changeDocument(()=>{const result=handle?this.runtime.commit(handle,command.payload):this.commands.execute(command);this.selectedId=result.result.id;});
+      if(this.textInsertPanel?.isOpen()){this.textInsertPanel.announcePending();this.nodes.textEditorStatus.textContent='Bevestig of annuleer eerst de openstaande formule of dynamische waarde.';return;}
+      if(this.runtime&&this.textPermissionEpoch!==this.runtime.permissionEpoch){this.status('De toegangsrechten zijn gewijzigd. Open de tekst opnieuw.');return;}
+      const pending=this.pendingText,id=this.textEditId;
+      if(!id){const layer=MI.DocumentLayers.automaticTextLayer(this.engine.model.layers,this.engine.model.meta);if(layer?.visible===false){this.status('De tekstlaag is verborgen. Maak deze eerst zichtbaar.');return;}}
+      let content;
+      try{content=this.richTextEditor?.get();}catch(error){this.status(error.message);return;}
+      if(!content&&this.nodes.textValue.value.trim())content={schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:this.nodes.textValue.value.trim(),marks:{}}]}]};
+      if(!content)return;
+      const text=MI.TextContent.plain(content);if(!text.trim())return;
+      const request=this.textEditorRequest;
+      try{if(MI.MathFragments.has([{textContent:content}])){await MI.MathFragments.load();for(const p of content.paragraphs)for(const r of p.runs)if(r.kind==='math')MI.MathFragments.box(r.source);}}
+      catch(error){this.status(error.message);return;}
+      if(request!==this.textEditorRequest)return;
+      const target=id?{kind:'existing',id}:{kind:'new',position:{x:pending.point.x,y:pending.point.y}},command={schema:1,operation:'text.commit',expectedDocumentRevision:this.textExpectedRevision,payload:{target,content,...(this.textMigrateLegacy?{migrateLegacy:true}:{})}},decision=this.commands.canExecute(command);
+      if(!decision.allowed){this.status(decision.code==='STALE_TRANSACTION'?'De illustratie is intussen gewijzigd. Sluit de teksteditor en open hem opnieuw.':decision.code==='MODE_DENIED'&&!id?'Automatische tekstlaagcreatie is in deze modus niet toegestaan.':'Tekstwijziging niet toegestaan: '+decision.code);return;}
+      const handle=this.textTransaction;
+      let committedObject=null;
+      const outcome=this.changeDocument(()=>{
+        const result=handle?this.runtime.commit(handle,command.payload):this.commands.execute(command);
+        committedObject=result?.result||null;
+        if(!id&&committedObject?.id){this.selectedId=committedObject.id;this.selectedIds=[committedObject.id];}
+        return committedObject;
+      },{cancelInteraction:false});
+      if(!outcome.ok){
+        if(handle){this.textTransaction=null;try{const retryCommand=this.command('text.commit',command.payload);this.textTransaction=this.runtime.begin(retryCommand);this.textExpectedRevision=retryCommand.expectedDocumentRevision;}catch(_){}}
+        return;
+      }
+      this.textTransaction=null;
+      if(!id)this.completeToolInteraction({toolId:'text',outcome,origin:'canvas',selection:committedObject?.id?[committedObject.id]:undefined});
+      this.closeText();
     }
     validColor() { return this.colorInput && /^#[0-9a-f]{6}$/i.test(this.colorInput.value); }
     updateColorPicker(color,{initial=false}={}) {
