@@ -82,6 +82,7 @@ Voor ieder gecreëerd punt (dus niet op de broncurven zelf):
     "familyId": "ix-42",
     "slot": 0,
     "firstFrame": "canonical-conic-v1",
+    "frameKind": "circle-world",
     "anchorT": 0.0947,
     "leftReach": 0.072,
     "rightReach": 0.080,
@@ -99,8 +100,9 @@ Voor ieder gecreëerd punt (dus niet op de broncurven zelf):
 | `familyId` | Door de transactie toegekende unieke, onveranderlijke batchidentiteit; niet afhankelijk van een nog bestaand ander punt-ID |
 | `slot` | Integer in `[0,3]`, unieke index binnen de creatiefamilie; **geen** dynamische rootrang |
 | `firstFrame` | Exact `canonical-conic-v1`; definieert de parameterconventie |
+| `frameKind` | Exact `circle-world` of `ellipse-local`; immutable keuze op creatietijdstip, voorkomt stilzwijgende fasewissel bij `a=b` |
 | `anchorT` | Initiële genormaliseerde \(t=\theta/(2\pi)\), eindig in \([0,1)\) |
-| `leftReach`, `rightReach` | Positieve, eindige cyclische reikwijdten richting aangrenzende initiële wortels; samen kleiner dan 1 |
+| `leftReach`, `rightReach` | Positieve, eindige cyclische reikwijdten; samen **hoogstens 1**, waarbij de waarde **exact 1 alleen voor een enkelvoudige creatie-root** is toegestaan |
 | `guardT` | Positieve eindige veiligheidszone; `guardT < min(leftReach,rightReach)` |
 | `crossing` | `positive`, `negative` of `tangent`; sign van de afgeleide van de tweede contourfunctie langs de positief gerichte eerste contour op creatietijdstip |
 
@@ -112,13 +114,14 @@ Het volledige puntobject blijft het bestaande `point`-type met berekende `x,y`, 
 
 `firstFrame: canonical-conic-v1` betekent:
 
-- **Eerste bron is een cirkel:** \(\theta=\operatorname{atan2}(y-c_y,x-c_x)\), tegen de klok in vanaf de globale positieve x-richting.
-- **Eerste bron is een niet-cirkelvormige ellips:** gebruik de actuele canonieke `u/v`-asbasis uit `EllipseGeometry.fromDefinition`; voor contourpunt \(X\):
+- **Eerste bron is een cirkel:** gebruik `frameKind:'circle-world'`; \(\theta=\operatorname{atan2}(y-c_y,x-c_x)\), tegen de klok in vanaf de globale positieve x-richting.
+- **Eerste bron is een niet-cirkelvormige ellips:** gebruik `frameKind:'ellipse-local'`; gebruik de actuele canonieke `u/v`-asbasis uit `EllipseGeometry.fromDefinition`; voor contourpunt \(X\):
   \[
   \theta=\operatorname{atan2}\!\left(\frac{(X-C)\cdot v}{b},\frac{(X-C)\cdot u}{a}\right).
   \]
   De opgeslagen vorm van de **eerste** ellips (inclusief rotatie en bronrolvolgorde) bepaalt de framebetekenis. Verander die niet door object-ID-sortering.
-- **Eerste bron is een cirkelvormige ellips \((a=b)\):** neem een ondubbelzinnige, gedocumenteerde canonieke wereldgeoriënteerde fase (\(u=(1,0),v=(0,1)\)) en negeer een fysiek betekenisloze weergaverotatie. Een **overgang** van niet-cirkelvormig naar exact circulair, en omgekeerd, kan de referentiefase discontinu veranderen: bestaande keys worden daar conservatief `AMBIGUOUS_BRANCH` tot de vaste framemapping opnieuw ondubbelzinnig is.
+- **Eerste bron is een cirkelvormige ellips \((a=b)\):** gebruik bij creatie `frameKind:'circle-world'`; neem een ondubbelzinnige, gedocumenteerde canonieke wereldgeoriënteerde fase (\(u=(1,0),v=(0,1)\)) en negeer een fysiek betekenisloze weergaverotatie. Een **overgang** van niet-cirkelvormig naar exact circulair, en omgekeerd, kan de referentiefase discontinu veranderen: bestaande keys worden daar conservatief `AMBIGUOUS_BRANCH` tot de vaste framemapping opnieuw ondubbelzinnig is.
+- **Frameguard:** wanneer een opgeslagen `frameKind` niet overeenkomt met de **actuele** toestand van de eerste bron, is de key `AMBIGUOUS_BRANCH` en is geen nieuwe phase-choice toegestaan. Als de oorspronkelijke geometrische klasse terugkeert, mag de originele key zonder wijziging opnieuw worden beoordeeld.
 - **Geconstrueerde ellips met samenvallende brandpunten:** wanneer de eerdere intrinsieke oriëntatie niet uit de actuele bron kan worden gereconstrueerd, **geen verzonnen voortzetting**; gebruik de equivalente ambiguïteitsstatus in plaats van een willekeurige as.
 
 De implementatiebijlage moet de exacte grens `a≈b` versus `a=b` en de bijbehorende binaire getalcondities met onafhankelijke fixtures vastleggen. Geen ongedocumenteerde epsilon of verborgen last-frame-cache. Alle cyclische vergelijkingen gebeuren **modulo 1**; de parameternaad \(t=0/1\) is geen speciaal geometrisch punt.
@@ -255,7 +258,7 @@ Actuele `main` kan `constructionSchema:10` gebruiken voor `lineEllipseIntersecti
 | **SKEY-014** | Cirkel–ellips bronvolgorde omgekeerd in UI | Opgeslagen `[circle,ellipse]`, eerste-frame = cirkel |
 | **SKEY-015** | Ellips–ellips met omgekeerde gebruikersbronvolgorde | Volgorde blijft bewaard binnen nieuwe recepten; geen herschrijven van oude branches |
 | **SKEY-016** | Construeerde ellips degeneratief en terug | `SOURCE_INVALID`, key/IDs blijven, herstel zonder verborgen frame-cache |
-| **SKEY-017** | Ellips wordt exact cirkelvormig of krijgt onbepaalde intrinsieke oriëntatie | Geen impliciete phase-swap; conservatieve status en reproduceerbare heropening |
+| **SKEY-017** | Ellips wordt exact cirkelvormig of krijgt onbepaalde intrinsieke oriëntatie | `frameKind`-guard: geen impliciete fasewissel; conservatieve status en reproduceerbare heropening |
 | **SKEY-018** | Writer + import van uitsluitend nieuw conic-conic-recept | Nieuwe featuregate zonder verplichte `lineEllipseIntersection`; pure roundtrip |
 | **SKEY-019** | Gemengd document met schema-10-lijn–ellips, matchAB en conic-conic | Correct minimaal schema, oude recipes/branches ongewijzigd |
 | **SKEY-020** | Corrupt/duplicate key, verkeerde familie/slot/sector, onbekende versie | Atomaire weigering; bestaande model onveranderd |
