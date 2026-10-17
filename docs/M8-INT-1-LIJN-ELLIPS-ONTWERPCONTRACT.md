@@ -2,7 +2,7 @@
 
 **Documentversie:** 1.0.0  
 **Datum:** 17 oktober 2026  
-**Status:** ontwerpvoorstel ter gebruikersgoedkeuring — **geen implementatie-GO**  
+**Status:** **ontwerpcontract goedgekeurd door gebruiker op 17 oktober 2026** — uitvoerbaar uitsluitend met afzonderlijke Codex-opdracht; geen merge-GO  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor (WIE)  
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
 **Basis:** M8-INT-ontwerpcontract v1.1.0 (statusgecorrigeerd naar v1.1.1), M8a-ellipscontract v1.1.0, M8-INT.0 geïntegreerd op main via PR #27.  
@@ -281,4 +281,4 @@ Een doorlopende beschrijving op `main` is **geen** impliciete GO voor code, sche
 
 ---
 
-**Einde M8-INT.1-ontwerp- en implementatiecontract v1.0.0 — ter goedkeuring; geen implementatie-GO.**
+**Einde M8-INT.1-ontwerp- en implementatiecontract v1.0.0 — ontwerp goedgekeurd op 17 oktober 2026; implementatie uitsluitend via afzonderlijke Codex-opdracht en featurebranch, geen zelfstandige merge-GO.**
