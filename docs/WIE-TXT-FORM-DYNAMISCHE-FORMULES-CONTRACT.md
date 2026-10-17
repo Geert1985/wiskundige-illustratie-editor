@@ -3,7 +3,7 @@
 **Ontwerpcontract v1.3.0 — 17 oktober 2026**  
 **Status:** functioneel concept door gebruiker bevestigd; vastgelegd als documentatie. **Geen implementatie-GO; TXT-FORM.0 (read-only preflight) verplicht.**  
 **Repository:** `Geert1985/wiskundige-illustratie-editor`  
-**Relaties:** [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md). De volwaardige Formule-editor en interactieve algebra behoren tot het **afzonderlijke webappproject WAT — Wiskundige Analyse- en Transformatietool**. De historisch opgestelde [WIE-FORM](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md)- en [WIE-ALG](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md)-voorstellen zijn voor WIE vervallen.
+**Relaties:** [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md). De volwaardige Formule-editor en interactieve algebra behoren tot het **afzonderlijke webapp-project WAT — Wiskundige Analyse- en Transformatietool**. De historisch opgestelde [WIE-FORM](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md)- en [WIE-ALG](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md)-voorstellen zijn voor WIE vervallen.
 
 ## 1. Productdoel
 
