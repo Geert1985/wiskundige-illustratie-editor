@@ -5,7 +5,7 @@
 **Productbesluit:** **Optie A eerst implementeren** als bruikbare basisversie voor cirkel–ellips en ellips–ellips, met een **expliciet toekomstig, afzonderlijk te besluiten migratiepad naar optie B**. Door gebruiker besloten op 17 oktober 2026.  
 **Status:** normatief **productrichting-/ontwerpkader**; details van schema, numeriek algoritme en branchsleutel nog **te controleren in een korte implementatiepreflight**. **Geen productiecode-GO** en **geen merge-GO** door dit document.  
 **Normatieve basis:** [algemeen M8-INT-contract](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.3-hoofdontwerp](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md), [roadmap](DEVELOPMENT-ROADMAP.md), bestaande M8-INT.0/.1 op \`main\`.  
-**Toekomstige, niet voor MVP geldende onderzoeksbijlage:** [M8-INT.3-A trajectidentiteit optie B, v2.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md). Die versie is **historisch/research en géén verplichte implementatie-eis** voor de eerste A-versie. De reeds gemaakte A1, A2.1 en A2.1b researchbranches blijven als bewijs en referentiemateriaal bewaard.
+**Toekomstige, niet voor MVP geldende onderzoeksbijlage:** [M8-INT.3-A historische trajectidentiteit optie B, v2.0.1](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md). Die versie is **historisch/research en géén verplichte implementatie-eis** voor de eerste A-versie. De reeds gemaakte A1, A2.1 en A2.1b researchbranches blijven als bewijs en referentiemateriaal bewaard.
 
 ---
 
