@@ -520,3 +520,18 @@ test('UI-LAYERS-LABEL-1 empty, locked and restricted batches have no partial eff
   assert.equal(app.labelToggleState(['A']).enabled,true);assert.equal(app.labelToggleState(['A','B']).enabled,false);
   const saved=plain(session.engine.get('A'));app.toggleLabels(['A','B']);assert.deepEqual(plain(session.engine.get('A')),saved);
 });
+
+test('UI-LAYERS-TEXT-1 first creation and layer deletion undo/redo atomically restore identity',()=>{
+ const {app,engine}=appRuntime(),before=plain(engine.toJSON());let created;
+ app.changeDocument(()=>{created=app.createObject({type:'text',x:1,y:2,text:'Eerste tekst'},'text');});
+ const saved=plain(engine.toJSON()),id=engine.model.meta.automaticTextLayerId;
+ assert.equal(app.history.entries.length,1);assert.ok(saved.layers.find(l=>l.id===id).members.includes(created.id));
+ app.travelHistory();assert.deepEqual(plain(engine.toJSON()),before);
+ app.travelHistory(true);assert.deepEqual(plain(engine.toJSON()),saved);
+ app.changeDocument(()=>app.execute('layer.delete',{id}));assert.equal(engine.model.meta.automaticTextLayerId,undefined);
+ app.travelHistory();assert.deepEqual(plain(engine.toJSON()),saved);
+ app.travelHistory(true);assert.equal(engine.model.meta.automaticTextLayerId,undefined);
+ app.changeDocument(()=>app.createObject({type:'text',x:2,y:2,text:'Nieuwe laag'},'text'));
+ assert.ok(engine.model.layers.some(l=>l.id===engine.model.meta.automaticTextLayerId));
+ app.newDocument();assert.equal(engine.model.meta.automaticTextLayerId,undefined);assert.equal(engine.model.layers.length,1);assert.equal(engine.model.layers[0].name,'Basislaag');
+});

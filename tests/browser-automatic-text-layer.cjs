@@ -1,0 +1,32 @@
+const assert=require('node:assert/strict');
+module.exports=async page=>{
+ const snapshot=()=>page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());
+ const execute=(op,payload)=>page.evaluate(({op,payload})=>{const app=FZI.MathIllustration.editor;app.changeDocument(()=>app.execute(op,payload));},{op,payload});
+ const newText=async value=>{
+  await page.evaluate(()=>{const app=FZI.MathIllustration.editor;app.pendingText={point:{x:1,y:2}};app.openRichText();});
+  await page.locator('#textDialog').waitFor({state:'visible'});await page.locator('#richTextSurface .ProseMirror').fill(value);await page.locator('#textForm button[type=submit]').click();await page.locator('#textDialog').waitFor({state:'hidden'});
+  return (await snapshot()).objects.at(-1).id;
+ };
+ await page.evaluate(()=>FZI.MathIllustration.editor.newDocument());
+ const before=await snapshot(),first=await newText('Eerste tekst');let saved=await snapshot(),id=saved.meta.automaticTextLayerId,base=saved.layers[0].id;
+ assert.equal(saved.layers.length,2);assert.deepEqual(saved.layers.find(l=>l.id===id).members,[first]);
+ await page.locator('#undoBtn').click();assert.deepEqual(await snapshot(),before);await page.locator('#redoBtn').click();assert.deepEqual(await snapshot(),saved);
+ const second=await newText('Tweede tekst'),third=await newText('Derde tekst');saved=await snapshot();assert.deepEqual(saved.layers.find(l=>l.id===id).members,[first,second,third]);
+ await page.locator('#sidebarLayersTab').click();const name=page.locator('[data-layer-name="'+id+'"]');await name.fill('Toelichtingen');await name.press('Tab');
+ const fourth=await newText('Na hernoemen');saved=await snapshot();assert.equal(saved.layers.find(l=>l.id===id).name,'Toelichtingen');assert.ok(saved.layers.find(l=>l.id===id).members.includes(fourth));
+ await execute('layer.assign',{ids:[first],layerId:base});
+ await page.evaluate(id=>FZI.MathIllustration.editor.openRichText(id),first);await page.locator('#textDialog').waitFor({state:'visible'});await page.locator('#richTextSurface .ProseMirror').fill('Handmatig verplaatst en bewerkt');await page.locator('#textForm button[type=submit]').click();await page.locator('#textDialog').waitFor({state:'hidden'});
+ saved=await snapshot();assert.ok(saved.layers.find(l=>l.id===base).members.includes(first));
+ for(const object of [{type:'point',x:0,y:0},{type:'line',x1:0,y1:0,x2:1,y2:1},{type:'circle',cx:0,cy:0,r:1},{type:'vector',x1:0,y1:0,x2:2,y2:1}])await execute('object.create',{toolId:'create:'+object.type,object});
+ saved=await snapshot();assert.ok(saved.objects.filter(o=>o.type!=='text').every(o=>saved.layers.find(l=>l.id===base).members.includes(o.id)));
+ await page.locator('[data-toggle-label="'+second+'"]').click();const pressed=await page.locator('[data-toggle-label="'+second+'"]').getAttribute('aria-pressed');assert.ok(['true','false'].includes(pressed));
+ const layerPressed=await page.locator('[data-layer-label="'+id+'"]').getAttribute('aria-pressed');await page.locator('[data-layer-label="'+id+'"]').click();assert.equal(await page.locator('[data-layer-label="'+id+'"]').getAttribute('aria-pressed'),layerPressed==='true'?'false':'true');
+ await page.locator('[data-layer-visibility="'+id+'"]').click();const hidden=await snapshot();
+ await page.evaluate(()=>{const app=FZI.MathIllustration.editor;app.pendingText={point:{x:1,y:2}};app.openRichText();});await page.locator('#textDialog').waitFor({state:'visible'});await page.locator('#richTextSurface .ProseMirror').fill('Niet onzichtbaar opslaan');await page.locator('#textForm button[type=submit]').click();
+ assert.equal(await page.locator('#textDialog').isVisible(),true);assert.deepEqual(await snapshot(),hidden);assert.match(await page.locator('#status').textContent(),/tekstlaag is verborgen/);await page.locator('#textDialogClose').click();
+ await page.locator('[data-layer-visibility="'+id+'"]').click();saved=await snapshot();await page.evaluate(doc=>FZI.MathIllustration.editor.loadDocument(doc),saved);assert.deepEqual(await snapshot(),saved);
+ await page.locator('[data-layer-delete="'+id+'"]').click();assert.equal((await snapshot()).meta.automaticTextLayerId,undefined);
+ await newText('Na verwijderen');saved=await snapshot();assert.ok(saved.meta.automaticTextLayerId);assert.equal(saved.layers.length,2);
+ await page.screenshot({path:'test-results/ui-layers-text.png'});
+ return {firstCreationHistory:true,reuse:true,rename:true,manualEdit:true,geometry:true,labelToggles:true,hiddenAbort:true,roundtrip:true,deleteRecreate:true};
+};

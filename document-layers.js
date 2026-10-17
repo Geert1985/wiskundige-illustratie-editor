@@ -13,5 +13,32 @@
     for(const g of groups){const leaves=MI.PersistentGroups.members(groups,g.id);if(new Set(leaves.map(id=>owner.get(id))).size!==1)throw Error('Een groep moet op dezelfde laag staan.');}
     return layers.map(l=>({id:l.id,name:l.name,visible:l.visible,members:l.members.slice()}));
   }
-  MI.DocumentLayers=Object.freeze({index,visible,ordered,validate});
+  function automaticTextLayer(layers,meta){
+    if(!Object.prototype.hasOwnProperty.call(meta,'automaticTextLayerId'))return null;
+    const id=meta.automaticTextLayerId;
+    if(typeof id!=='string'||!id.trim()||!layers.some(l=>l.id===id))throw Error('Ongeldige automatische tekstlaagreferentie.');
+    return layers.find(l=>l.id===id);
+  }
+  // Pure creation plan: callers validate and commit objects, layers and metadata together.
+  // Explicit copy placement preserves the original layer, including legacy unlayered groups.
+  function creationPlan(type,layers,meta,objects,allocate,options={}){
+    const automatic=automaticTextLayer(layers,meta);
+    if(options.preserveLayer){
+      const target=options.layerId?layers.find(l=>l.id===options.layerId):null;
+      if(layers.length&&!target)throw Error('Ongeldige doellaag voor kopie.');
+      if(type==='text'&&target&&!target.visible)throw Error('De doellaag voor tekst is verborgen. Maak deze eerst zichtbaar.');
+      return {layers,targetId:target?.id,meta};
+    }
+    if(type==='text'){
+      if(automatic){if(!automatic.visible)throw Error('De tekstlaag is verborgen. Maak deze eerst zichtbaar.');return {layers,targetId:automatic.id,meta};}
+      const base=layers.length?layers:[{id:allocate(),name:'Basislaag',visible:true,members:objects.map(o=>o.id)}];
+      const layer={id:allocate(),name:'Tekst',visible:true,members:[]};
+      return {layers:[...base,layer],targetId:layer.id,meta:{...meta,automaticTextLayerId:layer.id}};
+    }
+    if(!layers.length)return {layers,meta};
+    const target=layers.slice().reverse().find(l=>l.visible&&l.id!==automatic?.id);
+    if(!target)throw Error('Maak eerst een gewone tekenlaag zichtbaar.');
+    return {layers,targetId:target.id,meta};
+  }
+  MI.DocumentLayers=Object.freeze({index,visible,ordered,validate,automaticTextLayer,creationPlan});
 })(window);

@@ -81,5 +81,5 @@ test('mixed ellipse, region, rich text, axis references and layers roundtrip thr
 test('revoked ellipse sources redact dynamic text bindings as well as the curve',()=>{
  const {MI,e}=author();const ellipse=e.construct('ellipseByFociAndSum',sources,6)[0];e.update(ellipse.id,{name:'Private ellipse'});e.add({id:'caption',type:'text',x:0,y:0,text:'',textBinding:{schema:1,sourceId:ellipse.id,property:'name',prefix:'',suffix:'',precision:null}});
  const f=fixture();f.initialDocument=plain(e.toJSON());f.policy.parameters={};f.policy.allowedTools=[];f.policy.initialObjectRules={A:{sourceTools:[toolId]},B:{read:false}};const {session}=MI.RuntimeSession.create(f);
- const text=session.engine.get('caption');assert.equal(text.textBinding,null);assert.equal(text.text,'niet beschikbaar');assert.ok(!JSON.stringify(session.engine.toJSON()).includes('Private ellipse'));
+ const text=session.engine.get('caption');assert.equal(text.textBinding,null);assert.equal(text.text,'niet beschikbaar');assert.ok(!JSON.stringify(session.engine.model.objects).includes('Private ellipse'));assert.throws(()=>session.engine.toJSON(),e=>e.code==='PERMISSION_DENIED');
 });

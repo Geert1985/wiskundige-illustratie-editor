@@ -208,6 +208,8 @@
     else fail(s.author?'UNSUPPORTED_COMMAND':'MODE_DENIED');
     if(!s.author)for(const object of e.model.objects){const prior=s.kernel.get(object.id),binding=object.textBinding;if(binding&&JSON.stringify(binding)!==JSON.stringify(prior?.textBinding)){const source=e.get(binding.sourceId);if(!source||!effective(s,source).read||!ellipseSourcesAllowed(s,source,e))fail('PERMISSION_DENIED');if(!MI.DynamicText.propertiesFor(source).includes(binding.property))fail('INVALID_COMMAND');}}
     if(!s.author)for(const object of e.model.objects)if(object.textContent&&JSON.stringify(object.textContent)!==JSON.stringify(s.kernel.get(object.id)?.textContent))for(const run of MI.TextValues.runs(object.textContent))if(!sourceAllowed(s,run.binding.sourceId,run.binding.property,e))fail('MISSING_SOURCE_PERMISSION');
+    // Implicit creation must not grant restricted callers author-only layer creation.
+    if(!s.author&&e.model.layers.some(l=>!s.kernel.model.layers.some(prior=>prior.id===l.id)))fail('MODE_DENIED');
     checkEffects(s,e,direct);checkBudgets(s,e,c);return {command:c,candidate:e,result,view,selection,historyAction,relatedCommandId};
   }
   const ellipseProjectionCache=new WeakMap();
@@ -257,7 +259,7 @@
     if(!svg){
       if(doc.circleDistributions){for(const d of doc.circleDistributions){const circle=s.kernel.get(d.circleId),ids=[...d.pointIds,d.circleId];if(ids.some(id=>!objects.some(o=>o.id===id))||d.pointIds.some(id=>{const point=s.kernel.get(id);return !point||!effective(s,point).display||!available(point,s.kernel);})||!circle||!effective(s,circle).read||!effective(s,circle).display||!available(circle,s.kernel))fail('PERMISSION_DENIED');}data.circleDistributions=clone(doc.circleDistributions);}
       if(doc.groups?.length){const groups=readGroups(s);if(groups.length!==s.kernel.model.groups.length)fail('PERMISSION_DENIED');data.groupSchema=1;data.groups=groups;}
-      if(doc.layers?.length){const layers=readLayers(s);if(layers.reduce((n,l)=>n+l.members.length,0)!==s.kernel.model.objects.length)fail('PERMISSION_DENIED');data.layerSchema=1;data.layers=layers;}
+      if(doc.layers?.length){const layers=readLayers(s);if(layers.reduce((n,l)=>n+l.members.length,0)!==s.kernel.model.objects.length)fail('PERMISSION_DENIED');data.layerSchema=1;data.layers=layers;if(doc.meta.automaticTextLayerId)data.meta.automaticTextLayerId=doc.meta.automaticTextLayerId;}
       return data;
     }
     const r=measurementRenderer(new MI.SvgRenderer({...doc.presentation,...s.view}),s);return r.render({meta:data.meta,layers:s.kernel.model.layers,all:()=>objects},{embedFonts:true});
