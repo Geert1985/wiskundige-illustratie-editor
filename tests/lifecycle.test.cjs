@@ -765,6 +765,73 @@ test('WIE-TOOL-L5.3 Escape without a canvas gesture and point tool switching pre
  assert.equal(h.app.tool,'line');assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
 });
 
+test('WIE-TOOL-L5.4a all shared draw tools use catalog repeat completion and their existing command route',()=>{
+ const cases=[['line','linear.draw'],['straight','object.create'],['ray','linear.draw'],['vector','object.create'],['circle','object.create'],['dimension','object.create']];
+ for(const [tool,operation] of cases){
+  const h=appRuntime(),entry=h.app.toolCatalog.getTool(tool);assert.equal(entry.lifecycle,'repeat',tool);assert.equal(entry.interactionAdapter,'draw',tool);
+  h.app.setTool(tool);const execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app),operations=[],completions=[];
+  h.app.execute=(name,...args)=>{operations.push(name);return execute(name,...args);};h.app.completeToolInteraction=args=>{completions.push(args);return complete(args);};
+  h.down({x:2,y:1});assert.equal(h.app.interaction.mode,'draw',tool);assert.ok(h.engine.renderer.preview,tool);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),true,tool);
+  h.move({x:4,y:3});assert.ok(h.engine.renderer.preview,tool);
+  const end=h.app.transform().mathToScreen({x:4,y:3});h.emit(h.win,'pointerup',{clientX:end.x,clientY:end.y,pointerId:1});
+  const created=h.engine.model.objects.filter(object=>object.type===tool).at(-1);assert.ok(created,tool);assert.deepEqual(operations,[operation],tool);
+  assert.equal(completions.length,1,tool);assert.equal(completions[0].toolId,tool);assert.equal(completions[0].outcome.ok,true);assert.deepEqual(plain(completions[0].selection),[created.id]);
+  assert.equal(h.app.tool,tool);assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.deepEqual(plain(h.app.selectedIds),[created.id]);assert.equal(h.app.history.entries.length,1);
+  const after=plain(h.engine.toJSON());assert.equal(h.app.history.undo(),true,tool);assert.equal(h.engine.get(created.id),null);assert.equal(h.app.history.redo(),true,tool);assert.deepEqual(plain(h.engine.toJSON()),after,tool);
+ }
+});
+
+test('WIE-TOOL-L5.4b all multipoint tools complete only valid shapes and reset for the next shape',()=>{
+ const points=[{x:2,y:-1},{x:4,y:-1},{x:3,y:1}],cases=[['triangle',3],['polygon',3],['angle',3],['rightAngle',3]];
+ for(const [tool,pointCount] of cases){
+  const h=appRuntime(),entry=h.app.toolCatalog.getTool(tool);assert.equal(entry.lifecycle,'repeat',tool);assert.equal(entry.interactionAdapter,'polygon',tool);
+  h.app.setTool(tool);const before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app),commands=[],completions=[];
+  h.app.execute=(operation,...args)=>{commands.push(operation);return execute(operation,...args);};h.app.completeToolInteraction=args=>{completions.push(args);return complete(args);};
+  for(let index=0;index<pointCount;index++){
+   h.down(points[index]);
+   if(index<pointCount-1||tool==='polygon'){
+    assert.equal(completions.length,0,tool);assert.equal(h.app.interaction.vertices.length,index+1,tool);assert.deepEqual(plain(h.engine.toJSON()),before,tool);assert.equal(h.app.history.entries.length,0,tool);assert.ok(h.engine.renderer.preview,tool);
+   }
+  }
+  if(tool==='polygon'){assert.equal(completions.length,0);h.app.keyDown({key:'Enter',preventDefault(){}});}
+  const expectedType=['angle','rightAngle'].includes(tool)?'angle':'polygon',created=h.engine.model.objects.filter(object=>object.type===expectedType).at(-1);
+  assert.ok(created,tool);assert.deepEqual(commands,['object.create'],tool);assert.equal(completions.length,1,tool);assert.equal(completions[0].toolId,tool);assert.equal(completions[0].outcome.ok,true);assert.deepEqual(plain(completions[0].selection),[created.id]);
+  assert.equal(h.app.tool,tool);assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.deepEqual(plain(h.app.selectedIds),[created.id]);assert.equal(h.app.history.entries.length,1);
+  const after=plain(h.engine.toJSON());h.down(points[0]);assert.equal(h.app.interaction.vertices.length,1,tool+' fresh gesture');assert.equal(completions.length,1,tool+' intermediate point');
+  h.app.keyDown({key:'Escape',preventDefault(){}});assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.deepEqual(plain(h.engine.toJSON()),after);assert.equal(h.app.history.entries.length,1);
+  assert.equal(h.app.history.undo(),true,tool);assert.deepEqual(plain(h.engine.toJSON()),before,tool);assert.equal(h.app.history.redo(),true,tool);assert.deepEqual(plain(h.engine.toJSON()),after,tool);
+ }
+ const switched=appRuntime();switched.app.setTool('polygon');switched.down(points[0]);const before=plain(switched.engine.toJSON());switched.app.setTool('circle');
+ assert.equal(switched.app.tool,'circle');assert.equal(switched.app.interaction,null);assert.equal(switched.engine.renderer.preview,null);assert.equal(switched.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.deepEqual(plain(switched.engine.toJSON()),before);assert.equal(switched.app.history.entries.length,0);
+});
+
+test('WIE-TOOL-L5.4c all 21 generic construction tools have the declared single construction contract',()=>{
+ const ids=['midpoint','perpendicular','perpendicularBisector','bisector','lineBetweenPoints','parallel','tangent','circleByCenterPoint','triangleFromPoints','centroid','circumcenter','orthocenter','incenter','incircle','eulerLine','ninePointCircle','anglePoints','angleDirections','polygonRegion','circleSectorRegion','circleSegmentRegion'],{app}=appRuntime();
+ assert.equal(ids.length,21);for(const kind of ids){const entry=app.toolCatalog.getTool('construct:'+kind);assert.ok(entry,kind);assert.equal(entry.lifecycle,'single',kind);assert.equal(entry.interactionAdapter,'construction',kind);}
+ for(const specialized of ['construct:intersection','construct:pointOnObject','construct:ellipseByFociAndPoint','construct:parallelogramBySideAngle','text'])assert.ok(!ids.some(kind=>'construct:'+kind===specialized),specialized);
+});
+
+test('WIE-TOOL-L5.4c remaining generic construction forms complete centrally and preserve multi-step history',()=>{
+ const triangle={id:'T',type:'polygon',vertices:[{x:50,y:50},{x:54,y:50},{x:51,y:53}]},points=[{id:'A',type:'point',x:20,y:0},{id:'B',type:'point',x:22,y:0},{id:'U',type:'point',x:30,y:0},{id:'V',type:'point',x:32,y:0},{id:'W',type:'point',x:32,y:2}],cases=[
+  {kind:'midpoint',prepare(h){for(const point of points.slice(0,2))h.engine.add(point);},clicks:[{x:20,y:0},{x:22,y:0}]},
+  {kind:'lineBetweenPoints',prepare(h){for(const point of points.slice(0,2))h.engine.add(point);},clicks:[{x:20,y:0},{x:22,y:0}]},
+  {kind:'anglePoints',prepare(h){for(const point of points.slice(2))h.engine.add(point);},clicks:[{x:30,y:0},{x:32,y:0},{x:32,y:2}]},
+  ...['circumcenter','orthocenter','incenter','incircle','eulerLine','ninePointCircle'].map(kind=>({kind,prepare(h){h.engine.add(triangle);},clicks:[{x:52,y:51}]}))
+ ];
+ for(const scenario of cases){
+  const h=appRuntime();scenario.prepare(h);h.app.setTool('construct:'+scenario.kind);const before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app),operations=[],completions=[];
+  h.app.execute=(operation,...args)=>{operations.push(operation);return execute(operation,...args);};h.app.completeToolInteraction=args=>{completions.push(args);return complete(args);};
+  for(let index=0;index<scenario.clicks.length;index++){
+   h.down(scenario.clicks[index]);
+   if(index<scenario.clicks.length-1){assert.equal(completions.length,0,scenario.kind);assert.equal(h.app.interaction.sources.length,index+1,scenario.kind);assert.deepEqual(plain(h.engine.toJSON()),before,scenario.kind);assert.equal(h.app.history.entries.length,0,scenario.kind);}
+  }
+  const created=h.engine.model.objects.filter(object=>object.construction?.kind===scenario.kind);assert.equal(created.length,1,scenario.kind);assert.deepEqual(operations,['construction.create'],scenario.kind);
+  assert.equal(completions.length,1,scenario.kind);assert.equal(completions[0].toolId,'construct:'+scenario.kind);assert.equal(completions[0].outcome.ok,true);assert.deepEqual(plain(completions[0].selection),[created[0].id]);
+  assert.equal(h.app.tool,'select',scenario.kind);assert.equal(h.app.interaction,null,scenario.kind);assert.equal(h.engine.renderer.preview,null,scenario.kind);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),false,scenario.kind);assert.deepEqual(plain(h.app.selectedIds),[created[0].id]);assert.equal(h.app.history.entries.length,1,scenario.kind);
+  const after=plain(h.engine.toJSON());assert.equal(h.app.history.undo(),true,scenario.kind);assert.deepEqual(plain(h.engine.toJSON()),before,scenario.kind);assert.equal(h.app.history.redo(),true,scenario.kind);assert.deepEqual(plain(h.engine.toJSON()),after,scenario.kind);
+ }
+});
+
 test('WIE-TOOL-L2 first and second line use central repeat completion exactly once',()=>{
  const h=appRuntime();h.app.setTool('line');const completion=h.app.completeToolInteraction.bind(h.app);let completed=0;
  h.app.completeToolInteraction=(args)=>{completed++;return completion(args);};
