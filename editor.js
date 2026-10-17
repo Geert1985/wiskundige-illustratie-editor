@@ -1046,9 +1046,10 @@
       const angle=['angle','rightAngle'].includes(state.shape);
       try { if(angle)MI.MeasurementGeometry.validateAngle(state.vertices,state.shape==='rightAngle'?'right':'arc');else MI.PolygonGeometry.validate(state.vertices); }
       catch(error) { this.status(error.message); return; }
-      this.selectedId=this.createObject({type:angle?'angle':'polygon',vertices:state.vertices,...(angle?{angleMark:state.shape==='rightAngle'?'right':'arc'}:{})},state.shape).id;
-      this.interaction=null; this.release(state); this.engine.renderer.preview=null; this.feedback=null;
-      this.history.record(state.historyBefore); this.invalidate(); this.status(angle?'Hoek toegevoegd.':'Veelhoek toegevoegd.');
+      const outcome=this.changeDocument(()=>{this.selectedId=this.createObject({type:angle?'angle':'polygon',vertices:state.vertices,...(angle?{angleMark:state.shape==='rightAngle'?'right':'arc'}:{})},state.shape).id;return [this.selectedId];},{cancelInteraction:false});
+      if(!outcome.ok){this.release(state);state.pointerId=null;return;}
+      this.completeToolInteraction({toolId:state.shape,outcome,origin:'canvas',selection:[this.selectedId]});
+      this.status(angle?'Hoek toegevoegd.':'Veelhoek toegevoegd.');
     }
     pointerDown(event) {
       if(this.initialized && !this.interaction && this.tool==='select' && this.navigationMode!=='pan' && event.button===2 && event.isPrimary!==false) {
@@ -1094,7 +1095,8 @@
         if (this.tool === "text") {
           this.flushEdits(); this.pendingText = result; this.renderInstructions();this.nodes.textValue.value = "";this.openRichText();return;
         }
-        this.changeDocument(() => { this.selectedId = this.createObject(object).id; }); this.feedback = result; this.invalidate(); return;
+        const outcome=this.changeDocument(()=>{this.selectedId=this.createObject(object).id;return [this.selectedId];});
+        this.completeToolInteraction({toolId:'point',outcome,origin:'canvas',selection:outcome.ok?[this.selectedId]:undefined});return;
       }
       if (MI.LinearGeometry.isLinear({ type: this.tool }) || this.tool === "circle") {
         const result = this.snap(point);
@@ -1205,12 +1207,13 @@
       if(state.mode==='marquee'){this.suppressMarqueeMenu=!state.keyboard && state.active;this.invalidate();return;}
       if (state.mode === "draw") {
         if (state.resolved && state.resolved.length >= .05) {
-          if(state.shape==='line'){
-            const outcome=this.changeDocument(()=>{this.selectedId=this.execute('linear.draw',{shape:'line',x1:state.resolved.object.x1,y1:state.resolved.object.y1,x2:state.resolved.object.x2,y2:state.resolved.object.y2}).result[0].id;return [this.selectedId];});
-            this.completeToolInteraction({toolId:'line',outcome,origin:'canvas',selection:outcome.ok?[this.selectedId]:undefined});return;
-          }
-          if(state.shape==='ray')this.selectedId=this.execute('linear.draw',{shape:state.shape,x1:state.resolved.object.x1,y1:state.resolved.object.y1,x2:state.resolved.object.x2,y2:state.resolved.object.y2}).result[0].id;
-          else this.selectedId = this.createObject(state.resolved.object,state.shape).id;
+          const outcome=this.changeDocument(()=>{
+            const created=['line','ray'].includes(state.shape)
+              ?this.execute('linear.draw',{shape:state.shape,x1:state.resolved.object.x1,y1:state.resolved.object.y1,x2:state.resolved.object.x2,y2:state.resolved.object.y2}).result[0]
+              :this.createObject(state.resolved.object,state.shape);
+            this.selectedId=created.id;return [this.selectedId];
+          });
+          this.completeToolInteraction({toolId:state.shape,outcome,origin:'canvas',selection:outcome.ok?[this.selectedId]:undefined});return;
         }
         else this.status("Vorm te kort; geen object toegevoegd.");
       }
