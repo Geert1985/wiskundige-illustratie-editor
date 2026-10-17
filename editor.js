@@ -1274,15 +1274,27 @@
       this.engine.renderer.preview = null; this.feedback = null;
       if (this.initialized) this.invalidate();
     }
+    cancelActiveInteraction({reason='escape'}={}) {
+      if(reason!=='escape')return false;
+      const active=!!(this.interaction||this.circleDistributionPreview||this.ellipsePreviewFrame!=null||this.pointPlacementPreviewFrame!=null||this.engine.renderer.preview||this.tool!=='select'||this.navigationMode!=='select'||this.axisMenuOpen);
+      if(!active)return false;
+      this.cancel();
+      this.tool='select';this.navigationMode='select';this.axisMenuOpen=false;
+      this.renderInstructions();this.invalidate();
+      return true;
+    }
     keyDown(event) {
-      if(event.key==='Escape'&&this.nodes.textDialog?.open){event.preventDefault();this.closeText();return;}
+      if(event.key==='Escape'&&event.defaultPrevented)return;
+      if(event.key==='Escape'&&this.nodes.textDialog?.open){event.preventDefault();if(!this.textWorkspace?.handleCancel?.())this.closeText();return;}
+      // The native color dialog owns its cancel event; don't also cancel canvas state.
+      if(event.key==='Escape'&&this.nodes.colorDialog?.open)return;
       if(event.key==='Escape' && this.nodes.canvasToolsMenu && this.nodes.canvasToolsMenu.hidden===false){event.preventDefault();this.closeCanvasTools(true);return;}
-      if(event.key==='Escape' && this.canvasFullscreen && this.document.body?.classList.contains('properties-open')){event.preventDefault();this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.navigationTools?.querySelector?.('[data-view-select=axes]')?.focus?.();return;}
+      if(event.key==='Escape' && this.canvasFullscreen && this.document.body?.classList.contains('properties-open')){this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.navigationTools?.querySelector?.('[data-view-select=axes]')?.focus?.();return;}
       if(event.key==='Escape' && this.splitMenuOpen){event.preventDefault();this.closeSplitMenu(true);return;}
       if(event.key==='Escape' && this.nodes.fileMenu?.open){event.preventDefault();this.closeFileMenu(true);return;}
       const state = this.interaction;
-      if(event.key==='Escape' && !state && this.document.body?.classList.contains('properties-open') && this.window.innerWidth<1000){this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.propertiesToggle?.focus?.();this.selectedIds=[];this.inspectorTarget='objects';this.clearHover();this.invalidate();return;}
-      if(event.key==='Escape' && !state && this.document.body?.classList.contains('tools-open') && this.window.innerWidth<760){this.document.body.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.nodes.toolsToggle?.focus?.();this.selectedIds=[];this.inspectorTarget='objects';this.clearHover();this.invalidate();return;}
+      if(event.key==='Escape' && this.document.body?.classList.contains('properties-open') && (this.canvasFullscreen||this.window.innerWidth<1000)){if(!this.canvasFullscreen)event.preventDefault();this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.propertiesToggle?.focus?.();this.invalidate();return;}
+      if(event.key==='Escape' && this.document.body?.classList.contains('tools-open') && this.window.innerWidth<760){this.document.body.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.nodes.toolsToggle?.focus?.();this.invalidate();return;}
       if (event.key === "Escape" && (this.pendingText || this.colorId)) { event.preventDefault(); this.closeDialogs(true); return; }
       const active = this.document.activeElement;
       const editable = active && (/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable);
@@ -1299,7 +1311,7 @@
       if(!editable && !this.interaction && (event.ctrlKey||event.metaKey) && event.key.toLowerCase()==='g'){event.preventDefault();if(event.shiftKey)this.ungroupSelection();else this.groupSelection();return;}
       if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='a') {event.preventDefault();this.cancel();this.tool='select';this.selectedIds=this.engine.model.objects.filter(o=>this.canvasSelectable(o)&&this.groupCanvasSelectable(o.id)).map(o=>o.id);this.invalidate();return;}
       if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='d') {event.preventDefault();this.duplicateSelection();return;}
-      if (event.key === "Escape") { this.cancel(); if(!state){this.selectedIds=[];this.inspectorTarget='objects';this.clearHover();}this.tool = "select";this.navigationMode='select'; this.axisMenuOpen = false; this.invalidate(); return; }
+      if (event.key === "Escape") { this.cancelActiveInteraction({reason:'escape'}); return; }
       if(state && state.mode==='polygon') {
         if(event.key==='Enter') { event.preventDefault(); this.finishPolygon(); }
         if(event.key==='Backspace') { event.preventDefault(); if(state.vertices.length>1) { state.vertices.pop(); this.polygonPreview(); } else this.cancel(); }

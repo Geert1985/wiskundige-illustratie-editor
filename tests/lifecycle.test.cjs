@@ -934,6 +934,54 @@ test('WIE-TOOL-L3.4 Escape cancels pending intersection sources without completi
  h.app.keyDown({key:'Escape',preventDefault(){}});assert.equal(completions,0);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.history.entries.length,0);assert.deepEqual(plain(h.engine.model.objects.map(o=>o.id)),['p','l']);
 });
 
+test('WIE-TOOL-L4 Escape with no active interaction is a no-op',()=>{
+ const h=appRuntime();h.app.selectedIds=['p'];h.app.selectedId='p';h.app.tool='select';const before=plain(h.engine.toJSON()),history=h.app.history.entries.length,status=h.app.nodes.status.textContent;let prevented=false;
+ assert.equal(h.app.cancelActiveInteraction({reason:'escape'}),false);h.app.keyDown({key:'Escape',preventDefault(){prevented=true;}});
+ assert.equal(prevented,false);assert.equal(h.app.tool,'select');assert.deepEqual(plain(h.app.selectedIds),['p']);assert.equal(h.app.selectedId,'p');assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,history);assert.equal(h.app.nodes.status.textContent,status);
+});
+
+test('WIE-TOOL-L4 Escape cancels a free line gesture once and preserves the restored selection',()=>{
+ const h=appRuntime();h.app.selectedIds=['p'];h.app.selectedId='p';h.app.setTool('line');h.down({x:2,y:2});h.move({x:4,y:3});const before=plain(h.engine.toJSON());let completions=0;const complete=h.app.completeToolInteraction.bind(h.app);h.app.completeToolInteraction=args=>{completions++;return complete(args);};let prevented=false;
+ h.app.keyDown({key:'Escape',preventDefault(){prevented=true;}});assert.equal(prevented,false);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.equal(h.engine.renderer.preview,null);assert.deepEqual(plain(h.engine.toJSON()),before);assert.deepEqual(plain(h.app.selectedIds),['p']);assert.equal(h.app.history.entries.length,0);assert.equal(completions,0);
+ h.app.keyDown({key:'Escape',preventDefault(){prevented=true;}});assert.equal(h.app.tool,'select');assert.deepEqual(plain(h.app.selectedIds),['p']);assert.equal(h.app.history.entries.length,0);assert.equal(completions,0);
+});
+
+test('WIE-TOOL-L4 Escape closes a temporary mobile panel before a pending canvas interaction',()=>{
+ const h=appRuntime();let open=true;h.doc.body={classList:{contains:name=>name==='tools-open'&&open,remove(name){if(name==='tools-open')open=false;}}};h.win.innerWidth=500;h.app.tool='line';h.app.interaction={mode:'draw',pointerId:31,selectionIdsBefore:['p']};h.doc.getElementById('canvasWrap').setPointerCapture(31);
+ h.app.keyDown({key:'Escape',preventDefault(){}});assert.equal(open,false);assert.equal(h.app.interaction.mode,'draw');assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(31),true);assert.equal(h.app.tool,'line');
+ h.app.keyDown({key:'Escape',preventDefault(){}});assert.equal(h.app.interaction,null);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(31),false);assert.equal(h.app.tool,'select');assert.equal(h.app.history.entries.length,0);
+});
+
+test('WIE-TOOL-L4 text insertion Escape is delegated without closing its parent editor',()=>{
+ const h=appRuntime();h.app.tool='text';h.app.pendingText={point:{x:1,y:2}};h.doc.getElementById('textDialog').open=true;let panelCancels=0,closes=0;h.app.textInsertPanel={cancelPending(){panelCancels++;return true;}};h.app.textWorkspace={handleCancel(){return h.app.textInsertPanel.cancelPending();}};h.app.closeText=()=>{closes++;};
+ const event={key:'Escape',defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};h.app.keyDown(event);assert.equal(event.defaultPrevented,true);assert.equal(panelCancels,1);assert.equal(closes,0);assert.equal(h.app.nodes.textDialog.open,true);assert.deepEqual(plain(h.app.pendingText),{point:{x:1,y:2}});assert.equal(h.app.tool,'text');assert.equal(h.app.history.entries.length,0);
+ h.app.keyDown({key:'Escape',defaultPrevented:true,preventDefault(){closes++;}});assert.equal(panelCancels,1);assert.equal(closes,0);
+});
+
+test('WIE-TOOL-L4 native color dialog owns Escape before canvas cancellation',()=>{
+ const h=appRuntime();h.app.tool='line';h.app.interaction={mode:'draw',pointerId:51,selectionIdsBefore:['p']};h.doc.getElementById('canvasWrap').setPointerCapture(51);h.doc.getElementById('colorDialog').open=true;
+ h.app.keyDown({key:'Escape',preventDefault(){throw Error('WIE must leave native dialog Escape handling to the dialog.');}});assert.equal(h.app.interaction.mode,'draw');assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(51),true);assert.equal(h.app.tool,'line');
+});
+
+test('WIE-TOOL-L4 Escape cancels existing-text edits without touching the canvas interaction',async()=>{
+ const h=appRuntime();const text=h.engine.add({id:'T',type:'text',x:2,y:1,text:'Oud'});h.app.tool='line';h.app.selectedId='T';h.app.selectedIds=['T'];await h.app.openRichText(text.id);await new Promise(resolve=>setTimeout(resolve,0));const interaction={mode:'independent',pointerId:41},preview={type:'line',start:{x:0,y:0},end:{x:1,y:1}};h.app.interaction=interaction;h.doc.getElementById('canvasWrap').setPointerCapture(41);h.engine.renderer.preview=preview;h.app.nodes.textValue.value='Niet opslaan';
+ h.app.keyDown({key:'Escape',preventDefault(){}});assert.equal(h.app.nodes.textDialog.open,false);assert.equal(h.engine.get('T').text,'Oud');assert.equal(h.app.history.entries.length,0);assert.equal(h.app.tool,'line');assert.equal(h.app.selectedId,'T');assert.deepEqual(plain(h.app.selectedIds),['T']);assert.equal(h.app.interaction,interaction);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(41),true);assert.equal(h.engine.renderer.preview,preview);
+});
+
+test('WIE-TOOL-L4 Escape after text command failure closes retry state without a commit',async()=>{
+ const h=appRuntime(),commands=h.app.commands;h.app.nodes.textValue.focus=()=>{};h.app.setTool('text');h.down({x:1,y:2});await new Promise(resolve=>setTimeout(resolve,0));h.app.nodes.textValue.value='Herstelbare tekst';h.app.commands={...commands,execute(){throw Error('text commit denied');}};await h.app.submitText();assert.equal(h.app.nodes.textDialog.open,true);assert.equal(h.app.history.entries.length,0);const before=plain(h.engine.toJSON());
+ h.app.keyDown({key:'Escape',preventDefault(){}});assert.equal(h.app.nodes.textDialog.open,false);assert.equal(h.app.pendingText,null);assert.ok(!h.app.textTransaction);assert.equal(h.app.tool,'text');assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+});
+
+test('WIE-TOOL-L4 Escape cancels context-prefill through normal canvas cleanup',()=>{
+ const h=appRuntime();h.app.selectedId='l';h.app.selectedIds=['l'];h.app.toolCatalog={...h.app.toolCatalog,getTool:id=>({id})};const plan=h.MI.ConstructionService.contextualPlans(h.engine.get('l'),'parallel').find(p=>p.mode==='prefill');assert.ok(plan);assert.equal(h.app.startContextConstruction('construct:parallel','l',plan.key),true);assert.ok(h.app.interaction);const before=plain(h.engine.toJSON());let completions=0;const complete=h.app.completeToolInteraction.bind(h.app);h.app.completeToolInteraction=args=>{completions++;return complete(args);};
+ h.app.keyDown({key:'Escape',preventDefault(){}});assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.deepEqual(plain(h.engine.toJSON()),before);assert.deepEqual(plain(h.app.selectedIds),['l']);assert.equal(h.app.history.entries.length,0);assert.equal(completions,0);
+});
+
+test('WIE-TOOL-L4 explicit tool switch force-cleans pending construction without completing it',()=>{
+ const h=appRuntime();h.app.setTool('construct:parallel');h.down({x:.5,y:1});const before=plain(h.engine.toJSON());h.app.setTool('circle');assert.equal(h.app.tool,'circle');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+});
+
 test('WIE-TOOL-L3.4 context-complete with no created object stays unsuccessful',()=>{
  const h=appRuntime();h.app.setTool('line');h.app.selectedId='l';h.app.selectedIds=['l'];h.app.toolCatalog={...h.app.toolCatalog,getTool:id=>({id})};const plan=h.MI.ConstructionService.contextualPlans(h.engine.get('l'),'midpoint').find(p=>p.mode==='complete'),execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.app.execute=()=>({result:[]});
  assert.equal(h.app.startContextConstruction('construct:midpoint','l',plan.key),false);assert.equal(completions,0);assert.equal(h.app.tool,'line');assert.deepEqual(plain(h.app.selectedIds),['l']);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.status.textContent,/geen object opgeleverd/);h.app.execute=execute;
