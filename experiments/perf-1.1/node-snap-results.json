@@ -1,0 +1,30 @@
+{
+  "node": "v22.18.0",
+  "warmSamples": 15,
+  "rows": [
+    {
+      "objects": 10,
+      "snapCandidates": 13,
+      "coldMs": 4.726499999999987,
+      "warmMeanMs": 0.5879466666666644,
+      "warmMedianMs": 0.4919999999999902,
+      "warmP95Ms": 1.4145999999999788
+    },
+    {
+      "objects": 100,
+      "snapCandidates": 374,
+      "coldMs": 13.8493,
+      "warmMeanMs": 3.511426666666661,
+      "warmMedianMs": 3.4558999999999855,
+      "warmP95Ms": 5.296899999999994
+    },
+    {
+      "objects": 500,
+      "snapCandidates": 7184,
+      "coldMs": 101.13259999999997,
+      "warmMeanMs": 17.158540000000013,
+      "warmMedianMs": 16.58030000000008,
+      "warmP95Ms": 21.406200000000013
+    }
+  ]
+}
