@@ -1,12 +1,12 @@
 # WIE — M8-INT.3: Snijpunten tussen twee kegelsneden — ontwerp- en implementatiecontract
 
-**Documentversie:** 1.0.0  
+**Documentversie:** 1.0.1  
 **Datum:** 17 oktober 2026  
-**Status:** ontwerpvoorstel ter gebruikersgoedkeuring — **geen implementatie-GO**  
+**Status:** **hoofdontwerp goedgekeurd door gebruiker op 17 oktober 2026**; de afzonderlijke identiteitsbijlage M8-INT.3-A v1.0.0 is opgesteld **ter afzonderlijke goedkeuring** — **geen productiecode- of merge-GO**  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor  
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Normatieve basis:** [M8-INT-hoofdcontract v1.1.2](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.1-contract v1.0.1](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md), [Development Roadmap](DEVELOPMENT-ROADMAP.md), M8a-ellipsen, M8-INT.0 en M8-INT.1 geïntegreerd op `main` via PR #27 en PR #28.  
-**Besluitgrens:** dit contract specificeert de gewenste werking en technische kwaliteitscriteria. De **definitieve `solutionKey`-bijlage is een nog open, afzonderlijk goed te keuren ontwerpbesluit**. Productiecode, schema's, bestaande tests en merge naar `main` blijven ongewijzigd totdat afzonderlijk GO is gegeven.
+**Normatieve basis:** [M8-INT-hoofdcontract v1.1.3](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.1-contract v1.0.1](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md), [Development Roadmap](DEVELOPMENT-ROADMAP.md), M8a-ellipsen, M8-INT.0 en M8-INT.1 geïntegreerd op `main` via PR #27 en PR #28.  
+**Besluitgrens:** het hoofdontwerp is door de gebruiker goedgekeurd. De [M8-INT.3-A `solutionKey`-identiteitsbijlage v1.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) is nu als **afzonderlijk ontwerpvoorstel** opgesteld. Haar conservatieve plaatsidentiteit, beperkingen bij grote bronbeweging en tangent-/ambiguïteitspolicy zijn nog **niet** goedgekeurd of bewezen door uitvoerbare tests. Productiecode, schema's, bestaande tests en merge naar `main` blijven ongewijzigd totdat daarvoor apart GO is gegeven.
 
 ---
 
@@ -156,7 +156,7 @@ Onderzoek minstens:
 
 Maak vóór productie-implementatie het document:
 
-`docs/M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md`
+[`docs/M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md`](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md)
 
 Dit document moet minstens bevatten:
 - exacte persistente vorm/versie van `solutionKey`, bronroloriëntatie, validatie en normalisatie;
@@ -282,8 +282,8 @@ Codex rapporteert het exacte aantal tests, mislukkingen, skips, wijzigingen aan 
 3. Concreet quartic-isolatiealgoritme en bewijs van volledige enumeratie/tangentiedetectie onder de numerieke foutbegroting.
 4. Definitieve opsplitsing van cirkel–ellips en ellips–ellips in Codex-branches/commits, met behoud van de huidige universele Snijpunt-architectuur.
 
-**Geen implementatie-GO:** dit ontwerpvoorstel geeft uitsluitend een kader voor inhoudelijke bespreking. Geen code, schema, tests, bestaande documenten of UI wijzigen op grond van dit document alleen.
+**Geen implementatie-GO:** dit door de gebruiker goedgekeurde hoofdontwerp geeft geen impliciete GO voor de afzonderlijke identiteitsbijlage of de productie-implementatie. Geen code, schema, tests, bestaande documenten of UI wijzigen op grond van dit document alleen.
 
 ---
 
-**Einde M8-INT.3-ontwerp- en implementatiecontract v1.0.0 — ter gebruikersgoedkeuring.**
+**Einde M8-INT.3-hoofdcontract v1.0.1 — inhoudelijk goedgekeurd; identiteitsbijlage M8-INT.3-A ter afzonderlijke goedkeuring; geen implementatie-GO.**
