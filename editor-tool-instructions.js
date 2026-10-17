@@ -23,7 +23,7 @@
     'construct:ellipseByFociAndPoint': ['Kies het eerste bestaande brandpunt.', 'Kies het tweede bestaande brandpunt.', 'Kies een bestaand punt als Q of klik vrij om Q en de ellips samen te maken. Q blijft de ellips besturen.'],
     'construct:pointOnEllipse': ['Kies een bestaande, geldige ellips.', 'Klik nabij de contour om het afhankelijke punt te plaatsen. Escape annuleert.'],
     'construct:circleCircleIntersection': ['Kies de eerste cirkel.', 'Kies de tweede cirkel. Kruisende cirkels geven twee punten, raakcontact een; samenvallende cirkels hebben geen uniek snijpunt.'],
-    'construct:intersection': ['Kies een lijn, veelhoekzijde of cirkel.', 'Kies een tweede bron en selecteer daarna de gewenste snijpunten.'],
+    'construct:intersection': ['Kies een lijn, veelhoekzijde of cirkel.', 'Kies een tweede bron. Alle geldige snijpunten worden direct gemaakt.'],
     'construct:lineCircleIntersection': ['Kies een lijn, halfrechte, lijnstuk of veelhoekzijde.', 'Kies de cirkel. Alle bereikbare snijpunten worden toegevoegd; bij raakcontact is er een punt.'],
     'construct:lineIntersection': ['Kies de eerste lijn of veelhoekzijde.', 'Kies de tweede lijn of zijde. Alleen een uniek snijpunt binnen beide objecten is mogelijk.'],
     'construct:lineBetweenPoints': ['Selecteer het eerste punt.', 'Selecteer het tweede punt.'],
@@ -85,7 +85,6 @@
     if(guide&&app.tool==='construct:intersection'){
       const s=app.interaction||{},name=ref=>{if(MI.AxisReferences.isAxis(ref))return 'as '+ref.axis;const object=app.engine.get(ref.objectId);return (object?.name||object?.type||'object')+(ref.part==='edge'?' · zijde '+(Number(ref.index)+1):'');};
       if(s.pendingSourceOptions?.length)html+='<div class="intersection-source-choices" role="group" aria-label="Bron kiezen">'+s.pendingSourceOptions.map((ref,index)=>'<button type="button" data-intersection-source="'+index+'">'+esc(name(ref))+'</button>').join('')+'</div>';
-      if(s.intersectionPreview){const selected=new Set(s.selectedBranches||[]);html+='<div class="intersection-candidates" role="group" aria-label="Snijpunten selecteren">'+s.candidates.map(item=>{const branch=item.branch??0,label='('+Number(item.x.toPrecision(5))+', '+Number(item.y.toPrecision(5))+')';return '<button type="button" data-intersection-branch="'+branch+'" aria-pressed="'+selected.has(branch)+'">'+(selected.has(branch)?'✓ ':'')+'Snijpunt '+(branch+1)+': '+esc(label)+'</button>';}).join('')+'</div><p role="status" aria-live="polite">'+(s.candidates.length?selected.size+' van '+s.candidates.length+' geselecteerd.':'Geen geldige snijpunten gevonden.')+'</p><button type="button" data-intersection-confirm'+(!selected.size?' disabled':'')+'>Geselecteerde snijpunten maken</button>';}
     }
     const node = app.nodes.toolInstructions;
     if (node) { node.hidden = !guide; if (node.innerHTML !== html) node.innerHTML = html; }

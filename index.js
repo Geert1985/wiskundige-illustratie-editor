@@ -154,8 +154,9 @@
       const branches=kind==='lineIntersection'?[0]:[0,1],requested=selectedBranches==null?branches:selectedBranches;
       if(!Array.isArray(requested)||!requested.length||requested.length>branches.length||requested.some((branch,index)=>!branches.includes(branch)||requested.indexOf(branch)!==index))throw Error('Ongeldige selectie van snijpuntoplossingen.');
       const map=new Map(this.model.all().map(o=>[o.id,o])),evaluations=requested.map(branch=>{const recipe={kind,sources:sources.map(source=>({...source})),...(kind==='lineIntersection'?{}:{branch})};return {recipe,evaluation:MI.ConstructionService.evaluate(recipe,map)};});
-      if(evaluations.some(item=>!item.evaluation.valid||!item.evaluation.geometry))throw Error('Een geselecteerd snijpunt is intussen ongeldig.');
-      const model=new MI.IllustrationModel(this.model.toJSON()),created=evaluations.map(item=>model.add({...item.evaluation.geometry,style:{stroke:MI.CONSTRUCTION_COLOR,fill:MI.CONSTRUCTION_COLOR},construction:item.recipe}));
+      if(selectedBranches!=null&&evaluations.some(item=>!item.evaluation.valid||!item.evaluation.geometry))throw Error('Een geselecteerd snijpunt is intussen ongeldig.');
+      const valid=evaluations.filter(item=>item.evaluation.valid&&item.evaluation.geometry);if(!valid.length)throw Error('Geen uniek snijpunt binnen de gekozen objecten.');
+      const model=new MI.IllustrationModel(this.model.toJSON()),created=valid.map(item=>model.add({...item.evaluation.geometry,style:{stroke:MI.CONSTRUCTION_COLOR,fill:MI.CONSTRUCTION_COLOR},construction:item.recipe}));
       this.model=model;return created;
     }
     getTextDependents(id){return MI.TextDependencies.forSource(this.model.objects,id);}

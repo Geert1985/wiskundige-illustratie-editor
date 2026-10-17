@@ -1,27 +1,27 @@
 # WIE — M8-INT: Universeel snijpuntgereedschap en snijpunten van kegelsneden
 
-**Documentversie:** 1.0.0  
-**Datum:** 16 oktober 2026  
+**Documentversie:** 1.1.0  
+**Datum:** 17 oktober 2026  
 **Status:** goedgekeurd ontwerpcontract — **geen implementatie-GO**  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor (WIE)  
 **Repository:** [`Geert1985/wiskundige-illustratie-editor`](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Referentie:** `main`, geraadpleegd op 16 oktober 2026; roadmap v2.8.20. Codex verifieert bij implementatiestart opnieuw branch, HEAD en feitelijke code.  
+**Referentie:** contract v1.0.0 op `main` en eerste M8-INT.0-implementatie op `codex/m8-int-0-universal-intersection`; roadmap v2.8.23. Verifieer bij vervolgwerk opnieuw branch, HEAD en feitelijke code.  
 **Afhankelijkheid:** bestaande M5b-constructies en M8a-ellipsen; M8b blijft buiten scope.  
 **Gerelateerde afzonderlijke roadmapbeslissing:** *Punt op object*; dit is niet hetzelfde als *Snijpunt* en valt buiten M8-INT.
 
-> **Normatieve status.** De roadmap en dit technische ontwerpcontract zijn goedgekeurd als ontwerpbesluit, niet als toestemming voor productie-implementatie. Dit document concretiseert het doelgedrag en de kwaliteitsgrenzen. Niets hierin bewijst dat nieuwe functies of tests al bestaan of geslaagd zijn. Nieuwe breedte-uitbreidingen en eventuele schemawijzigingen vergen een afzonderlijke implementatiebeslissing.
+> **Normatieve status.** Versie 1.1.0 vervangt in **alle M8-INT-fasen** de eerdere individuele oplossingselectie en aparte bevestiging door **automatische constructie van alle geldige unieke snijpunten na de tweede ondubbelzinnige bronselectie**. De eerste .0-implementatie staat uitsluitend op featurebranch `codex/m8-int-0-universal-intersection`, is nog niet handmatig geaccepteerd en niet gemerged. De eerdere selectieve UI geldt niet meer als productvereiste. Dit ontwerp geeft geen GO voor een merge of voor M8-INT.1/.2/.3. Bovendien is herstel van legacyconstructies bij slechts één geldige tak verplicht.
 
 ---
 
 ## 1. Doel, productbesluit en acceptatiegrens
 
-De gebruiker kiest **één gereedschap `Snijpunt`**, selecteert twee geometrische bronnen in willekeurige volgorde en kan één, meerdere of alle **eindige, geïsoleerde en geldige** snijpunten als afhankelijke `point`-objecten construeren. De editor herkent het bronpaar, schakelt naar de juiste reeds bestaande of later toegevoegde gespecialiseerde geometrische oplosser en laat de gebruiker de oplossingsverzameling inspecteren vóór één atomaire bevestiging.
+De gebruiker kiest **één gereedschap `Snijpunt`** en selecteert twee geometrische bronnen in willekeurige volgorde. Zodra de tweede bron ondubbelzinnig vastligt, maakt WIE **onmiddellijk alle actuele, eindige, geïsoleerde en geldige snijpunten** als afhankelijke `point`-objecten in **één atomaire Undo/Redo-transactie**. Er is geen individuele puntselectie, kandidatenpreview of afzonderlijke bevestigingsknop. Bij overlappende klikbare geometrie mag uitsluitend een keuze tussen bedoelde **bronnen** worden gevraagd.
 
 Een **uniforme gebruikersinterface betekent niet één universele algebraïsche solver of één nieuwe persistente `construction.kind`**. Elke opgeslagen snijpuntconstructie behoudt een gevalideerde, gespecialiseerde receptsoort en een reproduceerbare takidentiteit. De bestaande `ConstructionService`, de dependency graph, autorisatie, commando's, geschiedenis, renderer en documentserialisatie blijven de enige eigenaars van hun respectieve verantwoordelijkheden.
 
 **Minimale release-definitie M8-INT.0:** na bewezen gelijkwaardigheid vervangt één zichtbare menuvermelding `Snijpunt` de drie gespecialiseerde snijpuntknoppen, zonder bestaand document, recept, brononderdeel of functiepad te breken. **Volledig traject:** uitbreiding naar lijn–ellips, later andere geregistreerde kegelsneden en ten slotte paren kegelsneden.
 
-Niet inbegrepen: algemene algebra-/CAS-engine, grafieken van willekeurige functies, symbolische exacte wortels, automatische constructie van alle kruisingspunten zonder gebruikerstoestemming, snijpunten met de **gevulde oppervlakte** van een vlakobject, 3D-intersecties, een tweede dependency graph, algemene topologische booleans, automatische typeconversie van parabolische/hyperbolische objecten die nog niet bestaan, of de afzonderlijke functie *Punt op object*.
+Niet inbegrepen: algemene algebra-/CAS-engine, grafieken van willekeurige functies, symbolische exacte wortels, automatisch toevoegen van nieuwe punt-ID's bij latere bronbeweging zonder nieuwe expliciete bronpaarselectie, snijpunten met de **gevulde oppervlakte** van een vlakobject, 3D-intersecties, een tweede dependency graph, algemene topologische booleans, automatische typeconversie van parabolische/hyperbolische objecten die nog niet bestaan, of de afzonderlijke functie *Punt op object*.
 
 ## 2. Verifieerbare uitgangsbasis op `main`
 
@@ -32,7 +32,7 @@ Niet inbegrepen: algemene algebra-/CAS-engine, grafieken van willekeurige functi
 - `MI.LinearGeometry.domain/accepts`: `straight` heeft `(-∞,+∞)`, `ray` `[0,+∞)`, en `line` (lijnstuk), `vector`, `dimension` en de als `line` behandelde veelhoekrand `[0,1]`.
 - De lijnrol laat volledige lineaire objecten en `{objectId,part:'edge',index}` voor een bestaande veelhoekzijde toe. Assen zijn specifieke `{kind:'axis',frame:'cartesian',axis:'x'|'y'}`-bronnen, met receptafhankelijke roltoelating; zij zijn **geen gewone object-ID's**.
 - `MI.EllipseGeometry.fromDefinition` geeft voor een geldige ellips o.a. centrum, `a`, `b`, basisvectoren `u`,`v`, grenzen en `pointAt(t)`. Ook zelfstandige ellipsen bestaan; bronrecepten voor ellipsen zijn `ellipseByFociAndSum` en `ellipseByFociAndPoint`.
-- `Engine.construct` bouwt momenteel voor lijn–cirkel en cirkel–cirkel alle op dat moment geldige oplossingen in één modeltransactie. De huidige interface biedt **nog geen algemene gedeeltelijke oplossingselectie**.
+- `Engine.construct` bouwt momenteel voor lijn–cirkel en cirkel–cirkel alle op dat moment geldige oplossingen in één modeltransactie. Individuele oplossingselectie is geen vereiste; de eerste featurebranchimplementatie met selectieve knoppen moet worden vereenvoudigd.
 - De sidebar bevat nu de drie afzonderlijke menu-ingangen `construct:lineIntersection`, `construct:lineCircleIntersection` en `construct:circleCircleIntersection` onder `Constructies > Puntconstructies`. `ToolCatalog` wordt gedeeld door sidebar en fullscreen.
 - `model.js`, `index.js`, `editor.js`, `editor.html`, de SVG/PNG-export en history/command-paden ondersteunen al gekoppelde puntobjecten; zij mogen niet worden vervangen.
 
@@ -51,7 +51,7 @@ Voordat productiecode wordt veranderd moet Codex de actuele branch/HEAD, `AGENTS
 
 | Fase | Verplichte levering | Beperking | Exitgate |
 |---|---|---|---|
-| **M8-INT.0** | Eén werkend universeel `Snijpunt`-gereedschap voor **bestaande lijn–lijn, lijn–cirkel en cirkel–cirkel** | Geen nieuwe kegelsnede-solver; legacyrecepten behouden | Functionele pariteit, selectieve commit, UX, Node/Edge, bestaande documenttests |
+| **M8-INT.0** | Eén werkend universeel `Snijpunt`-gereedschap voor **bestaande lijn–lijn, lijn–cirkel en cirkel–cirkel** | Geen nieuwe kegelsnede-solver; legacyrecepten behouden | Functionele pariteit, directe atomaire creatie van alle geldige punten, UX, Node/Edge, bestaande documenttests |
 | **M8-INT.1** | Analytische **lijn–ellips**-berekening, dispatch en gekoppelde puntrecepten | Bestaande ellipsen van M8a; 0/1/2 oplossingen | Analytische fixtures, raakpunt/domein/branches, rondreisdocumenten en herstel |
 | **M8-INT.2** | Gedeelde lijn–kegelsnede-adapter voor later werkelijk geïmplementeerde kegelsneden | Parabool/hyperbool **niet** bouwen zonder eigen goedgekeurd objectcontract | Contract-/capabilitytests voor ieder werkelijk toegevoegd type |
 | **M8-INT.3** | Cirkel–ellips en ellips–ellips (eventueel verdere bestaande kegelsnedeparen) | Reële geïsoleerde punten, max. 4 bij twee verschillende niet-ontaarde kwadrieken | 0–4 oplossingen, raakpunten, samenvallen, numerieke regressie en takidentiteit |
@@ -86,7 +86,7 @@ De exitgate van een fase is tevens de instapvoorwaarde voor de daaropvolgende. *
 ```text
 ToolCatalog: één zichtbare tool Snijpunt
        ↓
-Editor-interactie: kies bron A en B → toon kandidaatsoplossingen → selectie → bevestiging
+Editor-interactie: kies bron A → kies bron B (los enkel bronambiguïteit op) → construeer onmiddellijk alle geldige punten
        ↓
 Intersection dispatcher / capability-adapter (puur; geen modelmutatie)
        ↓
@@ -101,12 +101,12 @@ Bestaande renderer, hit-test, snap, inspector, SVG/PNG en JSON
 - **Geen nieuwe parallelle graaf, permissiedienst, commandbus, modelstore of renderer.** Solvers zijn zuivere rekenfuncties op valide modelruimtegeometrie.
 - De dispatcher levert een gesloten resultaatspecificatie zoals `{kind,sources,candidates:[{branch?,x,y,reasonCode}],status}`. Dit is een **interfaceconcept**, geen verplicht nieuwe globale API-naam; de bestaande runtime bepaalt de kleinste passende modulegrens.
 - De dispatcher **normaliseert de bronvolgorde naar het receptcontract**: lijn vóór cirkel/ellips; bij twee cirkels blijft de **door gebruiker gekozen volgorde** behouden om de links/rechts-definitie van nieuwe constructies te bepalen. Voor bestaande cirkel–cirkel-documenten worden bronvolgorde en branch absoluut niet herschreven.
-- De preview en de uiteindelijke constructie halen hun oplossingen uit **dezelfde evaluatie-/bronvalidatieketen**. Geen schermruimteformules om modelpuntposities te bepalen. Bij bevestiging worden rechten en actuele bronnen opnieuw gecontroleerd.
+- De tweede ondubbelzinnige bronselectie start direct één geautoriseerde constructieopdracht met actuele modelgeometrie. Die bepaalt en creëert **alle** geldige unieke punten. Geen schermruimteformules, opgeslagen kandidaatkeuze of tussenpreview. Rechten, bronnen en oplossingen worden vóór commit opnieuw gevalideerd.
 - Zelfstandige ellipsen en geconstrueerde ellipsen worden identiek behandeld via de opgeloste `EllipseGeometry.fromDefinition`; het snijpunt koppelt aan het **ellips-object-ID**, niet rechtstreeks aan de brandpunten. Zo blijft de transitive dependency graph eigenaar.
 
 ### 5.2 Persistente objecten
 
-- Elk bevestigd snijpunt is één bestaand objecttype `type:'point'`, met eigen duurzame `id`, eigen stijl/label/layer/lock en een `construction`-recept met **precies de relevante twee bronnen**.
+- Elk aangemaakt snijpunt is één bestaand objecttype `type:'point'`, met eigen duurzame `id`, eigen stijl/label/layer/lock en een `construction`-recept met **precies de relevante twee bronnen**.
 - M8-INT.0 maakt **geen nieuwe** `construction.kind`. Oude recepten worden rechtstreeks gebruikt; externe tool-ID `construct:intersection` (voorgesteld, vóór productiecode definitief te controleren) is **geen** nieuw opslagrecept.
 - M8-INT.1 maakt één `lineEllipseIntersection` met `resultType:'point'`, `sourceRoles:['line','ellipse']`, `computedFields:['x','y']`, `branches:[0,1]`, zonder vrij parameterobject.
 - M8-INT.3 maakt gevalideerde, specifieke recepten of een getypeerd conic-pair-recept met bronrolrestricties en een vastgelegd brancheschema. **Geen onbegrensd generiek `construction.kind:'intersection'`** en geen willekeurige `kind`-tekst uit UI-invoer.
@@ -115,42 +115,46 @@ Bestaande renderer, hit-test, snap, inspector, SVG/PNG en JSON
 
 ### 5.3 Selectie en permissies
 
-- `toolAllowed` en bestaande capability-/restricted-source-/lockregels gelden **bij tonen, bronselectie en definitieve uitvoering**. Verborgen bronnen zijn niet automatisch ongeldig als constructiebron; niet-selecteerbare of onbevoegde bronnen mogen geen ongeautoriseerde preview of export lekken.
+- `toolAllowed` en bestaande capability-/restricted-source-/lockregels gelden **bij tonen, bronselectie en definitieve uitvoering**. Verborgen bronnen zijn niet automatisch ongeldig als constructiebron; niet-selecteerbare of onbevoegde bronnen mogen geen ongeautoriseerde brongegevens, statusinformatie of export lekken.
 - Geïndexeerde veelhoekranden (`part:'edge'`, `index`) worden als referentie bewaard en bij iedere evaluatie opnieuw gecontroleerd. Bron-herbinding gebruikt alleen het bestaande inspector- of constructiepad; valideer opnieuw.
 - Werkelijke canvas-hitdetectie, z-volgorde en 12-CSS-pixel-achtige bestaande bronselectietolerantie worden gerespecteerd. Bij overlappende kandidaten verschijnt een ondubbelzinnige keuzemogelijkheid, zonder willekeurige verborgen bron te kiezen.
 - Cyclus, ontbrekende bron, onjuiste rol, ongeldige `branch`, niet-eindige data, ontoegestane asreferentie en permission failure veroorzaken een **atomaire weigering**, niet een deels geconstrueerd document.
 
-## 6. Exact UX-contract voor M8-INT.0
+## 6. Exact UX-contract voor M8-INT.0 — automatisch alle snijpunten
 
 ### 6.1 Eén herkenbaar gereedschap
 
-De zichtbare vermelding luidt **Snijpunt** in `Constructies > Puntconstructies`, via `ToolCatalog` identiek in sidebar, zoekfunctie en fullscreen. De bestaande drie gespecialiseerde vermeldingen worden **pas na geslaagde gelijkwaardigheids- en handmatige acceptatiepoort** uit de zichtbare catalogus verwijderd. Hun oude tool-ID's blijven waar nodig als onzichtbare compatibiliteitsroutes bestaan zolang document- of automatiseringspaden die vereisen; er komt geen afzonderlijk permanent menu voor elk bronpaar.
+De zichtbare vermelding is **Snijpunt** onder `Constructies > Puntconstructies`, gedeeld via `ToolCatalog` in sidebar, zoeken en fullscreen. De oude gespecialiseerde knoppen verdwijnen pas **na** bewezen pariteit, groene regressies en expliciete handmatige gebruikersacceptatie. Hun persistente recepten en oude tool-ID's blijven compatibel.
 
-### 6.2 Volgorde en interactiestaten
+### 6.2 Stappen, interactiestaat en atomair commitmoment
 
-1. **Start:** gebruiker activeert Snijpunt. Status: `Selecteer het eerste object.` Geen documentmutatie.
-2. **Bron A:** geldige contour of specifiek onderdeel krijgt een tijdelijke selectieaccentuering. Status: `Selecteer het tweede object.` Een ongeschikte eerste bron geeft meteen begrijpelijke feedback.
-3. **Bron B:** de dispatcher controleert de combinatie; ondersteund paar berekent **alle actuele afzonderlijke eindige oplossingskandidaten**. De bronvolgorde is voor gemengde typen vrij.
-4. **Preview:** kandidaatpunten krijgen tijdelijk een duidelijk visueel symbool, nummer en selectie-indicatie. Standaard staan **alle geldige kandidaten geselecteerd**, maar de gebruiker kan elk afzonderlijk aan/uit zetten. Bij raakpunt verschijnt precies één kandidaat. Geen previewobject zit in het documentmodel, history, export of snap-/hitindex als duurzaam object.
-5. **Bevestigen:** `Geselecteerde snijpunten maken` is beschikbaar als ten minste één kandidaat gekozen is. Eén bevestiging maakt exact deze kandidaten als één **atomaire Undo/Redo-actie**. Geen stilzwijgend maken van niet-geselecteerde oplossingen.
-6. **Annuleren:** `Esc`, toolwisseling, `pointercancel`, verlies van toepasselijke focus, nieuw document en dispose sluiten de preview zonder modelmutatie. Na bevestiging mag de gebruiker opnieuw een paar kiezen zonder opnieuw een afzonderlijke gespecialiseerde tool te zoeken.
+1. **Activeren:** de gebruiker kiest `Snijpunt`; status: `Selecteer het eerste object.` Geen mutatie.
+2. **Bron A:** kies een geschikte geometrische drager, as of specifieke polygonzijde. Status: `Selecteer het tweede object.` Een ongeschikte bron wordt afgewezen met feedback.
+3. **Bron B:** kies de tweede geschikte bron in willekeurige volgorde. Bij meerdere overlappende **bron**-kandidaten wordt uitsluitend de bronambiguïteit opgelost met een toegankelijke keuzelijst. Dat is geen keuze tussen snijpunten. Zodra de bron ondubbelzinnig is, volgt stap 4 **zonder extra klik**.
+4. **Onmiddellijk maken:** classificeer het bronpaar; valideer bronnen en rechten opnieuw via de bestaande commandketen; bepaal alle eindige, geïsoleerde, geldige punten met behouden branchidentiteit. Bij `N>0` maakt **één atomaire Undo/Redo-actie precies alle N punten**; bij `N=0` komt er geen punt of geschiedenisitem bij. Er is geen voorafgaande resultatenpreview en geen bevestigingsknop.
+5. **Na uitvoering:** toon `N snijpunt(en) toegevoegd.` of specifieke geen-oplossingfeedback. Het gereedschap blijft actief voor een **nieuw** paar; oude bronkeuzes worden niet automatisch opnieuw gebruikt.
+6. **Annuleren:** `Esc`, toolwisseling, `pointercancel`, toepasselijk focusverlies, nieuw document en dispose annuleren een **nog onvoltooide** bronselectie zonder modelmutatie. **Na succesvolle constructie** draait alleen normaal `Ongedaan` de ene aangemaakte transactie terug.
 
-**Toegankelijkheid:** Tab/focus, Enter/Spatie voor selectie/commit, Escape voor annuleren, ARIA-labels voor kandidaten, statusfeedback niet alleen door kleur, correcte focusretour. De UI blijft bruikbaar op kleinere viewportmaten en het radiaalmenu mag geen bronselectie omzeilen. Contextuele constructies gebruiken de bestaande `contextualPlans` en `startContextConstruction` waar een bronrolplan toepasselijk is; voor een universele tweebronselectie is uitsluitend een gerichte uitbreiding van die controller toegestaan, geen tweede interactie-architectuur.
+**Geen afzonderlijke puntkeuze:** geen `Snijpunt 1/2/3/4`-keuzeknoppen, geen `Geselecteerde snijpunten maken`, geen selecteerbare kandidatenoverlay, geen tijdelijke `selectedBranches`-UI-staat, en geen tweede commitmoment. Een korte hover- of selectiehighlight van een **bron** mag blijven en creëert nooit geometrische previewobjecten.
+
+**Toegankelijkheid:** behoud toetsenbordselectie van objecten en de bestaande focusregeling. Indien nodig is uitsluitend de lijst van overlappende **bronobjecten** bedienbaar via Tab, Enter/Spatie en Escape, met duidelijke ARIA-labels en focusretour. De statusmelding mag niet alleen door kleur worden overgebracht. Contextueel starten gebruikt de bestaande `contextualPlans` / `startContextConstruction` waar toepasselijk; geen omweg langs de gewone bron-/permissionvalidatie.
+
+**Stabiele IDs:** ieder op dat moment geldig snijpunt krijgt een eigen duurzaam punt-ID en eigen gevalideerd bronrecept en branch. Later door beweging ontstane extra takken genereren **geen spontane punt-ID's**. Eerder aangemaakte, tijdelijk ongeldige takken behouden hun identiteit en kunnen herstellen. Een ongewenst punt afzonderlijk wissen blijft een gewone objectactie.
 
 ### 6.3 Fout- en grensgevalmeldingen
 
-| Situatie | UX-resultaat | Commit |
+| Situatie | Resultaat | Mutatie |
 |---|---|---|
-| Geldig paar met 1–4 unieke punten (afhankelijk van fase) | Alle punten in preview; individueel of samen selecteerbaar | Alleen expliciet geselecteerde |
-| Geen echte kruising of kruising buiten objectdomein | `Geen snijpunt binnen de gekozen objecten.` | Nee |
-| Nagenoeg rakend of exact raak | Eén kandidaat wanneer numeriek voldoende zeker | Max. één |
-| Niet-ondersteund bronpaar | `Deze combinatie wordt nog niet ondersteund.` | Nee |
-| Evenwijdige niet-samenvallende lijnen | `Deze lijnen hebben geen snijpunt.` | Nee |
-| Samenvallende dragers/krommen (oneindig veel punten) | `De objecten vallen samen; er is geen afzonderlijk snijpunt.` | Nee |
-| Ongeldige bron, degeneratie of numeriek onbeslisbaar | Begrijpelijke reden; geen schijnoplossingen | Nee |
-| Bron gewijzigd/geen rechten bij commit | Preview vervalt/herberekent; opnieuw bevestigen indien nodig | Geen partiële commit |
+| Geldig bronpaar met 1–4 unieke punten (faseafhankelijk) | Direct `N snijpunt(en) toegevoegd.` | **Alle N in één actie** |
+| Geen kruising of alleen buiten het objectdomein | `Geen snijpunt binnen de gekozen objecten.` | Geen |
+| Exact/numeriek betrouwbaar raakpunt | Eén punt | Eén |
+| Niet-ondersteund bronpaar | `Deze combinatie wordt nog niet ondersteund.` | Geen |
+| Evenwijdige niet-samenvallende lijnen | `Deze lijnen hebben geen snijpunt.` | Geen |
+| Samenvallende dragers/krommen (oneindige verzameling) | `De objecten vallen samen; er is geen afzonderlijk snijpunt.` | Geen |
+| Ongeldige bron, degeneratie of numerieke onzekerheid | Begrijpelijke specifieke reden | Geen |
+| Bron/rechten ongeldig geworden vóór uitvoeren | Opnieuw valideren; atomaire weigering | Geen gedeeltelijke commit |
 
-De gebruiker krijgt **geen `0 punten gemaakt`-geschiedenisactie**. De preview ververst bij actuele bronwijziging, maar accepteert geen verouderde oplossing op basis van uitsluitend een eerdere hoverstand.
+**Legacy-afspraak (normatief):** een bestaand gespecialiseerd `construction.create`-commando **zonder** `selectedBranches` betekent **alle geldige takken**. Bij tangent of begrensde lijn met slechts één geldige tak blokkeert een andere ongeldige tak niet. Behoud de oorspronkelijke `branch` (dus eventueel alleen branch 1). Een reeds aanwezige expliciete `selectedBranches`-commandoptie mag intern voor compatibiliteit blijven, maar hoort **niet** bij de universele gebruikersinterface; expliciet ongeldige opgegeven branches worden atomair geweigerd.
 
 ## 7. Wiskundig contract M8-INT.0 — hergebruik
 
@@ -295,8 +299,8 @@ Het eenvoudige opnieuw sorteren van de **momenteel zichtbare** 0–4 punten kan 
 4. **Wissen:** verwijderen van een bron volgt de bestaande cascade voor alle afgeleiden, inclusief downstream kinderen; één undo herstelt de volledige betrokken graaf.
 5. **Detach en duplicatie:** bestaande detachregels blijven. Een gewone duplicatie volgt de bestaande expliciete snapshot-/groepremappingregels, zonder heimelijke gedeelde bronkoppeling. Een gepaste transactie voor meerdere snijpunten behoudt atomariteit.
 6. **Herbinding:** nieuwe bronrollen en hun indices/assen worden vóór commit gevalideerd; bij omwisseling van oude cirkel–cirkelbronnen mag de oorspronkelijke branchsemantiek niet stilzwijgend omkeren.
-7. **Bestaand punt op kruising:** de tool levert een nieuwe afhankelijke constructie wanneer expliciet bevestigd. Het bestaande onafhankelijke punt wordt niet automatisch tot gekoppeld object omgezet of vervangen.
-8. **Zwevende preview versus data:** overlaymarkers hebben geen persistente object-ID en worden nooit als object geëxporteerd. Er is geen dubbele, permanent renderbare solverkopie in de editor.
+7. **Bestaand punt op kruising:** de tool levert de afhankelijke constructies zodra beide bronnen expliciet en ondubbelzinnig zijn gekozen. Het bestaande onafhankelijke punt wordt niet automatisch tot gekoppeld object omgezet of vervangen.
+8. **Geen kandidatenpreview:** de universele tool toont geen berekende snijpuntmarkers vóór de commit. Eventuele hoveraccenten van bronnen zijn geen objecten en worden nooit geëxporteerd.
 
 ## 12. Numeriek beleid en statuscodes
 
@@ -336,12 +340,16 @@ Elke testcase controleert behalve posities ook bronrecept, branch, validiteitsco
 | INT-004 | .0 | Rechte–cirkel met 0/1/2 oplossingen | 0/1/2, branch 0 vóór branch 1, tangent 1 |
 | INT-005 | .0 | Rechte–cirkel waarbij alleen **branch 1** op het lijnstuk ligt | Alleen branch 1, **geen hernummering** |
 | INT-006 | .0 | Cirkel–cirkel: 0/1/2, concentrisch, samenvallend | Correcte unieke aantallen/statussen |
-| INT-007 | .0 | Alle oplossingen versus selectie van één; ongedaan/opnieuw | Exact gekozen IDs, één atomair history-item |
+| INT-007 | .0 | Twee bronnen kiezen en **automatisch alle oplossingen**; undo/redo | Geen kandidaatkeuzes of confirm; alle geldige punten, één history-item |
 | INT-008 | .0 | Oude M5b-documenten, legacy recepten, bronrebind | Ongewijzigde semantiek en zichtbare bewerkbaarheid |
 | INT-009 | .0 | As x/y versus toegelaten/onmogelijke rol | Correcte asidentiteit, geen phantom object-ID |
 | INT-010 | .0 | Beperkte rechten, lock, restricted en verborgen bron | Geen autorisatiebypass of bronlek; semantische zichtbaarheid behouden |
-| INT-011 | .0 | Preview annuleren via Esc, toolwissel, pointercancel, nieuw, dispose | Geen documentmutatie of spookpunten |
-| INT-012 | .0 | Sidebar, zoekfunctie, fullscreen, radiaal, toetsenbord | Eén vindbare tool, dezelfde bron- en permissieregels |
+| INT-011 | .0 | Onvoltooide bronselectie annuleren via Esc, toolwissel, pointercancel, nieuw, dispose | Geen documentmutatie; na commit alleen Undo |
+| INT-012 | .0 | Sidebar, zoeken, fullscreen, radiaal, toetsenbord, overlappende bronnen | Alleen **bron**keuze, geen puntkeuze/confirm; dezelfde rechten |
+| INT-013 | .0 | Legacy `construction.create` zonder `selectedBranches`, tangent lijn–cirkel/cirkel–cirkel | Eén punt; ongeldige tweede tak niet blokkerend |
+| INT-014 | .0 | Legacy `construction.create`, lijnstuk met alleen branch 1 geldig | Eén punt met originele `branch:1` |
+| INT-015 | .0 | Universeel: twee geldige takken, daarna tijdelijke ongeldigheid/extra nieuwe tak | Alle punten direct; IDs behouden; geen spontaan nieuw punt |
+| INT-016 | .0 | Interne expliciete `selectedBranches`-route indien behouden | Geldige selectie strikt; ongeldige tak atomair geweigerd |
 | INT-101 | .1 | Ellips `x²/25+y²/9=1` en `y=0` | `(-5,0)` branch 0 en `(5,0)` branch 1 bij richting +x |
 | INT-102 | .1 | Dezelfde ellips en `x=5` | `(5,0)`, één raakpunt branch 0 |
 | INT-103 | .1 | Dezelfde ellips en `y=4` | Nul reële oplossingen |
@@ -362,7 +370,7 @@ Elke testcase controleert behalve posities ook bronrecept, branch, validiteitsco
 | INT-307 | .3 | Reopen/replay/undo bij niet-triviale branchbeweging | Identieke deterministische branchmatching zonder muishistorie |
 | INT-308 | .3 | Nauwe wortels en bijna samenvallende krommen | Geen fantoompunten of onterechte deduplicatie; anders `NUMERIC_UNRESOLVED` |
 
-**Verplichte technische tests:** aparte pure solvertests; `ConstructionService`-contract-/resolver-/cycle-tests; `Engine`-transactietests; model-/schema-/rondreis-/permissietests; renderer/hit/snap/SVG/PNG-tests; echte Edge-interactietests inclusief canvas-selectie, preview-toggle, zoom/pan en annuleren. Tests voor oude lijn-/cirkelconstructies blijven actief.
+**Verplichte technische tests:** aparte pure solvertests; `ConstructionService`-contract-/resolver-/cycle-tests; `Engine`-transactietests; model-/schema-/rondreis-/permissietests; renderer/hit/snap/SVG/PNG-tests; echte Edge-interactietests inclusief canvas-bronselectie, directe constructie van alle oplossingen, geen resultatenpreview/confirm, zoom/pan en annuleren vóór tweede bron. Tests voor oude lijn-/cirkelconstructies blijven actief.
 
 **Poort per fase:** doelgerichte nieuwe tests → bestaande Node-suite `npm test` → volledige Edge-suite `npm run test:edge` → documentatie/architectuurcheck → handmatige gebruikersacceptatie. Rapporteer aantallen, commit-SHA, betrokken branch en failures; beweer geen groene poort zonder werkelijk gelopen testuitvoer. De omvang van de suites wordt niet in dit ontwerp vastgezet.
 
@@ -371,8 +379,8 @@ Elke testcase controleert behalve posities ook bronrecept, branch, validiteitsco
 ### M8-INT.0
 
 - Read-only preflight-/baselineverslag met capabilitymatrix voor actuele bronnen, onderdeelreferenties, assen, permissies en oude constructies.
-- Generieke tweebron-dispatch/selectie en multi-preview met individuele kandidaatselectie, zonder documentmutatie vóór bevestiging.
-- Eén geautoriseerde atomaire commit voor een niet-lege selectie; behoud van bestaande `construction.kind` en `branch`.
+- Generieke tweebron-dispatch/selectie en **directe volledige constructie** na tweede ondubbelzinnige bron: geen kandidatenpreview, puntselectie of confirm.
+- Eén geautoriseerde atomaire commit voor **alle geldige takken**, nulresultaat zonder mutatie; behoud van `construction.kind` en `branch` en herstel van legacycommands zonder `selectedBranches`.
 - Pariteits- en regressietests in Node/Edge; documentatie van eventuele zichtbare toolmigratie, inclusief zoek- en fullscreenweergave.
 - Bestaande drie zichtbare tools **niet** verwijderen vóór expliciete eindacceptatie .0.
 
@@ -405,13 +413,21 @@ Elke testcase controleert behalve posities ook bronrecept, branch, validiteitsco
 | Numerieke grens geeft schijnzekerheid | Genormaliseerde geometrie, residucontrole, expliciet `NUMERIC_UNRESOLVED` |
 | Oude parser verliest nieuwe afhankelijkheid | Minimaal maar verplicht schema-/featuregating van nieuwe recepten |
 | Contextueel menu en sidebar divergeren | Één `ToolCatalog` plus `ConstructionService`/autorisatie; geen hardcoded radiaal-whitelist |
-| Spookpreview veroorzaakt documentmutaties | Strikte preview/commit-scheiding en annuleringstests |
+| Constructie start vóór ondubbelzinnige tweede bron | Pas na bronambiguïteitsresolutie atomair uitvoeren; annuleringstest |
+| Legacytool krijgt een ongeldige tweede oplossingstak | Zonder `selectedBranches` alle **geldige** takken maken; branchidentiteit behouden |
 
-**Nog te beslissen op implementatieniveau:** exacte UI-component voor previewbevestiging, concrete modulenaam van de dispatcher, minimale schemawaarde voor nieuwe recepten, precieze numerieke toleranties op basis van onafhankelijke fixtures, en de definitieve .3-branchidentiteitsbijlage. Deze open punten wijzigen **niet** het nu vastgelegde gebruikersgedrag en zijn geen impliciete machtiging om implementatierisico's te negeren.
+**Nog te beslissen op implementatieniveau:** compacte bronambiguïteits-UI, concrete modulenaam van de dispatcher, minimale schemawaarde voor nieuwe recepten, precieze numerieke toleranties op basis van onafhankelijke fixtures, en de definitieve .3-branchidentiteitsbijlage. Deze open punten wijzigen **niet** het nu vastgelegde gebruikersgedrag en zijn geen impliciete machtiging om implementatierisico's te negeren.
 
-## 17. Codex-overdracht — uitsluitend na afzonderlijke goedkeuring
+## 17. Codex-overdracht — vervangende M8-INT.0-opdracht
 
-> **Opdrachtstructuur voor de eerste productiebranch:** Implementeer uitsluitend **WIE M8-INT.0 conform ontwerpcontract v1.0.0**. Start met een read-only actualiteitscontrole van branch/HEAD en de bij §2 genoemde bestanden. Lees `AGENTS.md`, `CONSTRUCTIONS.md`, `LINEAR-OBJECTS.md`, `DOCUMENT-FORMAT.md`, `docs/UI-RADIAL-9-CONTRACT-DRIVEN.md`, `docs/CORE-1-ARCHITECTURE-DESIGN.md` en `docs/DEVELOPMENT-ROADMAP.md`. Rapporteer eventuele conflicten vóór een ingrijpende wijziging. Maak één nieuwe featurebranch vanaf de actuele goedgekeurde basis. Implementeer alleen de universele UI/dispatch en kandidaten-/commitinteractie voor de drie bestaande recepten; behoud opslag, branchsemantiek en legacydocumenten. Voeg INT-001 t/m INT-012 plus passende model-/UX-regressies toe. Voer de volledige Node- en Edge-suite uit, documenteer de uitvoer en maak een implementatieverslag. **Niet mergen naar `main` en niet beginnen aan M8-INT.1/.2/.3 zonder nieuwe opdracht.**
+De eerste M8-INT.0-implementatie bestaat al op `codex/m8-int-0-universal-intersection`. De gebruiker heeft de eerdere aparte regressiecorrectieprompt **nog niet uitgevoerd**. Daarom moet Codex op **diezelfde branch** één **gecombineerde** correctieronde uitvoeren:
+
+1. Vervang de bestaande kandidaatselectie/preview/confirm-flow door onmiddellijk **alle geldige punten** aanmaken bij tweede ondubbelzinnige bronselectie. Alleen bronambiguïteitskeuze mag overblijven.
+2. Herstel de geconstateerde legacyregressie: zonder `selectedBranches` filtert `Engine.constructIntersection` ongeldige takken in plaats van de hele constructie af te wijzen; expliciet ongeldige selectie blijft atomair weigeren; behoud branch 1 wanneer alleen die geldig is.
+3. Controleer permissies, types, asrollen, Undo/Redo, nulresultaten, annulering vóór commit, stabiele IDs, geen spontane puntcreatie en alle testcases `INT-001` t/m `INT-016`.
+4. Lees actuele `origin/main`, `AGENTS.md`, dit contract v1.1.0 en de roadmap. Rapporteer eventuele conflicten; neem de nieuwe contractdocumentatie over zonder andere trajecten te vermengen.
+5. Voer `npm test` en `npm run test:edge` uit, pas verouderde UI-tests aan zonder geometrische/securityregressies te verzwakken, werk `docs/M8-INT-0-IMPLEMENTATION-REPORT.md` bij met feitelijke testuitvoer en push uitsluitend naar dezelfde featurebranch.
+6. **Niet naar `main` mergen, de oude gespecialiseerde menuknoppen nog niet verwijderen en M8-INT.1/.2/.3 en M-PATH niet starten.**
 
 ---
 
@@ -429,4 +445,4 @@ Repositoryreferenties, geraadpleegd op 16 oktober 2026; controleer bij implement
 - [docs/M8a-ELLIPSEN-CONTRACT.md](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/docs/M8a-ELLIPSEN-CONTRACT.md)
 - [construction-service.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/construction-service.js), [linear-geometry.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/linear-geometry.js), [ellipse-geometry.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/ellipse-geometry.js), [index.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/index.js), [tool-catalog.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/tool-catalog.js), [editor.html](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/editor.html).
 
-**Einde ontwerpcontract v1.0.0 — goedgekeurd als ontwerp, niet voor automatische implementatie.**
+**Einde ontwerpcontract v1.1.0 — automatische alle-snijpunten-UX goedgekeurd; featurebranchcorrectie en handmatige eindacceptatie vereist.**

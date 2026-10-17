@@ -98,3 +98,5 @@ test('selected intersection branches commit atomically through the existing comm
   assert.equal(sequence.document.objects.at(-1).construction.branch, 1);
   assert.deepEqual(plain(MI.SemanticSequence.replay(sequence.toJSON())), plain(sequence.document));
 });
+
+test('legacy command filters invalid branches and preserves branch 1',()=>{const {MI}=setup([]);for(const geometry of [{x1:2,y1:0,x2:4,y2:0},{x1:-4,y1:3,x2:4,y2:3}]){const engine=new MI.Engine({objects:[{id:'L',type:'line',...geometry},{id:'C',type:'circle',cx:0,cy:0,r:3}]}),commands=MI.AuthorCommands(engine),payload={toolId:'construct:lineCircleIntersection',sources:[{objectId:'L'},{objectId:'C'}]},made=commands.execute(commands.createCommand('construction.create',payload)).result;assert.equal(made.length,1);assert.equal(made[0].construction.branch,geometry.y1===0?1:0);}});
