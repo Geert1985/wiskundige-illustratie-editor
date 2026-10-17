@@ -1,11 +1,17 @@
-# WIE-FORM — Formule-editor als gedeelde werkruimte
+# WIE-FORM — Historisch, vervallen ontwerpvoorstel
+
+> **ARCHIEF — VERVALLEN WIE-ONTWERPRICHTING (17 oktober 2026).** De gebruiker heeft de architectuur gecorrigeerd: de volwaardige Formule-editor behoort tot de **afzonderlijke webapplicatie WAT — Wiskundige Analyse- en Transformatietool**, en wordt **niet** als aparte werkruimte in WIE gebouwd. Dit document blijft uitsluitend bestaan als historisch ontwerpvoorstel voor traceerbaarheid. **Niet implementeren, niet gebruiken als actueel productcontract of Codex-starttoestemming.** Binnen WIE loopt uitsluitend [WIE-TXT-FORM v1.3.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) voor dynamische formules/waarden in de bestaande teksteditor; de [huidige roadmap](DEVELOPMENT-ROADMAP.md) is leidend. Het WAT-Masterontwerp wordt afzonderlijk in het WAT-project uitgewerkt.
+
+---
 
 **Ontwerp- en architectuurcontract v1.0.0 — 17 oktober 2026**  
-**Status:** productrichting door gebruiker bevestigd; documentatieconcept, nog geen technische ontwerpacceptatie of implementatie-GO.  
+**Historische status (vervallen):** oorspronkelijke, nadien door gebruiker teruggetrokken productrichting. Alle beweringen hieronder over een ingebouwde WIE-FORM-werkruimte of FORM.0–.3 zijn **niet langer normatief**.  
 **Repository:** `Geert1985/wiskundige-illustratie-editor`  
 **Gerelateerde contracten:** [TXT-FORM](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) · [WIE-ALG](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md) · [Teksteditorarchitectuur](TEXT-EDITOR-ARCHITECTURE.md) · [Roadmap](DEVELOPMENT-ROADMAP.md).
 
-## 1. Expliciet productbesluit
+## Historische ontwerptekst — niet normatief
+
+### 1. Voormalig productbesluit
 
 **WIE-FORM is een afzonderlijke, volwaardige Formule-editor/-werkruimte binnen de bestaande Wiskundige Illustratie Editor.** Geen tweede externe applicatie, los project of gekopieerde formule-engine. Dezelfde Formule-editor wordt vanuit verschillende contexten gestart, vergelijkbaar met de beoogde gedeelde wetenschappelijke rekenmachine:
 

@@ -1,11 +1,17 @@
-# WIE-ALG — Interactieve algebra als uitbreidingslaag van WIE-FORM
+# WIE-ALG — Historische ideeën voor interactieve algebra (vervallen WIE-scope)
+
+> **ARCHIEF — VERVALLEN WIE-ONTWERPRICHTING (17 oktober 2026).** Een interactieve algebra-/vergelijkingseditor wordt **niet** als WIE-ALG-laag binnen WIE gebouwd. Formulebewerking, algebraïsche transformaties en visuele termmanipulatie vallen onder de **zelfstandige webapplicatie WAT — Wiskundige Analyse- en Transformatietool**. Dit document bevat historische ideeën en is **geen actief WIE-contract of WAT-implementatiecontract**. WAT krijgt zijn eigen Masterontwerp; in WIE blijft uitsluitend [WIE-TXT-FORM v1.3.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) actief. De onderliggende historische ALG-fasen zijn uit de actieve WIE-roadmap gehaald.
+
+---
 
 **Concept- en architectuurcontract v1.1.0 — 17 oktober 2026**  
-**Status:** gebruikersvisie en productrichting bevestigd; **langetermijn-roadmap, uitsluitend documentatie**. Geen technische implementatie-, schema-, branch-, PR- of productiecode-GO.  
+**Historische status (vervallen):** niet langer een WIE-traject. Onderstaande eerdere WIE-ALG-architectuur is uitsluitend archief, niet actueel of goedgekeurd voor implementatie in WIE of WAT.  
 **Project:** From Zero 2 Infinity / Wiskundige Illustratie Editor  
 **Referenties:** [WIE-FORM v1.0.0 — hostwerkruimte](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md), [TXT-FORM v1.2.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md), [teksteditorarchitectuur](TEXT-EDITOR-ARCHITECTURE.md), [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md).
 
-## 1. Visie
+## Historische ontwerptekst — niet normatief
+
+### 1. Voormalige visie
 
 **Architectuurbesluit v1.1.0:** WIE-ALG is de interactieve algebraïsche uitbreidingslaag **binnen de gedeelde WIE-FORM-werkruimte**, niet een zelfstandige tweede editor of afzonderlijke applicatie. De gebruiker opent dezelfde formule vanuit WIE, Teksteditor of geometrische context; WIE-ALG activeert aanvullende transformatie-, selectie- en didactische mogelijkheden. De WIE-FORM-werkruimte en haar invoeg-/terugkeercontract staan in het afzonderlijke FORM-contract. WIE-ALG blijft een toekomstig traject zonder implementatie-GO.
 

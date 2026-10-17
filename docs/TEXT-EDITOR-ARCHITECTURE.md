@@ -715,7 +715,9 @@ De aangeleverde roadmap-export v2.1.0 is als documentatieaanvulling verwerkt; de
 **Bewijsgrens:** TI-36X Pro-pariteit is een toekomstig productdoel. De in de export genoemde 105 inventarispunten zijn geen officiële functietelling; de inventaris en officiële-handleidingverificatie zijn niet meegeleverd/uitgevoerd. K8 houdt TI-norm, afwijkingen, uitzonderingen, FZI-extra en buiten-scope apart met werkelijk bewijs. Huidige gecombineerde Node-status blijft 573/0/0; geen nieuwe tests uitgevoerd in deze ronde. Laatste gecombineerde Edge-run en eerder open handmatige controles worden niet als PASS gemarkeerd.
 
 
-## 32. TXT-FORM en WIE-ALG — semantische formules en toekomstige interactieve algebra (2026-10-17)
+## 32. HISTORISCH / VERVALLEN — TXT-FORM en WIE-ALG (2026-10-17)
+
+> Achterhaald door sectie 34 hieronder: de opmerkingen over WIE-ALG en een gedeelde symbolische algebra-kern binnen WIE zijn **niet meer normatief**. Alleen de bron-/metinggebonden presentatie van TXT-FORM blijft binnen WIE.
 
 **Documentatiebesluit, geen uitvoering.** Normatieve nieuwe voorstellen: [TXT-FORM ontwerpcontract v1.1.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) en [WIE-ALG conceptcontract v1.0.0](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md). De bestaande T1–T5/textSchema-/document- en T5a-/T5b-contracten worden **niet** door deze toevoeging stilzwijgend gewijzigd of als geïmplementeerd beschouwd.
 
@@ -723,7 +725,9 @@ De aangeleverde roadmap-export v2.1.0 is als documentatieaanvulling verwerkt; de
 
 **Eigenaarschap:** hergebruik bestaande bronrechten, revision/permission-epoch, meet- en rekenkern, ProseMirror-atomen, export, history en documentmigratie. Geometrie → formulepresentatie mag dynamisch worden; formuleherscheppen → geometrische mutatie vereist later een afzonderlijke, expliciet geautoriseerde constraint-/construction-transactie. Geen automatische writeback. ALG.0 is read-only en ALG.1+ vereisen afzonderlijke goedgekeurde contracts en onafhankelijke math-/browser-/schema-regressietests.
 
-## 33. WIE-FORM — gedeelde Formule-editor/-werkruimte (2026-10-17)
+## 33. HISTORISCH / VERVALLEN — WIE-FORM-werkruimte (2026-10-17)
+
+> Achterhaald door sectie 34 hieronder: **geen** WIE-FORM-werkruimte of algebra-UI binnen WIE ontwikkelen; onderstaande formulering uitsluitend voor geschiedenis.
 
 **Vastgelegde productrichting, uitsluitend documentatie:** [WIE-FORM ontwerpcontract v1.0.0](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md). WIE-FORM is één zelfstandige maar **ingebouwde** formulewerkruimte binnen WIE, bereikbaar vanuit de Wiskundige Teksteditor, vanuit WIE zelf en vanuit geautoriseerde geometrie-/metingcontext. Het is **geen apart programma of tweede formule-engine**. Deze keuze preciseert [TXT-FORM v1.2.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) en [WIE-ALG v1.1.0](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md).
 
@@ -732,3 +736,13 @@ De aangeleverde roadmap-export v2.1.0 is als documentatieaanvulling verwerkt; de
 **Sessies en terugplaatsing:** hergebruik de bestaande author/restricted-rechten, revision/permission epoch, bronreferenties en `text.commit`/history. Een WIE-FORM-sessie krijgt expliciete startcontext (nieuw/existing rich-text-formule, onafhankelijk formulewerkblad, geometrisch bronrecept) en één gevalideerd `insert`/`replace`/`return`-commitpad; afsluiten/annuleren verandert niets. Onafhankelijke formules bewaren op documentniveau vraagt een nieuw expliciet schema-/UX-contract, niet een automatische uitbreiding van huidige documentschema's. Rich-text-Undo/Redo en de tijdelijke Formule-editor-history zijn strikt gescheiden.
 
 **Ontwikkelgates:** FORM.0 read-only preflight afstemmen met TXT-FORM.0 over de minimaal compatibele semantische representatie en hostadapter. FORM.1 basiswerkomgeving, FORM.2 geometrische koppeling, FORM.3 ALG-uitbreidingspunten; ALG.0–ALG.4 blijven apart. Geen implementatie- of schema-GO door deze documentatie; Node-/Edge-/browser- en handmatige acceptatie zijn pas van toepassing op latere daadwerkelijke productiewijzigingen.
+
+## 34. Definitieve projectgrens — WIE-TXT-FORM binnen WIE, interactieve formule-editor in WAT (2026-10-17)
+
+**Actuele normatieve ontwerpbeslissing:** binnen de bestaande WIE-teksteditor ontwikkelen we uitsluitend [WIE-TXT-FORM v1.3.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md): brongebonden numerieke waarde, gekoppelde symbolische formule en gecontroleerde uitwerking, zonder nieuwe zelfstandige formulewerkruimte. De bestaande statische `math`/LaTeX-invoer en de `dynamicValue`-infrastructuur worden behouden. WIE-FORM- en WIE-ALG-contracten en de FORM.0–.3/ALG.0–.4-fasen in oudere secties zijn **vervallen als WIE-ontwikkelrichting**.
+
+**WAT** (**Wiskundige Analyse- en Transformatietool**) is een **afzonderlijke webapplicatie** voor de uitgebreide visuele Formule-editor, symbolische algebra, vergelijkingtransformaties, termselectie/drag/drop, afleidingsgeschiedenis en eventuele verificatie. Haar toekomstige architectuur wordt in het afzonderlijke WAT-Masterontwerp vastgesteld; dit WIE-document bepaalt **geen** WAT-techniek of ontwikkelingsopdracht.
+
+**Grenzen voor de WIE-implementatie:** behoud en hergebruik de huidige `TextValues`, `TextDependencies`, `TextDynamicValueEditor`, `TextMathInput`, `MathSource`, `MathFragments`, `RichTextRenderer`, meet-/eenhedenkern, import/export, permissies en histories waar geschikt. Voeg alleen de getypeerde formule- en rolmetadata toe die WIE nodig heeft om zijn **eigen** dynamische geometrische weergaven correct te reconstrueren. Dat is geen aanleiding voor een algemene symbolische AST, CAS-engine, tweede teksteditor of een WAT-connector. TXT-FORM.0 is een read-only audit; extra schemas of UI-wijzigingen vragen afzonderlijke ontwerp- en implementatie-GO.
+
+**Toekomstige interoperabiliteit** is uitdrukkelijk **optioneel en geen afhankelijkheid**. Wanneer beide producten een koppeling wensen, is een afzonderlijk akkoord nodig over een gedeeld, versieerbaar uitwisselingsformaat, autorisatie, units, schema, invaliditeit en terugkeer-/foutgedrag; tot dan blijven WIE en WAT onafhankelijk.
