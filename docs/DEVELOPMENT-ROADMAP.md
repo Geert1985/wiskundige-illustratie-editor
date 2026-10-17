@@ -1167,3 +1167,9 @@ Validatie: 737/737 Node PASS en gerichte Edge PASS (keyboard/focus, mixed, histo
 Op `codex/ui-layers-label-toggle`, vanaf HEAD `65a360d`; implementatie `405b944`. Eén centrale modelrouter voor nieuwe tekst (inclusief rijke tekst en tekstproducerende constructies), duurzame identiteit via gevalideerde `meta.automaticTextLayerId`, bovenste zichtbare gewone laag voor geometrie. Geen migratie op load, geen nieuwe documentversie of laagschema, bestaande T-knoppen behouden.
 
 Eerste tekst en laag delen één historyactie. Verborgen tekstdoelen weigeren; beperkte gebruikers kunnen geen automatische laag creëren. Duplicaten behouden de oorspronkelijke laag en groepen. Validatie: 742/742 Node PASS; gerichte Edge voor automatische tekstlaag, rijke tekst, formules, dynamische waarden, lagen, labels en cachecompatibiliteit PASS. Handmatige acceptatie en merge open; volledige gecombineerde Edge-suite niet uitgevoerd. Zie [verslag](UI-LAYERS-TEXT-1-REPORT.md).
+
+## UI-LAYERS-LABEL-1 / UI-LAYERS-TEXT-1 — Acceptatie en main-integratie (2026-10-17)
+
+De gebruiker heeft de handmatige test als **geslaagd** bevestigd en expliciet opdracht gegeven om naar `main` te pushen. Dit vervangt de open acceptatie-/mergestatus in de oorspronkelijke opleverregisters hierboven. De featurebranch `codex/ui-layers-label-toggle` bevat labelknoppen (`f52fe7d`, verslag `65a360d`) en automatische tekstlaag (`405b944`, verslag `895ecf7`). Integratie op actuele main `7a67837` is een fast-forward, inclusief acceptatieregistratie.
+
+Bestaande validatie: 742/742 Node PASS en zeven gerichte Edge-suites PASS. Geen nieuwe testrun voor deze documentatie-/integratiestap. De gebruikersbevestiging is geen aanvullende claim over afzonderlijk uitgevoerde scenario's of de volledige gecombineerde Edge-suite. Zie [labelrapport](UI-LAYERS-LABEL-1-REPORT.md) en [tekstlaagrapport](UI-LAYERS-TEXT-1-REPORT.md).

@@ -3,7 +3,7 @@
 Datum: 17 oktober 2026. Branch: `codex/ui-layers-label-toggle`.
 Uitgangspunt: actuele lokale HEAD en opgehaalde remote HEAD beide `65a360d`.
 Implementatiecommit: `405b944`; dit verslag en architectuurafspraken volgen in een documentatiecommit.
-Status: geïmplementeerd en geautomatiseerd getest op dezelfde featurebranch. Niet naar main gemerged; handmatige gebruikersacceptatie open. UI-LAYERS-LABEL-1 behouden.
+Status per 17 oktober 2026: handmatige test door de gebruiker als geslaagd bevestigd; integratie van dezelfde featurebranch naar `main` uitdrukkelijk goedgekeurd. UI-LAYERS-LABEL-1 behouden. Zie het acceptatieregister onderaan.
 
 ## Functioneel gedrag en centrale routering
 
@@ -76,3 +76,9 @@ Documentatie: dit rapport, `AGENTS.md`, `docs/DEVELOPMENT-ROADMAP.md`, `docs/M3c
 ## Handmatige acceptatie
 
 Gebruikersacceptatie blijft open: eigen oudere documenten, hernoemen/herschikken en slepen, nieuwe tekst versus geometrie, verborgen doellagen en cursusdocumenten met vooraf voorbereide tekstlaag. Toekomstige tekstgereedschappen moeten dezelfde centrale modelroutering gebruiken; geen tijdelijke UI-laagwissel, nieuwe naamheuristiek of tweede routingpad.
+
+## Gebruikersacceptatie en integratie — 17 oktober 2026
+
+De gebruiker bevestigde de handmatige test als geslaagd en gaf expliciet opdracht: “ok, registreer de test als geslaagd en push naar main”. Deze acceptatie betreft de opgeleverde featurebranch met labelbediening en automatische tekstlaag, tot en met `895ecf7`. Er is geen afzonderlijke claim dat ieder handmatig scenario apart is afgetekend.
+
+De branch sluit rechtstreeks aan op actuele `origin/main` `7a67837`. Integratie gebeurt als fast-forward van `main`, inclusief deze acceptatieregistratie. De eerdere vermeldingen van open acceptatie of geen merge beschrijven de oorspronkelijke opleverstatus; dit register is de actuele status. De al vastgelegde automatische testresultaten blijven behouden; voor deze documentatie- en integratiestap zijn geen nieuwe tests uitgevoerd.
