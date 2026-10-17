@@ -551,6 +551,38 @@ test('PERF-1.2a deferred invalidations preserve the strongest pending reason',()
   assert.deepEqual(counts,{list:1,inspector:1});
 });
 
+test('PERF-1.2b1 geometry drag refreshes canvas and inspector while retaining the object list',()=>{
+  const h=appRuntime(),q=h.engine.add({id:'q',type:'point',x:3,y:0}),mid=h.engine.construct('midpoint',[{objectId:'p'},{objectId:q.id}])[0],counts={canvas:0,list:0,inspector:0},inspected=[];
+  for(const [name,key] of [['canvas','renderCanvas'],['list','renderViewList'],['inspector','renderInspector']]){
+    const original=h.app[key].bind(h.app);h.app[key]=(...args)=>{counts[name]++;if(name==='inspector')inspected.push(h.engine.get('p').x);return original(...args);};
+  }
+  h.app.selectObject('p');const list=h.app.nodes.viewList.innerHTML;counts.canvas=counts.list=counts.inspector=0;inspected.length=0;
+  h.down({x:0,y:0});counts.canvas=counts.list=counts.inspector=0;inspected.length=0;h.move({x:.4,y:.3});
+  assert.ok(Math.abs(h.engine.get('p').x-.4)<1e-10);assert.ok(Math.abs(h.engine.get(mid.id).x-1.7)<1e-10);
+  assert.deepEqual(counts,{canvas:1,list:0,inspector:1});assert.equal(inspected.length,1);assert.ok(Math.abs(inspected[0]-.4)<1e-10);assert.equal(h.app.nodes.viewList.innerHTML,list);
+  h.emit(h.win,'pointerup');assert.equal(h.app.history.entries.length,1);h.app.travelHistory();assert.equal(h.engine.get('p').x,0);assert.equal(h.engine.get(mid.id).x,1.5);h.app.travelHistory(true);assert.ok(Math.abs(h.engine.get(mid.id).x-1.7)<1e-10);
+});
+
+test('PERF-1.2b1 deferred drag escalates viewport invalidation and preserves full fallback',()=>{
+  const {app}=appRuntime();let callback,frame=0;app.window.requestAnimationFrame=fn=>{callback=fn;return ++frame;};app.window.cancelAnimationFrame=()=>{};
+  const counts={list:0,inspector:0};for(const [name,key] of [['list','renderViewList'],['inspector','renderInspector']]){const original=app[key].bind(app);app[key]=(...args)=>{counts[name]++;return original(...args);};}
+  app.interaction={mode:'object'};
+  app.invalidate('drag',true);app.invalidate('viewport',true);callback();assert.deepEqual(counts,{list:0,inspector:1});
+  app.invalidate('drag',true);app.invalidate('unknown-reason',true);callback();assert.deepEqual(counts,{list:1,inspector:2});
+  app.invalidate('drag',true);app.invalidate('viewport');assert.deepEqual(counts,{list:1,inspector:3});
+  app.interaction={mode:'draw'};app.invalidate('drag');assert.deepEqual(counts,{list:2,inspector:4});
+});
+
+test('PERF-1.2b1 restricted drag retains current permissions, preview inspector and cancellation',()=>{
+  const h=appRuntime(),{session,owner}=h.MI.RuntimeSession.create(require('./permission-fixtures.cjs').fixture());
+  h.app.dispose();h.doc.getElementById('canvas').querySelector=()=>null;h.app.runtime=session;h.app.engine=session.engine;h.app.commands=session;h.app.history=new h.MI.RuntimeHistory(h.app);h.app.selectedIds=[];h.app.init();h.app.selectObject('A');
+  const counts={list:0,inspector:0};for(const [name,key] of [['list','renderViewList'],['inspector','renderInspector']]){const original=h.app[key].bind(h.app);h.app[key]=(...args)=>{counts[name]++;return original(...args);};}
+  counts.list=counts.inspector=0;const saved=plain(owner.inspect()),payload={ids:['A'],delta:{x:1,y:0}},transaction=session.begin(h.app.command('object.translate',payload));session.preview(transaction,payload);
+  h.app.selectedIds=['A'];h.app.interaction={mode:'object',id:'A',original:session.engine.get('A'),transaction,finalPayload:payload,rejected:false,permissionEpoch:session.permissionEpoch};h.app.invalidate('drag');
+  assert.equal(h.app.viewObject('A').x,1);assert.deepEqual(plain(owner.inspect()),saved);assert.deepEqual(counts,{list:0,inspector:1});
+  h.app.cancel();assert.equal(h.app.interaction,null);assert.deepEqual(plain(owner.inspect()),saved);
+});
+
 test('UI-LAYERS-TEXT-1 first creation and layer deletion undo/redo atomically restore identity',()=>{
  const {app,engine}=appRuntime(),before=plain(engine.toJSON());let created;
  app.changeDocument(()=>{created=app.createObject({type:'text',x:1,y:2,text:'Eerste tekst'},'text');});

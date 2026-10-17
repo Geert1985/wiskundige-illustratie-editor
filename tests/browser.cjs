@@ -26,6 +26,7 @@ const server = http.createServer((req, res) => {
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`http://127.0.0.1:${server.address().port}/editor.html`);
     if (process.env.PERF_1_2A_ONLY === '1') { const renderInvalidation = await require('./browser-render-invalidation.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', renderInvalidation, pageErrors: errors })); return; }
+    if (process.env.PERF_1_2B1_ONLY === '1') { const dragInvalidation = await require('./browser-drag-invalidation.cjs')(page); assert.deepEqual(errors, []); console.log(JSON.stringify({ browser: 'Edge', dragInvalidation, pageErrors: errors })); return; }
     if (process.env.OBJECT_RENAME_ONLY === '1') { const objectRename=await require('./browser-object-rename.cjs')(page);assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'Edge',objectRename,pageErrors:errors}));return; }
     if (process.env.TEXT_LAYERS_ONLY === '1') { const textLayers=await require('./browser-automatic-text-layer.cjs')(page);assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'Edge',textLayers,pageErrors:errors}));return; }
     if (process.env.LAYER_LABELS_ONLY === '1') { const labels=await require('./browser-layer-labels.cjs')(page);assert.deepEqual(errors,[]);console.log(JSON.stringify({browser:'Edge',labels,pageErrors:errors}));return; }

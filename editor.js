@@ -2,7 +2,8 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
-  const RENDER_INVALIDATION = Object.freeze({ FULL: 'full', VIEWPORT: 'viewport' });
+  const RENDER_INVALIDATION = Object.freeze({ FULL: 'full', VIEWPORT: 'viewport', DRAG: 'drag' });
+  const DRAG_SAFE_MODES = new Set(['object','group','label','measurement-label','endpoint','vertex','pathPoint','circleDistributionPoint']);
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const INTERSECTION_KINDS = Object.freeze(['lineIntersection','lineCircleIntersection','lineEllipseIntersection','circleCircleIntersection']);
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -930,7 +931,7 @@
     begin(state, event) {
       this.clearHover();
       this.flushEdits();
-      this.interaction = { ...state, historyBefore: this.history.capture(), pointerId: event.pointerId, selectionBefore: this.selectedId, selectionIdsBefore:this.selectedIds.slice(), startScreen: { x: event.clientX, y: event.clientY }, transform: this.transform(), typed: "" };
+      this.interaction = { ...state, historyBefore: this.history.capture(), pointerId: event.pointerId, selectionBefore: this.selectedId, selectionIdsBefore:this.selectedIds.slice(), startScreen: { x: event.clientX, y: event.clientY }, transform: this.transform(), permissionEpoch:this.runtime?.permissionEpoch, typed: "" };
       if (this.nodes.canvasWrap.setPointerCapture) try { this.nodes.canvasWrap.setPointerCapture(event.pointerId); } catch (_) {}
       this.renderPresentation();
     }
@@ -1152,7 +1153,8 @@
         else { const result = this.snap(o.type === "circle" ? { x: o.cx + delta.x, y: o.cy + delta.y } : { x: o.x + delta.x, y: o.y + delta.y }, state.id); this.updateObject(state.id, o.type === "circle" ? { cx: result.point.x, cy: result.point.y } : { x: result.point.x, y: result.point.y }); this.feedback = result; }
       }
       if (state.mode === "pan") try { this.execute("view.pan",{bounds:{ xMin: state.bounds.xMin - delta.x, xMax: state.bounds.xMax - delta.x, yMin: state.bounds.yMin - delta.y, yMax: state.bounds.yMax - delta.y }}); } catch (e) { this.status(e.message); return; }
-      this.invalidate(state.mode==='pan'?RENDER_INVALIDATION.VIEWPORT:true,state.mode==='pan');
+      const dragInvalidation=DRAG_SAFE_MODES.has(state.mode)?RENDER_INVALIDATION.DRAG:RENDER_INVALIDATION.FULL;
+      this.invalidate(state.mode==='pan'?RENDER_INVALIDATION.VIEWPORT:dragInvalidation,true);
     }
     pointerUp(event) {
       if(this.interaction?.mode==='marquee' && !this.interaction.keyboard && event.pointerId===this.interaction.pointerId){this.updateRectangle({x:event.clientX,y:event.clientY});this.commit();return;}
@@ -1371,15 +1373,17 @@
     invalidate(reason = RENDER_INVALIDATION.FULL, defer = false) {
       // Preserve the historical invalidate(true) API for existing full updates.
       if(typeof reason==='boolean'){defer=reason;reason=RENDER_INVALIDATION.FULL;}
-      if(reason!==RENDER_INVALIDATION.VIEWPORT)reason=RENDER_INVALIDATION.FULL;
+      if(![RENDER_INVALIDATION.VIEWPORT,RENDER_INVALIDATION.DRAG].includes(reason))reason=RENDER_INVALIDATION.FULL;
       if (!this.initialized) return;
       if (defer && this.window.requestAnimationFrame && this.window.cancelAnimationFrame) {
-        if(this.renderFrame!==null&&reason===RENDER_INVALIDATION.FULL)this.pendingRenderInvalidation=RENDER_INVALIDATION.FULL;
-        else if(this.renderFrame===null)this.pendingRenderInvalidation=reason;
+        if(this.renderFrame===null)this.pendingRenderInvalidation=reason;
+        else if(this.pendingRenderInvalidation===RENDER_INVALIDATION.FULL||reason===RENDER_INVALIDATION.FULL)this.pendingRenderInvalidation=RENDER_INVALIDATION.FULL;
+        else if(this.pendingRenderInvalidation===RENDER_INVALIDATION.DRAG||reason===RENDER_INVALIDATION.DRAG)this.pendingRenderInvalidation=RENDER_INVALIDATION.DRAG;
+        else this.pendingRenderInvalidation=RENDER_INVALIDATION.VIEWPORT;
         if (this.renderFrame === null) this.renderFrame = this.window.requestAnimationFrame(() => { const pending=this.pendingRenderInvalidation;this.renderFrame = null;this.pendingRenderInvalidation=RENDER_INVALIDATION.FULL;if (this.initialized) this.render(pending); });
         return;
       }
-      if (this.renderFrame !== null) { if(this.pendingRenderInvalidation===RENDER_INVALIDATION.FULL)reason=RENDER_INVALIDATION.FULL;this.window.cancelAnimationFrame(this.renderFrame); this.renderFrame = null; }
+      if (this.renderFrame !== null) { if(this.pendingRenderInvalidation===RENDER_INVALIDATION.FULL)reason=RENDER_INVALIDATION.FULL;else if(this.pendingRenderInvalidation===RENDER_INVALIDATION.DRAG)reason=RENDER_INVALIDATION.DRAG;this.window.cancelAnimationFrame(this.renderFrame); this.renderFrame = null; }
       this.pendingRenderInvalidation=RENDER_INVALIDATION.FULL;
       this.render(reason);
     }
@@ -1394,13 +1398,18 @@
       n.canvas.innerHTML=r.render({meta:e.model.meta,layers:e.model.layers,all:()=>objects},{editorCanvas:true,clipBounds});const svg=n.canvas.querySelector('svg'),object=this.selectedId&&this.viewObject(this.selectedId);if(svg)MI.SvgRenderer.fitCanvasAxes(svg,r,this.transform(),n.canvas.getBoundingClientRect?.());if(svg?.querySelectorAll)Array.from(svg.querySelectorAll('[data-object-id]')).filter(node=>this.selectedIds.includes(node.getAttribute('data-object-id'))).forEach(node=>node.classList.add('selected'));if(this.document.createElementNS){this.renderRectangle(svg,r);if(this.services.overlays)this.services.overlays.render(svg,r,this.selectedIds.length===1&&this.engine.isDisplayed(object?.id)&&(!this.runtime||this.capabilities(object?.id).geometryFields.length)?object:null,this.navigationMode==='pan'?'pan':this.tool,this.document);if(this.services.feedback)this.services.feedback.render(svg,r,this.feedback,this.document);}if(this.runtime&&svg)for(const handle of svg.querySelectorAll('.fzi-line-endpoint, .fzi-polygon-vertex')){const id=handle.getAttribute('data-line-id')||handle.getAttribute('data-polygon-id'),caps=this.capabilities(id),part=handle.getAttribute('data-endpoint'),fields=part?[part==='start'?'x1':'x2',part==='start'?'y1':'y2']:['x','y'].map(k=>'vertices['+handle.getAttribute('data-vertex')+'].'+k);if(!fields.every(k=>caps.geometryFields.includes(k)))handle.remove();}return {objects,svg,object};
     }
     render(reason = RENDER_INVALIDATION.FULL) {
-      if(reason!==RENDER_INVALIDATION.VIEWPORT)reason=RENDER_INVALIDATION.FULL;
+      if(![RENDER_INVALIDATION.VIEWPORT,RENDER_INVALIDATION.DRAG].includes(reason))reason=RENDER_INVALIDATION.FULL;
+      if(reason===RENDER_INVALIDATION.DRAG&&(!this.interaction||!DRAG_SAFE_MODES.has(this.interaction.mode)||(this.runtime&&this.interaction.permissionEpoch!==this.runtime.permissionEpoch)))reason=RENDER_INVALIDATION.FULL;
       if(this.runtime)this.selectedIds=this.selectedIds.filter(id=>{const caps=this.capabilities(id);return caps.selectCanvas||caps.selectList;});
       const e = this.engine, r = e.renderer, n = this.nodes;
       if (this.services.grid) r.axisStep = this.services.grid.step(r);
       const {objects,svg,object}=this.renderCanvas();
       this.renderPresentation(true);
       if(reason===RENDER_INVALIDATION.VIEWPORT){this.renderNavigationState();return;}
+      if(reason===RENDER_INVALIDATION.DRAG){
+        this.renderInspector(object);this.organizeGeometryInspector();this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
+        this.renderNavigationState();return;
+      }
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
       const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput','measurementSetting','measurementControl','pointProjection','angleSetting','angleDocument','textBinding'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
       this.renderInstructions();this.renderViewList(); this.renderInspector(object);this.organizeGeometryInspector();this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
