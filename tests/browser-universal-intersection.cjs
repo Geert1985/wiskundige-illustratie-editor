@@ -11,7 +11,7 @@ module.exports=async page=>{
  assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.interaction.sources),[{objectId:'L'}]);
  await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.length),2);
  await choose(page,'[data-tool="construct:intersection"]');await click(-2.8,0);await instructions.locator('[data-intersection-source]').first().evaluate(button=>button.click());await click(1.8,0.87);
- const points=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.filter(o=>o.construction?.kind==='lineCircleIntersection').map(o=>o.construction.branch));assert.deepEqual(points,[0,1]);
+ const points=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.filter(o=>o.construction?.kind==='lineCircleIntersection').map(o=>o.construction.branch));assert.deepEqual(points,[0,1]);assert.equal(await instructions.isVisible(),false);assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.tool),'construct:intersection');
  assert.equal(await instructions.locator('[data-intersection-branch],[data-intersection-confirm]').count(),0);assert.equal(await page.locator('[data-intersection-candidate]').count(),0);
  assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.history.entries.length),1);
  await page.locator('#undoBtn').click();assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.length),2);

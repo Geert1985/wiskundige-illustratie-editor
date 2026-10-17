@@ -648,10 +648,11 @@
       if(!result.candidates.length){state.sources=state.sources.slice(0,1);this.engine.renderer.preview=null;this.status('Geen uniek snijpunt binnen deze objecten ('+result.reasonCode+'). Kies een andere tweede bron.');this.renderInstructions();this.invalidate();return;}
       let created=[];
       this.changeDocument(()=>{created=this.execute('construction.create',{toolId:recipeTool,sources:result.sources}).result;this.selectedIds=created.map(object=>object.id);});
-      if(created.length)this.status(created.length+' snijpunt(en) toegevoegd.');
+      if(created.length){this.intersectionCompleted=true;this.status(created.length+' snijpunt(en) toegevoegd.');}
       this.invalidate();
     }
     intersectionClick(point) {
+      this.intersectionCompleted=false;
       const state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
       const options=this.intersectionSourceOptions(point,state);
       if(!options.length){this.status('Geen geschikte lijn, veelhoekzijde of cirkel geraakt.');return;}
@@ -746,7 +747,7 @@
       if(this.ellipsePreviewFrame!=null||!this.window.requestAnimationFrame)return;
       this.ellipsePreviewFrame=this.window.requestAnimationFrame(()=>{this.ellipsePreviewFrame=null;if(this.initialized&&this.interaction?.ellipsePlacement)this.renderEllipsePlacementPreview();});
     }
-    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.regionExtent=undefined;this.tool = tool;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
+    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.regionExtent=undefined;this.tool = tool;this.intersectionCompleted=false;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
     // UI-RADIAL-9: generic adapter for any document object accepted by a
     // registered construction contract. The service owns source matching;
     // this controller only stages the existing create/interaction workflow.
