@@ -1414,3 +1414,4 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 .layer-header .view-name{min-width:0;overflow:hidden;text-overflow:ellipsis}
 
 .layer-objects .text-toggle{height:22px}
+.point-source-highlight{filter:drop-shadow(0 0 3px #d5ad45)}

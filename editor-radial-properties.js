@@ -532,11 +532,17 @@
       const source=ctx.objects[0],app=this.app;
       const entries=app.toolCatalog.list('sidebar').flatMap(category=>category.entries)
         .filter(entry=>entry.status==='implemented'&&entry.id.startsWith('construct:'))
-        .filter(entry=>app.toolAllowed(entry.id)&&
-          (!app.runtime||entry.id==='construct:intersection'||app.capabilities(source.id).sourceTools.includes(entry.id)));
+        .filter(entry=>{
+          if(!app.toolAllowed(entry.id))return false;
+          if(!app.runtime)return true;
+          const grants=app.capabilities(source.id).sourceTools;
+          if(entry.id==='construct:intersection')return ['lineIntersection','lineCircleIntersection','lineEllipseIntersection','circleCircleIntersection'].some(kind=>grants.includes('construct:'+kind));
+          if(entry.id==='construct:pointOnObject')return ['pointOnSegment','pointOnCircle','pointOnEllipse'].some(kind=>grants.includes('construct:'+kind));
+          return grants.includes(entry.id);
+        });
       const out=[];
       for(const entry of entries){
-        const plans=entry.id==='construct:intersection'?app.intersectionContextPlans(source,ctx.edgeRef):MI.ConstructionService.contextualPlans(source,entry.id.slice(10),ctx.edgeRef);
+        const plans=entry.id==='construct:intersection'?app.intersectionContextPlans(source,ctx.edgeRef):entry.id==='construct:pointOnObject'?['pointOnSegment','pointOnCircle','pointOnEllipse'].flatMap(kind=>app.toolAllowed('construct:'+kind)&&(!app.runtime||app.capabilities(source.id).sourceTools.includes('construct:'+kind))?MI.ConstructionService.contextualPlans(source,kind,ctx.edgeRef).map(plan=>({...plan,key:kind+':'+plan.key,concreteKind:kind})):[]):MI.ConstructionService.contextualPlans(source,entry.id.slice(10),ctx.edgeRef);
         // Keep one discoverable entry for each construction. A composite
         // endpoint recipe takes precedence when defined by the service.
         if(plans.length)out.push({entry,plan:plans[0]});
@@ -571,7 +577,7 @@
         if(drawing)ico.append(drawing.cloneNode(true));
         const info=text('span','radial-construction-description','',this.doc);
         info.append(text('strong','',entry.label,this.doc));
-        const kind=entry.id.slice(10);
+        const kind=plan.concreteKind||entry.id.slice(10);
         let hint;
         if(plan.key==='endpoints')hint='Gebruikt direct de twee eindpunten als bronnen.';
         else if(plan.mode==='placement')
