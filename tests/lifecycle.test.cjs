@@ -521,6 +521,36 @@ test('UI-LAYERS-LABEL-1 empty, locked and restricted batches have no partial eff
   const saved=plain(session.engine.get('A'));app.toggleLabels(['A','B']);assert.deepEqual(plain(session.engine.get('A')),saved);
 });
 
+test('PERF-1.2a viewport invalidation redraws canvas and navigation while retaining unchanged list and inspector',()=>{
+  const {app,engine}=appRuntime(),counts={canvas:0,list:0,inspector:0};
+  for(const [name,key] of [['canvas','renderCanvas'],['list','renderViewList'],['inspector','renderInspector']]){
+    const original=app[key].bind(app);app[key]=(...args)=>{counts[name]++;return original(...args);};
+  }
+  const before={list:app.nodes.viewList.innerHTML,inspector:app.nodes.selectionPanel.innerHTML};
+  engine.renderer.setBounds({xMin:-6,xMax:6,yMin:-4,yMax:4});
+  app.invalidate('viewport');
+  assert.deepEqual(counts,{canvas:1,list:0,inspector:0});
+  assert.equal(app.nodes.viewList.innerHTML,before.list);assert.equal(app.nodes.selectionPanel.innerHTML,before.inspector);
+  app.invalidate();
+  assert.deepEqual(counts,{canvas:2,list:1,inspector:1});
+});
+
+test('PERF-1.2a unknown and legacy invalidations conservatively perform a full render',()=>{
+  const {app}=appRuntime(),counts={list:0,inspector:0};
+  for(const [name,key] of [['list','renderViewList'],['inspector','renderInspector']]){const original=app[key].bind(app);app[key]=(...args)=>{counts[name]++;return original(...args);};}
+  app.invalidate('unknown-reason');assert.deepEqual(counts,{list:1,inspector:1});
+  app.invalidate(true);assert.deepEqual(counts,{list:2,inspector:2});
+});
+
+test('PERF-1.2a deferred invalidations preserve the strongest pending reason',()=>{
+  const {app}=appRuntime(),counts={list:0,inspector:0};let callback,frame=0;
+  app.window.requestAnimationFrame=fn=>{callback=fn;return ++frame;};app.window.cancelAnimationFrame=()=>{};
+  for(const [name,key] of [['list','renderViewList'],['inspector','renderInspector']]){const original=app[key].bind(app);app[key]=(...args)=>{counts[name]++;return original(...args);};}
+  app.invalidate('viewport',true);
+  app.invalidate(true);callback();
+  assert.deepEqual(counts,{list:1,inspector:1});
+});
+
 test('UI-LAYERS-TEXT-1 first creation and layer deletion undo/redo atomically restore identity',()=>{
  const {app,engine}=appRuntime(),before=plain(engine.toJSON());let created;
  app.changeDocument(()=>{created=app.createObject({type:'text',x:1,y:2,text:'Eerste tekst'},'text');});
