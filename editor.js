@@ -734,11 +734,11 @@
       if(kind==='parallelogramBySideAngle'&&state.parallelogramPlacement){const result=state.numericPinned?this.updateParallelogramParameterPreview():this.parallelogramPlacementPreview(point,event);if(result?.valid)this.commitParallelogramPlacement();else{this.status('Kies een geldige plaatsingspositie buiten de lijn AB ('+(result?.reasonCode||'ongeldig')+').');this.invalidate();}return;}
       if(kind==='ellipseByFociAndPoint'&&state.sources.length===2){
         const preview=this.ellipsePlacementPreview(point);if(!preview?.valid){this.status('Deze positie geeft geen geldige ellips ('+(preview?.reasonCode||'ONGELDIGE_GEOMETRIE')+'). Kies Q buiten het brandpuntsegment.');this.invalidate();return;}
-        const payload={toolId:'construct:ellipseByFociAndPoint',sources:preview.source?[...state.sources.map(ref=>({...ref})),{...preview.source}]:state.sources.map(ref=>({...ref})),...(preview.source?{}:{controlPoint:{...preview.point}})};
+        const toolId='construct:ellipseByFociAndPoint',payload={toolId,sources:preview.source?[...state.sources.map(ref=>({...ref})),{...preview.source}]:state.sources.map(ref=>({...ref})),...(preview.source?{}:{controlPoint:{...preview.point}})};
         const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',payload).result,ellipse=created.find(o=>o.type==='ellipse');this.selectedIds=ellipse?[ellipse.id]:created.map(o=>o.id);return created;},{cancelInteraction:false});
-        this.release(state);state.pointerId=null;
-        if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status(preview.source?'Ellips gekoppeld aan bestaand besturingspunt Q.':'Besturingspunt Q en ellips toegevoegd.');}
-        this.invalidate();return;
+        if(outcome.ok)this.completeToolInteraction({toolId,outcome,origin:'canvas',selection:this.selectedIds});
+        else {this.release(state);state.pointerId=null;this.invalidate();}
+        return;
       }
       let sources=this.constructionSourcesAt(point,event,state.sources);
       if(!sources){this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}

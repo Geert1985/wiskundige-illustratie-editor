@@ -1,8 +1,12 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.43 (WIE-TOOL-L3.3a branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
+Version: 2.8.44 (WIE-TOOL-L3.3b branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## WIE-TOOL-L3.3b — Ellips op centrale lifecycle (branchstatus 2026-10-17)
+
+Op actuele `origin/main` `47d0f93` gebruikt de gewone canvasroute voor `construct:ellipseByFociAndPoint` na één geslaagde `construction.create` nu `completeToolInteraction()` met policy `single`. Een nieuw Q en de ellips worden samen op het kandidaatmodel van hetzelfde commando gemaakt; een fout na kandidaat-Q-creatie publiceert geen gedeeltelijke mutatie. Een bestaand Q blijft derde bron. Selectie blijft beperkt tot de ellips; brandpunten en Q blijven dynamische bronnen. Gerichte tests voor beide Q-modi, preview, ongeldige positie, fout/retry, Esc, afhankelijkheden, selectie en undo/redo: geselecteerde lifecycle-run 12/12 PASS, plus syntax- en diffcontroles. Geen volledige Node-, browser- of Edge-run. Zie [L3.3b-verslag](WIE-TOOL-L3-3B-REPORT.md). Branch `codex/wie-tool-l3-3b-ellipse-lifecycle`; niet gemerged. L3.3c is niet gestart.
 
 ## WIE-TOOL-L3.3a — Punt op object op centrale lifecycle (branchstatus 2026-10-17)
 
