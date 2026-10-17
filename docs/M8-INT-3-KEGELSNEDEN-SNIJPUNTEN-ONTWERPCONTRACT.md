@@ -5,7 +5,7 @@
 **Status:** **hoofdontwerp goedgekeurd door gebruiker op 17 oktober 2026**; de afzonderlijke identiteitsbijlage M8-INT.3-A v1.0.0 is opgesteld **ter afzonderlijke goedkeuring** — **geen productiecode- of merge-GO**  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor  
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Normatieve basis:** [M8-INT-hoofdcontract v1.1.3](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.1-contract v1.0.1](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md), [Development Roadmap](DEVELOPMENT-ROADMAP.md), M8a-ellipsen, M8-INT.0 en M8-INT.1 geïntegreerd op `main` via PR #27 en PR #28.  
+**Normatieve basis:** [M8-INT-hoofdcontract v1.1.4](M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md), [M8-INT.1-contract v1.0.1](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md), [Development Roadmap](DEVELOPMENT-ROADMAP.md), M8a-ellipsen, M8-INT.0 en M8-INT.1 geïntegreerd op `main` via PR #27 en PR #28.  
 **Besluitgrens:** het hoofdontwerp is door de gebruiker goedgekeurd. De [M8-INT.3-A `solutionKey`-identiteitsbijlage v1.0.0](M8-INT-3-SOLUTIONKEY-IDENTITEITSCONTRACT.md) is nu als **afzonderlijk ontwerpvoorstel** opgesteld. Haar conservatieve plaatsidentiteit, beperkingen bij grote bronbeweging en tangent-/ambiguïteitspolicy zijn nog **niet** goedgekeurd of bewezen door uitvoerbare tests. Productiecode, schema's, bestaande tests en merge naar `main` blijven ongewijzigd totdat daarvoor apart GO is gegeven.
 
 ---
