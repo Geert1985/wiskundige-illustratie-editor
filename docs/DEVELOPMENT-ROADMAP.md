@@ -1,16 +1,22 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.42 (WIE-TOOL-L3.2 branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
+Version: 2.8.43 (WIE-TOOL-L3.3a branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
 
-## WIE-TOOL-L3.2 — Generieke gekoppelde constructies op centrale lifecycle (branchstatus 2026-10-17)
+## WIE-TOOL-L3.3a — Punt op object op centrale lifecycle (branchstatus 2026-10-17)
+
+Op actuele `origin/main` `44418b2` (L3.2 geïntegreerd via PR #36) gebruikt de tweede, geldige plaatsingsklik in `radialPathPlacement()` voor `construct:pointOnObject` na het bestaande `construction.create`-commando `completeToolInteraction()` met policy `single`. De eerste klik blijft bronselectie/preview; projectie, 12-pixeltolerantie, parameters en recepten zijn niet gewijzigd. De huidige bronadapter ondersteunt een lijnstuk (`line`), veelhoekzijde (`polygon` + `edge`), cirkel en ellips, via bestaande `pointOnSegment`, `pointOnCircle` en `pointOnEllipse`-recepten. Directe context-completeacties blijven ongemoeid; contextueel gestarte plaatsing gebruikt dezelfde bestaande plaatsingshandler.
+
+Commandofout en ongeldige projectie voltooien niet; de tool en herstelbare bron blijven beschikbaar. Succes geeft selectie, previewcleanup en pointerrelease aan de centrale controller over. Gerichte dekking omvat alle vier bronvormen, cirkelafhankelijkheid na bronwijziging, retry, Esc, ongeldige bron/projectie, undo/redo, Middenpunt, vrije lijn, Snijpunt en context-complete. Zie [WIE-TOOL-L3.3a-verslag](WIE-TOOL-L3-3A-REPORT.md). Volledige Node-, browser- en Edge-runs zijn niet uitgevoerd. Branch `codex/wie-tool-l3-3a-point-on-object`; nog geen main-merge.
+
+## WIE-TOOL-L3.2 — Generieke gekoppelde constructies op centrale lifecycle
 
 Vanaf `origin/main` `556ba7b` (met L1, L2 en L3.1; L3.1 via PR #35) gebruikt de gewone canvasroute in `constructionClick()` voor alle generieke gekoppelde constructies `completeToolInteraction()` na een aanvaarde `construction.create`. Gemigreerd in deze gedeelde route: Middenpunt (bestaande L2-regressie), Loodlijn, Middelloodlijn, Bissectrice, Rechte door twee punten, Evenwijdige, Raaklijn, Cirkel met middelpunt en punt, Driehoek uit punten, Zwaartepunt, Omgeschreven middelpunt, Hoogtepunt, Ingeschreven middelpunt, Ingeschreven cirkel, Eulerrechte, Negenpuntscirkel, Hoek uit punten, Hoek uit richtingen, Veelhoekgebied, Cirkelsector en Cirkelsegment.
 
 De generieke route bewaart de selectie van alle geretourneerde objecten. De centrale completion zette voorheen via `selectedId` die meervoudige selectie terug tot één ID; de volgorde is gecorrigeerd en Raaklijn (twee uitkomsten) dekt dit regressiepad. Commandofouten geven geen completion; bronnen blijven herstelbaar en pointercapture wordt vrijgegeven. Snijpunt, Punt op object, Ellips, Parallellogram, directe contextacties, tekst en vrije tekengereedschappen houden hun eigen bestaande routes.
 
-Gerichte verificatie: geselecteerde lifecycle-tests plus `node --check editor.js`, `node --check tests/lifecycle.test.cjs` en `git diff --check`; geen volledige Node/browser-/Edge-run. Zie [WIE-TOOL-L3.2-verslag](WIE-TOOL-L3-2-REPORT.md). Branch `codex/wie-tool-l3-2-generic-constructions`; implementatie en mergebeoordeling zijn branchstatus.
+Gerichte verificatie: geselecteerde lifecycle-tests plus syntax- en diffcontroles; geen volledige Node/browser-/Edge-run. Zie [WIE-TOOL-L3.2-verslag](WIE-TOOL-L3-2-REPORT.md). L3.2 is later via PR #36 naar `main` gemerged.
 
 ## WIE-TOOL-L3.1 — Vrije tekengereedschappen op centrale lifecycle
 
