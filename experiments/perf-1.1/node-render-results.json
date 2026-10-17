@@ -1,0 +1,47 @@
+{
+  "node": "v22.18.0",
+  "repetitions": 7,
+  "warmups": 2,
+  "rows": [
+    {
+      "objects": 10,
+      "svgBytes": 8828,
+      "meanMs": 1.4221571428571451,
+      "medianMs": 1.372000000000014,
+      "p95Ms": 1.737099999999998,
+      "heapUsedBytes": 8045696
+    },
+    {
+      "objects": 100,
+      "svgBytes": 38918,
+      "meanMs": 7.24778571428571,
+      "medianMs": 7.376499999999993,
+      "p95Ms": 8.764600000000002,
+      "heapUsedBytes": 10984968
+    },
+    {
+      "objects": 500,
+      "svgBytes": 173898,
+      "meanMs": 33.87771428571427,
+      "medianMs": 33.36279999999999,
+      "p95Ms": 37.48509999999999,
+      "heapUsedBytes": 16334592
+    },
+    {
+      "objects": 1000,
+      "svgBytes": 343139,
+      "meanMs": 63.285514285714285,
+      "medianMs": 63.17939999999999,
+      "p95Ms": 69.53230000000008,
+      "heapUsedBytes": 36312568
+    },
+    {
+      "objects": 2000,
+      "svgBytes": 684480,
+      "meanMs": 123.48017142857137,
+      "medianMs": 122.96419999999989,
+      "p95Ms": 134.5148999999999,
+      "heapUsedBytes": 30743008
+    }
+  ]
+}
