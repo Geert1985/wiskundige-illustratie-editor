@@ -1,8 +1,16 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.35 (M8-INT.3 gefaseerde beslissing: optie A als MVP, optie B later; behoud WIE-FORM-afspraken uit 2.8.34; 2026-10-17)
+Version: 2.8.36 (M-PATH.0-I implementatie-GO na positieve P2-topologiehercontrole; behoud eerdere roadmapbesluiten; 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## Roadmap v2.8.36 — M-PATH.0-I implementatie vrijgegeven (2026-10-17)
+
+**Nieuw statusbesluit:** de gebruiker heeft op 17 oktober 2026 **GO gegeven voor uitsluitend M-PATH.0-I**. Dit volgt op het aanvankelijke technische NO-GO in de [P-preflight](M-PATH-0-PREFLIGHT-REPORT.md), contractverduidelijking [M-PATH.0 v1.0.1](WIE-M-PATH-0-Ontwerp-en-implementatiecontract-v1.0.1.md) en de positieve, uitsluitend statische [P2-topologiehercontrole](M-PATH-0-P2-TOPOLOGIE-HERCONTROLE.md). De P2-controle vond geen bestaande ongemerkte herordening van polygonvertices; indexgebonden vervorming behoudt de bronreferentie `(objectId, edge-index i, parameter t)`. **De P/P2-rapporten bevatten geen uitgevoerde Node-/Edge-tests en geven geen bewijs van werkende M-PATH.0-functionaliteit.**
+
+**Implementatiestatus:** `M-PATH.0-I: GO / nog uit te voeren`. Codex mag nu op een **afzonderlijke featurebranch vanaf actuele main** de één-tool-UI-alias, getypeerde dragerdispatch en gemeenschappelijke projectie/preview/plaatsing voor lijnstuk, geselecteerde polygonzijde, cirkel en ellips bouwen. Onderliggend blijven uitsluitend `pointOnSegment`, `pointOnCircle` en `pointOnEllipse` bestaan; geen extra persistente `pointOnObject`-kind, schema-bump, tweede engine of ruimere permissions. Gebruik de actuele `main`, niet de historische onderzochte commits, als technische basis.
+
+**Grenzen:** bestaande gespecialiseerde punt-op-* menu-ingangen blijven in M-PATH.0-I toegankelijk als regressie- en pariteitsreferentie; eventuele tijdelijke dubbele menu-items zijn dus bewust. Verwijdering volgt pas in `M-PATH.0-A` na `M-PATH.0-V` (gerichte plus toepasselijke Node-/Edge-regressies) en expliciete gebruikersacceptatie. Rechten/halfrechten, polygonzijdewisseling, punt in gevuld gebied en nieuwe krommen blijven buiten scope. Geen automatische merge of impliciete vrijgave van M-PATH.1–3. Deze paragraaf is het **actuele statusaddendum** en vervangt uitsluitend de vroegere melding "geen productiecode-GO" in de historische v2.8.21-M-PATH-sectie hieronder.
 
 ## Roadmap v2.8.34 — WIE-FORM, TXT-FORM en WIE-ALG (2026-10-17)
 
