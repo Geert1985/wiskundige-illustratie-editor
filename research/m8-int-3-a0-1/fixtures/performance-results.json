@@ -1,0 +1,125 @@
+{
+  "node": "v22.18.0",
+  "results": [
+    {
+      "id": "P1-four-roots",
+      "warmupStatus": "CERTIFIED_ROOTS",
+      "warmupOperations": 59590,
+      "status": "CERTIFIED_ROOTS",
+      "rootCount": 4,
+      "measuredRuns": 5,
+      "medianMs": 184.784,
+      "maxMs": 191.981,
+      "samplesMs": [
+        189.212,
+        184.784,
+        191.981,
+        178.745,
+        179.961
+      ],
+      "operations": [
+        59590,
+        59590,
+        59590,
+        59590,
+        59590
+      ]
+    },
+    {
+      "id": "P2-45-degree",
+      "warmupStatus": "CERTIFIED_ROOTS",
+      "warmupOperations": 72142,
+      "status": "CERTIFIED_ROOTS",
+      "rootCount": 4,
+      "measuredRuns": 5,
+      "medianMs": 6319.1,
+      "maxMs": 6745.551,
+      "samplesMs": [
+        6745.551,
+        6568.467,
+        6207.213,
+        6277.386,
+        6319.1
+      ],
+      "operations": [
+        72142,
+        72142,
+        72142,
+        72142,
+        72142
+      ]
+    },
+    {
+      "id": "P3-one-tangent",
+      "warmupStatus": "CERTIFIED_ROOTS",
+      "warmupOperations": 1062,
+      "status": "CERTIFIED_ROOTS",
+      "rootCount": 1,
+      "measuredRuns": 5,
+      "medianMs": 1.079,
+      "maxMs": 1.728,
+      "samplesMs": [
+        1.075,
+        1.079,
+        1.009,
+        1.728,
+        1.352
+      ],
+      "operations": [
+        1062,
+        1062,
+        1062,
+        1062,
+        1062
+      ]
+    },
+    {
+      "id": "P4-fourth-order",
+      "warmupStatus": "CERTIFIED_ROOTS",
+      "warmupOperations": 1218,
+      "status": "CERTIFIED_ROOTS",
+      "rootCount": 1,
+      "measuredRuns": 5,
+      "medianMs": 0.916,
+      "maxMs": 1.266,
+      "samplesMs": [
+        1.045,
+        1.266,
+        0.916,
+        0.86,
+        0.864
+      ],
+      "operations": [
+        1218,
+        1218,
+        1218,
+        1218,
+        1218
+      ]
+    },
+    {
+      "id": "P5-close-pair",
+      "warmupStatus": "CERTIFIED_ROOTS",
+      "warmupOperations": 49481,
+      "status": "CERTIFIED_ROOTS",
+      "rootCount": 2,
+      "measuredRuns": 5,
+      "medianMs": 1112.271,
+      "maxMs": 1146.528,
+      "samplesMs": [
+        1146.528,
+        1127.377,
+        1112.271,
+        1106.197,
+        1108.46
+      ],
+      "operations": [
+        49481,
+        49481,
+        49481,
+        49481,
+        49481
+      ]
+    }
+  ]
+}

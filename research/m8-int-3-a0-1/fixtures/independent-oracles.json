@@ -1,0 +1,43 @@
+{
+  "oracle": "independent exact-rational endpoint comparison plus analytic quadrant monotonicity; fourth-order case by explicit contour identity",
+  "rotations": [
+    {
+      "id": "NUM-008",
+      "oracle": "radial norm is strictly monotone on each principal quadrant; endpoint radii bracket the circle exactly",
+      "qMinusOne": 3.735294091125966e-17,
+      "distinctIntersections": 4,
+      "pointAtVsSvgFrameBound": 3.735294091125966e-17,
+      "svgSixDecimalAngleBound": 6.200655107570901e-17
+    },
+    {
+      "id": "NUM-009",
+      "oracle": "radial norm is strictly monotone on each principal quadrant; endpoint radii bracket the circle exactly",
+      "qMinusOne": -2.029307271513904e-17,
+      "distinctIntersections": 4,
+      "pointAtVsSvgFrameBound": 2.029307271513904e-17,
+      "svgSixDecimalAngleBound": 0
+    },
+    {
+      "id": "NUM-010",
+      "oracle": "radial norm is strictly monotone on each principal quadrant; endpoint radii bracket the circle exactly",
+      "qMinusOne": 2.4115923810503947e-17,
+      "distinctIntersections": 4,
+      "pointAtVsSvgFrameBound": 2.4115923810503947e-17,
+      "svgSixDecimalAngleBound": 2.4802620430283604e-16
+    },
+    {
+      "id": "NUM-011",
+      "oracle": "radial norm is strictly monotone on each principal quadrant; endpoint radii bracket the circle exactly",
+      "qMinusOne": 3.749399456654644e-33,
+      "distinctIntersections": 4,
+      "pointAtVsSvgFrameBound": 3.749399456654644e-33,
+      "svgSixDecimalAngleBound": 0
+    }
+  ],
+  "fourthOrder": {
+    "id": "NUM-007",
+    "distinctIntersections": 1,
+    "multiplicity": 4,
+    "identity": "F_ellipse-F_circle = 3(y-1)^2 on the unit circle"
+  }
+}
