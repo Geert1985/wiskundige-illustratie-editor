@@ -133,7 +133,7 @@
     }
     construct(kind,sources,parameter,extent,constructionParameters={},selectedBranches) {
       if(parameter!==undefined&&!MI.ConstructionService.pathKind(kind)&&kind!=='ellipseByFociAndSum')throw Error('Deze constructie heeft geen padparameter.');const recipe={kind,sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.normaliseParameter(kind,parameter)}:{}),...(kind==='ellipseByFociAndSum'?{sumDistance:parameter}:{}),...(kind==='parallelogramBySideAngle'?constructionParameters:{})};
-      if(['lineCircleIntersection','circleCircleIntersection'].includes(kind)) {
+      if(['lineCircleIntersection','lineEllipseIntersection','circleCircleIntersection'].includes(kind)) {
         const map=new Map(this.model.all().map(o=>[o.id,o])),requested=selectedBranches==null?[0,1]:selectedBranches;
         if(!Array.isArray(requested)||!requested.length||requested.length>2||requested.some((branch,index)=>![0,1].includes(branch)||requested.indexOf(branch)!==index))throw Error('Ongeldige selectie van snijpuntoplossingen.');
         const evaluations=requested.map(branch=>({recipe:{...recipe,branch},evaluation:MI.ConstructionService.evaluate({...recipe,branch},map)}));
@@ -150,7 +150,7 @@
       const created=[];for(let branch=0;branch<count;branch++){const region=first.type==='region',ellipse=['ellipseByFociAndSum','ellipseByFociAndPoint'].includes(kind),parallelogram=kind==='parallelogramBySideAngle',data=region?{type:'region',areaDisplay:MI.RegionGeometry.areaDisplay(),style:{stroke:MI.CONSTRUCTION_COLOR,fill:'#f4c84a',opacity:.35}}:ellipse?{type:'ellipse',style:{stroke:MI.CONSTRUCTION_COLOR,fill:'none'}}:{...first,...(MI.AngleMeasurements.isLinked(kind)?{angleSettings:{...MI.AngleMeasurements.defaults}}:{}),style:{...first.style,stroke:MI.CONSTRUCTION_COLOR,...(first.type==='point'?{fill:MI.CONSTRUCTION_COLOR}:{})}};const measurements=parallelogram?MI.MeasurementGeometry.defaultMeasurementSettings({...data,...first,construction:recipe}):null;created.push(model.add({...data,...(measurements?{measurements}:{}),construction:{...recipe,...(kind==='tangent'?{branch}:{})}}));}this.model=model;return created;
     }
     constructIntersection(kind,sources,selectedBranches) {
-      if(!['lineIntersection','lineCircleIntersection','circleCircleIntersection'].includes(kind))throw Error('Onbekend snijpuntrecept.');
+      if(!['lineIntersection','lineCircleIntersection','lineEllipseIntersection','circleCircleIntersection'].includes(kind))throw Error('Onbekend snijpuntrecept.');
       const branches=kind==='lineIntersection'?[0]:[0,1],requested=selectedBranches==null?branches:selectedBranches;
       if(!Array.isArray(requested)||!requested.length||requested.length>branches.length||requested.some((branch,index)=>!branches.includes(branch)||requested.indexOf(branch)!==index))throw Error('Ongeldige selectie van snijpuntoplossingen.');
       const map=new Map(this.model.all().map(o=>[o.id,o])),evaluations=requested.map(branch=>{const recipe={kind,sources:sources.map(source=>({...source})),...(kind==='lineIntersection'?{}:{branch})};return {recipe,evaluation:MI.ConstructionService.evaluate(recipe,map)};});
