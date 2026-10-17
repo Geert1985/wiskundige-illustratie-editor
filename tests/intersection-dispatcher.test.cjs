@@ -74,3 +74,27 @@ test('dispatcher permits Cartesian axes only in the existing recipe roles', () =
   assert.equal(invalid.kind, 'lineIntersection');
   assert.equal(MI.IntersectionDispatcher.classify([x, { objectId: 'C' }], new Map()).supported, false);
 });
+
+test('selected intersection branches commit atomically through the existing command and replay path', () => {
+  const { MI } = setup([
+    { id: 'L', type: 'line', x1: 0, y1: 0, x2: 4, y2: 0 },
+    { id: 'C', type: 'circle', cx: 2, cy: 0, r: 1 },
+  ]);
+  const initial = { objects: [{ id: 'L', type: 'line', x1: 0, y1: 0, x2: 4, y2: 0 }, { id: 'C', type: 'circle', cx: 2, cy: 0, r: 1 }] };
+  const engine = new MI.Engine(initial), commands = MI.AuthorCommands(engine);
+  const made = commands.execute(commands.createCommand('construction.create', {
+    toolId: 'construct:lineCircleIntersection', sources: [{ objectId: 'L' }, { objectId: 'C' }], selectedBranches: [1],
+  })).result;
+  assert.equal(made.length, 1);
+  assert.equal(made[0].construction.branch, 1);
+  assert.equal(made[0].x, 3);
+  const before = JSON.stringify(engine.toJSON());
+  assert.throws(() => commands.execute(commands.createCommand('construction.create', {
+    toolId: 'construct:lineCircleIntersection', sources: [{ objectId: 'L' }, { objectId: 'C' }], selectedBranches: [0, 0],
+  })));
+  assert.equal(JSON.stringify(engine.toJSON()), before);
+  const sequence = new MI.SemanticSequence(initial);
+  sequence.execute('construction.create', { toolId: 'construct:lineCircleIntersection', sources: [{ objectId: 'L' }, { objectId: 'C' }], selectedBranches: [1] });
+  assert.equal(sequence.document.objects.at(-1).construction.branch, 1);
+  assert.deepEqual(plain(MI.SemanticSequence.replay(sequence.toJSON())), plain(sequence.document));
+});

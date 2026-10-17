@@ -1,0 +1,22 @@
+const assert=require('node:assert/strict');
+module.exports=async page=>{
+ await page.setViewportSize({width:1446,height:884});await page.reload();
+ await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[{id:'L',type:'straight',x1:-3,y1:0,x2:3,y2:0},{id:'C',type:'circle',cx:0,cy:0,r:2}],presentation:{showGrid:false}}));
+ const {choose}=require('./browser-tool-menu.cjs'),click=async(x,y)=>{const p=await page.evaluate(({x,y})=>FZI.MathIllustration.editor.transform().mathToScreen({x,y}),{x,y});await page.mouse.click(p.x,p.y);};
+ await choose(page,'[data-tool="construct:intersection"]');
+ assert.equal(await page.locator('[data-tool="construct:intersection"]').count(),1);
+ const instructions=page.locator('#toolInstructions');await click(-2.8,0);assert.ok(await instructions.locator('[data-intersection-source]').count()>=2);await instructions.locator('[data-intersection-source]').first().evaluate(button=>button.click());
+ assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.interaction.sources),[{objectId:'L'}]);
+ await click(1.8,0.87);assert.equal(await instructions.locator('[data-intersection-branch]').count(),2,await page.locator('#status').textContent());assert.equal(await page.locator('[data-intersection-candidate]').count(),2);
+ const beforeCancel=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.length);await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.length),beforeCancel);assert.equal(await page.locator('[data-intersection-candidate]').count(),0);
+ await choose(page,'[data-tool="construct:intersection"]');await click(-2.8,0);await instructions.locator('[data-intersection-source]').first().evaluate(button=>button.click());await click(1.8,0.87);
+ const branchOne=instructions.locator('[data-intersection-branch="1"]');await branchOne.focus();await page.keyboard.press('Enter');assert.equal(await branchOne.getAttribute('aria-pressed'),'false');
+ const branchZero=instructions.locator('[data-intersection-branch="0"]');assert.equal(await branchZero.getAttribute('aria-pressed'),'true');await branchZero.focus();await page.keyboard.press('Enter');assert.equal(await branchZero.getAttribute('aria-pressed'),'false');
+ assert.equal(await instructions.locator('[data-intersection-confirm]').isDisabled(),true);
+ await branchOne.focus();await page.keyboard.press('Enter');await instructions.locator('[data-intersection-confirm]').evaluate(button=>button.click());
+ const points=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.filter(o=>o.construction?.kind==='lineCircleIntersection').map(o=>({branch:o.construction.branch,x:o.x,y:o.y,id:o.id})));
+ assert.deepEqual(points.map(({branch,x,y})=>[branch,x,y]),[[1,2,0]]);assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.history.entries.length),1);
+ assert.doesNotMatch(await page.evaluate(()=>FZI.MathIllustration.editor.engine.renderSVG()),/data-intersection-preview|data-intersection-candidate/);
+ await page.locator('#undoBtn').click();assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.filter(o=>o.construction?.kind==='lineCircleIntersection').length),0);
+ return {universalTool:'passed',candidatePreviewAndKeyboardSelection:'passed',cancelWithoutMutation:'passed',selectedBranchCommitUndo:'passed',exportPreviewIsolation:'passed'};
+};
