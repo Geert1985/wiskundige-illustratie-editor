@@ -1,14 +1,18 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.48 (WIE-TOOL-L4 branchstatus; behoud eerdere roadmapbesluiten; 2026-10-17)
+Version: 2.8.49 (WIE-TOOL-L5.1 architectuurontwerp; behoud eerdere roadmapbesluiten; 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## WIE-TOOL-L5.1 — Architectuuraudit declaratieve gereedschapsregistratie (branchstatus 2026-10-17)
+
+Vanaf actuele `origin/main` `89ffb3d` (L4 geïntegreerd via PR #42) is de audit van de 37 zichtbare creatietools vastgelegd in [WIE-TOOL-L5-1-ARCHITECTURE.md](WIE-TOOL-L5-1-ARCHITECTURE.md). `ToolCatalog` leest de tool-ID's/statussen uit `editor.html`; `TOOL_LIFECYCLE` in `editor.js` houdt daarnaast de policies bij. De voorkeur voor L5.2 is de bestaande `ToolCatalog` uitbreiden met gevalideerde lifecycle-/adaptermetadata, zodat geen tweede registry ontstaat. De 12 `repeat`- en 25 `single`-policies, gespecialiseerde interacties, command-/contextgrenzen, validatie, risico's en migratiepoorten zijn beschreven. **Beoordeling: CONDITIONAL GO voor ontwerp en L5.2-preflight; geen implementatie gestart of geautoriseerd.** Deze fase is documentatie-only; geen regressietests uitgevoerd. Het onopgeloste L4-browserrestrisico (`MODULE_NOT_FOUND: playwright`) blijft expliciet open. Branch `codex/wie-tool-l5-1-declarative-registration-design`; niet gemerged.
 
 ## WIE-TOOL-L4 — Uniforme annulering en Escape-prioriteiten (branchstatus 2026-10-17)
 
 Vanaf actuele `origin/main` `d828158` (L3.5 geïntegreerd via PR #41) coördineert `cancelActiveInteraction({reason:'escape'})` canvasannulering. Escape zonder annuleerbare toestand is een no-op; een actieve overlay/subeditor handelt eerst af; canvasannulering ruimt één interactie op, herstelt selectie, preview en pointercapture en keert terug naar Selecteren zonder `completeToolInteraction()` of history-entry. Expliciete toolwissel, documentreset, laden/import, undo/redo, pointercancel/blur en dispose behouden hun afzonderlijke force-cleanuppaden.
 
-Gerichte L4- en L3-regressies plus syntax-/diffcontroles zijn vastgelegd in [het L4-verslag](WIE-TOOL-L4-REPORT.md). De compacte Edge-module kon niet starten omdat Playwright in deze checkout ontbreekt (`MODULE_NOT_FOUND`); browser/native-dialog/fullscreen-eventvolgorde blijft dus onbewezen. Zie resterende risico's in het rapport. Branch `codex/wie-tool-l4-cancellation-escape`; nog niet gemerged. L5 is niet gestart.
+Gerichte L4- en L3-regressies plus syntax-/diffcontroles zijn vastgelegd in [het L4-verslag](WIE-TOOL-L4-REPORT.md). De compacte Edge-module kon niet starten omdat Playwright in die checkout ontbrak (`MODULE_NOT_FOUND`); browser/native-dialog/fullscreen-eventvolgorde blijft dus onbewezen. Zie resterende risico's in het rapport. Branch `codex/wie-tool-l4-cancellation-escape`; inmiddels geïntegreerd via PR #42. L5 was op het moment van dit L4-checkpoint niet gestart.
 
 ## WIE-TOOL-L3.5 — Teksttool en integratiecontrole centrale lifecycle (branchstatus 2026-10-17)
 
