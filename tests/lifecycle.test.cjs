@@ -765,6 +765,22 @@ test('WIE-TOOL-L5.3 Escape without a canvas gesture and point tool switching pre
  assert.equal(h.app.tool,'line');assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
 });
 
+test('WIE-TOOL-L5.4a all shared draw tools use catalog repeat completion and their existing command route',()=>{
+ const cases=[['line','linear.draw'],['straight','object.create'],['ray','linear.draw'],['vector','object.create'],['circle','object.create'],['dimension','object.create']];
+ for(const [tool,operation] of cases){
+  const h=appRuntime(),entry=h.app.toolCatalog.getTool(tool);assert.equal(entry.lifecycle,'repeat',tool);assert.equal(entry.interactionAdapter,'draw',tool);
+  h.app.setTool(tool);const execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app),operations=[],completions=[];
+  h.app.execute=(name,...args)=>{operations.push(name);return execute(name,...args);};h.app.completeToolInteraction=args=>{completions.push(args);return complete(args);};
+  h.down({x:2,y:1});assert.equal(h.app.interaction.mode,'draw',tool);assert.ok(h.engine.renderer.preview,tool);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),true,tool);
+  h.move({x:4,y:3});assert.ok(h.engine.renderer.preview,tool);
+  const end=h.app.transform().mathToScreen({x:4,y:3});h.emit(h.win,'pointerup',{clientX:end.x,clientY:end.y,pointerId:1});
+  const created=h.engine.model.objects.filter(object=>object.type===tool).at(-1);assert.ok(created,tool);assert.deepEqual(operations,[operation],tool);
+  assert.equal(completions.length,1,tool);assert.equal(completions[0].toolId,tool);assert.equal(completions[0].outcome.ok,true);assert.deepEqual(plain(completions[0].selection),[created.id]);
+  assert.equal(h.app.tool,tool);assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.doc.getElementById('canvasWrap').hasPointerCapture(1),false);assert.deepEqual(plain(h.app.selectedIds),[created.id]);assert.equal(h.app.history.entries.length,1);
+  const after=plain(h.engine.toJSON());assert.equal(h.app.history.undo(),true,tool);assert.equal(h.engine.get(created.id),null);assert.equal(h.app.history.redo(),true,tool);assert.deepEqual(plain(h.engine.toJSON()),after,tool);
+ }
+});
+
 test('WIE-TOOL-L2 first and second line use central repeat completion exactly once',()=>{
  const h=appRuntime();h.app.setTool('line');const completion=h.app.completeToolInteraction.bind(h.app);let completed=0;
  h.app.completeToolInteraction=(args)=>{completed++;return completion(args);};
