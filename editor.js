@@ -6,6 +6,11 @@
   const DRAG_SAFE_MODES = new Set(['object','group','label','measurement-label','endpoint','vertex','pathPoint','circleDistributionPoint']);
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const INTERSECTION_KINDS = Object.freeze(['lineIntersection','lineCircleIntersection','lineEllipseIntersection','circleCircleIntersection']);
+  const TOOL_LIFECYCLE = Object.freeze({
+    point:'repeat', line:'repeat', straight:'repeat', ray:'repeat', vector:'repeat', triangle:'repeat', polygon:'repeat', circle:'repeat', angle:'repeat', rightAngle:'repeat', dimension:'repeat', text:'repeat',
+    'construct:midpoint':'single', 'construct:pointOnObject':'single', 'construct:intersection':'single', 'construct:perpendicular':'single', 'construct:perpendicularBisector':'single', 'construct:bisector':'single', 'construct:lineBetweenPoints':'single', 'construct:parallel':'single', 'construct:tangent':'single', 'construct:circleByCenterPoint':'single', 'construct:ellipseByFociAndPoint':'single', 'construct:parallelogramBySideAngle':'single', 'construct:triangleFromPoints':'single', 'construct:centroid':'single', 'construct:circumcenter':'single', 'construct:orthocenter':'single', 'construct:incenter':'single', 'construct:incircle':'single', 'construct:eulerLine':'single', 'construct:ninePointCircle':'single', 'construct:anglePoints':'single', 'construct:angleDirections':'single', 'construct:polygonRegion':'single', 'construct:circleSectorRegion':'single', 'construct:circleSegmentRegion':'single'
+  });
+  MI.ToolLifecyclePolicies=TOOL_LIFECYCLE;
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
     constructor({ engine, services, document, window, storage }) {
@@ -19,6 +24,8 @@
       for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "exportPngBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textEditorStatus", "richTextSurface", "richFont", "richFontSize", "richColor", "richColorMenu", "richUndo", "richRedo", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
       for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "exportPngBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textEditorStatus", "richTextSurface", "richFont", "richFontSize", "richColor", "richColorMenu", "richUndo", "richRedo", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
       this.toolCatalog=MI.ToolCatalog.build(this.nodes.toolGrid);this.splitToolSelection=new Map();this.splitMenuOpen=null;
+      const registeredTools=this.toolCatalog.list('sidebar').flatMap(category=>category.entries.filter(entry=>entry.status==='implemented').map(entry=>entry.id));
+      if(registeredTools.length&&(registeredTools.length!==Object.keys(TOOL_LIFECYCLE).length||registeredTools.some(id=>!TOOL_LIFECYCLE[id])))throw new TypeError('Elk beschikbaar gereedschap vereist een expliciet lifecyclebeleid.');
       for(const group of this.toolCatalog.splits)try{const saved=storage?.getItem('fzi-math-illustration-'+group.storageKey+'-tool'),legacy=saved==='construct:angleXAxis'&&group.id==='angle'?'construct:angleDirections':saved;if(group.toolIds.includes(legacy))this.splitToolSelection.set(group.id,legacy);}catch(_){}
       MI.EditorColor.renderPalette(this.nodes.colorPalette, { groupLabel: "Kleuren" });
       MI.EditorColor.renderPalette(this.nodes.richColorMenu, { buttonClass: "rich-color-swatch", groupLabel: "Tekstkleur kiezen" });
@@ -355,6 +362,20 @@
       try { return {ok:true,result:fn(),error:null}; }
       catch(error) {this.status(error.message);return {ok:false,result:null,error};}
       finally { this.history.record(before); this.invalidate(); }
+    }
+    completeToolInteraction({toolId=this.tool,outcome,origin='canvas',selection}={}) {
+      if(!outcome?.ok)return false;
+      const policy=TOOL_LIFECYCLE[toolId];
+      if(!policy)throw new TypeError('Onbekend lifecyclebeleid voor gereedschap: '+toolId);
+      const state=this.interaction;
+      this.interaction=null;
+      this.release(state);
+      this.engine.renderer.preview=null;this.feedback=null;
+      if(selection!==undefined){this.selectedIds=Array.isArray(selection)?selection.slice():[];this.selectedId=this.selectedIds[0]||null;}
+      if(policy==='single')this.setTool('select');
+      else {this.renderInstructions();this.invalidate();}
+      if(origin==='canvas'&&policy==='single')this.status('Gekoppelde constructie toegevoegd.');
+      return true;
     }
     travelHistory(redo = false) {
       this.closeDialogs(true); this.cancel(); this.flushEdits();
@@ -743,10 +764,15 @@
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       if(kind==='angleDirections')state.sources=MI.ConstructionService.selectAngleArms(state.sources,state.anglePicks,new Map(this.engine.model.objects.map(o=>[o.id,o])));
       const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{}),...(state.extent?{extent:state.extent}:{})}).result;this.selectedIds=created.map(o=>o.id);return created;},{cancelInteraction:false});
-      this.release(state);state.pointerId=null;
-      if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}
-      else {state.sources=previousSources;if(kind==='angleDirections')state.anglePicks.pop();}
-      this.invalidate();
+      if(kind==='midpoint'){
+        if(outcome.ok)this.completeToolInteraction({toolId:'construct:midpoint',outcome,origin:'canvas',selection:this.selectedIds});
+        else {this.release(state);state.pointerId=null;state.sources=previousSources;}
+      }else{
+        this.release(state);state.pointerId=null;
+        if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}
+        else {state.sources=previousSources;if(kind==='angleDirections')state.anglePicks.pop();}
+        this.invalidate();
+      }
     }
     ellipsePlacementPreview(point){
       const state=this.interaction;if(!state||!state.ellipsePlacement||state.sources.length!==2)return null;
@@ -1179,7 +1205,11 @@
       if(state.mode==='marquee'){this.suppressMarqueeMenu=!state.keyboard && state.active;this.invalidate();return;}
       if (state.mode === "draw") {
         if (state.resolved && state.resolved.length >= .05) {
-          if(state.shape==='line'||state.shape==='ray')this.selectedId=this.execute('linear.draw',{shape:state.shape,x1:state.resolved.object.x1,y1:state.resolved.object.y1,x2:state.resolved.object.x2,y2:state.resolved.object.y2}).result[0].id;
+          if(state.shape==='line'){
+            const outcome=this.changeDocument(()=>{this.selectedId=this.execute('linear.draw',{shape:'line',x1:state.resolved.object.x1,y1:state.resolved.object.y1,x2:state.resolved.object.x2,y2:state.resolved.object.y2}).result[0].id;return [this.selectedId];});
+            this.completeToolInteraction({toolId:'line',outcome,origin:'canvas',selection:outcome.ok?[this.selectedId]:undefined});return;
+          }
+          if(state.shape==='ray')this.selectedId=this.execute('linear.draw',{shape:state.shape,x1:state.resolved.object.x1,y1:state.resolved.object.y1,x2:state.resolved.object.x2,y2:state.resolved.object.y2}).result[0].id;
           else this.selectedId = this.createObject(state.resolved.object,state.shape).id;
         }
         else this.status("Vorm te kort; geen object toegevoegd.");
