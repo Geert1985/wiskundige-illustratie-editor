@@ -1,0 +1,180 @@
+{
+  "browser": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36 Edg/155.0.0.0",
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "fixtures": "PERF-1.1 mixed; source point has an existing downstream construction for with-dependents",
+  "repetitions": "5 moves for 10/100 objects; 1 move for 500 objects because each full list render is expensive",
+  "before": "same code with drag invalidation forced to full, matching the previous pointerMove route",
+  "results": [
+    {
+      "objects": 10,
+      "mode": "before",
+      "scenario": "ordinary",
+      "pointId": "p6",
+      "moveCount": 5,
+      "interactionWallMs": 309.1,
+      "totalProcessingMs": 226.9,
+      "renderMs": 207.2,
+      "counts": {
+        "render": 5,
+        "canvas": 5,
+        "list": 5,
+        "inspector": 5
+      },
+      "partMs": {
+        "canvas": 19.8,
+        "list": 114,
+        "inspector": 33.1
+      }
+    },
+    {
+      "objects": 10,
+      "mode": "after",
+      "scenario": "ordinary",
+      "pointId": "p6",
+      "moveCount": 5,
+      "interactionWallMs": 92.8,
+      "totalProcessingMs": 82.8,
+      "renderMs": 70.4,
+      "counts": {
+        "render": 5,
+        "canvas": 5,
+        "list": 0,
+        "inspector": 5
+      },
+      "partMs": {
+        "canvas": 16.9,
+        "list": 0,
+        "inspector": 29.2
+      }
+    },
+    {
+      "objects": 100,
+      "mode": "before",
+      "scenario": "with-dependents",
+      "pointId": "p0",
+      "moveCount": 5,
+      "interactionWallMs": 4970,
+      "totalProcessingMs": 4954.1,
+      "renderMs": 4932.1,
+      "counts": {
+        "render": 5,
+        "canvas": 5,
+        "list": 5,
+        "inspector": 5
+      },
+      "partMs": {
+        "canvas": 54.7,
+        "list": 4614.3,
+        "inspector": 123.6
+      }
+    },
+    {
+      "objects": 100,
+      "mode": "after",
+      "scenario": "with-dependents",
+      "pointId": "p0",
+      "moveCount": 5,
+      "interactionWallMs": 303.2,
+      "totalProcessingMs": 289.8,
+      "renderMs": 275.1,
+      "counts": {
+        "render": 5,
+        "canvas": 5,
+        "list": 0,
+        "inspector": 5
+      },
+      "partMs": {
+        "canvas": 50.9,
+        "list": 0,
+        "inspector": 112.2
+      }
+    },
+    {
+      "objects": 500,
+      "mode": "before",
+      "scenario": "ordinary",
+      "pointId": "p498",
+      "moveCount": 1,
+      "interactionWallMs": 20941.1,
+      "totalProcessingMs": 20935.7,
+      "renderMs": 20860.8,
+      "counts": {
+        "render": 1,
+        "canvas": 1,
+        "list": 1,
+        "inspector": 1
+      },
+      "partMs": {
+        "canvas": 42.8,
+        "list": 20586.7,
+        "inspector": 108.7
+      }
+    },
+    {
+      "objects": 500,
+      "mode": "before",
+      "scenario": "with-dependents",
+      "pointId": "p0",
+      "moveCount": 1,
+      "interactionWallMs": 20773.2,
+      "totalProcessingMs": 20760.5,
+      "renderMs": 20698.9,
+      "counts": {
+        "render": 1,
+        "canvas": 1,
+        "list": 1,
+        "inspector": 1
+      },
+      "partMs": {
+        "canvas": 39.6,
+        "list": 20463.6,
+        "inspector": 94.2
+      }
+    },
+    {
+      "objects": 500,
+      "mode": "after",
+      "scenario": "ordinary",
+      "pointId": "p498",
+      "moveCount": 1,
+      "interactionWallMs": 318.9,
+      "totalProcessingMs": 313.1,
+      "renderMs": 232.6,
+      "counts": {
+        "render": 1,
+        "canvas": 1,
+        "list": 0,
+        "inspector": 1
+      },
+      "partMs": {
+        "canvas": 45.9,
+        "list": 0,
+        "inspector": 95.8
+      }
+    },
+    {
+      "objects": 500,
+      "mode": "after",
+      "scenario": "with-dependents",
+      "pointId": "p0",
+      "moveCount": 1,
+      "interactionWallMs": 349,
+      "totalProcessingMs": 338.9,
+      "renderMs": 274.6,
+      "counts": {
+        "render": 1,
+        "canvas": 1,
+        "list": 0,
+        "inspector": 1
+      },
+      "partMs": {
+        "canvas": 58,
+        "list": 0,
+        "inspector": 108.1
+      }
+    }
+  ]
+}
