@@ -2,6 +2,7 @@
 (function (global) {
   "use strict";
   const MI = global.FZI.MathIllustration;
+  const RENDER_INVALIDATION = Object.freeze({ FULL: 'full', VIEWPORT: 'viewport' });
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const INTERSECTION_KINDS = Object.freeze(['lineIntersection','lineCircleIntersection','lineEllipseIntersection','circleCircleIntersection']);
   const clone = value => JSON.parse(JSON.stringify(value));
@@ -11,7 +12,7 @@
       this.runtime=services.runtime || null; if(this.runtime && (!MI.RuntimeSession.isSession(this.runtime) || engine!==this.runtime.engine))throw new MI.PermissionError("INVALID_POLICY"); this.commands=this.runtime || MI.AuthorCommands(engine);
       this.inspectorTarget="objects";this.navigationMode="select";this.sectionState=new Map();this.tool = "select"; this.selectedIds = []; this.interaction = null; this.feedback = null;
       this.hoverId=null; this.hoverHit=null; this.hoverFrame=null; this.hoverPointer=null; this.presentationKey=null;
-      this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;this.richTextEditor=null;this.textEditId=null;this.textEditorRequest=0;
+      this.listeners = []; this.initialized = false; this.axisMenuOpen = false; this.importSerial = 0; this.reader = null; this.renderFrame = null;this.pendingRenderInvalidation=RENDER_INVALIDATION.FULL;this.richTextEditor=null;this.textEditId=null;this.textEditorRequest=0;
       this.history = new (this.runtime ? MI.RuntimeHistory : services.history || MI.EditorHistory)(this); this.editBefore = null;
       this.nodes = {};
       for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "exportPngBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textEditorStatus", "richTextSurface", "richFont", "richFontSize", "richColor", "richColorMenu", "richUndo", "richRedo", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
@@ -1022,7 +1023,7 @@
       if(!this.interaction)this.suppressMarqueeMenu=false;
       if (!this.initialized || (this.interaction && !['polygon','construction'].includes(this.interaction.mode)) || event.button !== 0 || event.isPrimary === false) return;
       const point = this.pointer(event); if (!point || !this.toolAllowed(this.tool)) return; event.preventDefault();
-      if(this.navigationMode==='pan'){if(!this.allowed('view.pan',{bounds:{...this.engine.renderer.bounds}}))return;this.begin({mode:'pan',bounds:{...this.engine.renderer.bounds}},event);this.invalidate();return;}
+      if(this.navigationMode==='pan'){if(!this.allowed('view.pan',{bounds:{...this.engine.renderer.bounds}}))return;this.begin({mode:'pan',bounds:{...this.engine.renderer.bounds}},event);this.invalidate(RENDER_INVALIDATION.VIEWPORT);return;}
       this.inspectorTarget='objects';this.axisMenuOpen=false;
       if(this.tool.startsWith('construct:')) {this.constructionClick(point,event);return;}
       if(this.interaction && this.interaction.mode==='polygon') { this.polygonClick(point,event); return; }
@@ -1151,7 +1152,7 @@
         else { const result = this.snap(o.type === "circle" ? { x: o.cx + delta.x, y: o.cy + delta.y } : { x: o.x + delta.x, y: o.y + delta.y }, state.id); this.updateObject(state.id, o.type === "circle" ? { cx: result.point.x, cy: result.point.y } : { x: result.point.x, y: result.point.y }); this.feedback = result; }
       }
       if (state.mode === "pan") try { this.execute("view.pan",{bounds:{ xMin: state.bounds.xMin - delta.x, xMax: state.bounds.xMax - delta.x, yMin: state.bounds.yMin - delta.y, yMax: state.bounds.yMax - delta.y }}); } catch (e) { this.status(e.message); return; }
-      this.invalidate(true);
+      this.invalidate(state.mode==='pan'?RENDER_INVALIDATION.VIEWPORT:true,state.mode==='pan');
     }
     pointerUp(event) {
       if(this.interaction?.mode==='marquee' && !this.interaction.keyboard && event.pointerId===this.interaction.pointerId){this.updateRectangle({x:event.clientX,y:event.clientY});this.commit();return;}
@@ -1162,8 +1163,8 @@
     commit() {
       const state = this.interaction; if (!state) return;
       this.interaction = null; this.release(state); this.engine.renderer.preview = null; this.feedback = null;
-      if(this.runtime && state.transaction) {try {if(state.rejected)this.runtime.cancel(state.transaction);else this.runtime.commit(state.transaction,state.finalPayload);}catch(error){this.status(error.message);}this.invalidate();return;}
-      if(this.runtime && ['object','group','label','measurement-label','endpoint','vertex','pan'].includes(state.mode)){this.invalidate();return;}
+      if(this.runtime && state.transaction) {try {if(state.rejected)this.runtime.cancel(state.transaction);else this.runtime.commit(state.transaction,state.finalPayload);}catch(error){this.status(error.message);}this.invalidate(state.mode==='pan'?RENDER_INVALIDATION.VIEWPORT:RENDER_INVALIDATION.FULL);return;}
+      if(this.runtime && ['object','group','label','measurement-label','endpoint','vertex','pan'].includes(state.mode)){this.invalidate(state.mode==='pan'?RENDER_INVALIDATION.VIEWPORT:RENDER_INVALIDATION.FULL);return;}
       if(state.mode==='marquee'){this.suppressMarqueeMenu=!state.keyboard && state.active;this.invalidate();return;}
       if (state.mode === "draw") {
         if (state.resolved && state.resolved.length >= .05) {
@@ -1173,7 +1174,7 @@
         else this.status("Vorm te kort; geen object toegevoegd.");
       }
       if ((state.mode === "endpoint" || state.mode==='vertex') && state.resolved) { try { this.updateObject(state.id, state.resolved.patch); } catch (error) { this.status(error.message); } }
-      this.history.record(state.historyBefore); this.invalidate();
+      this.history.record(state.historyBefore); this.invalidate(state.mode==='pan'?RENDER_INVALIDATION.VIEWPORT:RENDER_INVALIDATION.FULL);
       if(state.mode==='group')this.status('Selectie verplaatst.');
        if(state.lastPointer && ['object','group','label','pan','circleDistributionPoint'].includes(state.mode))this.updateHover(state.lastPointer);
     }
@@ -1246,7 +1247,7 @@
       if (event.deltaY < 0 && grid) factor = Math.max(factor, r.scale() / grid.maxScale);
       const b = r.bounds, nx = (b.xMax - b.xMin) * factor, ny = (b.yMax - b.yMin) * factor, fx = (point.x - b.xMin) / (b.xMax - b.xMin), fy = (point.y - b.yMin) / (b.yMax - b.yMin);
       try { const bounds={ xMin: point.x - fx * nx, xMax: point.x + (1 - fx) * nx, yMin: point.y - fy * ny, yMax: point.y + (1 - fy) * ny };this.execute("view.zoom",{bounds}); } catch (e) { this.status(e.message); return; }
-      this.feedback = null; this.history.record(before); this.invalidate();
+      this.feedback = null; this.history.record(before); this.invalidate(RENDER_INVALIDATION.VIEWPORT);
     }
     newDocument() {
       if(this.runtime){if(!this.allowed('document.reset'))throw new MI.PermissionError('PERMISSION_DENIED');this.closeDialogs(true);this.cancel();this.execute('document.reset');this.selectedIds=[];this.inspectorTarget="objects";this.editBefore=null;this.hydrate();this.invalidate();return;}
@@ -1367,14 +1368,20 @@
       if ((button = find("[data-view]"))) { this.cancel(); const key = { axes: "showAxes", grid: "showGrid", snapPoints: "showSnapPoints" }[button.dataset.view]; if (key) { this.setPresentationFlag(key,!this.engine.renderer[key]); } }
     }
     viewObject(id) {if(this.runtime && this.colorTransaction){const p=this.runtime.previewObject(this.colorTransaction,id);if(p)return p;}if(this.runtime && this.interaction?.transaction && !this.interaction.rejected){const preview=this.runtime.previewObject(this.interaction.transaction,id);if(preview)return preview;} const object = this.engine.get(id), state = this.interaction; return object && !this.runtime && state && (state.mode === "endpoint" || state.mode==='vertex') && state.id === id && state.resolved ? { ...object, ...state.resolved.patch } : object; }
-    invalidate(defer = false) {
+    invalidate(reason = RENDER_INVALIDATION.FULL, defer = false) {
+      // Preserve the historical invalidate(true) API for existing full updates.
+      if(typeof reason==='boolean'){defer=reason;reason=RENDER_INVALIDATION.FULL;}
+      if(reason!==RENDER_INVALIDATION.VIEWPORT)reason=RENDER_INVALIDATION.FULL;
       if (!this.initialized) return;
       if (defer && this.window.requestAnimationFrame && this.window.cancelAnimationFrame) {
-        if (this.renderFrame === null) this.renderFrame = this.window.requestAnimationFrame(() => { this.renderFrame = null; if (this.initialized) this.render(); });
+        if(this.renderFrame!==null&&reason===RENDER_INVALIDATION.FULL)this.pendingRenderInvalidation=RENDER_INVALIDATION.FULL;
+        else if(this.renderFrame===null)this.pendingRenderInvalidation=reason;
+        if (this.renderFrame === null) this.renderFrame = this.window.requestAnimationFrame(() => { const pending=this.pendingRenderInvalidation;this.renderFrame = null;this.pendingRenderInvalidation=RENDER_INVALIDATION.FULL;if (this.initialized) this.render(pending); });
         return;
       }
-      if (this.renderFrame !== null) { this.window.cancelAnimationFrame(this.renderFrame); this.renderFrame = null; }
-      this.render();
+      if (this.renderFrame !== null) { if(this.pendingRenderInvalidation===RENDER_INVALIDATION.FULL)reason=RENDER_INVALIDATION.FULL;this.window.cancelAnimationFrame(this.renderFrame); this.renderFrame = null; }
+      this.pendingRenderInvalidation=RENDER_INVALIDATION.FULL;
+      this.render(reason);
     }
     renderCanvasPreview(){this.renderCanvas();}
     renderCanvas(){
@@ -1386,20 +1393,19 @@
       }
       n.canvas.innerHTML=r.render({meta:e.model.meta,layers:e.model.layers,all:()=>objects},{editorCanvas:true,clipBounds});const svg=n.canvas.querySelector('svg'),object=this.selectedId&&this.viewObject(this.selectedId);if(svg)MI.SvgRenderer.fitCanvasAxes(svg,r,this.transform(),n.canvas.getBoundingClientRect?.());if(svg?.querySelectorAll)Array.from(svg.querySelectorAll('[data-object-id]')).filter(node=>this.selectedIds.includes(node.getAttribute('data-object-id'))).forEach(node=>node.classList.add('selected'));if(this.document.createElementNS){this.renderRectangle(svg,r);if(this.services.overlays)this.services.overlays.render(svg,r,this.selectedIds.length===1&&this.engine.isDisplayed(object?.id)&&(!this.runtime||this.capabilities(object?.id).geometryFields.length)?object:null,this.navigationMode==='pan'?'pan':this.tool,this.document);if(this.services.feedback)this.services.feedback.render(svg,r,this.feedback,this.document);}if(this.runtime&&svg)for(const handle of svg.querySelectorAll('.fzi-line-endpoint, .fzi-polygon-vertex')){const id=handle.getAttribute('data-line-id')||handle.getAttribute('data-polygon-id'),caps=this.capabilities(id),part=handle.getAttribute('data-endpoint'),fields=part?[part==='start'?'x1':'x2',part==='start'?'y1':'y2']:['x','y'].map(k=>'vertices['+handle.getAttribute('data-vertex')+'].'+k);if(!fields.every(k=>caps.geometryFields.includes(k)))handle.remove();}return {objects,svg,object};
     }
-    render() {
+    render(reason = RENDER_INVALIDATION.FULL) {
+      if(reason!==RENDER_INVALIDATION.VIEWPORT)reason=RENDER_INVALIDATION.FULL;
       if(this.runtime)this.selectedIds=this.selectedIds.filter(id=>{const caps=this.capabilities(id);return caps.selectCanvas||caps.selectList;});
       const e = this.engine, r = e.renderer, n = this.nodes;
       if (this.services.grid) r.axisStep = this.services.grid.step(r);
       const {objects,svg,object}=this.renderCanvas();
       this.renderPresentation(true);
+      if(reason===RENDER_INVALIDATION.VIEWPORT){this.renderNavigationState();return;}
       n.objectCount.textContent = objects.length + (objects.length === 1 ? " object" : " objecten");
       const focused=this.document.activeElement,focusKey=focused && n.selectionPanel.contains?.(focused) && focused.dataset ? Object.entries(focused.dataset).filter(([k])=>['edit','style','common','vertex','axisSetting','pathParameter','constructionInput','measurementSetting','measurementControl','pointProjection','angleSetting','angleDocument','textBinding'].includes(k)):[],focusIds=JSON.stringify(this.selectedIds),caret=focused?.selectionStart;
       this.renderInstructions();this.renderViewList(); this.renderInspector(object);this.organizeGeometryInspector();this.decorateInspector();for(const checkbox of n.selectionPanel.querySelectorAll('[data-mixed]'))checkbox.indeterminate=true;
       if(focusKey.length && focusIds===JSON.stringify(this.selectedIds)){const replacement=Array.from(n.selectionPanel.querySelectorAll('input,select')).find(el=>focusKey.every(([k,v])=>el.dataset[k]===v));if(replacement && !replacement.disabled){replacement.focus?.({preventScroll:true});if(caret!=null && replacement.type==='text')replacement.setSelectionRange?.(caret,caret);}}
-      if(n.zoomPercent)n.zoomPercent.textContent=Math.round(this.engine.renderer.scale()/((this.engine.renderer.width-2*this.engine.renderer.padding)/10)*100)+"%";
-      if(n.panBtn){n.panBtn.classList.toggle("active",this.navigationMode==="pan");n.panBtn.disabled=!this.allowed("view.pan",{bounds:{...r.bounds}});}for(const node of [n.zoomInBtn,n.zoomOutBtn,n.resetViewBtn])if(node)node.disabled=!this.allowed("view.zoom",{bounds:{...r.bounds}});
-      if (n.undoBtn) n.undoBtn.disabled = !this.history.canUndo && !this.editBefore;
-      if (n.redoBtn) n.redoBtn.disabled = !this.history.canRedo || !!this.editBefore;
+      this.renderNavigationState();
       this.document.querySelectorAll('[data-tool-category]').forEach(category=>{const active=Array.from(category.querySelectorAll('[data-tool]')).find(button=>button.dataset.tool===this.tool),label=category.querySelector('[data-active-tool]');if(label)label.textContent=active?' · '+active.textContent.trim():'';});
       this.document.querySelectorAll(".tool").forEach(button => button.classList.toggle("active", button.dataset.tool === this.tool && this.navigationMode!=="pan"));
       const navigationHeight=n.navigationTools?.parentElement?.offsetHeight;if(navigationHeight)this.document.documentElement?.style.setProperty("--navigation-height",navigationHeight+"px");
@@ -1407,6 +1413,14 @@
       this.radialProperties?.sync();
       n.crosshair.hidden = !this.interaction || this.interaction.mode !== "draw" || (this.feedback && this.feedback.snapped && r.showSnapPoints !== false);
       if (this.feedback && this.interaction && this.interaction.mode === "draw") { const p = this.transform().mathToScreen(this.feedback.point), rect = n.canvasWrap.getBoundingClientRect(); n.crosshair.style.left = p.x - rect.left + "px"; n.crosshair.style.top = p.y - rect.top + "px"; }
+    }
+    renderNavigationState(){
+      const n=this.nodes,r=this.engine.renderer;
+      if(n.zoomPercent)n.zoomPercent.textContent=Math.round(r.scale()/((r.width-2*r.padding)/10)*100)+"%";
+      if(n.panBtn){n.panBtn.classList.toggle("active",this.navigationMode==="pan");n.panBtn.disabled=!this.allowed("view.pan",{bounds:{...r.bounds}});}
+      for(const node of [n.zoomInBtn,n.zoomOutBtn,n.resetViewBtn])if(node)node.disabled=!this.allowed("view.zoom",{bounds:{...r.bounds}});
+      if(n.undoBtn)n.undoBtn.disabled=!this.history.canUndo&&!this.editBefore;
+      if(n.redoBtn)n.redoBtn.disabled=!this.history.canRedo||!!this.editBefore;
     }
     renderViewList() {
       const r = this.engine.renderer;
