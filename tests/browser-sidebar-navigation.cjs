@@ -34,8 +34,8 @@ module.exports=async page=>{
   assert.equal(await page.locator('#toolSearchFeedback').textContent(),'1 gereedschap gevonden.');
   assert.equal(await categories.evaluateAll(ns=>ns.filter(n=>n.open).length),1);
   assert.equal(await page.locator('[data-tool-subgroup="driehoekconstructies"] .tool-subgroup-toggle').getAttribute('aria-expanded'),'true');
-  await search.fill('punt op cirkel');
-  const pointOnCircle=page.locator('[data-tool="construct:pointOnCircle"]');
+  await search.fill('punt op object');
+  const pointOnCircle=page.locator('[data-tool="construct:pointOnObject"]');
   assert.equal(await pointOnCircle.isVisible(),true,'Search must include nested construction choices');
   assert.equal(await page.locator('[data-tool-subgroup="puntconstructies"] .tool-subgroup-toggle').getAttribute('aria-expanded'),'true');
   await search.fill('Gecombineerde meting');

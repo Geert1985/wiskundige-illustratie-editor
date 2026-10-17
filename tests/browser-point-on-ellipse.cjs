@@ -8,9 +8,9 @@ module.exports=async page=>{
  const errors=[];const onError=error=>errors.push(error.message);page.on('pageerror',onError);
  try{
   await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.newDocument();a.engine.add({id:'F1',type:'point',x:-3,y:0});a.engine.add({id:'F2',type:'point',x:3,y:0});const e=a.engine.construct('ellipseByFociAndSum',[{objectId:'F1'},{objectId:'F2'}],10)[0];window.__ellipseId=e.id;a.invalidate();});
-  assert.equal(await page.locator('[data-tool="construct:pointOnEllipse"]').count(),1);
-  assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('fullscreen').some(c=>c.entries.some(t=>t.id==='construct:pointOnEllipse'))),true);
-  await page.locator('#canvasToolsBtn').click();await page.locator('[data-canvas-tool="construct:pointOnEllipse"]').click();
+  assert.equal(await page.locator('[data-tool="construct:pointOnObject"]').count(),1);
+  assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.toolCatalog.list('fullscreen').some(c=>c.entries.some(t=>t.id==='construct:pointOnObject'))),true);
+  await page.locator('#canvasToolsBtn').click();await page.locator('[data-canvas-tool="construct:pointOnObject"]').click();
   const screen=point=>page.evaluate(({x,y})=>FZI.MathIllustration.editor.transform().mathToScreen({x,y}),point);
   const curve=async t=>{const id=await page.evaluate(()=>window.__ellipseId);return page.evaluate(({id,t})=>{const e=FZI.MathIllustration.editor.engine.get(id),g=FZI.MathIllustration.EllipseGeometry.fromDefinition(e).geometry;return FZI.MathIllustration.editor.transform().mathToScreen(g.pointAt(t));},{id,t});};
   let p=await curve(0);await page.mouse.click(p.x,p.y);
@@ -57,7 +57,7 @@ module.exports=async page=>{
   await page.locator('#resetViewBtn').click();
   await page.evaluate(()=>{const a=FZI.MathIllustration.editor;a.selectObject(window.__ellipseId);a.radialProperties.openAt({x:400,y:250});});
   await page.locator('#radialPropertiesWheel [data-radial-action="construct"]').click();
-  const contextual=page.locator('#propertiesSidebar [data-radial-construct="construct:pointOnEllipse"]');await contextual.waitFor();await contextual.click();
+  const contextual=page.locator('#propertiesSidebar [data-radial-construct="construct:pointOnObject"]');await contextual.waitFor();await contextual.click();
   assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.interaction.radialPlacement),true);
   let contextualParameter=null;const wrap=await page.locator('#canvasWrap').boundingBox(),candidates=[];
   for(const t of [0,.125,.25,.375,.5,.625,.75,.875]){const candidate=await curve(t);candidates.push({t,...candidate});if(candidate.x>=wrap.x+8&&candidate.x<=wrap.x+wrap.width-8&&candidate.y>=wrap.y+8&&candidate.y<=wrap.y+wrap.height-8){q=candidate;contextualParameter=t;break;}}
@@ -89,7 +89,7 @@ module.exports=async page=>{
   assert.equal(exports.pngType,'image/png');assert.ok(exports.pngBytes>0);
   const options=fixture('course'),restrictedTool='construct:pointOnEllipse';options.initialDocument={version:9,ellipseSchema:1,type:'geometry',meta:{title:'',description:''},objects:[{id:'E',type:'ellipse',cx:0,cy:0,a:5,b:4,rotation:.2}]};options.policy.parameters={};options.policy.allowedTools=[restrictedTool];options.policy.initialObjectRules={E:{read:true,display:true,selectCanvas:true,selectList:true,sourceTools:[restrictedTool]}};options.policy.createdObjectRules.point={read:true,display:true,selectCanvas:true,selectList:true,translate:true,delete:true,snap:true};
   await page.evaluate(o=>{window.__ellipseId='E';window.__pointRestricted=FZI.MathIllustration.RuntimeSession.create(o);window.__pointPolicy=o.policy;FZI.MathIllustration.bootstrapRestrictedEditor({runtimeSession:window.__pointRestricted.session});},options);
-  const restrictedToolButton=page.locator(`[data-canvas-tool="${restrictedTool}"]`);await page.locator('#canvasToolsBtn').click();await restrictedToolButton.waitFor({state:'visible'});assert.equal(await restrictedToolButton.isDisabled(),false);await restrictedToolButton.click();
+  const restrictedToolButton=page.locator('[data-canvas-tool="construct:pointOnObject"]');await page.locator('#canvasToolsBtn').click();await restrictedToolButton.waitFor({state:'visible'});assert.equal(await restrictedToolButton.isDisabled(),false);await restrictedToolButton.click();
   p=await curve(0);await page.mouse.click(p.x,p.y);assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.interaction.pathPlacement),true);
   q=await curve(.25);await page.mouse.click(q.x,q.y);
   const restrictedId=await page.evaluate(()=>FZI.MathIllustration.editor.selectedId);assert.equal(await page.evaluate(id=>FZI.MathIllustration.editor.engine.get(id).construction.kind,restrictedId),'pointOnEllipse');

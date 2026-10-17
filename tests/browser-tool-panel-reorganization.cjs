@@ -3,7 +3,7 @@ const {choose}=require('./browser-tool-menu.cjs');
 module.exports=async page=>{
  const originalViewport=page.viewportSize();await page.setViewportSize({width:1280,height:900});await page.reload();
  const ids=await page.locator('#toolGrid [data-tool]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tool));
- assert.equal(ids.length,39);assert.equal(new Set(ids).size,39);
+ assert.equal(ids.length,37);assert.equal(new Set(ids).size,37);
  assert.equal(ids.filter(id=>id==='construct:intersection').length,1);
  for(const id of ['construct:lineIntersection','construct:lineCircleIntersection','construct:lineEllipseIntersection','construct:circleCircleIntersection'])assert.ok(!ids.includes(id),id+' must stay out of the visible tool catalog.');
  const snapshot=()=>page.evaluate(()=>{const a=FZI.MathIllustration.editor;return {document:a.engine.toJSON(),tool:a.tool,selected:a.selectedIds,interaction:a.interaction,history:a.history.entries,cursor:a.history.cursor,status:a.nodes.status.textContent,storage:Object.entries(localStorage)};});
@@ -50,5 +50,5 @@ module.exports=async page=>{
   await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-'+name+'.png')});
  }
  await page.setViewportSize(originalViewport);await page.reload();await page.screenshot({path:path.resolve(__dirname,'../test-results/tool-panel-overview.png')});
- return {allTools:39,categories:8,visibleIntersectionTools:1,legacyIntersectionToolsVisible:0,intersectionSearch:'passed',fullscreenIntersectionCatalog:'passed',plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
+ return {allTools:37,categories:8,visibleIntersectionTools:1,legacyIntersectionToolsVisible:0,intersectionSearch:'passed',fullscreenIntersectionCatalog:'passed',plannedTools:await placeholders.count(),placeholderInertness:'passed',fullscreenPlaceholders:'passed',independentKeyboardCollapse:'passed',legacyAnglePreference:'passed',responsiveScreenshots:4};
 };

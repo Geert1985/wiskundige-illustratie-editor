@@ -2,6 +2,12 @@ const assert=require('node:assert/strict');
 module.exports=async page=>{
  const choose=require('./browser-tool-menu.cjs').choose;
  await page.setViewportSize({width:1400,height:900});await page.reload();
+ for(const legacy of ['pointOnSegment','pointOnCircle','pointOnEllipse']){
+  assert.equal(await page.locator('[data-tool="construct:'+legacy+'"]').count(),0);
+  assert.equal(await page.locator('#canvasToolsMenu [data-canvas-tool="construct:'+legacy+'"]').count(),0);
+ }
+ for(const query of ['Punt op lijnstuk','Punt op cirkel','Punt op ellips']){await page.locator('#toolSearch').fill(query);assert.equal(await page.locator('#toolGrid [data-tool]:visible').count(),0,query);}
+ await page.locator('#toolSearch').fill('');
  await page.locator('#toolSearch').fill('Punt op object');assert.equal(await page.locator('#toolGrid [data-tool]:visible').count(),1);assert.equal(await page.locator('#toolGrid [data-tool]:visible').getAttribute('data-tool'),'construct:pointOnObject');await page.locator('#toolSearch').fill('');await page.locator('#canvasToolsBtn').click();assert.equal(await page.locator('#canvasToolsMenu [data-canvas-tool="construct:pointOnObject"]').count(),1);await page.keyboard.press('Escape');
  const cases=[
   {name:'line',objects:[{id:'L',type:'line',x1:-2,y1:0,x2:2,y2:0}],point:{x:0,y:0},kind:'pointOnSegment',source:{objectId:'L'}},

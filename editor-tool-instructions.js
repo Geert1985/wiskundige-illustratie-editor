@@ -3,6 +3,7 @@
   "use strict";
   const MI = global.FZI.MathIllustration;
   const definitions = {
+    'construct:pointOnObject': ['Kies een lijnstuk, veelhoekzijde, cirkel of ellips.', 'Klik nabij de vastgelegde contour om het afhankelijke punt te plaatsen. Escape annuleert.'],
     point: ['Klik op het werkvlak om een punt te plaatsen.'],
     text: ['Klik waar de tekst moet komen.', 'Voer de tekst in en bevestig met Toevoegen.'],
     line: ['Druk op de beginpositie.', 'Sleep naar de eindpositie en laat los. Dit is een vrij lijnstuk zonder losse eindpuntobjecten. Typ eventueel een exacte lengte.'],
@@ -68,6 +69,7 @@
     return ({ point: 'Klik op het werkvlak om een punt te plaatsen.', line: 'Sleep voor een vrij lijnstuk zonder losse eindpuntobjecten. Typ voor een exacte lengte.', straight: 'Sleep tussen twee punten voor een rechte.', ray: 'Sleep vanaf het beginpunt in de richting van de halfrechte; alleen het beginpunt is een Punt-object.', vector: 'Sleep van staart naar pijlpunt voor een vector.', circle: 'Klik het middelpunt en sleep voor de straal. Typ voor een exacte straal.', triangle: 'Klik drie hoekpunten. Escape annuleert.', polygon: 'Klik de hoekpunten; Enter sluit af, Backspace verwijdert het laatste punt, Escape annuleert.', dimension: 'Sleep tussen twee punten om de lengte te meten.', angle: 'Klik arm, hoekpunt en tweede arm voor een hoek.', rightAngle: 'Klik arm, hoekpunt en tweede arm voor een rechte hoek.', text: 'Klik op het werkvlak en voer de tekst in.', select: 'Selecteer een object of het assenstelsel.' })[tool] || '';
   }
   function constructionHint(kind, index = 0) {
+    if(kind==='pointOnObject')return index===0?'Kies een lijnstuk, veelhoekzijde, cirkel of ellips.':'Klik nabij de vastgelegde contour om het punt te bevestigen.';
     if(kind==='parallelogramBySideAngle')return ['Selecteer punt A.','Selecteer punt B.','Plaats Q voor de preview of voer exact zijde AD en de gerichte hoek in.'][Math.min(index,2)];
     if(kind==='ellipseByFociAndPoint')return ['Kies het eerste brandpunt.','Kies het tweede brandpunt.','Kies een bestaand besturingspunt Q of plaats Q vrij.'][Math.min(index,2)];
     if(kind==='pointOnEllipse')return index===0?'Kies een bestaande, geldige ellips.':'Klik nabij de ellipscontour om het afhankelijke punt te plaatsen.';
