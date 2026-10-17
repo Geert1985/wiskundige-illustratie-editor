@@ -152,7 +152,7 @@ B = V[(i + 1) mod n]
 P(t) = A + t * (B - A)
 ```
 
-**Contractuele identiteit = `(objectId, edge-index i, paramater t)`, niet de ruimtelijke locatie of een geometrisch herkende “oorspronkelijke rand”.** Tijdens gewone vervorming blijven `objectId`, `i` en `t` behouden. De actuele coördinaten van `A`, `B` en `P` mogen veranderen. Puntdrag verandert uitsluitend `t`, nooit `i`; bij de eindpunten wordt `t` geklemd.
+**Contractuele identiteit = `(objectId, edge-index i, parameter t)`, niet de ruimtelijke locatie of een geometrisch herkende “oorspronkelijke rand”.** Tijdens gewone vervorming blijven `objectId`, `i` en `t` behouden. De actuele coördinaten van `A`, `B` en `P` mogen veranderen. Puntdrag verandert uitsluitend `t`, nooit `i`; bij de eindpunten wordt `t` geklemd.
 
 Deze betekenis geldt identiek voor vrije driehoeken, vierhoeken en veelhoeken én voor toegestane berekende polygonen (bijvoorbeeld dynamisch bepaalde parallellogrammen), voor zover de bestaande bron- en topologyvalidatie hun geëvalueerde vertices beschikbaar stelt.
 
