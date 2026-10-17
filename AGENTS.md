@@ -86,3 +86,10 @@
 - **Status:** ontwerpbesluiten en roadmap, **geen productiecode-/schema-/CAS-/UI-implementatie-GO**. FORM.0/TXT-FORM.0 zijn te coördineren read-only preflights. Een beperkte TXT-FORM.1-uitbreiding kan vóór FORM.1 komen; ALG.0–ALG.4 hebben onafhankelijke bewijs-/autorisatiegates.
 - **Hostbewust openen en terugplaatsen:** invoeg-/bewerkpositie, formule, bronrollen, revisie, autorisatie en terugkeerdoel worden veilig overgedragen. Toepassen = één atomaire hostcommit; annuleren/ongeldige drop = nul mutaties. Geen dubbele history en geen automatische geometrische writeback.
 - **Geen vervangingsrefactoring:** bestaande ProseMirror, `math`, `dynamicValue`, `MathSource`, `ExpressionAST`, meetkern, export, documentversies, permissies en editorbediening behouden. `MathSource` is presentatie; numerieke `ExpressionAST` is geen symbolische CAS. Symbolische AST/rewrites vragen een afzonderlijk gevalideerd contract.
+
+## UI-LAYERS-LABEL-1 — Labelbediening vanuit lagen (2026-10-17)
+
+- Object- en laag-T-knoppen gebruiken uitsluitend `showLabel` en bestaand `object.setProperties`. Eén laagklik = één batch en één history-stap; gemengd → alles aan, volledig aan → alles uit.
+- Laagactie is alles-of-niets: uitgeschakeld voor lege lagen, locks of onvoldoende autorisatie voor alle leden. Houd render- en uitvoeringscontrole via capabilities en `allowed` gelijk; geen gedeeltelijke updates.
+- Behoud native toetsenbordbediening, focusherstel, `aria-pressed` inclusief `mixed`, oogonafhankelijkheid en compacte afmetingen.
+- Status: featurebranch, 737/737 Node en gerichte Edge PASS; gebruikersacceptatie open, niet gemerged. Zie [implementatierapport](docs/UI-LAYERS-LABEL-1-REPORT.md).

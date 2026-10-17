@@ -1155,3 +1155,9 @@ Historische M8a-1/M8a-2 testresultaten en acceptatiestatussen blijven ongewijzig
 - `constructionSchema: 8` wordt alleen gebruikt voor documenten met `parallelogramBySideAngle`; geen documentversie 11 of afzonderlijk parallellogramschema.
 - Plaatsingsinteractie, preview en atomair geautoriseerde creatie zijn M8b-1. Meetweergave-eigenschappen en volledige L/θ-inspector blijven M8b-2.
 - M8b-2 en M8b-3 zijn **openstaand**. Deze regel beschrijft uitsluitend de feitelijk opgeleverde status op de featurebranch en markeert geen volgende milestone als gestart of afgerond.
+
+## UI-LAYERS-LABEL-1 — Object- en laaglabels (2026-10-17)
+
+Geïmplementeerd op `codex/ui-layers-label-toggle`, vanaf actuele main `7a67837`; implementatiecommit `f52fe7d`. T per object en laag, gouden actieve status en gemengde indicatie, bestaande `showLabel`, atomair `object.setProperties`, één Undo/Redo-stap. Veilige alles-of-niets-autorisatie bij locks of beperkte rechten; geen schemawijziging.
+
+Validatie: 737/737 Node PASS en gerichte Edge PASS (keyboard/focus, mixed, history, zichtbaarheid, locks en smalle layout). Gebruikersacceptatie open; geen merge naar main. Details: [implementatierapport](UI-LAYERS-LABEL-1-REPORT.md). Historische test- en integratiestatussen blijven behouden.
