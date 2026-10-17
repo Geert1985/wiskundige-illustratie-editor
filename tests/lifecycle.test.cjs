@@ -43,6 +43,7 @@ test('source has one canvas render owner and no alternative feature interaction/
 function appRuntime() {
   const { MI, context } = runtime();
   for (const file of ['editor-color.js', 'text-editor-ux.js']) vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
+  vm.runInContext(fs.readFileSync(path.join(root, 'intersection-dispatcher.js'), 'utf8'), context, { filename: 'intersection-dispatcher.js' });
   vm.runInContext(fs.readFileSync(path.join(root, 'editor-tool-instructions.js'), 'utf8'), context);
   vm.runInContext(fs.readFileSync(path.join(root, 'tool-catalog.js'), 'utf8'), context, { filename: 'tool-catalog.js' });
   vm.runInContext(fs.readFileSync(path.join(root, 'editor-radial-properties.js'), 'utf8'), context, { filename: 'editor-radial-properties.js' });
@@ -596,4 +597,87 @@ test('UI-LAYERS-TEXT-1 first creation and layer deletion undo/redo atomically re
  app.changeDocument(()=>app.createObject({type:'text',x:2,y:2,text:'Nieuwe laag'},'text'));
  assert.ok(engine.model.layers.some(l=>l.id===engine.model.meta.automaticTextLayerId));
  app.newDocument();assert.equal(engine.model.meta.automaticTextLayerId,undefined);assert.equal(engine.model.layers.length,1);assert.equal(engine.model.layers[0].name,'Basislaag');
+});
+
+test('WIE-TOOL-L1 document actions return committed values and exceptions without empty history entries',()=>{
+ const h=appRuntime(),error=new Error('command failed');
+ const success=h.app.changeDocument(()=>h.app.execute('object.create',{toolId:'create:point',object:{type:'point',x:3,y:3}}));
+ assert.equal(success.ok,true);assert.equal(success.error,null);assert.ok(h.engine.get(success.result.result.id));assert.equal(h.app.history.entries.length,1);
+ const before=plain(h.engine.toJSON()),failed=h.app.changeDocument(()=>{throw error;});
+ assert.equal(failed.ok,false);assert.equal(failed.error,error);assert.equal(failed.result,null);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,1);
+ const noObjects=h.app.changeDocument(()=>17);assert.equal(noObjects.ok,true);assert.equal(noObjects.result,17);assert.equal(h.app.history.entries.length,1);
+});
+
+test('WIE-TOOL-L1 repeated free lines and a free triangle keep their tool',()=>{
+ const h=appRuntime();h.app.setTool('line');
+ for(const y of [2,3]){h.down({x:2,y});h.move({x:4,y});h.app.commit();assert.equal(h.app.tool,'line');assert.equal(h.app.interaction,null);}
+ assert.equal(h.app.history.entries.length,2);
+ h.app.setTool('triangle');for(const p of [{x:2,y:5},{x:4,y:5},{x:3,y:7}])h.down(p);
+ assert.equal(h.app.tool,'triangle');assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,3);
+});
+
+function l1Placement(kind){
+ const h=appRuntime();h.engine.add({id:'A',type:'point',x:2,y:2});h.engine.add({id:'B',type:'point',x:4,y:2});h.app.selectedId='p';h.app.setTool('construct:'+kind);
+ if(kind==='pointOnObject')h.down({x:.5,y:1});
+ else {h.down({x:2,y:2});h.down({x:4,y:2});}
+ return h;
+}
+for(const kind of ['pointOnObject','ellipseByFociAndPoint','parallelogramBySideAngle'])test('WIE-TOOL-L1 '+kind+' command failure preserves placement and retry commits once',()=>{
+ const h=l1Placement(kind),state=h.app.interaction,refs=plain(state.sources),before=plain(h.engine.toJSON()),selection=plain(h.app.selectedIds),execute=h.app.execute.bind(h.app);let attempts=0;
+ if(kind==='parallelogramBySideAngle'){state.numericPinned=true;state.sideLength=3;state.signedAngle=Math.PI/3;state.sideInput='3';state.angleInput='60';}
+ h.app.execute=(op,payload)=>{if(op==='construction.create'){attempts++;throw Error('L1 rejected');}return execute(op,payload);};
+ const click=()=>kind==='pointOnObject'?h.down({x:.6,y:1}):h.down({x:3,y:4});click();
+ assert.equal(attempts,1);assert.equal(h.app.tool,'construct:'+kind);assert.equal(h.app.interaction,state);assert.deepEqual(plain(state.sources),refs);assert.deepEqual(plain(h.app.selectedIds),selection);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.status.textContent,/L1 rejected/);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);
+ if(kind==='parallelogramBySideAngle'){assert.equal(state.numericPinned,true);assert.equal(state.sideInput,'3');assert.equal(state.angleInput,'60');}
+ h.app.execute=execute;click();assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.history.entries.length,1);assert.ok(h.app.selectedIds.length);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);
+ const saved=plain(h.engine.toJSON());h.app.commit();assert.deepEqual(plain(h.engine.toJSON()),saved);assert.equal(h.app.history.entries.length,1);
+ h.app.travelHistory();assert.deepEqual(plain(h.engine.toJSON()),before);h.app.travelHistory(true);assert.deepEqual(plain(h.engine.toJSON()),saved);
+});
+
+test('WIE-TOOL-L1 generic construction failure retains first source and success selects result',()=>{
+ const h=appRuntime();h.app.selectedId='p';h.app.setTool('construct:parallel');h.down({x:.5,y:1});const before=plain(h.engine.toJSON()),state=h.app.interaction,execute=h.app.execute.bind(h.app);
+ h.app.execute=()=>{throw Error('L1 denied');};h.down({x:0,y:0});assert.equal(h.app.tool,'construct:parallel');assert.deepEqual(plain(state.sources),[{objectId:'l'}]);assert.match(h.app.nodes.status.textContent,/L1 denied/);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+ h.app.execute=execute;h.down({x:0,y:0});assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'parallel');
+});
+
+test('WIE-TOOL-L1 context complete reports failure and preserves previous tool and selection',()=>{
+ const h=appRuntime();h.app.setTool('line');h.app.selectedId='l';h.app.toolCatalog={...h.app.toolCatalog,getTool:id=>({id})};const plan=h.MI.ConstructionService.contextualPlans(h.engine.get('l'),'midpoint').find(p=>p.mode==='complete'),before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app);
+ h.app.execute=()=>{throw Error('L1 context denied');};assert.equal(h.app.startContextConstruction('construct:midpoint','l',plan.key),false);assert.equal(h.app.tool,'line');assert.equal(h.app.selectedId,'l');assert.match(h.app.nodes.status.textContent,/L1 context denied/);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+ h.app.execute=execute;assert.equal(h.app.startContextConstruction('construct:midpoint','l',plan.key),true);assert.equal(h.app.tool,'line');assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'midpoint');
+});
+
+test('WIE-TOOL-L1 intersection refusal retains source and success selects all new points',()=>{
+ const h=appRuntime();h.engine.add({id:'S',type:'straight',x1:-3,y1:1,x2:3,y2:1});h.engine.add({id:'C',type:'circle',cx:0,cy:1,r:2});const before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app);
+ h.app.setTool('construct:intersection');h.app.interaction={mode:'construction',sources:[],selectionIdsBefore:['p']};h.app.acceptIntersectionSource({objectId:'S'});
+ h.app.execute=()=>{throw Error('L1 intersection denied');};h.app.acceptIntersectionSource({objectId:'C'});assert.equal(h.app.tool,'construct:intersection');assert.deepEqual(plain(h.app.interaction.sources),[{objectId:'S'}]);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.status.textContent,/L1 intersection denied/);
+ h.app.execute=execute;h.app.acceptIntersectionSource({objectId:'C'});assert.equal(h.app.tool,'select');assert.equal(h.app.intersectionCompleted,true);assert.equal(h.app.interaction,null);assert.equal(h.app.selectedIds.length,2);assert.equal(h.app.history.entries.length,1);assert.ok(h.app.selectedIds.every(id=>h.engine.get(id).construction.kind==='lineCircleIntersection'));
+});
+
+test('WIE-TOOL-L1 real runtime denial leaves document and runtime history unchanged',()=>{
+ const h=appRuntime(),{session,owner}=h.MI.RuntimeSession.create(require('./permission-fixtures.cjs').fixture());
+ h.app.dispose();h.doc.getElementById('canvas').querySelector=()=>null;h.app.runtime=session;h.app.engine=session.engine;h.app.commands=session;h.app.history=new h.MI.RuntimeHistory(h.app);h.app.selectedIds=[];h.app.init();
+ const before=plain(owner.inspect()),outcome=h.app.changeDocument(()=>h.app.execute('construction.create',{toolId:'construct:parallel',sources:[{objectId:'A'},{objectId:'B'}]}),{cancelInteraction:false});
+ assert.equal(outcome.ok,false);assert.equal(outcome.error.code,'PERMISSION_DENIED');assert.deepEqual(plain(owner.inspect()),before);assert.equal(session.canUndo,false);
+ const accepted=h.app.changeDocument(()=>h.app.execute('construction.create',{toolId:'construct:midpoint',sources:[{objectId:'A'},{objectId:'B'}]}),{cancelInteraction:false});
+ assert.equal(accepted.ok,true);assert.equal(accepted.result.result.length,1);assert.equal(session.canUndo,true);h.app.travelHistory();const undone=plain(owner.inspect());assert.deepEqual(undone.document,before.document);assert.equal(undone.history.length,1);assert.equal(undone.cursor,0);assert.equal(session.canUndo,false);assert.equal(session.canRedo,true);
+});
+
+test('WIE-TOOL-L1 Esc after failed placement cleans preview capture and sources without history',()=>{
+ const h=l1Placement('ellipseByFociAndPoint'),before=plain(h.engine.toJSON());h.app.execute=()=>{throw Error('L1 failed');};h.down({x:3,y:4});assert.ok(h.app.interaction);h.app.keyDown({key:'Escape',preventDefault(){}});
+ assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+});
+
+test('WIE-TOOL-L1 invalid path placement and numeric input never commit or reset',()=>{
+ const path=l1Placement('pointOnObject'),pathState=path.app.interaction,before=plain(path.engine.toJSON());path.down({x:20,y:20});assert.equal(path.app.interaction,pathState);assert.equal(path.app.tool,'construct:pointOnObject');assert.deepEqual(plain(path.engine.toJSON()),before);assert.equal(path.app.history.entries.length,0);
+ const h=l1Placement('parallelogramBySideAngle'),state=h.app.interaction;state.numericPinned=true;state.sideLength=NaN;state.sideInput='';assert.equal(h.app.commitParallelogramPlacement(),false);assert.equal(h.app.interaction,state);assert.equal(h.app.tool,'construct:parallelogramBySideAngle');assert.equal(h.app.history.entries.length,0);
+});
+
+test('WIE-TOOL-L1 optional source naming failure cannot turn committed geometry into a retry',()=>{
+ const h=l1Placement('parallelogramBySideAngle');h.app.nameGenericParallelogramSources=()=>{throw Error('naming denied');};h.down({x:3,y:4});
+ assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'parallelogramBySideAngle');assert.match(h.app.nodes.status.textContent,/bronpunten konden niet worden hernoemd/);
+});
+
+test('WIE-TOOL-L1 geometrically impossible tangent is rejected by the real command and keeps the circle',()=>{
+ const h=appRuntime();h.engine.add({id:'C',type:'circle',cx:0,cy:0,r:2});const before=plain(h.engine.toJSON());h.app.setTool('construct:tangent');h.down({x:2,y:0});h.down({x:0,y:0});
+ assert.equal(h.app.tool,'construct:tangent');assert.deepEqual(plain(h.app.interaction.sources),[{objectId:'C'}]);assert.equal(h.app.history.entries.length,0);assert.deepEqual(plain(h.engine.toJSON()),before);assert.match(h.app.nodes.status.textContent,/bestaat niet/);
 });
