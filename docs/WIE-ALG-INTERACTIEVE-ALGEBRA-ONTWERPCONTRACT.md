@@ -1,11 +1,13 @@
-# WIE-ALG — Interactieve Algebra- en Vergelijkingseditor
+# WIE-ALG — Interactieve algebra als uitbreidingslaag van WIE-FORM
 
-**Concept- en architectuurcontract v1.0.0 — 17 oktober 2026**  
+**Concept- en architectuurcontract v1.1.0 — 17 oktober 2026**  
 **Status:** gebruikersvisie en productrichting bevestigd; **langetermijn-roadmap, uitsluitend documentatie**. Geen technische implementatie-, schema-, branch-, PR- of productiecode-GO.  
 **Project:** From Zero 2 Infinity / Wiskundige Illustratie Editor  
-**Referenties:** [TXT-FORM v1.1.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md), [teksteditorarchitectuur](TEXT-EDITOR-ARCHITECTURE.md), [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md).
+**Referenties:** [WIE-FORM v1.0.0 — hostwerkruimte](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md), [TXT-FORM v1.2.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md), [teksteditorarchitectuur](TEXT-EDITOR-ARCHITECTURE.md), [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md).
 
 ## 1. Visie
+
+**Architectuurbesluit v1.1.0:** WIE-ALG is de interactieve algebraïsche uitbreidingslaag **binnen de gedeelde WIE-FORM-werkruimte**, niet een zelfstandige tweede editor of afzonderlijke applicatie. De gebruiker opent dezelfde formule vanuit WIE, Teksteditor of geometrische context; WIE-ALG activeert aanvullende transformatie-, selectie- en didactische mogelijkheden. De WIE-FORM-werkruimte en haar invoeg-/terugkeercontract staan in het afzonderlijke FORM-contract. WIE-ALG blijft een toekomstig traject zonder implementatie-GO.
 
 Een vergelijking bestaat uit **selecteerbare semantische elementen**, niet enkel tekens of gerenderde LaTeX. De gebruiker kan termen en deeluitdrukkingen aanklikken, gezamenlijk selecteren, groeperen, verslepen, contextgevoelig herschrijven en het wiskundig effect onmiddellijk zien. De editor bewaart én verklaart de toegepaste regel, inclusief aannames en oplossingsverzamelingen.
 
@@ -70,7 +72,7 @@ Deze voorbeelden zijn **toekomstige acceptatiefixtures**, geen bewijs dat de hui
 **Vereist ontwerppatroon:** een getypeerde, gevalideerde **symbolische AST**, gescheiden van zowel LaTeX-presentatie als de reeds bestaande getypeerde **numerieke** `ExpressionAST`. Onderzoek in ALG.0 hoe AST-nodes, eenheden, bronadapters en evaluatie hergebruikt kunnen worden; **niet** blind aannemen dat de huidige numerieke AST vergelijkingen, onbekenden, herschrijfregels of oplossingsverzamelingen ondersteunt.
 
 Logische lagen:
-1. `AlgebraDocument/ExpressionModel`: canonieke expressie-/vergelijkingsstructuur, variabelen, domeinen, gebonden bronreferenties en beperkingen;
+1. `AlgebraDocument/ExpressionModel`: canonieke expressie-/vergelijkingsstructuur, variabelen, domeinen, gebonden bronreferenties en beperkingen; dit model wordt via de gedeelde WIE-FORM-formule-/sessieadapter zichtbaar, niet via een parallelle algebra-editor;
 2. `AlgebraSelection/Interaction`: structurele selecties, multi-selectie, drag-targets, voorvertoning en toetsenbordalternatief;
 3. `TransformationRegistry`: getypeerde regels met precondities, equivalentie-/implicatiegaranties en expliciete varianten;
 4. `TransformationVerifier`: onafhankelijke validatie van toepasbaarheid, voorwaarden, dimensies, oplossingsverzamelingen of bewijsgrens;
@@ -93,6 +95,9 @@ De persistente representatie krijgt uitsluitend na ALG.0 een expliciet schema- e
 ```
 
 ## 5. Gebruikersinterface en feedback
+
+De onderstaande interacties worden als **WIE-ALG-modus in de bestaande WIE-FORM-werkruimte** ingebouwd. Het FORM-hostcontract beheert openen, sluiten, focus, oorsprongscontext en gecontroleerd terugschrijven naar tekst/geometrie. Algebra heeft geen eigen concurrerende hostwerkruimte, documentopslag of bronrechten.
+
 
 - Inline algebra-editor in/naast de Wiskundige Teksteditor, consistent met WIE-contextmenu's en het donkerblauw/gouden ontwerpsysteem.
 - Versleepbaar structureel geselecteerde term/expressie, met gemarkeerde bestemmingen, voorgestelde mathematische operatie, live-preview en expliciete bevestiging.
@@ -122,13 +127,13 @@ Nauwkeurig onderscheid tussen formule-identiteit, wiskundige variabele, geometri
 
 | Fase | Doel | Implementatiestatus |
 |---|---|---|
-| **ALG.0** | Read-only wiskundige/architecturale audit, numerieke versus symbolische AST, datamodel, veiligheids-/bewijsstrategie, concept-UX en scope van eerste slice | uitsluitend ontwerp |
+| **ALG.0** | Read-only wiskundige/architecturale audit, numerieke versus symbolische AST, aansluiting op WIE-FORM-hostsessie, rewrite-/bewijsstrategie en eerste ALG-UI-slice | uitsluitend ontwerp |
 | **ALG.1** | Structurele selectie en beperkte, geteste lokale herschrijfregels, inclusief voorwaarden en history | toekomstig, aparte GO |
 | **ALG.2** | Contextgevoelige algebraïsche drag-and-drop, inclusief verplaatsen tussen vergelijkingsleden, preview en equivalente beideleden-operaties | toekomstig, aparte GO |
 | **ALG.3** | Didactische afleidingsweergave, multi-selectie, meer regels, oplossingscontrole en export | toekomstig, aparte GO |
 | **ALG.4** | Geometrie-/TXT-FORM-/rekenmachine-integratie, met eventueel afzonderlijk te ontwerpen tweerichtingsconstraints | toekomstig, aparte GO |
 
-**Afhankelijkheden:** stabiele TXT-FORM-structuur en rolreferenties; bestaande T5a/T5b-reken- en eenhedencontracten; semantische transformatie- en bewijsstrategie; eigen opslag-, rechten- en testschema. ALG.0 mag wel conceptueel parallel worden onderzocht, maar ALG.1+ start niet impliciet bij afronding van TXT-FORM.
+**Afhankelijkheden:** de gedeelde WIE-FORM-werkruimte/hostadapter, stabiele TXT-FORM-structuur en rolreferenties; bestaande T5a/T5b-reken- en eenhedencontracten; semantische transformatie- en bewijsstrategie; expliciet schema- en rechtencontract binnen de bestaande WIE-diensten. ALG.0 mag conceptueel parallel worden onderzocht, maar ALG.1+ start niet automatisch bij afronding van FORM.1 of TXT-FORM.
 
 ## 9. Acceptatie- en stopcriteria
 

@@ -1,28 +1,34 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.33 (TXT-FORM/WIE-ALG ontwerptrajecten toegevoegd, 2026-10-17)
+Version: 2.8.34 (WIE-FORM gedeelde werkruimte en FORM-/TXT-FORM-/ALG-rolscheiding vastgelegd, 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
 
-## Roadmap v2.8.33 — TXT-FORM en WIE-ALG (2026-10-17)
+## Roadmap v2.8.34 — WIE-FORM, TXT-FORM en WIE-ALG (2026-10-17)
 
-**Nieuw vastgelegde productrichting:** de Wiskundige Teksteditor krijgt in **TXT-FORM** dynamische geometrische metingen met drie presentaties: numerieke waarde, symbolische formule en formule met gecontroleerde uitwerking. De gebruiker heeft daarnaast het langetermijnconcept **WIE-ALG — Interactieve Algebra- en Vergelijkingseditor** bevestigd: semantische formuleonderdelen selecteren, meerdere termen groeperen en vereenvoudigen, contextafhankelijk slepen tussen vergelijkingsleden, geldige bewerkingen op beide leden, voorwaarden, oplossingscontrole en didactische afleidingsstappen. [TXT-FORM-contract v1.1.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) · [WIE-ALG-conceptcontract v1.0.0](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md).
+**Nieuw goedgekeurd productbesluit (supersedeert de organisatorische formulering in v2.8.33):** **WIE-FORM** wordt één zelfstandige **Formule-editor/-werkruimte binnen de Wiskundige Illustratie Editor**, géén tweede externe applicatie. **Dezelfde werkruimte** is bereikbaar vanuit (1) de Wiskundige Teksteditor, (2) WIE als onafhankelijke formulewerkruimte en (3) een geometrisch object / gekoppelde meting. Startcontext, formule, bronrollen, rechten en terugkeerdoel worden in één host-aware sessie doorgegeven. Zie [WIE-FORM-contract v1.0.0](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md).
 
-**Architectuurgrens:** de huidige statische LaTeX-presentatie is geen semantische symbolische AST; de bestaande T5a-numerieke expressie-AST is geen CAS. TXT-FORM moet voldoende stabiele formule-, bronrol- en receptidentiteit bewaren om toekomstige structurele algebra mogelijk te maken, **zonder** nu een CAS of drag-and-drop-engine te implementeren. ALG vraagt later een afzonderlijk gevalideerd symbolisch model, getypeerde transformatie-/voorwaarden- en equivalentiecontrole, geschiedenis en permissies. Algebra wijzigt brongeometrie nooit stilzwijgend.
+**Heldere rolverdeling:** [TXT-FORM v1.2.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) beheert dynamische geometrische waarde-/formule-/uitwerkingpresentaties; WIE-FORM beheert de gedeelde invoer- en bewerkingswerkruimte en de gecontroleerde invoeg-/terugkeerworkflow; [WIE-ALG v1.1.0](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md) is later de **algebraïsche uitbreidingslaag in WIE-FORM** voor structurele selectie, gelijksoortige termen, vergelijkingtransformaties, drag/drop, voorwaarden en didactische afleidingen. **Geen dubbele formule-editor, tweede rekenkernel of automatische algebra→geometrie-writeback.**
 
-| Traject | Afbakening | Status |
+**Technische grenzen:** `MathSource`/LaTeX is presentatienotatie; T5a `ExpressionAST` is numeriek en geen symbolische CAS. Een toekomstbestendig, getypeerd en persistent formule-/rolmodel wordt in gecoördineerde FORM.0/TXT-FORM.0-preflight beslist, met behoud van legacy `math`, `dynamicValue`, history, schema's, rechtscontrole en export. De huidige Teksteditor behoudt haar bestaande Formule-tab tijdens de transitie. Een eenvoudige TXT-FORM.1-formuleweergave mag vóór FORM.1 worden geleverd.
+
+| Fase | Functionaliteit | Status |
 |---|---|---|
-| **TXT-FORM.0** | Read-only preflight, capability- en schema-/permissionmatrix | **aanbevolen eerstvolgende ontwerp-/auditpoort; niet gestart** |
-| **TXT-FORM.1** | Numerieke en symbolische dynamische formulepresentatie | gepland, afzonderlijke GO vereist |
-| **TXT-FORM.2** | Uitwerkingen, symbolen, referenties en eenheden | gepland, afzonderlijke GO vereist |
-| **TXT-FORM.3** | Integratievoorbereiding richting rekenmachine/GM/WIE-ALG | gereserveerd, geen CAS-scope |
-| **ALG.0** | Read-only algebra-/symbolische-AST-/rewrite-/bewijs- en UX-onderzoek | toekomstig ontwerp, niet gestart |
-| **ALG.1** | Structurele algebra-selecties en beperkte geldige herschrijfregels | toekomstig, afzonderlijke GO |
-| **ALG.2** | Drag-and-drop, beideledenbewerkingen, voorwaarden en previews | toekomstig, afzonderlijke GO |
-| **ALG.3** | Didactische stapgeschiedenis, uitgebreidere regels en oplossingscontrole | toekomstig, afzonderlijke GO |
-| **ALG.4** | Integratie met meetkunde en calculator; tweerichtingsconstraints uitsluitend via nieuw contract | toekomstig, afzonderlijke GO |
+| **FORM.0** | Read-only audit en UX-/architectuurcontract gedeelde werkruimte, hosts, semantiek, bewerken/terugplaatsen, migratie en veiligheid | **aanbevolen gecoördineerde ontwerp-/auditpoort; niet gestart** |
+| **FORM.1** | Basis Formule-editor binnen WIE, vanuit WIE en Teksteditor te openen, bewerken/atomair terugplaatsen en compatibele opmaak | gepland, aparte implementatie-GO |
+| **FORM.2** | Geometrie-ingang, TXT-FORM-inbedding en bredere formule-invoer | gepland, aparte implementatie-GO |
+| **FORM.3** | WIE-ALG-UI-uitbreidingspunten en structurele formulebediening zonder CAS-contract vooruit te lopen | gereserveerd |
+| **TXT-FORM.0** | Read-only bron-, zijderol-, formule- en documentaudit, afgestemd met FORM.0 | aanbevolen onderzoek, niet gestart |
+| **TXT-FORM.1** | Gekoppelde numerieke/symbolische meetwaarde/formule in huidige Teksteditor | gepland, aparte GO, geen FORM.1-afhankelijkheid |
+| **TXT-FORM.2** | Uitwerkingen, factorwaarden, symbolen, rol- en puntreferenties en eenheden | gepland, aparte GO |
+| **TXT-FORM.3** | WIE-FORM-/rekenmachine-/gecombineerde-metingadapters, geen CAS | gereserveerd |
+| **ALG.0** | Read-only algebra-/symbolische-AST-/rewrite-/verificatieaudit in WIE-FORM | toekomstig, niet gestart |
+| **ALG.1** | Structurele algebra-selecties en beperkte geldige regels in WIE-FORM | toekomstig, aparte GO |
+| **ALG.2** | Drag-and-drop, beideledenbewerkingen en geldige voorwaarden/previews in WIE-FORM | toekomstig, aparte GO |
+| **ALG.3** | Didactische afleidingsgeschiedenis en oplossingencontrole in WIE-FORM | toekomstig, aparte GO |
+| **ALG.4** | Koppeling met TXT-FORM, geometrie en calculator; tweerichtingsconstraints enkel via eigen contract | toekomstig, aparte GO |
 
-**Statusgrens:** op 17 oktober 2026 zijn uitsluitend ontwerpdocumenten en roadmap bijgewerkt. Er is geen productiefunctie geleverd, geen schema opgehoogd, geen wiskundige solver/CAS geïmplementeerd en geen tests of handmatige acceptatie voor TXT-FORM/ALG geclaimd. De andere roadmaptrajecten houden hun bestaande status en prioriteit.
+**Statusgrens:** op 17 oktober 2026 zijn alleen ontwerpdocumenten/roadmap aangevuld. Geen productiecode, nieuwe werkruimte, schema-upgrade, CAS, nieuwe testuitslagen of handmatige acceptatie van deze functies. Bestaande projecten/roadmapprioriteiten blijven onaangeroerd; daadwerkelijke implementatie vereist per fase expliciete GO, controles en aparte acceptance.
 
 ## Gereedschapscatalogus en classificatie
 

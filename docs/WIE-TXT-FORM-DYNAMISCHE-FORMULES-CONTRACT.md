@@ -1,9 +1,9 @@
 # WIE-TXT-FORM — Dynamische formules en meetwaarden
 
-**Ontwerpcontract v1.1.0 — 17 oktober 2026**  
+**Ontwerpcontract v1.2.0 — 17 oktober 2026**  
 **Status:** functioneel concept door gebruiker bevestigd; vastgelegd als documentatie. **Geen implementatie-GO; TXT-FORM.0 (read-only preflight) verplicht.**  
 **Repository:** `Geert1985/wiskundige-illustratie-editor`  
-**Relatie:** [WIE-ALG — Interactieve Algebra](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md); [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md).
+**Relaties:** [WIE-FORM — gedeelde Formule-editor](WIE-FORM-FORMULE-EDITOR-ONTWERPCONTRACT.md); [WIE-ALG — interactieve algebra](WIE-ALG-INTERACTIEVE-ALGEBRA-ONTWERPCONTRACT.md); [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md).
 
 ## 1. Productdoel
 
@@ -15,7 +15,7 @@ Een gekoppelde geometrische eigenschap kan in de bestaande Wiskundige Tekstedito
 
 De presentatie blijft dynamisch gekoppeld aan bronobject, broneigenschap, de relevante zijderollen, de eenheden en de toegestane labels. Een ongeldige of verboden bron toont **niet beschikbaar**, zonder identiteit te verliezen of informatie prijs te geven.
 
-**Nieuwe vastlegging v1.1.0:** dit traject vormt een fundament voor **WIE-ALG**, maar omvat zelf **geen** termselectie, slepen tussen leden, vergelijkingoplossing, automatische vereenvoudiging, symbolisch bewijzen, CAS of tweerichtingsbewerkingen op geometrie. Die functies hebben een afzonderlijk algebra-contract en afzonderlijke implementatie-GO nodig.
+**Aangescherpt ontwerpbesluit v1.2.0:** TXT-FORM is de dynamische geometrische **inhouds- en presentatieadapter** voor de gedeelde **WIE-FORM-werkruimte**, met behoud van het bestaande waarde-invoegpad. De basisfuncties kunnen gefaseerd al in de huidige teksteditor beschikbaar komen vóór de aparte FORM-werkruimte is gebouwd. WIE-ALG wordt later als interactieve algebraïsche uitbreidingslaag **in dezelfde WIE-FORM-werkruimte** geïntegreerd. TXT-FORM bevat zelf **geen** termselectie, slepen tussen leden, vergelijkingoplossing, automatische vereenvoudiging, symbolisch bewijzen, CAS of tweerichtingsbewerkingen op geometrie.
 
 ## 2. Bestaande basis en integratie
 
@@ -28,7 +28,7 @@ Actuele relevante code (te verifiëren tegen HEAD in TXT-FORM.0): `text-values.j
 
 ## 3. Gebruikerservaring
 
-**Invoerpad:** `Wiskundige Teksteditor → Toevoegen → Waarde` uitbreiden, zonder de tab `Formule` voor handmatig ingevoerde LaTeX te verwijderen.
+**Eerste invoerpad:** `Wiskundige Teksteditor → Toevoegen → Waarde` uitbreiden, zonder de huidige tab `Formule` voor handmatige LaTeX te verwijderen. **Toekomstige gedeelde invoerroute:** nieuwe of bestaande getypeerde formule openen via WIE-FORM en het resultaat via een hostadapter atomair invoegen/terugplaatsen; de eenvoudige TXT-FORM-waarde-invoer mag onafhankelijk eerder worden geleverd.
 
 1. Selecteer bronobject (bijv. rechthoek ABCD).
 2. Selecteer toegestane broneigenschap (oppervlakte, omtrek, lengte enz.).
@@ -109,9 +109,9 @@ Verplaatste/geschaalde bronnen berekenen opnieuw; ontbrekende of ongeldige bron 
 | **TXT-FORM.0** | Read-only audit: daadwerkelijke `main`-HEAD, tekstschema's, exacte object-/zijderollen, proven-shape capabilities, formulemodel, scriptmanifest, opslag, renderer, veiligheid en tests; keuze nieuw veld versus uitbreiding | **volgende aanbevolen stap, geen productiecode** |
 | **TXT-FORM.1** | Eerste end-to-end dynamische numerieke/symbolische presentaties op aantoonbaar geschikte typen; beperkte catalogus, live-preview, SVG, JSON, tests | gepland, aparte GO |
 | **TXT-FORM.2** | Uitwerking, factorwaarden, dimensies, precisie, rolnamen, puntnamen, uitbreiding catalogus, vollediger UI | gepland, aparte GO |
-| **TXT-FORM.3** | Integratiepoorten naar calculator, gecombineerde meting en **WIE-ALG**; geen CAS-implementatie in deze fase zonder afzonderlijk contract | gereserveerd |
+| **TXT-FORM.3** | Integratieadapter naar **WIE-FORM**, rekenmachine, gecombineerde meting; gereedmaken voor WIE-ALG zonder eigen editor/CAS | gereserveerd |
 
-**Afhankelijkheidsregel:** TXT-FORM mag een uitbreidbare semantische formulerepresentatie voorbereiden, maar mag niet alvast de GUI en transformatie-engine van WIE-ALG bouwen. WIE-ALG bouwt later op de gevalideerde representatie voort, niet op losgesleepte LaTeX-fragmenten.
+**Afhankelijkheidsregel:** TXT-FORM mag een uitbreidbare semantische formulerepresentatie voorbereiden, maar bouwt **geen tweede formulewerkruimte** en geen WIE-ALG-transformatie-engine. FORM.0 en TXT-FORM.0 moeten de datagrenzen coördineren; de eerste dynamische waarde-/formuleweergave hoeft niet op FORM.1 te wachten. WIE-ALG bouwt later in WIE-FORM op de gevalideerde structuur voort, niet op losgesleepte LaTeX-fragmenten.
 
 ## 9. Verplichte test- en acceptatiematrix
 
