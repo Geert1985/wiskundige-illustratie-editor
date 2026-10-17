@@ -12,7 +12,7 @@ test('UI-LEFT-1 exposes the tools/layers tabs and searchable standalone tools',(
   assert.match(html,/id="toolSearch" type="search"[^>]*aria-controls="toolGrid"/);
   assert.equal((html.match(/class="tool-subgroup-toggle"/g)||[]).length,5);
   assert.equal((html.match(/class="tool-split[^\"]*"/g)||[]).length,0);
-  assert.match(html,/editor-tool-search\.js\?v=m8-int0-20261017/);
+  assert.match(html,/editor-tool-search\.js\?v=m8-int1-20261017/);
 });
 
 test('UI-LEFT-1 leaves tool IDs and fullscreen catalog unaffected, scopes hidden results to sidebar',()=>{

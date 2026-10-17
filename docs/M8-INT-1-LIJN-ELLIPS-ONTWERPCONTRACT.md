@@ -1,6 +1,6 @@
 # WIE — M8-INT.1: Snijpunt lijn–ellips — ontwerp- en implementatiecontract
 
-**Documentversie:** 1.0.0  
+**Documentversie:** 1.0.1
 **Datum:** 17 oktober 2026  
 **Status:** **ontwerpcontract goedgekeurd door gebruiker op 17 oktober 2026** — uitvoerbaar uitsluitend met afzonderlijke Codex-opdracht; geen merge-GO  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor (WIE)  
@@ -232,7 +232,7 @@ Gebruik **onafhankelijk berekende exacte of analytische referenties**. De solver
 
 ## 9. UI- en browseracceptatie
 
-Volg de reeds goedgekeurde M8-INT.0-bediening: eerste bron → tweede bron → alle geldige punten direct. Geen kandidaatmarker/-toggle of confirm, geen nieuwe menu-ingang. Het gereedschap blijft actief om een volgend paar te kiezen.
+Volg de reeds goedgekeurde M8-INT.0-bediening: eerste bron → tweede bron → alle geldige punten direct. Geen kandidaatmarker/-toggle of confirm, geen nieuwe menu-ingang. Na succesvolle creatie wordt de broninteractie afgesloten en keert WIE automatisch terug naar Selecteren; de nieuwe punten blijven geselecteerd. Bij nul geldige oplossingen blijft het gereedschap actief.
 
 Verplicht handmatig én in Edge te verifiëren:
 

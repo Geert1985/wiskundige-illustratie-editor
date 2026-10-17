@@ -7,7 +7,7 @@ test('UI-T1 places working tools in the eight approved semantic categories witho
  assert.deepEqual(categories.map(m=>m[1]),Object.keys(expected));
  for(const [,id,content] of categories)assert.deepEqual(tools(content).sort(),expected[id].slice().sort(),id);
  const all=categories.flatMap(m=>tools(m[2]));assert.equal(new Set(all).size,all.length);assert.equal(all.length,39);
- const intersectionIds=['construct:lineIntersection','construct:lineCircleIntersection','construct:circleCircleIntersection'];
+ const intersectionIds=['construct:lineIntersection','construct:lineCircleIntersection','construct:lineEllipseIntersection','construct:circleCircleIntersection'];
  assert.equal(all.filter(id=>id==='construct:intersection').length,1);
  for(const id of intersectionIds)assert.ok(!all.includes(id),id+' is an internal recipe, not a visible tool.');
  const construction=categories.find(m=>m[1]==='constructies')[2],conics=construction.match(/data-tool-subgroup="kegelsneden"[^>]*>(.*?)<\/div><\/div>/s)[1],points=construction.match(/data-tool-subgroup="puntconstructies"[^>]*>(.*?)<\/div><\/div>/s)[1];
