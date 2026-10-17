@@ -348,9 +348,13 @@
       }
       return {[key]:value};
     }
-    changeDocument(fn) {
-      this.cancel(); this.flushEdits(); const before = this.history.capture();
-      try { fn(); } catch(error) {this.status(error.message);} finally { this.history.record(before); this.invalidate(); }
+    changeDocument(fn, { cancelInteraction = true } = {}) {
+      // Placement callers retain their input until the command has committed.
+      // Other callers keep the existing cancel-before-edit behavior.
+      if(cancelInteraction)this.cancel(); this.flushEdits(); const before = this.history.capture();
+      try { return {ok:true,result:fn(),error:null}; }
+      catch(error) {this.status(error.message);return {ok:false,result:null,error};}
+      finally { this.history.record(before); this.invalidate(); }
     }
     travelHistory(redo = false) {
       this.closeDialogs(true); this.cancel(); this.flushEdits();
@@ -682,8 +686,9 @@
       if(!allowed){state.sources=state.sources.slice(0,1);this.status('Een bron is niet beschikbaar voor deze constructie.');this.renderInstructions();this.invalidate();return;}
       if(!result.candidates.length){state.sources=state.sources.slice(0,1);this.engine.renderer.preview=null;this.status('Geen uniek snijpunt binnen deze objecten ('+result.reasonCode+'). Kies een andere tweede bron.');this.renderInstructions();this.invalidate();return;}
       let created=[];
-      this.changeDocument(()=>{created=this.execute('construction.create',{toolId:recipeTool,sources:result.sources}).result;this.selectedIds=created.map(object=>object.id);});
-      if(created.length){this.setTool('select');this.intersectionCompleted=true;this.status(created.length+' snijpunt(en) toegevoegd.');}
+      const outcome=this.changeDocument(()=>{created=this.execute('construction.create',{toolId:recipeTool,sources:result.sources}).result;this.selectedIds=created.map(object=>object.id);return created;},{cancelInteraction:false});
+      if(outcome.ok&&created.length){this.interaction=null;this.release(state);this.engine.renderer.preview=null;this.setTool('select');this.intersectionCompleted=true;this.status(created.length+' snijpunt(en) toegevoegd.');}
+      else if(!outcome.ok){state.sources=state.sources.slice(0,1);this.release(state);state.pointerId=null;}
       this.invalidate();
     }
     intersectionClick(point) {
@@ -709,9 +714,9 @@
       if(kind==='ellipseByFociAndPoint'&&state.sources.length===2){
         const preview=this.ellipsePlacementPreview(point);if(!preview?.valid){this.status('Deze positie geeft geen geldige ellips ('+(preview?.reasonCode||'ONGELDIGE_GEOMETRIE')+'). Kies Q buiten het brandpuntsegment.');this.invalidate();return;}
         const payload={toolId:'construct:ellipseByFociAndPoint',sources:preview.source?[...state.sources.map(ref=>({...ref})),{...preview.source}]:state.sources.map(ref=>({...ref})),...(preview.source?{}:{controlPoint:{...preview.point}})};
-        this.interaction=null;this.release(state);this.engine.renderer.preview=null;
-        try{this.changeDocument(()=>{const created=this.execute('construction.create',payload).result,ellipse=created.find(o=>o.type==='ellipse');this.selectedIds=ellipse?[ellipse.id]:created.map(o=>o.id);});this.tool='select';this.status(preview.source?'Ellips gekoppeld aan bestaand besturingspunt Q.':'Besturingspunt Q en ellips toegevoegd.');}
-        catch(error){this.status(error.message);}
+        const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',payload).result,ellipse=created.find(o=>o.type==='ellipse');this.selectedIds=ellipse?[ellipse.id]:created.map(o=>o.id);return created;},{cancelInteraction:false});
+        this.release(state);state.pointerId=null;
+        if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status(preview.source?'Ellips gekoppeld aan bestaand besturingspunt Q.':'Besturingspunt Q en ellips toegevoegd.');}
         this.invalidate();return;
       }
       let sources=this.constructionSourcesAt(point,event,state.sources);
@@ -737,9 +742,10 @@
       if(kind==='pointOnEllipse'&&state.sources.length===1){state.pathPlacement=true;this.interaction=state;this.status(this.constructionHint(kind,1));this.invalidate();return;}
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       if(kind==='angleDirections')state.sources=MI.ConstructionService.selectAngleArms(state.sources,state.anglePicks,new Map(this.engine.model.objects.map(o=>[o.id,o])));
-      this.interaction=null;this.release(state);
-      try {let created=false;this.changeDocument(()=>{this.selectedIds=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{}),...(state.extent?{extent:state.extent}:{})}).result.map(o=>o.id);created=true;});if(created){this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}else this.interaction={...state,sources:previousSources,pointerId:null};}
-      catch(error){this.status(error.message);}
+      const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{}),...(state.extent?{extent:state.extent}:{})}).result;this.selectedIds=created.map(o=>o.id);return created;},{cancelInteraction:false});
+      this.release(state);state.pointerId=null;
+      if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}
+      else {state.sources=previousSources;if(kind==='angleDirections')state.anglePicks.pop();}
       this.invalidate();
     }
     ellipsePlacementPreview(point){
@@ -767,10 +773,12 @@
     }
     commitParallelogramPlacement(){
       const state=this.interaction;if(!state?.parallelogramPlacement)return false;const check=this.updateParallelogramParameterPreview();if(!check?.valid){this.status('De zijde en hoek leveren geen geldig parallellogram op.');this.invalidate();return false;}
-      const payload={toolId:'construct:parallelogramBySideAngle',sources:state.sources.map(ref=>({objectId:ref.objectId})),sideLength:state.matchAB?state.previewSideLength:state.sideLength,signedAngle:state.signedAngle,...(state.matchAB?{sideLengthMode:'matchAB'}:{})};this.interaction=null;this.release(state);this.engine.renderer.preview=null;
-      try{this.changeDocument(()=>{const created=this.execute('construction.create',payload).result;this.selectedIds=created.map(o=>o.id);this.nameGenericParallelogramSources(state.sources);});this.tool='select';this.status('Gekoppeld parallellogram toegevoegd.');}
-      catch(error){this.interaction={...state,parallelogramPlacement:true,pointerId:null};this.status(error.message);}
-      this.invalidate();return !this.interaction;
+      const payload={toolId:'construct:parallelogramBySideAngle',sources:state.sources.map(ref=>({objectId:ref.objectId})),sideLength:state.matchAB?state.previewSideLength:state.sideLength,signedAngle:state.signedAngle,...(state.matchAB?{sideLengthMode:'matchAB'}:{})};
+      let namingError=null;
+      const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',payload).result;this.selectedIds=created.map(o=>o.id);try{this.nameGenericParallelogramSources(state.sources);}catch(error){namingError=error;}return created;},{cancelInteraction:false});
+      this.release(state);state.pointerId=null;
+      if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status(namingError?'Parallellogram toegevoegd; bronpunten konden niet worden hernoemd.':'Gekoppeld parallellogram toegevoegd.');}
+      this.invalidate();return outcome.ok;
     }
     nameGenericParallelogramSources(sources){const names=['A','B'],ids=sources.map(ref=>ref.objectId),objects=ids.map(id=>this.engine.get(id));if(objects.some((o,i)=>!o||o.type!=='point'||o.name!==o.id&&!/^(Punt|Point)\s+\d+$/i.test(o.name||'')))return;for(let i=0;i<2;i++)if(this.engine.model.objects.some(o=>!ids.includes(o.id)&&o.name===names[i]))return;const payloads=objects.map((o,i)=>({ids:[o.id],fields:[{path:'name',value:names[i]}]}));if(payloads.some(p=>!this.allowed('object.setProperties',p)))return;for(const payload of payloads)this.execute('object.setProperties',payload);}
     queueConstructionPlacementPreview(){
@@ -823,11 +831,12 @@
       // are already complete, so use the usual document command directly.
       if(plan.mode==='complete'&&!universal){
         try{
-          this.changeDocument(()=>{
+          const outcome=this.changeDocument(()=>{
             this.selectedIds=this.execute('construction.create',{
               toolId,sources:plan.sources.map(ref=>({...ref}))
             }).result.map(object=>object.id);
           });
+          if(!outcome.ok)return false;
           this.status('Gekoppelde constructie toegevoegd.');
           this.invalidate();
           return true;
@@ -893,13 +902,13 @@
       const sourceCaps=this.runtime?this.capabilities(source.id):null;
       if(!this.toolAllowed(recipeTool)||!this.constructionSelectable(source,recipeTool)||(this.runtime&&(!sourceCaps.read||!sourceCaps.display||!sourceCaps.sourceTools.includes(recipeTool)))){this.cancel();this.status('De geselecteerde bron is niet langer beschikbaar.');return;}
       try{
-        this.changeDocument(()=>{
+        const outcome=this.changeDocument(()=>{
           this.selectedIds=this.execute('construction.create',{
             toolId:recipeTool,sources:state.sources,parameter
           }).result.map(o=>o.id);
-        });
-        this.interaction=null;this.tool='select';this.engine.renderer.preview=null;
-        this.status('Afhankelijk punt toegevoegd.');
+        },{cancelInteraction:false});
+        this.release(state);state.pointerId=null;
+        if(outcome.ok){this.interaction=null;this.tool='select';this.engine.renderer.preview=null;this.feedback=null;this.status('Afhankelijk punt toegevoegd.');}
       }catch(error){this.status(error.message);}
       this.invalidate();
     }
