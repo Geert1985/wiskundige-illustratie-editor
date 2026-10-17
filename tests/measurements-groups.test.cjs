@@ -34,5 +34,5 @@ test('label-only measurements preserve geometry and labels without construction 
  }
 });
 test('triangle preview shows current side length and angle without persisting annotations',()=>{
- const {MI}=runtime();const e=new MI.Engine({objects:[]});e.renderer.preview={type:'polygon',showMeasurements:true,vertices:[{x:1,y:0},{x:0,y:0},{x:0,y:1}]};const svg=e.renderSVG();assert.match(svg,/data-preview-length/);assert.match(svg,/data-preview-angle[^>]*>90°/);assert.equal(e.toJSON().objects.length,0);
+ const {MI}=runtime();const e=new MI.Engine({objects:[]});e.renderer.preview={type:'polygon',showMeasurements:true,vertices:[{x:1,y:0},{x:0,y:0},{x:0,y:1}]};const svg=e.renderer.render(e.model,{includePreview:true});assert.match(svg,/data-preview-length/);assert.match(svg,/data-preview-angle[^>]*>90°/);assert.equal(e.toJSON().objects.length,0);assert.doesNotMatch(e.renderSVG(),/data-preview-length/);
 });

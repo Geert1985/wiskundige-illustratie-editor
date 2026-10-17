@@ -3,6 +3,7 @@
   "use strict";
   const MI = global.FZI.MathIllustration;
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
+  const INTERSECTION_KINDS = Object.freeze(['lineIntersection','lineCircleIntersection','circleCircleIntersection']);
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
     constructor({ engine, services, document, window, storage }) {
@@ -84,7 +85,7 @@
     execute(operation,payload={}) { return this.commands.execute(this.command(operation,payload)); }
     allowed(operation,payload={}) { return this.commands.canExecute(this.command(operation,payload)).allowed; }
     capabilities(id) { return this.commands.getObjectCapabilities(id); }
-    toolAllowed(tool) { return !this.runtime || tool==='select' || this.commands.getAllowedTools().some(t=>t.enabled && t.toolId===(tool.startsWith('construct:')?tool:'create:'+tool)); }
+    toolAllowed(tool) { if(!this.runtime||tool==='select')return true;const allowed=this.commands.getAllowedTools().filter(item=>item.enabled).map(item=>item.toolId);if(tool==='construct:intersection')return INTERSECTION_KINDS.some(kind=>allowed.includes('construct:'+kind));return allowed.includes(tool.startsWith('construct:')?tool:'create:'+tool); }
     createObject(object,tool=this.tool) { return this.execute('object.create',{toolId:'create:'+tool,object}).result; }
     restrictControls() {
       if(!this.runtime){
@@ -250,7 +251,7 @@
       if(this.navigationMode==='pan')return null;
       if(this.tool.startsWith('construct:') && (!this.interaction || this.interaction.mode==='construction')) {
         const point=this.pointer(event);if(!point)return null;
-        const previous=this.interaction?.sources||[],sources=this.constructionSourcesAt(point,event,previous),source=sources?.[previous.length];
+        const previous=this.interaction?.sources||[],sources=this.tool==='construct:intersection'?null:this.constructionSourcesAt(point,event,previous),source=this.tool==='construct:intersection'?this.intersectionSourceOptions(point,{sources:previous})[0]:sources?.[previous.length];
         return source?{object:MI.AxisReferences.isAxis(source)?{...MI.AxisReferences.line(source),id:null}:this.engine.get(source.objectId),kind:'construction',source}:null;
       }
       const hit=this.tool==='select' && this.navigationMode!=='pan' && !this.interaction?this.hitAt(event):null;
@@ -427,7 +428,7 @@
         if(slider?.type==='range'){const value=slider.parentElement.querySelector('output');if(value)value.textContent=slider.value+(slider.dataset.style==='opacity'?'%':' px');}
       });
       for(const node of [n.toolInstructions,n.fullscreenHint])this.on(node,"change",e=>{if(e.target.matches("[data-region-create-extent]")){this.regionExtent=e.target.value;this.renderInstructions();}});
-      for(const node of [n.toolInstructions,n.fullscreenHint]){this.on(node,'input',e=>{const input=e.target.closest('[data-parallelogram-param]'),state=this.interaction;if(!input||!state?.parallelogramPlacement)return;const value=input.value.trim(),unit=state.angleUnit||'deg';state.numericPinned=true;state.placementQ=null;state.snappedAngle=null;state.equalSidesSnapped=false;if(state.matchABChoice==null)state.matchAB=false;if(input.dataset.parallelogramParam==='sideLength'){state.sideInput=value;state.sideLength=value===''?NaN:Number(value)/(state.lengthScale||1);}else{state.angleInput=value;const numeric=value===''?NaN:Number(value);state.signedAngle=unit==='rad'?numeric:numeric*Math.PI/180;}this.updateParallelogramParameterPreview();this.queueConstructionPlacementPreview();});this.on(node,'change',e=>{const toggle=e.target.closest('[data-parallelogram-match-ab]'),state=this.interaction;if(!toggle||!state?.parallelogramPlacement)return;const wasMatched=state.matchAB;state.matchABChoice=!!toggle.checked;state.matchAB=state.matchABChoice;state.equalSidesUserChoice=true;if(wasMatched&&!state.matchAB){const a=this.engine.get(state.sources[0].objectId),b=this.engine.get(state.sources[1].objectId);state.sideLength=a&&b?Math.hypot(b.x-a.x,b.y-a.y):state.sideLength;state.sideInput=Number.isFinite(state.sideLength)?String(Number((state.sideLength*(state.lengthScale||1)).toPrecision(8))):'';}this.updateParallelogramParameterPreview();this.queueConstructionPlacementPreview();});this.on(node,'click',e=>{if(e.target.closest('[data-parallelogram-confirm]')){e.preventDefault();this.commitParallelogramPlacement();}});}
+      for(const node of [n.toolInstructions,n.fullscreenHint]){this.on(node,'input',e=>{const input=e.target.closest('[data-parallelogram-param]'),state=this.interaction;if(!input||!state?.parallelogramPlacement)return;const value=input.value.trim(),unit=state.angleUnit||'deg';state.numericPinned=true;state.placementQ=null;state.snappedAngle=null;state.equalSidesSnapped=false;if(state.matchABChoice==null)state.matchAB=false;if(input.dataset.parallelogramParam==='sideLength'){state.sideInput=value;state.sideLength=value===''?NaN:Number(value)/(state.lengthScale||1);}else{state.angleInput=value;const numeric=value===''?NaN:Number(value);state.signedAngle=unit==='rad'?numeric:numeric*Math.PI/180;}this.updateParallelogramParameterPreview();this.queueConstructionPlacementPreview();});this.on(node,'change',e=>{const toggle=e.target.closest('[data-parallelogram-match-ab]'),state=this.interaction;if(!toggle||!state?.parallelogramPlacement)return;const wasMatched=state.matchAB;state.matchABChoice=!!toggle.checked;state.matchAB=state.matchABChoice;state.equalSidesUserChoice=true;if(wasMatched&&!state.matchAB){const a=this.engine.get(state.sources[0].objectId),b=this.engine.get(state.sources[1].objectId);state.sideLength=a&&b?Math.hypot(b.x-a.x,b.y-a.y):state.sideLength;state.sideInput=Number.isFinite(state.sideLength)?String(Number((state.sideLength*(state.lengthScale||1)).toPrecision(8))):'';}this.updateParallelogramParameterPreview();this.queueConstructionPlacementPreview();});this.on(node,'click',e=>{const source=e.target.closest('[data-intersection-source]');if(source){e.preventDefault();const state=this.interaction,index=Number(source.dataset.intersectionSource);if(state?.pendingSourceOptions?.[index])this.acceptIntersectionSource(state.pendingSourceOptions[index]);return;}if(e.target.closest('[data-parallelogram-confirm]')){e.preventDefault();this.commitParallelogramPlacement();}});}
       this.on(n.selectionPanel, "change", e => {
         const parallelogramField=e.target.closest('[data-parallelogram-property]');if(parallelogramField&&this.selectedId){try{const object=this.engine.get(this.selectedId),key=parallelogramField.dataset.parallelogramProperty,scale=this.engine.model.meta.measurement?.scale||1,angleUnit=this.engine.model.meta.angleMeasurement?.unit==='rad'?'rad':'deg',value=parallelogramField.valueAsNumber;if(!object||object.construction?.kind!=='parallelogramBySideAngle')throw Error('Selecteer een gekoppeld parallellogram.');const payload={id:object.id,...(key==='sideLength'?{sideLength:value/scale}:key==='signedAngle'&&Number.isFinite(value)?{signedAngle:angleUnit==='rad'?value:value*Math.PI/180}:key==='sideLengthMode'?{sideLengthMode:parallelogramField.checked?'matchAB':'fixed'}:{})};if(key==='sideLength'&&(!Number.isFinite(value)||object.construction.sideLengthMode==='matchAB'))throw Error('De zijde AD is in deze modus afgeleid en niet rechtstreeks bewerkbaar.');if(!('sideLength'in payload||'signedAngle'in payload||'sideLengthMode'in payload))throw Error('Ongeldige parallellogrameigenschap.');this.changeDocument(()=>this.execute('construction.setParallelogramParameters',payload));}catch(error){this.status(error.message);this.invalidate();}return;}
         const ellipseSum=e.target.closest('[data-ellipse-sum]');if(ellipseSum&&this.selectedId){const object=this.engine.get(this.selectedId),scale=this.engine.model.meta.measurement?.scale||1;try{if(!object||object.type!=='ellipse'||object.construction?.kind!=='ellipseByFociAndSum')throw Error('Alleen de afstandsom van een gekoppelde ellips kan hier worden gewijzigd.');this.changeDocument(()=>this.execute('construction.setSumDistance',{id:object.id,sumDistance:ellipseSum.valueAsNumber/scale}));}catch(error){this.status(error.message);this.invalidate();}return;}
@@ -591,13 +592,13 @@
     closeDialogs(cancel = false) { this.closeText(); if (this.colorId) this.closeColor(cancel); }
     constructionRole(kind,index) { return MI.ConstructionService.contract(kind).sourceRoles[index]; }
     constructionHint(kind,index=0) { return MI.ToolInstructions.constructionHint(kind,index); }
-     constructionPick(point,role,sourceIndex=0) {
-      const kind=this.tool.slice(10),transform=this.transform(),screen=transform.mathToScreen(point),candidates=[];
+     constructionPick(point,role,sourceIndex=0,kindOverride=null,all=false) {
+      const kind=kindOverride||this.tool.slice(10),toolId='construct:'+kind,transform=this.transform(),screen=transform.mathToScreen(point),candidates=[];
       const distance=p=>{const q=transform.mathToScreen(p);return Math.hypot(q.x-screen.x,q.y-screen.y);};
       const segment=(o,s)=>{const l=MI.ConstructionService.line(o,s),a=transform.mathToScreen({x:l.x1,y:l.y1}),b=transform.mathToScreen({x:l.x2,y:l.y2}),dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy;if(!length)return distance({x:l.x1,y:l.y1});const domain=o.type==='polygon'?[0,1]:MI.LinearGeometry.domain(o),t=Math.max(domain[0],Math.min(domain[1],((screen.x-a.x)*dx+(screen.y-a.y)*dy)/length));return Math.hypot(screen.x-a.x-t*dx,screen.y-a.y-t*dy);};
       for(const o of this.engine.model.objects) {
         if(kind==='triangleFromPoints'&&this.interaction?.sources?.some(ref=>ref.objectId===o.id))continue;
-        if(!this.engine.isDisplayed(o.id)||o.visible===false||(o.construction && o.constructionValid===false)||(this.runtime && !this.capabilities(o.id).sourceTools.includes(this.tool)))continue;
+        if(!this.engine.isDisplayed(o.id)||o.visible===false||(o.construction && o.constructionValid===false)||(this.runtime && (!this.capabilities(o.id).read||!this.capabilities(o.id).display||!this.capabilities(o.id).sourceTools.includes(toolId))))continue;
         const add=(s,d)=>{if(d<=12)candidates.push({source:{objectId:o.id,...s},distance:d,priority:o.type==='point'?0:1});};
         const references=MI.ConstructionService.referencesForRole(o,role,kind).filter(ref=>kind!=='lineBetweenPoints'||o.type==='point'&&!ref.part);
         for(const ref of references) {
@@ -609,10 +610,10 @@
           else {const radial=Math.hypot(point.x-o.cx,point.y-o.cy),edge=radial?{x:o.cx+(point.x-o.cx)*o.r/radial,y:o.cy+(point.y-o.cy)*o.r/radial}:{x:o.cx+o.r,y:o.cy};add(ref,role==='figure'&&radial<=o.r?0:distance(edge));}
         }
       }
-       if(role==='line'&&MI.AxisReferences.supports(kind,sourceIndex)){const r=this.engine.renderer,zero=transform.mathToScreen({x:0,y:0});for(const ref of MI.AxisReferences.references){if(!r.showAxes||!(ref.axis==='x'?r.showXAxis:r.showYAxis)||this.runtime&&!this.runtime.getAxisSourceTools(ref.axis).includes(this.tool))continue;const d=ref.axis==='x'?Math.abs(screen.y-zero.y):Math.abs(screen.x-zero.x);if(d<=12)candidates.push({source:ref,distance:d,priority:2});}}
-      candidates.sort((a,b)=>(a.priority===2||b.priority===2?a.priority-b.priority:0)||a.distance-b.distance || a.priority-b.priority || String(a.source.objectId||a.source.axis).localeCompare(String(b.source.objectId||b.source.axis)));return candidates[0]&&candidates[0].source;
+       if(role==='line'&&MI.AxisReferences.supports(kind,sourceIndex)){const r=this.engine.renderer,zero=transform.mathToScreen({x:0,y:0});for(const ref of MI.AxisReferences.references){if(!r.showAxes||!(ref.axis==='x'?r.showXAxis:r.showYAxis)||this.runtime&&!this.runtime.getAxisSourceTools(ref.axis).includes(toolId))continue;const d=ref.axis==='x'?Math.abs(screen.y-zero.y):Math.abs(screen.x-zero.x);if(d<=12)candidates.push({source:ref,distance:d,priority:2});}}
+      candidates.sort((a,b)=>(a.priority===2||b.priority===2?a.priority-b.priority:0)||a.distance-b.distance || a.priority-b.priority || String(a.source.objectId||a.source.axis).localeCompare(String(b.source.objectId||b.source.axis)));return all?candidates.map(candidate=>candidate.source):candidates[0]&&candidates[0].source;
     }
-    constructionSelectable(o) { return !!o && this.engine.isDisplayed(o.id) && o.visible!==false && !(o.construction && o.constructionValid===false) && (!this.runtime || this.capabilities(o.id).sourceTools.includes(this.tool)); }
+    constructionSelectable(o,tool=this.tool) { return !!o && this.engine.isDisplayed(o.id) && o.visible!==false && !(o.construction && o.constructionValid===false) && (!this.runtime || (tool==='construct:intersection'?INTERSECTION_KINDS.some(kind=>this.capabilities(o.id).sourceTools.includes('construct:'+kind)):this.capabilities(o.id).sourceTools.includes(tool))); }
     constructionSourcesAt(point,event,sources=[]) {
       const kind=this.tool.slice(10),state={sources:sources.slice()};
       const target=event.target&&event.target.closest&&event.target.closest('[data-object-id]'),hitObject=target&&this.engine.get(target.getAttribute('data-object-id')),painted=this.constructionSelectable(hitObject)?hitObject:null;
@@ -627,8 +628,40 @@
       else return null;
       return state.sources;
     }
+    intersectionSourceOptions(point, state) {
+      const specs=state.sources.length===0
+        ?[['line','lineIntersection',0],['line','lineCircleIntersection',0],['circle','lineCircleIntersection',1],['circle','circleCircleIntersection',0]]
+        :[['line','lineIntersection',1],['line','lineCircleIntersection',0],['circle','lineCircleIntersection',1],['circle','circleCircleIntersection',1]];
+      const options=[];
+      for(const [role,kind,index] of specs){if(!this.toolAllowed('construct:'+kind))continue;for(const source of this.constructionPick(point,role,index,kind,true)){const key=JSON.stringify(source);if(!options.some(item=>JSON.stringify(item)===key))options.push(source);}}
+      return options;
+    }
+    acceptIntersectionSource(source) {
+      const state=this.interaction;if(!state||this.tool!=='construct:intersection')return;
+      state.pendingSourceOptions=null;state.sources=[...(state.sources||[]),{...source}];
+      if(state.sources.length<2){this.engine.renderer.preview=null;this.status('Kies het tweede object.');this.renderInstructions();this.invalidate();return;}
+      const objects=new Map(this.engine.model.all().map(object=>[object.id,object])),result=MI.IntersectionDispatcher.evaluate(state.sources,objects);
+      if(!result.supported){state.sources=state.sources.slice(0,1);this.status(result.reasonCode==='UNSUPPORTED_PAIR'?'Deze combinatie wordt niet ondersteund. Kies een lijn, veelhoekzijde of cirkel.':'Deze broncombinatie is ongeldig. Kies een ander object.');this.renderInstructions();this.invalidate();return;}
+      if(!this.toolAllowed('construct:'+result.kind)){state.sources=[];this.status('Deze combinatie is niet toegestaan.');this.renderInstructions();this.invalidate();return;}
+      const recipeTool='construct:'+result.kind,allowed=state.sources.every(ref=>{if(MI.AxisReferences.isAxis(ref))return this.runtime?this.runtime.getAxisSourceTools(ref.axis).includes(recipeTool):true;const caps=this.capabilities(ref.objectId),object=this.engine.get(ref.objectId);return !!object&&this.engine.isDisplayed(ref.objectId)&&object.visible!==false&&(!object.locked||!this.runtime)&&(!this.runtime||(caps.read&&caps.display&&caps.sourceTools.includes(recipeTool)));});
+      if(!allowed){state.sources=state.sources.slice(0,1);this.status('Een bron is niet beschikbaar voor deze constructie.');this.renderInstructions();this.invalidate();return;}
+      if(!result.candidates.length){state.sources=state.sources.slice(0,1);this.engine.renderer.preview=null;this.status('Geen uniek snijpunt binnen deze objecten ('+result.reasonCode+'). Kies een andere tweede bron.');this.renderInstructions();this.invalidate();return;}
+      let created=[];
+      this.changeDocument(()=>{created=this.execute('construction.create',{toolId:recipeTool,sources:result.sources}).result;this.selectedIds=created.map(object=>object.id);});
+      if(created.length){this.intersectionCompleted=true;this.status(created.length+' snijpunt(en) toegevoegd.');}
+      this.invalidate();
+    }
+    intersectionClick(point) {
+      this.intersectionCompleted=false;
+      const state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
+      const options=this.intersectionSourceOptions(point,state);
+      if(!options.length){this.status('Geen geschikte lijn, veelhoekzijde of cirkel geraakt.');return;}
+      if(options.length>1){state.pendingSourceOptions=options;this.interaction=state;this.status('Kies welke bron je bedoelt.');this.renderInstructions();this.invalidate();return;}
+      this.interaction=state;this.acceptIntersectionSource(options[0]);
+    }
     constructionClick(point,event) {
       const kind=this.tool.slice(10),state=this.interaction||{mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};
+      if(kind==='intersection'){this.intersectionClick(point,event);return;}
       if(state.radialPlacement||state.pathPlacement){this.radialPathPlacement(point,event,state);return;}
       if(kind==='parallelogramBySideAngle'&&state.parallelogramPlacement){const result=state.numericPinned?this.updateParallelogramParameterPreview():this.parallelogramPlacementPreview(point,event);if(result?.valid)this.commitParallelogramPlacement();else{this.status('Kies een geldige plaatsingspositie buiten de lijn AB ('+(result?.reasonCode||'ongeldig')+').');this.invalidate();}return;}
       if(kind==='ellipseByFociAndPoint'&&state.sources.length===2){
@@ -714,11 +747,20 @@
       if(this.ellipsePreviewFrame!=null||!this.window.requestAnimationFrame)return;
       this.ellipsePreviewFrame=this.window.requestAnimationFrame(()=>{this.ellipsePreviewFrame=null;if(this.initialized&&this.interaction?.ellipsePlacement)this.renderEllipsePlacementPreview();});
     }
-    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.regionExtent=undefined;this.tool = tool;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
+    setTool(tool) { if(!this.toolAllowed(tool)){this.status("Deze tool is niet toegestaan.");return;} this.closeDialogs(true); this.cancel(); this.document.body?.classList.remove("properties-open","tools-open");this.nodes.propertiesToggle?.setAttribute?.("aria-expanded","false");this.nodes.toolsToggle?.setAttribute?.("aria-expanded","false");this.navigationMode="select";this.regionExtent=undefined;this.tool = tool;this.intersectionCompleted=false;this.splitMenuOpen=null;const group=this.toolCatalog.getSplitForTool(tool);if(group){this.splitToolSelection.set(group.id,tool);try{this.storage?.setItem('fzi-math-illustration-'+group.storageKey+'-tool',tool);}catch(_){}} this.status(tool.startsWith('construct:')?this.constructionHint(tool.slice(10)):this.toolHint(tool)); this.invalidate(); }
     // UI-RADIAL-9: generic adapter for any document object accepted by a
     // registered construction contract. The service owns source matching;
     // this controller only stages the existing create/interaction workflow.
+    intersectionContextPlans(source,sourceRef=null){
+      if(!source||!this.constructionSelectable(source))return [];
+      return INTERSECTION_KINDS.flatMap(kind=>this.toolAllowed('construct:'+kind)&&(!this.runtime||this.capabilities(source.id).sourceTools.includes('construct:'+kind))?MI.ConstructionService.contextualPlans(source,kind,sourceRef).map(plan=>({...plan,key:kind+':'+plan.key})):[]);
+    }
     startContextConstruction(toolId,objectId,planKey,sourceRef=null){
+      if(toolId==='construct:intersection'){
+        const source=this.engine.get(objectId),plan=this.intersectionContextPlans(source,sourceRef).find(item=>item.key===planKey);
+        if(!plan||this.selectedIds.length!==1||this.selectedIds[0]!==objectId||!this.canvasSelectable(source))return false;
+        this.setTool(toolId);this.interaction={mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};this.acceptIntersectionSource(plan.sources[0]);return true;
+      }
       const kind=typeof toolId==='string'&&toolId.startsWith('construct:')?
         toolId.slice(10):null;
       const source=kind&&this.engine.get(objectId);

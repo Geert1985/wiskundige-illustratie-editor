@@ -168,13 +168,13 @@
       return "";
     }
 
-    render(model,{editorCanvas=false,clipBounds=this.bounds,embedFonts=false}={}) {
+    render(model,{editorCanvas=false,clipBounds=this.bounds,embedFonts=false,includePreview=true}={}) {
       this.projectionLabels=new Set();this.angleMeasurement=model.meta?.angleMeasurement;this.measurement=model.meta?.measurement;this.measurementSources=new Map(model.all().map(o=>[o.id,o]));
       this.syncAspectRatio();
       const b = this.bounds, body = MI.DocumentLayers.ordered(model.all(),model.layers||[]).filter(o=>MI.DocumentLayers.visible(model.layers||[],o.id)).map((object) => this.renderObject(object,clipBounds||this.bounds)).join("\n");
       const background = this.background === "transparent" ? "" : '<rect x="0" y="0" width="' + esc(this.width) + '" height="' + esc(this.height) + '" fill="' + esc(this.background) + '"/>';
       const fontStyle=embedFonts?MI.TextFonts?.svgStyle?.()||'':'';
-      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">'+fontStyle,'<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(clipBounds||this.bounds),this.renderAxes(editorCanvas),body,this.renderPreview(clipBounds||this.bounds),'</svg>'].join("\n").replace(/<[^>]*>/g,tag=>tag.replace(/("[^"]*"|'[^']*')|(\sdata-[\w-]+)(?=\s|\/?>)(?!\s*=)/g,(match,quoted,attribute)=>quoted||attribute+'=""'));
+      return ['<svg xmlns="' + SVG_NS + '" viewBox="0 0 ' + esc(this.width) + ' ' + esc(this.height) + '" width="' + esc(this.width) + '" height="' + esc(this.height) + '" preserveAspectRatio="xMidYMid meet" role="img">'+fontStyle,'<title>' + esc(model.meta && model.meta.title ? model.meta.title : "Wiskundige illustratie") + '</title>','<desc>' + esc(model.meta && model.meta.description ? model.meta.description : "") + '</desc>','<!-- mathematical bounds: ' + [b.xMin,b.yMin,b.xMax,b.yMax].map(number).join(", ") + ' -->',background,this.renderGrid(clipBounds||this.bounds),this.renderAxes(editorCanvas),body,includePreview?this.renderPreview(clipBounds||this.bounds):'', '</svg>'].join("\n").replace(/<[^>]*>/g,tag=>tag.replace(/("[^"]*"|'[^']*')|(\sdata-[\w-]+)(?=\s|\/?>)(?!\s*=)/g,(match,quoted,attribute)=>quoted||attribute+'=""'));
     }
 
     renderLabel(object, label, defaultDx, defaultDy, line) {
