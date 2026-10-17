@@ -16,5 +16,9 @@ module.exports=async page=>{
  assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.history.entries.length),1);
  await page.locator('#undoBtn').click();assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.length),2);
  await page.locator('#redoBtn').click();assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.length),4);
+ for(const count of [3,4,5])for(const reverse of [false,true]){
+  const result=await page.evaluate(({count,reverse})=>{const a=FZI.MathIllustration.editor,vertices=[{x:-3,y:2},{x:-3,y:.4},{x:3,y:.4},{x:3,y:2},{x:0,y:3}].slice(0,count),edge={objectId:'P',part:'edge',index:1};a.loadDocument({objects:[{id:'P',type:'polygon',vertices},{id:'C',type:'circle',cx:0,cy:0,r:2}]});const first=reverse?'C':'P';a.selectObject(first);const ctx={type:'object',id:first,name:first,objects:[a.engine.get(first)],...(reverse?{}:{edgeRef:edge})},item=a.radialProperties.contextConstructions(ctx).find(item=>item.entry.id==='construct:intersection');if(!item)return {offered:false};const started=a.startContextConstruction(item.entry.id,first,item.plan.key,reverse?null:edge),prefill=a.interaction.sources[0];a.acceptIntersectionSource(reverse?edge:{objectId:'C'});return {offered:true,started,prefill,recipes:a.engine.model.objects.filter(o=>o.construction).map(o=>o.construction)};},{count,reverse});
+  assert.equal(result.offered,true);assert.equal(result.started,true);assert.deepEqual(result.prefill,reverse?{objectId:'C'}:{objectId:'P',part:'edge',index:1});assert.equal(result.recipes.length,2);for(const recipe of result.recipes)assert.deepEqual(recipe.sources,[{objectId:'P',part:'edge',index:1},{objectId:'C'}]);
+ }
  return {immediateAllBranches:'passed',noPreviewOrConfirm:'passed',cancelBeforeSecondSource:'passed',atomicUndoRedo:'passed'};
 };

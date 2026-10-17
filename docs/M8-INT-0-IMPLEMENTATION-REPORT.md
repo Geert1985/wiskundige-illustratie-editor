@@ -17,3 +17,9 @@ Legacycommando’s zonder selectedBranches filteren ongeldige takken; raakpunten
 - Volledige Edge-suite: geslaagd, pageErrors: []. Eerdere runs vonden een interferentie van het scrollpaneel met parallellogramplaatsing; opgelost door muisopvang te beperken tot de bronkeuzelijst. De gerichte parallellogramregressie slaagt eveneens.
 
 Handmatige eindacceptatie blijft open. Geen merge naar main of uitbreiding naar M8-INT.1/.2/.3/M-PATH.
+
+## Aanvullende correctie: contextuele veelhoekzijde
+
+ConstructionService.contextualPlans bood voor een specifieke polygonrand geen lineIntersection/lineCircleIntersection-plan aan. Deze bestaande lijnrolrecepten gebruiken nu hetzelfde rand-prefillpad als parallel/perpendicular, met exact objectId, part edge en index. De bestaande contextcontroller en autorisatie blijven eigenaar van starten en uitvoeren.
+
+Verificatie: volledige Node-suite 713/713 geslaagd; gerichte Edge-intersectiesuite geslaagd met pageErrors: []. Aanvullend zijn driehoek, vierhoek en vijfhoek in beide bronvolgordes gecontroleerd op contextueel aanbod, exacte rand-prefill, twee direct gemaakte punten en ongewijzigde opgeslagen bronreferenties. Geen nieuwe solver of schemawijziging.
