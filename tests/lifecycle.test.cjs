@@ -784,6 +784,43 @@ test('WIE-TOOL-L3.3a point-on-circle remains dynamically dependent on its source
  h.engine.update('C',{cx:11,cy:3,r:4});assert.equal(h.engine.get(point.id).x,11);assert.equal(h.engine.get(point.id).y,7);assert.equal(h.engine.get(point.id).construction.sources[0].objectId,'C');
 });
 
+function ellipseByFociPlacement(existingControlPoint=false){
+ const h=appRuntime();h.engine.add({id:'F2',type:'point',x:100,y:0});if(existingControlPoint)h.engine.add({id:'Q',type:'point',x:50,y:40});h.app.setTool('construct:ellipseByFociAndPoint');h.down({x:0,y:0});h.down({x:100,y:0});return h;
+}
+
+test('WIE-TOOL-L3.3b ellipse completes centrally for new and existing control points',()=>{
+ for(const existingQ of [false,true]){
+  const h=ellipseByFociPlacement(existingQ),complete=h.app.completeToolInteraction.bind(h.app);let completions=0,last=null;h.app.completeToolInteraction=args=>{completions++;last=args;return complete(args);};
+  assert.equal(h.app.tool,'construct:ellipseByFociAndPoint');assert.equal(h.app.interaction.ellipsePlacement,true);assert.equal(h.app.history.entries.length,0);assert.equal(completions,0);
+  const before=plain(h.engine.toJSON()),objectCount=h.engine.model.objects.length;
+  if(!existingQ){h.move({x:50,y:40});assert.equal(h.engine.renderer.preview.type,'ellipse');assert.equal(h.engine.model.objects.length,objectCount);assert.equal(h.app.history.entries.length,0);}
+  h.down({x:50,y:40});
+  const ellipse=h.engine.model.objects.find(o=>o.construction?.kind==='ellipseByFociAndPoint');assert.ok(ellipse);assert.equal(completions,1);assert.equal(last.toolId,'construct:ellipseByFociAndPoint');assert.equal(last.origin,'canvas');assert.equal(last.outcome.ok,true);assert.deepEqual(plain(last.selection),[ellipse.id]);
+  const sourceIds=plain(ellipse.construction.sources.map(ref=>ref.objectId));assert.deepEqual(sourceIds.slice(0,2),['p','F2']);if(existingQ)assert.equal(sourceIds[2],'Q');
+  const controlId=ellipse.construction.sources[2].objectId,control=h.engine.get(controlId);assert.equal(control.type,'point');assert.deepEqual(plain(h.app.selectedIds),[ellipse.id]);assert.equal(h.app.selectedId,ellipse.id);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.feedback,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.app.history.entries.length,1);
+  if(!existingQ){assert.equal(h.engine.model.objects.length,objectCount+2);assert.equal(control.x,50);assert.equal(control.y,40);}
+  else assert.equal(h.engine.model.objects.length,objectCount+1);
+  const saved=plain(h.engine.toJSON());h.app.travelHistory();assert.deepEqual(plain(h.engine.toJSON()),before);h.app.travelHistory(true);assert.deepEqual(plain(h.engine.toJSON()),saved);assert.equal(h.engine.get(ellipse.id).construction.sources[2].objectId,controlId);
+  const original=h.engine.get(ellipse.id),oldCx=original.cx,oldA=original.a;h.engine.update('F2',{x:110});assert.notEqual(h.engine.get(ellipse.id).cx,oldCx);assert.notEqual(h.engine.get(ellipse.id).a,oldA);const changedA=h.engine.get(ellipse.id).a;h.engine.update(controlId,{y:45});assert.notEqual(h.engine.get(ellipse.id).a,changedA);
+ }
+});
+
+test('WIE-TOOL-L3.3b invalid Q stays in placement and Escape cancels without completion',()=>{
+ const h=ellipseByFociPlacement(),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};const before=plain(h.engine.toJSON()),state=h.app.interaction;
+ h.down({x:50,y:0});assert.equal(h.app.tool,'construct:ellipseByFociAndPoint');assert.equal(h.app.interaction,state);assert.equal(h.engine.renderer.preview.type,'ellipse-invalid');assert.equal(h.app.history.entries.length,0);assert.equal(completions,0);assert.deepEqual(plain(h.engine.toJSON()),before);
+ h.move({x:50,y:40});assert.equal(h.engine.renderer.preview.type,'ellipse');h.emit(h.win,'keydown',{key:'Escape'});assert.equal(completions,0);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.app.history.entries.length,0);assert.deepEqual(plain(h.engine.toJSON()),before);
+});
+
+test('WIE-TOOL-L3.3b failure after candidate Q creation is atomic and retry completes once',()=>{
+ const h=ellipseByFociPlacement(),before=plain(h.engine.toJSON()),state=h.app.interaction,complete=h.app.completeToolInteraction.bind(h.app);let completions=0,candidateQAdded=false,constructCalls=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};
+ const add=h.MI.Engine.prototype.add,construct=h.MI.Engine.prototype.construct;
+ h.MI.Engine.prototype.add=function(object){const created=add.call(this,object);if(object.type==='point'&&object.x===50&&object.y===40)candidateQAdded=true;return created;};
+ h.MI.Engine.prototype.construct=function(kind,...args){if(kind==='ellipseByFociAndPoint'){constructCalls++;assert.equal(candidateQAdded,true);assert.ok(this.model.objects.some(object=>object.type==='point'&&object.x===50&&object.y===40));throw Error('L3.3b injected ellipse failure after candidate Q');}return construct.call(this,kind,...args);};
+ try{h.down({x:50,y:40});}finally{h.MI.Engine.prototype.add=add;h.MI.Engine.prototype.construct=construct;}
+ assert.equal(constructCalls,1);assert.equal(completions,0);assert.equal(h.app.tool,'construct:ellipseByFociAndPoint');assert.equal(h.app.interaction,state);assert.deepEqual(plain(state.sources),[{objectId:'p'},{objectId:'F2'}]);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.engine.renderer.preview.type,'ellipse');assert.match(h.app.nodes.status.textContent,/injected ellipse failure/);
+ h.down({x:50,y:40});const ellipse=h.engine.model.objects.find(object=>object.construction?.kind==='ellipseByFociAndPoint');assert.ok(ellipse);assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.model.objects.filter(object=>object.type==='point'&&object.x===50&&object.y===40).length,1);
+});
+
 test('WIE-TOOL-L3.3a point-on-object command failure and invalid projection preserve retry state',()=>{
  const h=appRuntime();const before=plain(h.engine.toJSON());h.app.setTool('construct:pointOnObject');h.down({x:.5,y:1});const state=h.app.interaction,execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;
  h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.app.execute=(operation,...args)=>{if(operation==='construction.create')throw Error('L3.3a denied');return execute(operation,...args);};h.down({x:.6,y:1});
