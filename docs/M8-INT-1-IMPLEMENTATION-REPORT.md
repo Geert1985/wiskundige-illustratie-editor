@@ -40,3 +40,5 @@ Fasecommits:
 Na succesvolle creatie schakelt de universele Snijpunt-tool via de bestaande toolwissel terug naar Selecteren, met behoud van nieuwe puntselectie en succesmelding. De documenttransactie ruimt de broninteractie vooraf op; een geweigerde, mislukte of lege constructie activeert deze succesafhandeling niet. Deze expliciet goedgekeurde afspraak vervangt het eerdere herhaalgedrag. Contractversies: hoofdcontract 1.1.2, lijn–ellips 1.0.1.
 
 Verificatie van de afsluitcorrectie: `npm test` **735/735 geslaagd**; volledige `npm run test:edge` **geslaagd**, exit 0, `pageErrors: []`. Browserregressies controleren één/twee punten, behoud van selectie, geen resterende instructies, nul-oplossingen, een geweigerde transactie, contextuele starts en atomair Undo/Redo. Geometrische lijn–ellipsregressies blijven groen.
+
+Aanvullend `M8_INT_ONLY=1 npm run test:edge`: geslaagd, `pageErrors: []`, inclusief automaticSelectAndSelection, zeroSolutionsStayActive en failedTransactionStaysActive. De contextmenutest selecteert nu het object voordat het aanbod wordt opgevraagd.
