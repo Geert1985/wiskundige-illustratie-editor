@@ -66,6 +66,8 @@
 
 ## Nieuwe gereedschappen en objecttypen — ontwikkelchecklist
 
+Voor ieder nieuw UI-creatiegereedschap is [het WIE-TOOL-NEW-TOOL-CONTRACT-v1.0.0](docs/WIE-TOOL-NEW-TOOL-CONTRACT-v1.0.0.md) de aanvullende checklist voor registratie, lifecyclecompletion, annulering en gerichte tests.
+
 1. Registreer het object en de geometrische/constructiesemantiek in de **bestaande** model-/servicecontracten.
 2. Leg getypeerde bronrollen en `referenceOptions`/`referencesForRole` vast. Controleer ook meervoudige, onderdeel- en latere bronrollen; ga niet uit van “altijd eerste bron”.
 3. Registreer het gereedschap in de gedeelde `ToolCatalog` met stabiele ID en correcte `implemented`/gepland-status; geen afzonderlijke radiale gereedschapslijst.

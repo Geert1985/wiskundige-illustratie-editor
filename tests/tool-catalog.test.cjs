@@ -60,6 +60,9 @@ test('tool catalog rejects duplicate IDs, unknown split choices, and actionable 
 test('tool catalog rejects missing or unknown lifecycle and adapter metadata', () => {
   const api = catalogApi();
   const create = entry => api.create({ categories: [{ id: 'a', label: 'A', entries: [entry] }], splits: [] });
+  const missingId = tool('point');
+  delete missingId.id;
+  assert.throws(() => create(missingId), /vereist stabiele tool- en command-ID/);
   assert.throws(() => create({ ...tool('point'), lifecycle: undefined }), /Unknown lifecycle policy for tool: point/);
   assert.throws(() => create({ ...tool('point'), lifecycle: 'sometimes' }), /Unknown lifecycle policy for tool: point/);
   assert.throws(() => create({ ...tool('point'), interactionAdapter: undefined }), /Missing interaction adapter for tool: point/);

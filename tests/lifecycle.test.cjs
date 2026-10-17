@@ -77,7 +77,6 @@ function appRuntime() {
     return { id, label: id, status: 'implemented', commandToolId: id.startsWith('construct:') ? id : 'create:' + id, lifecycle: tag.match(/\bdata-lifecycle="([^"]+)"/)?.[1], interactionAdapter: tag.match(/\bdata-interaction-adapter="([^"]+)"/)?.[1] };
   });
   app.toolCatalog = MI.ToolCatalog.create({ categories: [{ id: 'fixture', label: 'Fixture', entries }], splits: [] });
-  MI.ToolLifecyclePolicies = Object.freeze(Object.fromEntries(entries.map(entry => [entry.id, entry.lifecycle])));
   app.init();
   const emit = (node, type, values = {}) => [...(node.events.get(type) || [])].forEach(fn => fn({ pointerId: 1, button: 0, preventDefault() {}, ...values }));
   const screen = p => new MI.CoordinateTransform(engine.renderer, { a: .5, d: .5 }).mathToScreen(p);
@@ -725,11 +724,13 @@ test('WIE-TOOL-L1 geometrically impossible tangent is rejected by the real comma
 });
 
 test('WIE-TOOL-L5.2 registers every visible catalog tool explicitly',()=>{
- const {MI}=appRuntime();
+ const {app}=appRuntime();
  const html=fs.readFileSync(path.join(root,'editor.html'),'utf8'),ids=[...html.matchAll(/data-tool="([^"]+)"/g)].map(match=>match[1]).filter(id=>id!=='select');
- assert.equal(ids.length,37);assert.deepEqual([...ids].sort(),Object.keys(MI.ToolLifecyclePolicies).sort());
- assert.equal(MI.ToolLifecyclePolicies.line,'repeat');assert.equal(MI.ToolLifecyclePolicies.dimension,'repeat');assert.equal(MI.ToolLifecyclePolicies.text,'repeat');
- assert.equal(MI.ToolLifecyclePolicies['construct:midpoint'],'single');assert.equal(MI.ToolLifecyclePolicies['construct:intersection'],'single');
+ const entries=app.toolCatalog.list('sidebar').flatMap(category=>category.entries.filter(entry=>entry.status==='implemented'));
+ const byId=new Map(entries.map(entry=>[entry.id,entry]));
+ assert.equal(ids.length,37);assert.deepEqual([...ids].sort(),[...byId.keys()].sort());
+ assert.equal(byId.get('line').lifecycle,'repeat');assert.equal(byId.get('dimension').lifecycle,'repeat');assert.equal(byId.get('text').lifecycle,'repeat');
+ assert.equal(byId.get('construct:midpoint').lifecycle,'single');assert.equal(byId.get('construct:intersection').lifecycle,'single');
 });
 
 test('WIE-TOOL-L5.2 completion requires success and rejects unknown tools and origins',()=>{
@@ -869,9 +870,9 @@ test('WIE-TOOL-L2 canvas midpoint uses single completion, preserves selection an
  assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'midpoint');assert.deepEqual(plain(h.app.selectedIds),[h.app.selectedId]);assert.equal(h.app.history.entries.length,1);assert.equal(h.app.engine.renderer.preview,null);h.app.travelHistory();assert.deepEqual(plain(h.engine.toJSON()),before);h.app.travelHistory(true);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'midpoint');
 });
 
-test('WIE-TOOL-L2 non-migrated parallel retains its L1 completion route',()=>{
+test('WIE-TOOL-L2 legacy parallel route now uses central single completion',()=>{
  const h=appRuntime();h.app.setTool('construct:parallel');h.down({x:.5,y:1});const complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.down({x:0,y:0});
- assert.equal(completions,0);assert.equal(h.app.tool,'select');assert.equal(h.engine.get(h.app.selectedId).construction.kind,'parallel');assert.equal(h.app.history.entries.length,1);
+ assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.engine.get(h.app.selectedId).construction.kind,'parallel');assert.equal(h.app.history.entries.length,1);
 });
 
 test('WIE-TOOL-L3.2 generic linked constructions use central single completion and select every result',()=>{
