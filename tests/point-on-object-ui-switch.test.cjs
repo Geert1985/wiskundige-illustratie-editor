@@ -6,7 +6,7 @@ test('A2 catalog has one universal entry and no legacy path buttons for any cata
  assert.equal(ids.filter(id=>id==='construct:pointOnObject').length,1);
  for(const kind of ['pointOnSegment','pointOnCircle','pointOnEllipse'])assert.ok(!ids.includes('construct:'+kind));
  for(const text of ['Punt op lijnstuk</span>','Punt op cirkel</span>','Punt op ellips</span>'])assert.ok(!html.includes(text));
- const MI=runtime(['model.js','renderer.js','index.js','editor.js']).MI,catalog=MI.ToolCatalog.create({categories:[{id:'manifest',label:'Manifest',entries:ids.map(id=>({id,label:id,status:'implemented',commandToolId:id}))}],splits:[]});
+ const MI=runtime(['model.js','renderer.js','index.js','editor.js']).MI,catalog=MI.ToolCatalog.create({categories:[{id:'manifest',label:'Manifest',entries:ids.filter(id=>id!=='select').map(id=>({id,label:id,status:'implemented',commandToolId:id.startsWith('construct:')?id:'create:'+id,lifecycle:id.startsWith('construct:')?'single':'repeat',interactionAdapter:id==='point'?'point':id==='text'?'text':id.startsWith('construct:')?'construction':id==='triangle'||id==='polygon'||id==='angle'||id==='rightAngle'?'polygon':'draw'}))}],splits:[]});
  for(const surface of ['sidebar','fullscreen'])assert.equal(catalog.list(surface)[0].entries.filter(entry=>/^construct:pointOn/.test(entry.id)).length,1);
  assert.equal(MI.ToolInstructions.describe('construct:pointOnObject',{mode:'construction',sources:[]}).total,2);
 });

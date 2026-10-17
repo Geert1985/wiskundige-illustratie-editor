@@ -71,6 +71,13 @@ function appRuntime() {
   MI.TextInsertPanel={mount:()=>({destroy(){},isOpen:()=>false})};
   MI.RichTextEditor={load:async()=>({mount(){return{get(){const value=doc.getElementById('textValue').value.trim();return value?{schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:value,marks:{}}]}]}:null;},focus(){},destroy(){}};}})};
   const app = new MI.EditorApp({ engine, document: doc, window: win, storage: { getItem: () => null }, services: { transform: MI.CoordinateTransform, snap: MI.SnapService, resolver: MI.InteractionResolver } });
+  const html = fs.readFileSync(path.join(root, 'editor.html'), 'utf8');
+  const entries = [...html.matchAll(/<button\b[^>]*\bdata-tool="([^"]+)"[^>]*>/g)].filter(match => match[1] !== 'select').map(match => {
+    const tag = match[0], id = match[1];
+    return { id, label: id, status: 'implemented', commandToolId: id.startsWith('construct:') ? id : 'create:' + id, lifecycle: tag.match(/\bdata-lifecycle="([^"]+)"/)?.[1], interactionAdapter: tag.match(/\bdata-interaction-adapter="([^"]+)"/)?.[1] };
+  });
+  app.toolCatalog = MI.ToolCatalog.create({ categories: [{ id: 'fixture', label: 'Fixture', entries }], splits: [] });
+  MI.ToolLifecyclePolicies = Object.freeze(Object.fromEntries(entries.map(entry => [entry.id, entry.lifecycle])));
   app.init();
   const emit = (node, type, values = {}) => [...(node.events.get(type) || [])].forEach(fn => fn({ pointerId: 1, button: 0, preventDefault() {}, ...values }));
   const screen = p => new MI.CoordinateTransform(engine.renderer, { a: .5, d: .5 }).mathToScreen(p);
@@ -660,7 +667,7 @@ test('WIE-TOOL-L1 generic construction failure retains first source and success 
 });
 
 test('WIE-TOOL-L1 context complete reports failure and preserves previous tool and selection',()=>{
- const h=appRuntime();h.app.setTool('line');h.app.selectedId='l';h.app.toolCatalog={...h.app.toolCatalog,getTool:id=>({id})};const plan=h.MI.ConstructionService.contextualPlans(h.engine.get('l'),'midpoint').find(p=>p.mode==='complete'),before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app);
+ const h=appRuntime();h.app.setTool('line');h.app.selectedId='l';const plan=h.MI.ConstructionService.contextualPlans(h.engine.get('l'),'midpoint').find(p=>p.mode==='complete'),before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app);
  h.app.execute=()=>{throw Error('L1 context denied');};assert.equal(h.app.startContextConstruction('construct:midpoint','l',plan.key),false);assert.equal(h.app.tool,'line');assert.equal(h.app.selectedId,'l');assert.match(h.app.nodes.status.textContent,/L1 context denied/);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
  h.app.execute=execute;assert.equal(h.app.startContextConstruction('construct:midpoint','l',plan.key),true);assert.equal(h.app.tool,'line');assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'midpoint');
 });
@@ -701,18 +708,21 @@ test('WIE-TOOL-L1 geometrically impossible tangent is rejected by the real comma
  assert.equal(h.app.tool,'construct:tangent');assert.deepEqual(plain(h.app.interaction.sources),[{objectId:'C'}]);assert.equal(h.app.history.entries.length,0);assert.deepEqual(plain(h.engine.toJSON()),before);assert.match(h.app.nodes.status.textContent,/bestaat niet/);
 });
 
-test('WIE-TOOL-L2 registers every visible catalog tool explicitly',()=>{
- const {MI,context}=runtime();vm.runInContext(fs.readFileSync(path.join(root,'editor.js'),'utf8'),context);
+test('WIE-TOOL-L5.2 registers every visible catalog tool explicitly',()=>{
+ const {MI}=appRuntime();
  const html=fs.readFileSync(path.join(root,'editor.html'),'utf8'),ids=[...html.matchAll(/data-tool="([^"]+)"/g)].map(match=>match[1]).filter(id=>id!=='select');
  assert.equal(ids.length,37);assert.deepEqual([...ids].sort(),Object.keys(MI.ToolLifecyclePolicies).sort());
  assert.equal(MI.ToolLifecyclePolicies.line,'repeat');assert.equal(MI.ToolLifecyclePolicies.dimension,'repeat');assert.equal(MI.ToolLifecyclePolicies.text,'repeat');
  assert.equal(MI.ToolLifecyclePolicies['construct:midpoint'],'single');assert.equal(MI.ToolLifecyclePolicies['construct:intersection'],'single');
 });
 
-test('WIE-TOOL-L2 completion requires success and rejects unknown policies',()=>{
+test('WIE-TOOL-L5.2 completion requires success and rejects unknown tools and origins',()=>{
  const {app}=appRuntime();app.setTool('line');
  assert.equal(app.completeToolInteraction({toolId:'line',outcome:{ok:false,error:Error('denied')},origin:'canvas'}),false);assert.equal(app.tool,'line');
  assert.throws(()=>app.completeToolInteraction({toolId:'construct:legacy',outcome:{ok:true},origin:'canvas'}),/Onbekend lifecyclebeleid/);
+ assert.throws(()=>app.completeToolInteraction({toolId:'line',outcome:{ok:true},origin:'legacy'}),/Unknown completion origin/);
+ const getTool=app.toolCatalog.getTool.bind(app.toolCatalog);app.toolCatalog={...app.toolCatalog,getTool:id=>id==='line'?{...getTool(id),lifecycle:'unknown'}:getTool(id)};
+ assert.throws(()=>app.completeToolInteraction({toolId:'line',outcome:{ok:true},origin:'canvas'}),/Unknown lifecycle policy for tool: line/);
 });
 
 test('WIE-TOOL-L2 first and second line use central repeat completion exactly once',()=>{
@@ -913,7 +923,7 @@ test('WIE-TOOL-L3.4 intersection no source, unsupported pair, and empty result s
 
 test('WIE-TOOL-L3.4 context-complete uses central completion and preserves tool, interaction, and undo state',()=>{
  for(const tool of ['select','line']){
-  const h=appRuntime();h.app.setTool(tool);h.app.selectedId='l';h.app.selectedIds=['l'];h.app.toolCatalog={...h.app.toolCatalog,getTool:id=>({id})};const plan=h.MI.ConstructionService.contextualPlans(h.engine.get('l'),'midpoint').find(p=>p.mode==='complete');assert.ok(plan);
+  const h=appRuntime();h.app.setTool(tool);h.app.selectedId='l';h.app.selectedIds=['l'];const plan=h.MI.ConstructionService.contextualPlans(h.engine.get('l'),'midpoint').find(p=>p.mode==='complete');assert.ok(plan);
   const complete=h.app.completeToolInteraction.bind(h.app);let completions=0,last=null;h.app.completeToolInteraction=args=>{completions++;last=args;return complete(args);};
   if(tool==='line'){const interaction={mode:'independent-draw',pointerId:44};h.app.interaction=interaction;h.app.nodes.canvasWrap.setPointerCapture(44);h.engine.renderer.preview={type:'line',start:{x:0,y:0},end:{x:1,y:1}};h.app.feedback={type:'sentinel'};}
   const before=plain(h.engine.toJSON()),oldTool=h.app.tool,oldInteraction=h.app.interaction,oldPreview=h.engine.renderer.preview,oldFeedback=h.app.feedback;
@@ -923,7 +933,7 @@ test('WIE-TOOL-L3.4 context-complete uses central completion and preserves tool,
 });
 
 test('WIE-TOOL-L3.4 context prefill waits for canvas completion',()=>{
- const h=appRuntime();h.app.selectedId='l';h.app.selectedIds=['l'];h.app.toolCatalog={...h.app.toolCatalog,getTool:id=>({id})};const plan=h.MI.ConstructionService.contextualPlans(h.engine.get('l'),'parallel').find(p=>p.mode==='prefill');assert.ok(plan);
+ const h=appRuntime();h.app.selectedId='l';h.app.selectedIds=['l'];const originalGetTool=h.app.toolCatalog.getTool.bind(h.app.toolCatalog);h.app.toolCatalog={...h.app.toolCatalog,getTool:id=>originalGetTool(id)||{id}};const plan=h.MI.ConstructionService.contextualPlans(h.engine.get('l'),'parallel').find(p=>p.mode==='prefill');assert.ok(plan);
  const complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};
  assert.equal(h.app.startContextConstruction('construct:parallel','l',plan.key),true);assert.equal(completions,0);assert.equal(h.app.tool,'construct:parallel');assert.ok(h.app.interaction);assert.equal(h.app.history.entries.length,0);
  h.down({x:0,y:0});assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,1);

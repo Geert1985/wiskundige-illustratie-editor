@@ -1,8 +1,14 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.49 (WIE-TOOL-L5.1 architectuurontwerp; behoud eerdere roadmapbesluiten; 2026-10-17)
+Version: 2.8.50 (WIE-TOOL-L5.2 centrale gereedschapsregistratie; behoud eerdere roadmapbesluiten; 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## WIE-TOOL-L5.2 — Centrale gereedschapsregistratie en contractvalidator (branchstatus 2026-10-17)
+
+Geïmplementeerd op `codex/wie-tool-l5-2-registry-validation`, gebaseerd op actuele `origin/main` `f26daa1fc6d1ecff43db57d81f3b0da34561f758` (bevat de gemergede L5.1-architectuuraudit). De bestaande markupgedreven `ToolCatalog` normaliseert nu voor alle 37 creatietools de lifecyclepolicy en adapterfamilie uit de bestaande toolknoppen; `TOOL_LIFECYCLE` is verwijderd als onafhankelijke beleidsbron en `MI.ToolLifecyclePolicies` is tijdelijk afgeleid voor test-/compatibiliteitsconsumers. De catalogus weigert ontbrekende/onbekende lifecycle- en adapterwaarden, ongeldige statussen, dubbele ID's en registratie van navigatiemodi. `completeToolInteraction()` weigert onbekende origins en leest policy uit de catalogus. Tool-ID's, labels, geometrie- en commandroutes, context-complete, autorisatie en annuleringsgedrag blijven ongewijzigd.
+
+Gerichte catalogus-, tool-ID-, assetcache-, context-prefill/-complete-, constructie-, tekst- en L4-lifecycleproeven staan in [het L5.2-rapport](WIE-TOOL-L5-2-REPORT.md). Dit is een infrastructuurmigratie; de zes adapterfamilies (`point`, `draw`, `polygon`, `construction`, `placement`, `text`) typeren de bestaande route en dispatchen zelf geen handlers. De L5.2-gerichte verificatie is geslaagd; de L4-browserbeperking blijft open en houdt de beoordeling **CONDITIONAL GO**. L5.2 wordt niet naar `main` gemerged.
 
 ## WIE-TOOL-L5.1 — Architectuuraudit declaratieve gereedschapsregistratie (branchstatus 2026-10-17)
 

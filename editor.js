@@ -6,11 +6,6 @@
   const DRAG_SAFE_MODES = new Set(['object','group','label','measurement-label','endpoint','vertex','pathPoint','circleDistributionPoint']);
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const INTERSECTION_KINDS = Object.freeze(['lineIntersection','lineCircleIntersection','lineEllipseIntersection','circleCircleIntersection']);
-  const TOOL_LIFECYCLE = Object.freeze({
-    point:'repeat', line:'repeat', straight:'repeat', ray:'repeat', vector:'repeat', triangle:'repeat', polygon:'repeat', circle:'repeat', angle:'repeat', rightAngle:'repeat', dimension:'repeat', text:'repeat',
-    'construct:midpoint':'single', 'construct:pointOnObject':'single', 'construct:intersection':'single', 'construct:perpendicular':'single', 'construct:perpendicularBisector':'single', 'construct:bisector':'single', 'construct:lineBetweenPoints':'single', 'construct:parallel':'single', 'construct:tangent':'single', 'construct:circleByCenterPoint':'single', 'construct:ellipseByFociAndPoint':'single', 'construct:parallelogramBySideAngle':'single', 'construct:triangleFromPoints':'single', 'construct:centroid':'single', 'construct:circumcenter':'single', 'construct:orthocenter':'single', 'construct:incenter':'single', 'construct:incircle':'single', 'construct:eulerLine':'single', 'construct:ninePointCircle':'single', 'construct:anglePoints':'single', 'construct:angleDirections':'single', 'construct:polygonRegion':'single', 'construct:circleSectorRegion':'single', 'construct:circleSegmentRegion':'single'
-  });
-  MI.ToolLifecyclePolicies=TOOL_LIFECYCLE;
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
     constructor({ engine, services, document, window, storage }) {
@@ -25,7 +20,7 @@
       for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "exportPngBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textEditorStatus", "richTextSurface", "richFont", "richFontSize", "richColor", "richColorMenu", "richUndo", "richRedo", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
       this.toolCatalog=MI.ToolCatalog.build(this.nodes.toolGrid);this.splitToolSelection=new Map();this.splitMenuOpen=null;
       const registeredTools=this.toolCatalog.list('sidebar').flatMap(category=>category.entries.filter(entry=>entry.status==='implemented').map(entry=>entry.id));
-      if(registeredTools.length&&(registeredTools.length!==Object.keys(TOOL_LIFECYCLE).length||registeredTools.some(id=>!TOOL_LIFECYCLE[id])))throw new TypeError('Elk beschikbaar gereedschap vereist een expliciet lifecyclebeleid.');
+      MI.ToolLifecyclePolicies=Object.freeze(Object.fromEntries(registeredTools.map(id=>[id,this.toolCatalog.getTool(id).lifecycle])));
       for(const group of this.toolCatalog.splits)try{const saved=storage?.getItem('fzi-math-illustration-'+group.storageKey+'-tool'),legacy=saved==='construct:angleXAxis'&&group.id==='angle'?'construct:angleDirections':saved;if(group.toolIds.includes(legacy))this.splitToolSelection.set(group.id,legacy);}catch(_){}
       MI.EditorColor.renderPalette(this.nodes.colorPalette, { groupLabel: "Kleuren" });
       MI.EditorColor.renderPalette(this.nodes.richColorMenu, { buttonClass: "rich-color-swatch", groupLabel: "Tekstkleur kiezen" });
@@ -365,9 +360,12 @@
     }
     completeToolInteraction({toolId=this.tool,outcome,origin='canvas',selection,successMessage}={}) {
       // Supported origins: canvas (owned interaction cleanup/policy) and context-complete (preserve the active tool and independent interaction).
+      if(!['canvas','context-complete'].includes(origin))throw new TypeError('Unknown completion origin: '+origin);
       if(!outcome?.ok)return false;
-      const policy=TOOL_LIFECYCLE[toolId];
-      if(!policy)throw new TypeError('Onbekend lifecyclebeleid voor gereedschap: '+toolId);
+      const registration=this.toolCatalog.getTool(toolId);
+      if(!registration)throw new TypeError('Onbekend lifecyclebeleid voor gereedschap: '+toolId);
+      const policy=registration.lifecycle;
+      if(!['repeat','single'].includes(policy))throw new TypeError('Unknown lifecycle policy for tool: '+toolId);
       if(origin==='context-complete'){
         if(selection!==undefined){const ids=Array.isArray(selection)?selection.slice():[];this.selectedId=ids[0]||null;this.selectedIds=ids;}
         this.status(successMessage||'Gekoppelde constructie toegevoegd.');
