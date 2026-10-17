@@ -11,7 +11,7 @@ module.exports=async page=>{
  await page.evaluate(doc=>{window.__lineEllipseBase=doc;FZI.MathIllustration.editor.loadDocument(doc);},base);
  // Ellipse-first contextual construction then pick the line on canvas.
  await startFrom('E');await click(0,0);await chooseSource({objectId:'L'});
- let state=await page.evaluate(()=>{const a=FZI.MathIllustration.editor;return {points:a.engine.model.objects.filter(o=>o.construction?.kind==='lineEllipseIntersection'),status:a.nodes.status?.textContent,tool:a.tool,sources:a.interaction?.sources};});let points=state.points;
+ let state=await page.evaluate(()=>{const a=FZI.MathIllustration.editor;return {points:a.engine.model.objects.filter(o=>o.construction?.kind==='lineEllipseIntersection'),status:a.nodes.status?.textContent,tool:a.tool,sources:a.interaction?.sources};});let points=state.points;assert.equal(state.tool,'select');assert.equal(state.sources,undefined);assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.selectedIds),points.map(o=>o.id));assert.equal(await page.locator('#toolInstructions').isVisible(),false);
  assert.deepEqual(points.map(o=>o.construction.branch),[0,1],JSON.stringify(state));assert.deepEqual(points.map(o=>o.construction.sources),[[{objectId:'L'},{objectId:'E'}],[{objectId:'L'},{objectId:'E'}]]);
  await page.locator('#undoBtn').click();
  // Line-first contextual construction then pick the ellipse on its boundary.

@@ -648,7 +648,7 @@
       if(!result.candidates.length){state.sources=state.sources.slice(0,1);this.engine.renderer.preview=null;this.status('Geen uniek snijpunt binnen deze objecten ('+result.reasonCode+'). Kies een andere tweede bron.');this.renderInstructions();this.invalidate();return;}
       let created=[];
       this.changeDocument(()=>{created=this.execute('construction.create',{toolId:recipeTool,sources:result.sources}).result;this.selectedIds=created.map(object=>object.id);});
-      if(created.length){this.intersectionCompleted=true;this.status(created.length+' snijpunt(en) toegevoegd.');}
+      if(created.length){this.setTool('select');this.intersectionCompleted=true;this.status(created.length+' snijpunt(en) toegevoegd.');}
       this.invalidate();
     }
     intersectionClick(point) {

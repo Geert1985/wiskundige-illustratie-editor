@@ -34,3 +34,9 @@ Fasecommits:
 - `ae6ccb86` — persistent recept, schema 10, lifecycle en permissions.
 - `0db536f9` — universele intersection-UI en contextuele bronkeuze.
 
+
+## UX-correctie: automatisch afsluiten
+
+Na succesvolle creatie schakelt de universele Snijpunt-tool via de bestaande toolwissel terug naar Selecteren, met behoud van nieuwe puntselectie en succesmelding. De documenttransactie ruimt de broninteractie vooraf op; een geweigerde, mislukte of lege constructie activeert deze succesafhandeling niet. Deze expliciet goedgekeurde afspraak vervangt het eerdere herhaalgedrag. Contractversies: hoofdcontract 1.1.2, lijn–ellips 1.0.1.
+
+Verificatie van de afsluitcorrectie: `npm test` **735/735 geslaagd**; volledige `npm run test:edge` **geslaagd**, exit 0, `pageErrors: []`. Browserregressies controleren één/twee punten, behoud van selectie, geen resterende instructies, nul-oplossingen, een geweigerde transactie, contextuele starts en atomair Undo/Redo. Geometrische lijn–ellipsregressies blijven groen.

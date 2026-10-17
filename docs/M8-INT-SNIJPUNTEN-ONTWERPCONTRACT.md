@@ -1,6 +1,6 @@
 # WIE — M8-INT: Universeel snijpuntgereedschap en snijpunten van kegelsneden
 
-**Documentversie:** 1.1.1  
+**Documentversie:** 1.1.2
 **Datum:** 17 oktober 2026  
 **Status:** normatief hoofdcontract — M8-INT.0 afgerond en geïntegreerd op `main`; voor M8-INT.1/.2/.3 afzonderlijke implementatie-GO vereist  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor (WIE)  
@@ -132,7 +132,7 @@ De zichtbare vermelding is **Snijpunt** onder `Constructies > Puntconstructies`,
 2. **Bron A:** kies een geschikte geometrische drager, as of specifieke polygonzijde. Status: `Selecteer het tweede object.` Een ongeschikte bron wordt afgewezen met feedback.
 3. **Bron B:** kies de tweede geschikte bron in willekeurige volgorde. Bij meerdere overlappende **bron**-kandidaten wordt uitsluitend de bronambiguïteit opgelost met een toegankelijke keuzelijst. Dat is geen keuze tussen snijpunten. Zodra de bron ondubbelzinnig is, volgt stap 4 **zonder extra klik**.
 4. **Onmiddellijk maken:** classificeer het bronpaar; valideer bronnen en rechten opnieuw via de bestaande commandketen; bepaal alle eindige, geïsoleerde, geldige punten met behouden branchidentiteit. Bij `N>0` maakt **één atomaire Undo/Redo-actie precies alle N punten**; bij `N=0` komt er geen punt of geschiedenisitem bij. Er is geen voorafgaande resultatenpreview en geen bevestigingsknop.
-5. **Na uitvoering:** toon `N snijpunt(en) toegevoegd.` of specifieke geen-oplossingfeedback. Het gereedschap blijft actief voor een **nieuw** paar; oude bronkeuzes worden niet automatisch opnieuw gebruikt.
+5. **Na uitvoering:** toon `N snijpunt(en) toegevoegd.` of specifieke geen-oplossingfeedback. Na succesvolle creatie wordt de broninteractie afgesloten en keert WIE automatisch terug naar Selecteren; de nieuwe punten blijven geselecteerd. Bij nul geldige oplossingen blijft het gereedschap actief.
 6. **Annuleren:** `Esc`, toolwisseling, `pointercancel`, toepasselijk focusverlies, nieuw document en dispose annuleren een **nog onvoltooide** bronselectie zonder modelmutatie. **Na succesvolle constructie** draait alleen normaal `Ongedaan` de ene aangemaakte transactie terug.
 
 **Geen afzonderlijke puntkeuze:** geen `Snijpunt 1/2/3/4`-keuzeknoppen, geen `Geselecteerde snijpunten maken`, geen selecteerbare kandidatenoverlay, geen tijdelijke `selectedBranches`-UI-staat, en geen tweede commitmoment. Een korte hover- of selectiehighlight van een **bron** mag blijven en creëert nooit geometrische previewobjecten.

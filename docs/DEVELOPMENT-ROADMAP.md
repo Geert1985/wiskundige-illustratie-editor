@@ -1,6 +1,6 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.27 (M8-INT.1 lijn–ellips geïmplementeerd op featurebranch; handmatige acceptatie pending, 2026-10-17)
+Version: 2.8.28 (M8-INT.1 lijn–ellips geïmplementeerd op featurebranch; handmatige acceptatie pending, 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. Het M8-INT.1-lijn–ellipsontwerpcontract v1.0.0 is op 17 oktober 2026 door de gebruiker goedgekeurd; uitvoering wordt uitsluitend door een aparte Codex-opdracht op een featurebranch toegestaan. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
 
@@ -51,6 +51,8 @@ Classificeer een gereedschap op basis van zijn primaire functie: **Vrije objecte
 ### M8-INT.0 — acceptatiepoort
 
 De acceptatiepoort is op 17 oktober 2026 handmatig door de gebruiker afgetekend en het resultaat is vervolgens op `main` geïntegreerd via PR #27. De finale consolidatiepoort controleerde beide bronvolgordes, bestaande lineaire subtypen en begrensde domeinen, 0/1/2-oplossingen, directe creatie zonder preview/confirm, alleen bronambiguïteitskeuze, originele taknummering (ook uitsluitend branch 1), oude gespecialiseerde commando's zonder `selectedBranches`, Undo/Redo, tijdelijke broninvalidatie en herstel, permissies/lock/restricted, assen, source rebind, replay en JSON/SVG/PNG, hit/snap, zoeken, sidebar, fullscreen en radiaalmenu. De oude drie zichtbare knoppen zijn verwijderd; recepten en compatibiliteitspaden blijven bestaan. Volledige Node-/Edge-resultaten en commit-SHA's staan in het [implementatieverslag](M8-INT-0-IMPLEMENTATION-REPORT.md). De afzonderlijke merge is door de gebruiker uitgevoerd; M8-INT.0 is nu afgesloten.
+
+Goedgekeurde UX-correctie op de featurebranch: na succesvolle Snijpunt-creatie terug naar Selecteren, met behoud van puntselectie en statusmelding; bij nul oplossingen blijft Snijpunt actief. Zie hoofdcontract v1.1.2 en lijn–ellipscontract v1.0.1.
 
 ### M8-INT.1 — contractstatus en volgende poort
 
