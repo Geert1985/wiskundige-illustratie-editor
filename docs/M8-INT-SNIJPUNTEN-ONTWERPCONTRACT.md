@@ -1,15 +1,15 @@
 # WIE — M8-INT: Universeel snijpuntgereedschap en snijpunten van kegelsneden
 
-**Documentversie:** 1.1.0  
+**Documentversie:** 1.1.1  
 **Datum:** 17 oktober 2026  
-**Status:** goedgekeurd ontwerpcontract — **geen implementatie-GO**  
+**Status:** normatief hoofdcontract — M8-INT.0 afgerond en geïntegreerd op `main`; voor M8-INT.1/.2/.3 afzonderlijke implementatie-GO vereist  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor (WIE)  
 **Repository:** [`Geert1985/wiskundige-illustratie-editor`](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Referentie:** contract v1.0.0 op `main` en eerste M8-INT.0-implementatie op `codex/m8-int-0-universal-intersection`; roadmap v2.8.23. Verifieer bij vervolgwerk opnieuw branch, HEAD en feitelijke code.  
+**Referentie:** M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en op `main` geïntegreerd (PR #27); roadmap v2.8.25. Het afzonderlijke [M8-INT.1-lijn–ellipscontract v1.0.0](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md) is opgesteld ter goedkeuring. Verifieer bij vervolgwerk opnieuw branch, HEAD en feitelijke code.  
 **Afhankelijkheid:** bestaande M5b-constructies en M8a-ellipsen; M8b blijft buiten scope.  
 **Gerelateerde afzonderlijke roadmapbeslissing:** *Punt op object*; dit is niet hetzelfde als *Snijpunt* en valt buiten M8-INT.
 
-> **Normatieve status.** Versie 1.1.0 vervangt in **alle M8-INT-fasen** de eerdere individuele oplossingselectie en aparte bevestiging door **automatische constructie van alle geldige unieke snijpunten na de tweede ondubbelzinnige bronselectie**. De eerste .0-implementatie staat uitsluitend op featurebranch `codex/m8-int-0-universal-intersection`, is nog niet handmatig geaccepteerd en niet gemerged. De eerdere selectieve UI geldt niet meer als productvereiste. Dit ontwerp geeft geen GO voor een merge of voor M8-INT.1/.2/.3. Bovendien is herstel van legacyconstructies bij slechts één geldige tak verplicht.
+> **Normatieve status.** Versie 1.1.1 actualiseert de M8-INT.0-status en verwijst naar het nieuwe afzonderlijke .1-fasecontract. De goedgekeurde UX blijft voor **alle M8-INT-fasen**: **onmiddellijk alle geldige unieke snijpunten aanmaken na twee ondubbelzinnige bronselecties**, zonder individuele puntkeuze of aparte bevestiging. M8-INT.0 is geïmplementeerd, handmatig geaccepteerd en op `main` geïntegreerd. M8-INT.1 heeft een ontwerpvoorstel maar **nog geen implementatie-GO**; .2/.3 blijven toekomstig. Bestaande persistente recepten blijven compatibel.
 
 ---
 
@@ -23,7 +23,7 @@ Een **uniforme gebruikersinterface betekent niet één universele algebraïsche 
 
 Niet inbegrepen: algemene algebra-/CAS-engine, grafieken van willekeurige functies, symbolische exacte wortels, automatisch toevoegen van nieuwe punt-ID's bij latere bronbeweging zonder nieuwe expliciete bronpaarselectie, snijpunten met de **gevulde oppervlakte** van een vlakobject, 3D-intersecties, een tweede dependency graph, algemene topologische booleans, automatische typeconversie van parabolische/hyperbolische objecten die nog niet bestaan, of de afzonderlijke functie *Punt op object*.
 
-## 2. Verifieerbare uitgangsbasis op `main`
+## 2. Oorspronkelijke M8-INT.0-codebasis (historische inventarisatie; .0 inmiddels geïntegreerd op `main`)
 
 ### 2.1 Reeds aanwezig
 
@@ -418,9 +418,9 @@ Elke testcase controleert behalve posities ook bronrecept, branch, validiteitsco
 
 **Nog te beslissen op implementatieniveau:** compacte bronambiguïteits-UI, concrete modulenaam van de dispatcher, minimale schemawaarde voor nieuwe recepten, precieze numerieke toleranties op basis van onafhankelijke fixtures, en de definitieve .3-branchidentiteitsbijlage. Deze open punten wijzigen **niet** het nu vastgelegde gebruikersgedrag en zijn geen impliciete machtiging om implementatierisico's te negeren.
 
-## 17. Codex-overdracht — vervangende M8-INT.0-opdracht
+## 17. Historische Codex-overdracht M8-INT.0 (reeds uitgevoerd; niet opnieuw starten)
 
-De eerste M8-INT.0-implementatie bestaat al op `codex/m8-int-0-universal-intersection`. De gebruiker heeft de eerdere aparte regressiecorrectieprompt **nog niet uitgevoerd**. Daarom moet Codex op **diezelfde branch** één **gecombineerde** correctieronde uitvoeren:
+**Historische toelichting:** de onderstaande M8-INT.0-opdracht is inmiddels uitgevoerd, getest, handmatig geaccepteerd en naar `main` gemerged. Ze blijft alleen als traceerbare ontwerphistorie staan en mag niet opnieuw worden uitgevoerd. Voor M8-INT.1 geldt het afzonderlijke [lijn–ellipsfasecontract v1.0.0](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md) en een toekomstige expliciete implementatieopdracht:
 
 1. Vervang de bestaande kandidaatselectie/preview/confirm-flow door onmiddellijk **alle geldige punten** aanmaken bij tweede ondubbelzinnige bronselectie. Alleen bronambiguïteitskeuze mag overblijven.
 2. Herstel de geconstateerde legacyregressie: zonder `selectedBranches` filtert `Engine.constructIntersection` ongeldige takken in plaats van de hele constructie af te wijzen; expliciet ongeldige selectie blijft atomair weigeren; behoud branch 1 wanneer alleen die geldig is.
@@ -445,4 +445,4 @@ Repositoryreferenties, geraadpleegd op 16 oktober 2026; controleer bij implement
 - [docs/M8a-ELLIPSEN-CONTRACT.md](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/docs/M8a-ELLIPSEN-CONTRACT.md)
 - [construction-service.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/construction-service.js), [linear-geometry.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/linear-geometry.js), [ellipse-geometry.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/ellipse-geometry.js), [index.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/index.js), [tool-catalog.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/tool-catalog.js), [editor.html](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/editor.html).
 
-**Einde ontwerpcontract v1.1.0 — automatische alle-snijpunten-UX goedgekeurd; featurebranchcorrectie en handmatige eindacceptatie vereist.**
+**Einde hoofdcontract v1.1.1 — M8-INT.0 geïntegreerd op main; M8-INT.1-contract ter goedkeuring.**
