@@ -1,7 +1,7 @@
 # M8-INT.0 — Implementatieverslag
 
-Datum: 2026-10-17  
-Branch: `codex/m8-int-0-universal-intersection`  
+Datum: 2026-10-17
+Branch: `codex/m8-int-0-universal-intersection`
 Contract: `docs/M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md` v1.0.0 op actuele `origin/main`
 
 ## Oplevering
@@ -35,4 +35,5 @@ De geautomatiseerde .0-regressies zijn groen. Handmatige gebruikersacceptatie is
 
 - `777ae70` — preflight en contractmatch.
 - `9865332` — getypeerde dispatcher, laadregistratie en dispatchtests.
-- Volgende gefaseerde commits — implementatie-interactie/transactie en regressies/dit verslag.
+- `c832340` — implementatie-interactie, preview, bevoegdheden en atomaire commit.
+- `c37ee1a` — regressies, cataloguscompatibiliteit en dit verslag.
