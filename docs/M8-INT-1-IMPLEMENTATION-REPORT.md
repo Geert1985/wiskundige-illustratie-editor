@@ -1,5 +1,7 @@
 # M8-INT.1 — implementatieverslag
 
+**Documentversie:** 1.1.0  
+**Definitieve status:** geïmplementeerd, handmatig geaccepteerd en geïntegreerd op `main` via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28)  
 Datum: 17 oktober 2026  
 Featurebranch: `codex/m8-int-1-line-ellipse`  
 Startpunt: `origin/main` / `9577be5dc346b4dd74739495a01e925a555cb34c`  
@@ -25,7 +27,7 @@ Het persistente gespecialiseerde recept is `lineEllipseIntersection`; het gebrui
 
 ## Acceptatiestatus en commits
 
-De code staat uitsluitend op `codex/m8-int-1-line-ellipse`. De implementatie is niet naar `main` gemerged. Handmatige productacceptatie door de gebruiker staat nog open.
+**Afgesloten op 17 oktober 2026.** De gebruiker heeft de implementatie inclusief de laatste UX-correctie (automatische terugkeer naar Selecteren na geslaagd Snijpunt) handmatig beoordeeld en goedgekeurd. De featurebranch `codex/m8-int-1-line-ellipse` is daarop via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. De op de featurebranch gerapporteerde testresultaten blijven historisch testbewijs; de suites zijn na de merge bij deze documentatiestatuswijziging niet onafhankelijk opnieuw uitgevoerd.
 
 Fasecommits:
 
@@ -42,3 +44,13 @@ Na succesvolle creatie schakelt de universele Snijpunt-tool via de bestaande too
 Verificatie van de afsluitcorrectie: `npm test` **735/735 geslaagd**; volledige `npm run test:edge` **geslaagd**, exit 0, `pageErrors: []`. Browserregressies controleren één/twee punten, behoud van selectie, geen resterende instructies, nul-oplossingen, een geweigerde transactie, contextuele starts en atomair Undo/Redo. Geometrische lijn–ellipsregressies blijven groen.
 
 Aanvullend `M8_INT_ONLY=1 npm run test:edge`: geslaagd, `pageErrors: []`, inclusief automaticSelectAndSelection, zeroSolutionsStayActive en failedTransactionStaysActive. De contextmenutest selecteert nu het object voordat het aanbod wordt opgevraagd.
+
+## Definitieve acceptatie en integratie
+
+- **Handmatige gebruikersacceptatie:** GO, 17 oktober 2026, inclusief de UX-correctie voor het afsluiten van het universele Snijpunt-gereedschap na succesvolle constructie.
+- **Merge naar `main`:** door de gebruiker uitgevoerd via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28); integratie op `main` via GitHub-branchvergelijking bevestigd (0 featurecommits vóór `main`).
+- **UI-gedrag na succes:** `construct:intersection` schakelt naar `select`; nieuw aangemaakte punten blijven geselecteerd; Undo/Redo blijft één transactie.
+- **Bij nul geldige snijpunten:** geen mutatie/history en het gereedschap blijft actief.
+- **Testbasis vóór merge:** door Codex gerapporteerd: `npm test` 735/735 PASS; volledige `npm run test:edge` PASS zonder `pageErrors`; gerichte M8-INT-Edge-suite PASS.
+- **Scope:** M8-INT.1 afgesloten. M8-INT.2 en M8-INT.3 zijn niet geïmplementeerd.
+
