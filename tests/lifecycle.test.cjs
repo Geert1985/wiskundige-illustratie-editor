@@ -725,6 +725,46 @@ test('WIE-TOOL-L5.2 completion requires success and rejects unknown tools and or
  assert.throws(()=>app.completeToolInteraction({toolId:'line',outcome:{ok:true},origin:'canvas'}),/Unknown lifecycle policy for tool: line/);
 });
 
+test('WIE-TOOL-L5.3 point uses its declarative catalog entry for repeated successful creations',()=>{
+ const h=appRuntime(),entry=h.app.toolCatalog.getTool('point');
+ assert.equal(entry.lifecycle,'repeat');assert.equal(entry.interactionAdapter,'point');
+ h.app.setTool('point');const complete=h.app.completeToolInteraction.bind(h.app),calls=[];
+ h.app.completeToolInteraction=args=>{calls.push(args);return complete(args);};
+ const created=[];
+ for(const [index,position] of [{x:3,y:1},{x:3,y:-1}].entries()){
+  const countBefore=h.engine.model.objects.filter(object=>object.type==='point').length,historyBefore=h.app.history.entries.length;
+  h.down(position);
+  const point=h.engine.model.objects.find(object=>object.type==='point'&&object.x===position.x&&object.y===position.y);
+  assert.ok(point);created.push(point.id);
+  assert.equal(h.engine.model.objects.filter(object=>object.type==='point').length,countBefore+1);
+  assert.equal(calls.length,index+1);assert.equal(calls[index].toolId,'point');assert.equal(calls[index].origin,'canvas');assert.equal(calls[index].outcome.ok,true);
+  assert.deepEqual(plain(calls[index].selection),[point.id]);assert.deepEqual(plain(h.app.selectedIds),[point.id]);assert.equal(h.app.selectedId,point.id);
+  assert.equal(h.app.tool,'point');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.history.entries.length,historyBefore+1);
+ }
+ const after=plain(h.engine.toJSON());assert.equal(h.app.history.undo(),true);assert.equal(h.engine.get(created[1]),null);assert.ok(h.engine.get(created[0]));
+ assert.equal(h.app.history.redo(),true);assert.deepEqual(plain(h.engine.toJSON()),after);
+});
+
+test('WIE-TOOL-L5.3 denied point creation does not complete or record history and can retry',()=>{
+ const h=appRuntime();h.app.setTool('point');const before=plain(h.engine.toJSON()),execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app),calls=[];
+ h.app.completeToolInteraction=args=>{calls.push(args);return complete(args);};h.app.execute=()=>{throw Error('L5.3 point create denied');};
+ h.down({x:3,y:1});
+ assert.equal(calls.length,1);assert.equal(calls[0].outcome.ok,false);assert.equal(h.app.tool,'point');assert.equal(h.app.interaction,null);
+ assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.status.textContent,/L5\.3 point create denied/);
+ h.app.execute=execute;h.down({x:3,y:1});
+ assert.equal(calls.length,2);assert.equal(calls[1].outcome.ok,true);assert.equal(h.engine.model.objects.filter(object=>object.type==='point'&&object.x===3&&object.y===1).length,1);
+ assert.equal(h.app.tool,'point');assert.equal(h.app.selectedId,h.engine.model.objects.find(object=>object.type==='point'&&object.x===3&&object.y===1).id);assert.equal(h.app.history.entries.length,1);
+});
+
+test('WIE-TOOL-L5.3 Escape without a canvas gesture and point tool switching preserve document and selection',()=>{
+ const h=appRuntime(),before=plain(h.engine.toJSON());h.app.selectedId='p';h.app.selectedIds=['p'];h.app.setTool('point');
+ h.app.keyDown({key:'Escape'});
+ assert.equal(h.app.tool,'select');assert.deepEqual(plain(h.app.selectedIds),['p']);assert.equal(h.app.selectedId,'p');
+ assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+ h.app.setTool('point');h.app.setTool('line');
+ assert.equal(h.app.tool,'line');assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);
+});
+
 test('WIE-TOOL-L2 first and second line use central repeat completion exactly once',()=>{
  const h=appRuntime();h.app.setTool('line');const completion=h.app.completeToolInteraction.bind(h.app);let completed=0;
  h.app.completeToolInteraction=(args)=>{completed++;return completion(args);};
