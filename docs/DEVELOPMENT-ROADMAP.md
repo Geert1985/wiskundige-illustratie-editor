@@ -1,8 +1,14 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.51 (WIE-TOOL-L5.3 puntpilot; behoud eerdere roadmapbesluiten; 2026-10-17)
+Version: 2.8.52 (WIE-TOOL-L5.4 gedeelde gereedschapsfamilies; behoud eerdere roadmapbesluiten; 2026-10-17)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
 Date: 2026-10-17
+
+## WIE-TOOL-L5.4 — Gedeelde gereedschapsfamilies op declaratieve lifecycle (branchstatus 2026-10-17)
+
+Branch `codex/wie-tool-l5-4-shared-tool-families`, vanaf actuele `origin/main` `01c4ac64eda18dcc74a268697f7534191fc3a121` (L5.3 via PR #45). De drie families zijn gericht onderzocht en getest: zes gedeelde vrije tekengereedschappen (`line`, `straight`, `ray`, `vector`, `circle`, `dimension`), vier meerpuntstools (`triangle`, `polygon`, `angle`, `rightAngle`) en alle 21 generieke `construct:*`-gereedschappen. Alle gebruiken hun bestaande `ToolCatalog`-lifecyclemetadata en bestaande command-/interactieroutes; geen productiecodewijziging was nodig. De vrije teken- en meerpuntstools behouden `repeat`; de 21 generieke constructies gebruiken `single` en ronden via `completeToolInteraction()` af. Zie het [L5.4-rapport](WIE-TOOL-L5-4-REPORT.md) voor matrix, routebewijs, fout-/annuleringsgrenzen en testresultaten.
+
+Gerichte verificatie op deze branch: 14 geselecteerde lifecycle/regressietests PASS, 31 catalogus- en constructietests PASS, `node --check tests/lifecycle.test.cjs` en `git diff --check` PASS. Geen volledige Node-suite, browsermodule of Edge-run. De reeds bekende L4-beperking rond browser/native-dialogverificatie blijft open; L5.4 bewijst geen browsergedrag. Beoordeling: **GO voor de afgebakende L5.4-contracten op gerichte Node-verificatie; CONDITIONAL GO voor bredere UX-acceptatie zolang de L4-browsercontrole openstaat.** Aanbevolen vervolg: L5.5 kan andere gespecialiseerde `single`-families behandelen, met een expliciete route-/contractgrens; bouw geen dispatcher op alleen adaptermetadata.
 
 ## WIE-TOOL-L5.3 — Pilot Punt via declaratieve lifecycle (branchstatus 2026-10-17)
 
