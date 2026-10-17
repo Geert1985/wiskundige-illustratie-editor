@@ -23,6 +23,8 @@ test('instruction service preserves tool progression and legacy hint text', () =
   assert.equal(instructions.constructionHint('lineBetweenPoints', 0), 'Selecteer het eerste punt.');
   assert.equal(instructions.constructionHint('lineBetweenPoints', 1), 'Selecteer het tweede punt.');
   assert.equal(instructions.constructionHint('lineIntersection', 1), 'Kies de tweede lijn of zijde.');
+  assert.match(instructions.constructionHint('lineEllipseIntersection',0),/lijn, veelhoekzijde of ellips/);
+  assert.match(instructions.constructionHint('lineEllipseIntersection',1),/andere bron/);
   assert.equal(instructions.describe('select', null), null);
 });
 
