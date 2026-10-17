@@ -402,6 +402,8 @@
       this.on(n.toolGrid,'keydown',e=>this.splitMenuKey(e));
       this.on(n.toolGrid, "click", e => {const toggle=e.target.closest('[data-split-toggle]');if(this.toolCatalog.getSplit(toggle?.dataset.splitToggle)){this.splitMenuOpen=this.splitMenuOpen===toggle.dataset.splitToggle?null:toggle.dataset.splitToggle;this.renderSplitTools();return;}const main=e.target.closest('[data-split-main]');if(main?.dataset.choice){this.setTool(main.dataset.choice);return;}const button=e.target.closest('[data-tool]');if(button)this.setTool(button.dataset.tool);});
       this.on(n.viewList, "click", e => this.viewClick(e));
+      this.on(n.viewList, "keydown", e => this.viewRenameKeyDown(e));
+      this.on(n.viewList, "focusout", e => {if(e.target.matches('[data-rename-object]')&&e.target.isConnected)this.invalidate();});
       this.on(n.viewControls,"click",e=>this.viewClick(e));
       this.on(n.navigationTools,"click",e=>{if(e.target.closest('[data-view-select=axes]')){this.selectAxes();return;}const button=e.target.closest('[data-tool]');if(button)this.setTool(button.dataset.tool);});
       this.on(n.zoomInBtn,"click",()=>this.zoomBy(-1));this.on(n.zoomOutBtn,"click",()=>this.zoomBy(1));
@@ -1324,8 +1326,30 @@
       const state=this.labelToggleState(ids);
       if(state.enabled)this.changeDocument(()=>this.execute('object.setProperties',state.payload));
     }
+    beginObjectRename(id) {
+      const object=this.engine.get(id),button=Array.from(this.nodes.viewList.querySelectorAll('[data-select-object]')).find(node=>node.dataset.selectObject===id);
+      const payload={ids:[id],fields:[{path:'name',value:object?.name||''}]};
+      if(!object||object.locked||!button||!this.allowed('object.setProperties',payload))return;
+      const input=this.document.createElement('input');input.type='text';input.className='view-name-edit';input.dataset.renameObject=id;input.setAttribute('aria-label','Objectnaam');input.value=object.name||'';
+      button.replaceWith(input);input.focus();input.select();
+    }
+    viewRenameKeyDown(event) {
+      const input=event.target.closest('[data-rename-object]');if(!input)return;
+      if(event.key==='Escape'){event.preventDefault();event.stopPropagation();this.invalidate();return;}
+      if(event.key!=='Enter')return;
+      event.preventDefault();event.stopPropagation();const id=input.dataset.renameObject,value=input.value.trim(),object=this.engine.get(id);
+      try {
+        if(value&&value!==object?.name&&this.allowed('object.setProperties',{ids:[id],fields:[{path:'name',value}]}))this.changeDocument(()=>this.execute('object.setProperties',{ids:[id],fields:[{path:'name',value}]}));
+      } catch(error) { this.status(error.message); }
+      this.invalidate();
+    }
     viewClick(event) {
       const target = event.target, find = selector => target.closest(selector); let button;
+      if((button=find('[data-select-object]'))){
+        const id=button.dataset.selectObject,now=Date.now(),last=this.viewNameClick;
+        this.viewNameClick={id,time:now};
+        if(event.detail>=2&&last?.id===id&&now-last.time<500&&this.selectedIds.includes(id)){event.preventDefault();this.beginObjectRename(id);return;}
+      }
       if((button=find('[data-layer-label]'))){const layer=this.engine.model.layers.find(l=>l.id===button.dataset.layerLabel);if(layer)this.toggleLabels(layer.members);return;}
       if((button=find('[data-layer-add]'))){this.addLayer(this.nodes.viewList.querySelector('[data-layer-new-name]').value);return;}
       if((button=find('[data-layer-visibility]'))){const l=this.engine.model.layers.find(l=>l.id===button.dataset.layerVisibility);this.changeDocument(()=>this.execute('layer.setVisibility',{id:l.id,value:!l.visible}));return;}
@@ -1390,7 +1414,7 @@
       const rows=[];
       const layers=this.engine.model.layers||[],esc=MI.escapeXml;
       const objectRow=object=>{
-        return '<div class="view-row'+(this.selectedIds.includes(object.id)?' view-row-selected':'')+'" '+(this.runtime?'':'draggable="true" data-drag-object="'+esc(object.id)+'"')+'><button class="view-name view-select-btn" type="button" data-select-object="'+MI.escapeXml(object.id)+'">'+MI.escapeXml(objectName(object))+'<span class="view-type">'+MI.escapeXml(object.id)+'</span></button><button class="eye-btn" title="Object tonen/verbergen" aria-label="Object tonen/verbergen" type="button" data-object-visibility="'+MI.escapeXml(object.id)+'">'+eyeIcon(object.visible!==false)+'</button>'+this.labelToggleButton([object.id],'data-toggle-label',object.id)+'</div>';
+        return '<div class="view-row'+(this.selectedIds.includes(object.id)?' view-row-selected':'')+'" '+(this.runtime?'':'draggable="true" data-drag-object="'+esc(object.id)+'"')+'><button class="view-name view-select-btn" type="button" data-select-object="'+MI.escapeXml(object.id)+'" title="Dubbelklik om de naam te wijzigen">'+MI.escapeXml(objectName(object))+'<span class="view-type">'+MI.escapeXml(object.id)+'</span></button><button class="eye-btn" title="Object tonen/verbergen" aria-label="Object tonen/verbergen" type="button" data-object-visibility="'+MI.escapeXml(object.id)+'">'+eyeIcon(object.visible!==false)+'</button>'+this.labelToggleButton([object.id],'data-toggle-label',object.id)+'</div>';
       };
       const groupsFor=layerId=>{for(const g of this.engine.model.groups||[])if(this.groupRoot(g.id)===g.id && (!layerId||MI.DocumentLayers.index(layers).owner.get(this.groupLeaves(g.id)[0])?.id===layerId)){const leaves=this.groupLeaves(g.id);rows.push('<div class="view-row'+(leaves.every(id=>this.selectedIds.includes(id))?' view-row-selected':'')+'"><button class="view-name view-select-btn" type="button" data-select-group="'+esc(g.id)+'"'+(this.runtime&&!leaves.every(id=>this.capabilities(id).selectList)?' disabled':'')+'>'+esc(g.name)+'<span class="view-type">'+leaves.length+' objecten &middot; '+esc(g.id)+'</span></button></div>');}};
 
