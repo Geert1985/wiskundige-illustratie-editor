@@ -531,12 +531,12 @@
       if(!this.singleSourceContext(ctx))return [];
       const source=ctx.objects[0],app=this.app;
       const entries=app.toolCatalog.list('sidebar').flatMap(category=>category.entries)
-        .filter(entry=>entry.status==='implemented'&&entry.id.startsWith('construct:')&&entry.id!=='construct:intersection')
+        .filter(entry=>entry.status==='implemented'&&entry.id.startsWith('construct:'))
         .filter(entry=>app.toolAllowed(entry.id)&&
-          (!app.runtime||app.capabilities(source.id).sourceTools.includes(entry.id)));
+          (!app.runtime||entry.id==='construct:intersection'||app.capabilities(source.id).sourceTools.includes(entry.id)));
       const out=[];
       for(const entry of entries){
-        const plans=MI.ConstructionService.contextualPlans(source,entry.id.slice(10),ctx.edgeRef);
+        const plans=entry.id==='construct:intersection'?app.intersectionContextPlans(source,ctx.edgeRef):MI.ConstructionService.contextualPlans(source,entry.id.slice(10),ctx.edgeRef);
         // Keep one discoverable entry for each construction. A composite
         // endpoint recipe takes precedence when defined by the service.
         if(plans.length)out.push({entry,plan:plans[0]});

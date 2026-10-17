@@ -702,7 +702,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
   position:absolute;z-index:6;top:70px;left:12px;
   width:min(330px,calc(100% - 24px));max-height:38%;overflow:auto;
   background:#142733eb;color:#ecf1f3;box-shadow:0 4px 16px #08192455;
-  margin:0;padding:10px;border-left:3px solid #e2bd5a;pointer-events:none;
+  margin:0;padding:10px;border-left:3px solid #e2bd5a;pointer-events:auto;overscroll-behavior:contain;
 }
 .radial-tool-instructions :is(button,input,select,textarea){pointer-events:auto}
 .radial-tool-instructions .active-step{color:#efd58e}

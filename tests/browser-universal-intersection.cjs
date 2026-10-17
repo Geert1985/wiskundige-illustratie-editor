@@ -3,11 +3,14 @@ module.exports=async page=>{
  await page.setViewportSize({width:1446,height:884});await page.reload();
  await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[{id:'L',type:'straight',x1:-3,y1:0,x2:3,y2:0},{id:'C',type:'circle',cx:0,cy:0,r:2}],presentation:{showGrid:false}}));
  const {choose}=require('./browser-tool-menu.cjs'),click=async(x,y)=>{const p=await page.evaluate(({x,y})=>FZI.MathIllustration.editor.transform().mathToScreen({x,y}),{x,y});await page.mouse.click(p.x,p.y);};
+ for(const id of ['L','C'])assert.equal(await page.evaluate(id=>{const a=FZI.MathIllustration.editor;a.selectObject(id);const plan=a.intersectionContextPlans(a.engine.get(id))[0];return !!plan&&a.startContextConstruction('construct:intersection',id,plan.key)&&a.interaction.sources[0].objectId===id;},id),true);
  await choose(page,'[data-tool="construct:intersection"]');
+ assert.equal(await page.evaluate(()=>{const a=FZI.MathIllustration.editor,p=a.transform().mathToScreen({x:-2.8,y:0});const hit=a.hoverAt({clientX:p.x,clientY:p.y});return hit?.object?.id==='L'&&a.cursorFor(hit)==='pointer';}),true);
  assert.equal(await page.locator('[data-tool="construct:intersection"]').count(),1);
  const instructions=page.locator('#toolInstructions');await click(-2.8,0);assert.ok(await instructions.locator('[data-intersection-source]').count()>=2);await instructions.locator('[data-intersection-source]').first().evaluate(button=>button.click());
  assert.deepEqual(await page.evaluate(()=>FZI.MathIllustration.editor.interaction.sources),[{objectId:'L'}]);
  await click(1.8,0.87);assert.equal(await instructions.locator('[data-intersection-branch]').count(),2,await page.locator('#status').textContent());assert.equal(await page.locator('[data-intersection-candidate]').count(),2);
+ assert.equal(await instructions.evaluate(node=>{node.style.maxHeight='110px';node.scrollTop=node.scrollHeight;return getComputedStyle(node).pointerEvents==='auto'&&node.scrollTop>0;}),true);
  const beforeCancel=await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.length);await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>FZI.MathIllustration.editor.engine.model.objects.length),beforeCancel);assert.equal(await page.locator('[data-intersection-candidate]').count(),0);
  await choose(page,'[data-tool="construct:intersection"]');await click(-2.8,0);await instructions.locator('[data-intersection-source]').first().evaluate(button=>button.click());await click(1.8,0.87);
  const branchOne=instructions.locator('[data-intersection-branch="1"]');await branchOne.focus();await page.keyboard.press('Enter');assert.equal(await branchOne.getAttribute('aria-pressed'),'false');

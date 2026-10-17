@@ -251,7 +251,7 @@
       if(this.navigationMode==='pan')return null;
       if(this.tool.startsWith('construct:') && (!this.interaction || this.interaction.mode==='construction')) {
         const point=this.pointer(event);if(!point)return null;
-        const previous=this.interaction?.sources||[],sources=this.constructionSourcesAt(point,event,previous),source=sources?.[previous.length];
+        const previous=this.interaction?.sources||[],sources=this.tool==='construct:intersection'?null:this.constructionSourcesAt(point,event,previous),source=this.tool==='construct:intersection'?this.intersectionSourceOptions(point,{sources:previous})[0]:sources?.[previous.length];
         return source?{object:MI.AxisReferences.isAxis(source)?{...MI.AxisReferences.line(source),id:null}:this.engine.get(source.objectId),kind:'construction',source}:null;
       }
       const hit=this.tool==='select' && this.navigationMode!=='pan' && !this.interaction?this.hitAt(event):null;
@@ -766,7 +766,16 @@
     // UI-RADIAL-9: generic adapter for any document object accepted by a
     // registered construction contract. The service owns source matching;
     // this controller only stages the existing create/interaction workflow.
+    intersectionContextPlans(source,sourceRef=null){
+      if(!source||!this.constructionSelectable(source))return [];
+      return INTERSECTION_KINDS.flatMap(kind=>this.toolAllowed('construct:'+kind)&&(!this.runtime||this.capabilities(source.id).sourceTools.includes('construct:'+kind))?MI.ConstructionService.contextualPlans(source,kind,sourceRef).map(plan=>({...plan,key:kind+':'+plan.key})):[]);
+    }
     startContextConstruction(toolId,objectId,planKey,sourceRef=null){
+      if(toolId==='construct:intersection'){
+        const source=this.engine.get(objectId),plan=this.intersectionContextPlans(source,sourceRef).find(item=>item.key===planKey);
+        if(!plan||this.selectedIds.length!==1||this.selectedIds[0]!==objectId||!this.canvasSelectable(source))return false;
+        this.setTool(toolId);this.interaction={mode:'construction',sources:[],selectionIdsBefore:this.selectedIds.slice()};this.acceptIntersectionSource(plan.sources[0]);return true;
+      }
       const kind=typeof toolId==='string'&&toolId.startsWith('construct:')?
         toolId.slice(10):null;
       const source=kind&&this.engine.get(objectId);
