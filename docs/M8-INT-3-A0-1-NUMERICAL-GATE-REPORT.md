@@ -90,7 +90,7 @@ Voor NUM-002 zijn twee gelijke cirkels met straal 2 en onderlinge afstand 1 gebr
 
 ## 8. Resultaten NUM-001 t/m NUM-020
 
-De complete, reproduceerbare invoer en rationele boxes staan in `research/m8-int-3-a0-1/fixtures/matrix-results.json`. De matrix/asserties zijn volledig uitgevoerd met Node v22.18.0; **20/20 assertions geslaagd**. “Geslaagd” betekent dat de vereiste status/count/multipliciteit en fail-closed-invariant overeenkomen; NUM-012, NUM-019 en NUM-020 zijn bewust geldige negatieve/onbesliste acceptatie-uitkomsten.
+De complete, reproduceerbare invoer en rationele boxes staan in `research/m8-int-3-a0-1/fixtures/matrix-results.json`. De matrix is volledig uitgevoerd met Node v22.18.0; **20/20 testgevallen geslaagd**. Per geval zijn status/count/multipliciteit en waar van toepassing fail-closed-invarianten geassert; NUM-012, NUM-019 en NUM-020 zijn bewust geldige negatieve/onbesliste acceptatie-uitkomsten.
 
 | ID | Fixture | Werkelijke uitkomst | Beoordeling |
 |---|---|---|---|
@@ -169,7 +169,7 @@ Een volgende, afzonderlijk geautoriseerde researchgate moet eerst een fraction-f
 
 ## 15. Tests en verificatie uitgevoerd
 
-- `node research/m8-int-3-a0-1/run-matrix.cjs`: **20/20 assertions PASS**, direct opnieuw uitgevoerd na solverwijzigingen. Volledige suite/Edge/browserregressies niet uitgevoerd.
+- `node research/m8-int-3-a0-1/run-matrix.cjs`: **20/20 testgevallen PASS**, direct opnieuw uitgevoerd na solverwijzigingen. Volledige suite/Edge/browserregressies niet uitgevoerd.
 - `node research/m8-int-3-a0-1/independent-oracles.cjs`: analytische 15°/45°/60°/90° vier-root-checks en fourth-order identiteitscheck PASS.
 - `node research/m8-int-3-a0-1/performance.cjs`: vijf profielen, telkens één warm-up plus vijf herhalingen; alle vijf bleven op de verwachte gecertificeerde status/rootcount.
 - Eén eerdere matrixpoging werd na NUM-011 onderbroken toen een verschillende ellips–ellips-case langer dan 15 seconden bleef rekenen. De fixture kreeg daarna een klein expliciet budget van 4.000 operaties; de definitieve complete matrix eindigde veilig op `NUMERIC_UNRESOLVED` met `roots:null`.

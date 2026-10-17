@@ -75,6 +75,6 @@ function run(){
  }
  const report={node:process.version,tests:results.length,passed:results.length,results};
  require('node:fs').writeFileSync(outputPath,JSON.stringify(report,null,2)+'\n');
- process.stdout.write(`SUMMARY ${results.length}/${results.length} assertions passed\n`+results.map(x=>`${x.id}\t${x.status}\t${x.count??'—'}\t${x.multiplicities?.join(',')??'—'}\t${x.operations??'—'}`).join('\n')+'\n');
+ process.stdout.write(`SUMMARY ${results.length}/${results.length} fixture cases passed\n`+results.map(x=>`${x.id}\t${x.status}\t${x.count??'—'}\t${x.multiplicities?.join(',')??'—'}\t${x.operations??'—'}`).join('\n')+'\n');
 }
 run();
