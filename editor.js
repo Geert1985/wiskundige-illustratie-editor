@@ -920,16 +920,15 @@
       const recipeTool='construct:'+kind;
       const sourceCaps=this.runtime?this.capabilities(source.id):null;
       if(!this.toolAllowed(recipeTool)||!this.constructionSelectable(source,recipeTool)||(this.runtime&&(!sourceCaps.read||!sourceCaps.display||!sourceCaps.sourceTools.includes(recipeTool)))){this.cancel();this.status('De geselecteerde bron is niet langer beschikbaar.');return;}
-      try{
-        const outcome=this.changeDocument(()=>{
-          this.selectedIds=this.execute('construction.create',{
-            toolId:recipeTool,sources:state.sources,parameter
-          }).result.map(o=>o.id);
-        },{cancelInteraction:false});
-        this.release(state);state.pointerId=null;
-        if(outcome.ok){this.interaction=null;this.tool='select';this.engine.renderer.preview=null;this.feedback=null;this.status('Afhankelijk punt toegevoegd.');}
-      }catch(error){this.status(error.message);}
-      this.invalidate();
+      let createdIds=[];
+      const outcome=this.changeDocument(()=>{
+        createdIds=this.execute('construction.create',{
+          toolId:recipeTool,sources:state.sources,parameter
+        }).result.map(o=>o.id);
+        return createdIds;
+      },{cancelInteraction:false});
+      if(outcome.ok)this.completeToolInteraction({toolId:'construct:pointOnObject',outcome,origin:'canvas',selection:createdIds});
+      else {this.release(state);state.pointerId=null;this.invalidate();}
     }
     ellipsePointPlacementPreview(point){
       const state=this.interaction,ref=state?.sources?.[0],source=ref&&this.engine.get(ref.objectId);

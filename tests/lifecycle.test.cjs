@@ -761,6 +761,46 @@ test('WIE-TOOL-L3.2 incomplete and invalid generic inputs do not complete',()=>{
  h.down({x:0,y:0});assert.equal(completions,0);assert.equal(h.app.tool,'construct:lineBetweenPoints');assert.equal(h.app.interaction.sources.length,1);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.status.textContent,/verschillende punten/);
 });
 
+test('WIE-TOOL-L3.3a point-on-object routes complete centrally for every supported source type',()=>{
+ const cases=[
+  {kind:'pointOnSegment',source:{id:'L',type:'line',x1:10,y1:10,x2:14,y2:10},sourceId:'L',first:{x:11,y:10},place:{x:12,y:10},parameter:.5},
+  {kind:'pointOnSegment',source:{id:'P',type:'polygon',vertices:[{x:30,y:0},{x:34,y:0},{x:34,y:4},{x:30,y:4}]},sourceId:'P',part:'edge',first:{x:31,y:0},place:{x:32,y:0},parameter:.5},
+  {kind:'pointOnCircle',source:{id:'C',type:'circle',cx:10,cy:0,r:2},sourceId:'C',first:{x:12,y:0},place:{x:10,y:2},parameter:.25},
+  {kind:'pointOnEllipse',source:{id:'E',type:'ellipse',cx:20,cy:0,a:3,b:2,rotation:0},sourceId:'E',first:{x:23,y:0},place:{x:20,y:2},parameter:.25}
+ ];
+ for(const scenario of cases){
+  const h=appRuntime();h.engine.add(scenario.source);h.app.setTool('construct:pointOnObject');const complete=h.app.completeToolInteraction.bind(h.app);let completions=0,last=null;h.app.completeToolInteraction=args=>{completions++;last=args;return complete(args);};
+  h.down(scenario.first);assert.equal(h.app.tool,'construct:pointOnObject');assert.equal(h.app.interaction.pathPlacement,true);assert.equal(h.app.interaction.concreteKind,scenario.kind);assert.equal(h.app.history.entries.length,0);
+  h.down(scenario.place);const created=h.engine.model.objects.find(o=>o.construction?.kind===scenario.kind&&o.construction?.sources?.[0]?.objectId===scenario.sourceId);
+  assert.ok(created,scenario.kind);assert.equal(completions,1,scenario.kind);assert.equal(last.toolId,'construct:pointOnObject');assert.equal(last.outcome.ok,true);assert.deepEqual(plain(last.selection),[created.id]);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.deepEqual(plain(h.app.selectedIds),[created.id]);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.app.history.entries.length,1);
+  assert.ok(Math.abs(created.construction.parameter-scenario.parameter)<1e-8,scenario.kind);if(scenario.part)assert.equal(created.construction.sources[0].part,scenario.part);
+  const saved=plain(h.engine.toJSON());h.app.travelHistory();assert.equal(h.engine.get(created.id),null);h.app.travelHistory(true);assert.deepEqual(plain(h.engine.toJSON()),saved);assert.equal(h.engine.get(created.id).construction.kind,scenario.kind);
+ }
+});
+
+test('WIE-TOOL-L3.3a point-on-circle remains dynamically dependent on its source',()=>{
+ const h=appRuntime();h.engine.add({id:'C',type:'circle',cx:10,cy:0,r:2});h.app.setTool('construct:pointOnObject');h.down({x:12,y:0});h.down({x:10,y:2});
+ const point=h.engine.model.objects.find(o=>o.construction?.kind==='pointOnCircle');assert.ok(point);assert.equal(point.construction.sources[0].objectId,'C');assert.equal(point.construction.parameter,.25);assert.equal(point.x,10);assert.equal(point.y,2);
+ h.engine.update('C',{cx:11,cy:3,r:4});assert.equal(h.engine.get(point.id).x,11);assert.equal(h.engine.get(point.id).y,7);assert.equal(h.engine.get(point.id).construction.sources[0].objectId,'C');
+});
+
+test('WIE-TOOL-L3.3a point-on-object command failure and invalid projection preserve retry state',()=>{
+ const h=appRuntime();const before=plain(h.engine.toJSON());h.app.setTool('construct:pointOnObject');h.down({x:.5,y:1});const state=h.app.interaction,execute=h.app.execute.bind(h.app),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;
+ h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.app.execute=(operation,...args)=>{if(operation==='construction.create')throw Error('L3.3a denied');return execute(operation,...args);};h.down({x:.6,y:1});
+ assert.equal(completions,0);assert.equal(h.app.tool,'construct:pointOnObject');assert.equal(h.app.interaction,state);assert.deepEqual(plain(state.sources),[{objectId:'l'}]);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.match(h.app.nodes.status.textContent,/L3\.3a denied/);
+ h.app.execute=execute;h.down({x:.6,y:1});assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.model.objects.filter(o=>o.construction?.kind==='pointOnSegment').length,1);
+
+ const invalid=appRuntime();invalid.engine.add({id:'C',type:'circle',cx:0,cy:0,r:1000});invalid.app.setTool('construct:pointOnObject');const original=plain(invalid.engine.toJSON()),finish=invalid.app.completeToolInteraction.bind(invalid.app);let invalidCompletions=0;invalid.app.completeToolInteraction=args=>{invalidCompletions++;return finish(args);};
+ invalid.down({x:1000,y:0});const placement=invalid.app.interaction;invalid.down({x:0,y:0});assert.equal(invalidCompletions,0);assert.equal(invalid.app.tool,'construct:pointOnObject');assert.equal(invalid.app.interaction,placement);assert.deepEqual(plain(invalid.engine.toJSON()),original);assert.equal(invalid.app.history.entries.length,0);assert.match(invalid.app.nodes.status.textContent,/binnen 12 pixels/);
+ invalid.down({x:0,y:1000});assert.equal(invalidCompletions,1);assert.equal(invalid.app.tool,'select');assert.equal(invalid.engine.model.objects.filter(o=>o.construction?.kind==='pointOnCircle').length,1);assert.equal(invalid.app.history.entries.length,1);
+});
+
+test('WIE-TOOL-L3.3a unsupported source and Escape never complete point-on-object placement',()=>{
+ const h=appRuntime();h.engine.add({id:'S',type:'straight',x1:40,y1:40,x2:50,y2:40});h.app.setTool('construct:pointOnObject');let completions=0;const complete=h.app.completeToolInteraction.bind(h.app);h.app.completeToolInteraction=args=>{completions++;return complete(args);};const before=plain(h.engine.toJSON());
+ h.down({x:45,y:40});assert.equal(h.app.tool,'construct:pointOnObject');assert.equal(h.app.interaction,null);assert.equal(completions,0);assert.deepEqual(plain(h.engine.toJSON()),before);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.status.textContent,/lijn, veelhoekzijde, cirkel of ellips/);
+ h.down({x:.5,y:1});assert.equal(h.app.interaction.pathPlacement,true);h.emit(h.win,'keydown',{key:'Escape'});assert.equal(completions,0);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(1),false);assert.equal(h.app.history.entries.length,0);
+});
+
 test('WIE-TOOL-L2 Snijpunt and context-complete remain outside central completion',()=>{
  const h=appRuntime();h.engine.add({id:'S',type:'straight',x1:-3,y1:1,x2:3,y2:1});h.engine.add({id:'C',type:'circle',cx:0,cy:1,r:2});const complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};
  h.app.setTool('construct:intersection');h.app.interaction={mode:'construction',sources:[],selectionIdsBefore:[]};h.app.acceptIntersectionSource({objectId:'S'});h.app.acceptIntersectionSource({objectId:'C'});assert.equal(completions,0);assert.equal(h.app.intersectionCompleted,true);assert.equal(h.app.selectedIds.length,2);
