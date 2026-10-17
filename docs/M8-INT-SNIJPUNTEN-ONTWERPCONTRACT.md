@@ -1,15 +1,15 @@
 # WIE — M8-INT: Universeel snijpuntgereedschap en snijpunten van kegelsneden
 
-**Documentversie:** 1.1.2
+**Documentversie:** 1.1.3
 **Datum:** 17 oktober 2026  
-**Status:** normatief hoofdcontract — M8-INT.0 afgerond en geïntegreerd op `main`; voor M8-INT.1/.2/.3 afzonderlijke implementatie-GO vereist  
+**Status:** normatief hoofdcontract — M8-INT.0 en M8-INT.1 volledig geaccepteerd en geïntegreerd op `main`; M8-INT.2 gepland en M8-INT.3 ontwerpvoorstel zonder implementatie-GO  
 **Project:** From Zero 2 Infinity — Wiskundige Illustratie Editor (WIE)  
 **Repository:** [`Geert1985/wiskundige-illustratie-editor`](https://github.com/Geert1985/wiskundige-illustratie-editor)  
-**Referentie:** M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en op `main` geïntegreerd (PR #27); roadmap v2.8.25. Het afzonderlijke [M8-INT.1-lijn–ellipscontract v1.0.0](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md) is opgesteld ter goedkeuring. Verifieer bij vervolgwerk opnieuw branch, HEAD en feitelijke code.  
+**Referentie:** M8-INT.0 ([PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27)) en M8-INT.1 ([PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28)) zijn op 17 oktober 2026 handmatig geaccepteerd en op `main` geïntegreerd. Het [M8-INT.1-contract v1.0.1](M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md) is gerealiseerd. Het nieuwe [M8-INT.3-ontwerpcontract v1.0.0](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md) is opgesteld ter inhoudelijke goedkeuring met nog verplichte afzonderlijke `solutionKey`-bijlage; roadmap v2.8.30. Controleer bij vervolgwerk actuele branch, HEAD en broncode.  
 **Afhankelijkheid:** bestaande M5b-constructies en M8a-ellipsen; M8b blijft buiten scope.  
 **Gerelateerde afzonderlijke roadmapbeslissing:** *Punt op object*; dit is niet hetzelfde als *Snijpunt* en valt buiten M8-INT.
 
-> **Normatieve status.** Versie 1.1.1 actualiseert de M8-INT.0-status en verwijst naar het nieuwe afzonderlijke .1-fasecontract. De goedgekeurde UX blijft voor **alle M8-INT-fasen**: **onmiddellijk alle geldige unieke snijpunten aanmaken na twee ondubbelzinnige bronselecties**, zonder individuele puntkeuze of aparte bevestiging. M8-INT.0 is geïmplementeerd, handmatig geaccepteerd en op `main` geïntegreerd. M8-INT.1 heeft een ontwerpvoorstel maar **nog geen implementatie-GO**; .2/.3 blijven toekomstig. Bestaande persistente recepten blijven compatibel.
+> **Normatieve status.** Versie 1.1.3 consolideert de acceptatie en merge van **M8-INT.0 én M8-INT.1** en verwijst naar het afzonderlijke M8-INT.3-ontwerpvoorstel. De goedgekeurde UX geldt voor alle toekomstige paren: **onmiddellijk alle uniek geldige snijpunten na twee ondubbelzinnige bronselecties**, zonder individuele puntkeuze of bevestiging; **na succesvolle constructie automatisch naar `Selecteren`**, bij nul oplossingen blijft het gereedschap actief. M8-INT.2 is gepland; M8-INT.3 wacht op inhoudelijke goedkeuring en op de afzonderlijke, testbare `solutionKey`-identiteitsbijlage. De historische opdrachttekst verderop is niet opnieuw uit te voeren. Bestaande persistente recepten blijven compatibel.
 
 ---
 
@@ -445,4 +445,4 @@ Repositoryreferenties, geraadpleegd op 16 oktober 2026; controleer bij implement
 - [docs/M8a-ELLIPSEN-CONTRACT.md](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/docs/M8a-ELLIPSEN-CONTRACT.md)
 - [construction-service.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/construction-service.js), [linear-geometry.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/linear-geometry.js), [ellipse-geometry.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/ellipse-geometry.js), [index.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/index.js), [tool-catalog.js](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/tool-catalog.js), [editor.html](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/main/editor.html).
 
-**Einde hoofdcontract v1.1.1 — M8-INT.0 geïntegreerd op main; M8-INT.1-contract ter goedkeuring.**
+**Einde hoofdcontract v1.1.3 — M8-INT.0/.1 geïntegreerd op main; M8-INT.3-ontwerpvoorstel ter goedkeuring, afzonderlijke solutionKey-gate open.**
