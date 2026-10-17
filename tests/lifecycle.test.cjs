@@ -243,23 +243,42 @@ test('history records a whole drag once, restores selection and ignores cancelle
 });
 test('text form commits the captured snap position once and Escape discards pending text', async () => {
   const { app, engine, down, emit, win, workspace } = appRuntime();
+  const complete=app.completeToolInteraction.bind(app);let completions=0,lastCompletion=null;app.completeToolInteraction=args=>{completions++;lastCompletion=args;return complete(args);};
   app.nodes.textValue.focus = () => {};
   app.setTool('text'); down({ x: 2, y: 2 }); await new Promise(resolve=>setTimeout(resolve,0));
   assert.equal(workspace.active,true);assert.equal(app.nodes.textDialog.open,true);
   const position = plain(app.pendingText.point); assert.equal(app.interaction, null);
   app.nodes.textValue.value = '  Testtekst  '; app.submitText();
   const object = engine.get(app.selectedId); assert.equal(object.text, 'Testtekst');assert.equal(workspace.active,false);
-  assert.equal(object.x, position.x); assert.equal(object.y, position.y); assert.equal(app.history.entries.length, 1);
+  assert.equal(object.x, position.x); assert.equal(object.y, position.y); assert.equal(app.history.entries.length, 1);assert.equal(completions,1);assert.equal(lastCompletion.toolId,'text');assert.equal(lastCompletion.origin,'canvas');assert.deepEqual(plain(lastCompletion.selection),[object.id]);assert.equal(app.tool,'text');assert.deepEqual(plain(app.selectedIds),[object.id]);assert.equal(app.interaction,null);assert.equal(engine.renderer.preview,null);
   app.travelHistory(); assert.equal(engine.get(object.id), null); app.travelHistory(true); assert.ok(engine.get(object.id));
   down({ x: 3, y: 2 }); await new Promise(resolve=>setTimeout(resolve,0)); emit(win, 'keydown', { key: 'Escape' });
-  assert.equal(app.pendingText, null); assert.equal(app.nodes.textDialog.open, false); assert.equal(workspace.active,false);assert.equal(app.history.entries.length, 1);
+  assert.equal(app.pendingText, null); assert.equal(app.nodes.textDialog.open, false); assert.equal(workspace.active,false);assert.equal(app.history.entries.length, 1);assert.equal(completions,1);assert.equal(app.tool,'text');
 });
 test('empty text is not committed and New clears a pending text form', async () => {
   const { app, engine, down, workspace } = appRuntime();
+  const complete=app.completeToolInteraction.bind(app);let completions=0;app.completeToolInteraction=args=>{completions++;return complete(args);};
   app.nodes.textValue.focus = () => {};
   app.setTool('text'); down({ x: 2, y: 2 }); await new Promise(resolve=>setTimeout(resolve,0)); app.nodes.textValue.value = '   '; app.submitText();
-  assert.equal(workspace.active,true);assert.equal(app.nodes.textDialog.open,true);assert.equal(engine.model.objects.length, 2); assert.equal(app.history.canUndo, false);
-  app.newDocument(); assert.equal(app.pendingText, null); assert.equal(app.nodes.textDialog.open, false);assert.equal(workspace.active,false); assert.equal(engine.model.objects.length, 0);
+  assert.equal(workspace.active,true);assert.equal(app.nodes.textDialog.open,true);assert.equal(engine.model.objects.length, 2); assert.equal(app.history.canUndo, false);assert.equal(completions,0);assert.equal(app.tool,'text');
+  app.newDocument(); assert.equal(app.pendingText, null); assert.equal(app.nodes.textDialog.open, false);assert.equal(workspace.active,false); assert.equal(engine.model.objects.length, 0);assert.equal(completions,0);
+});
+test('WIE-TOOL-L3.5 text repeat creates twice with one history step per object',async()=>{
+ const h=appRuntime(),complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.app.nodes.textValue.focus=()=>{};h.app.setTool('text');const ids=[];
+ for(const [index,point] of [{x:2,y:2},{x:-2,y:1}].entries()){
+  h.down(point);await new Promise(resolve=>setTimeout(resolve,0));assert.equal(h.app.nodes.textDialog.open,true);h.app.nodes.textValue.value='Tekst '+(index+1);await h.app.submitText();ids.push(h.app.selectedId);assert.equal(h.app.tool,'text');assert.equal(h.app.nodes.textDialog.open,false);assert.equal(h.app.pendingText,null);assert.equal(h.app.interaction,null);assert.equal(h.engine.renderer.preview,null);
+ }
+ assert.equal(completions,2);assert.equal(h.app.history.entries.length,2);assert.deepEqual(plain(h.app.selectedIds),[ids[1]]);assert.deepEqual(ids.map(id=>h.engine.get(id).text),['Tekst 1','Tekst 2']);
+ h.app.travelHistory();assert.equal(h.engine.get(ids[1]),null);assert.deepEqual(plain(h.app.selectedIds),[ids[0]]);h.app.travelHistory(true);assert.equal(h.engine.get(ids[1]).text,'Tekst 2');assert.deepEqual(plain(h.app.selectedIds),[ids[1]]);h.app.travelHistory();h.app.travelHistory();assert.ok(ids.every(id=>h.engine.get(id)===null));h.app.travelHistory(true);h.app.travelHistory(true);assert.deepEqual(ids.map(id=>h.engine.get(id).text),['Tekst 1','Tekst 2']);
+});
+test('WIE-TOOL-L3.5 text command refusal keeps the editor open and retry completes once',async()=>{
+ const h=appRuntime(),complete=h.app.completeToolInteraction.bind(h.app),commands=h.app.commands;let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.app.nodes.textValue.focus=()=>{};h.app.setTool('text');h.down({x:1,y:2});await new Promise(resolve=>setTimeout(resolve,0));h.app.nodes.textValue.value='Herstelbare tekst';h.app.commands={...commands,execute(){throw Error('text commit denied');}};
+ await h.app.submitText();assert.equal(completions,0);assert.equal(h.app.tool,'text');assert.equal(h.app.nodes.textDialog.open,true);assert.equal(h.workspace.active,true);assert.equal(h.app.pendingText.point.x,1);assert.equal(h.app.nodes.textValue.value,'Herstelbare tekst');assert.equal(h.engine.model.objects.length,2);assert.equal(h.app.history.entries.length,0);assert.match(h.app.nodes.textEditorStatus.textContent,/text commit denied/);
+ h.app.commands=commands;await h.app.submitText();assert.equal(completions,1);assert.equal(h.app.tool,'text');assert.equal(h.app.nodes.textDialog.open,false);assert.equal(h.app.history.entries.length,1);assert.equal(h.engine.get(h.app.selectedId).text,'Herstelbare tekst');
+});
+test('WIE-TOOL-L3.5 editing existing text does not invoke creation completion',async()=>{
+ const h=appRuntime();h.engine.add({id:'T',type:'text',x:2,y:1,text:'Oud'});h.app.setTool('line');h.app.selectedId='T';h.app.selectedIds=['T'];const complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.app.nodes.textValue.focus=()=>{};await h.app.openRichText('T');await new Promise(resolve=>setTimeout(resolve,0));const interaction={mode:'independent-edit',pointerId:25},preview={type:'line',start:{x:0,y:0},end:{x:1,y:1}},feedback={type:'sentinel'};h.app.interaction=interaction;h.app.nodes.canvasWrap.setPointerCapture(25);h.engine.renderer.preview=preview;h.app.feedback=feedback;h.app.nodes.textValue.value='Nieuw';await h.app.submitText();
+ assert.equal(h.engine.model.objects.length,3);assert.equal(h.engine.get('T').text,'Nieuw');assert.equal(completions,0);assert.equal(h.app.tool,'line');assert.equal(h.app.selectedId,'T');assert.deepEqual(plain(h.app.selectedIds),['T']);assert.equal(h.app.history.entries.length,1);assert.equal(h.app.interaction,interaction);assert.equal(h.app.nodes.canvasWrap.hasPointerCapture(25),true);assert.equal(h.engine.renderer.preview,preview);assert.equal(h.app.feedback,feedback);h.app.travelHistory();assert.equal(h.engine.get('T').text,'Oud');h.app.travelHistory(true);assert.equal(h.engine.get('T').text,'Nieuw');assert.equal(h.app.tool,'line');assert.deepEqual(plain(h.app.selectedIds),['T']);
 });
 test('triangle and multi-click polygon use one owner and one undo step; Enter and Escape clean up',()=>{
   for(const tool of ['triangle','polygon']) {
