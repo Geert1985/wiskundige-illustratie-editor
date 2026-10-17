@@ -1,9 +1,9 @@
 # M-PATH.0-A2 — Definitieve UI-omschakeling
 
-**Datum:** 17 oktober 2026  
-**Branch:** `codex/m-path-0-universal-point-tool`  
-**Remote basiscommit:** `f19ab93854f59319dafa6a7414b903c0be31980a`  
-**Normatief contract:** `WIE-M-PATH-0-Ontwerp-en-implementatiecontract-v1.0.1.md`  
+**Datum:** 17 oktober 2026
+**Branch:** `codex/m-path-0-universal-point-tool`
+**Remote basiscommit:** `f19ab93854f59319dafa6a7414b903c0be31980a`
+**Normatief contract:** `WIE-M-PATH-0-Ontwerp-en-implementatiecontract-v1.0.1.md`
 **Autorisatie:** expliciete gebruikers-GO voor verwijderen van de legacyknoppen vóór de definitieve regressieverificatie. Handmatige acceptatie staat in `M-PATH-0-A-HANDMATIGE-ACCEPTATIE.md`.
 
 ## Uitgangsbasis
