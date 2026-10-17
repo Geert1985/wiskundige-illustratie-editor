@@ -3,7 +3,7 @@
   "use strict";
   const MI = global.FZI.MathIllustration;
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
-  const INTERSECTION_KINDS = Object.freeze(['lineIntersection','lineCircleIntersection','circleCircleIntersection']);
+  const INTERSECTION_KINDS = Object.freeze(['lineIntersection','lineCircleIntersection','lineEllipseIntersection','circleCircleIntersection']);
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
     constructor({ engine, services, document, window, storage }) {
@@ -630,8 +630,8 @@
     }
     intersectionSourceOptions(point, state) {
       const specs=state.sources.length===0
-        ?[['line','lineIntersection',0],['line','lineCircleIntersection',0],['circle','lineCircleIntersection',1],['circle','circleCircleIntersection',0]]
-        :[['line','lineIntersection',1],['line','lineCircleIntersection',0],['circle','lineCircleIntersection',1],['circle','circleCircleIntersection',1]];
+        ?[['line','lineIntersection',0],['line','lineCircleIntersection',0],['circle','lineCircleIntersection',1],['line','lineEllipseIntersection',0],['ellipse','lineEllipseIntersection',1],['circle','circleCircleIntersection',0]]
+        :[['line','lineIntersection',1],['line','lineCircleIntersection',0],['circle','lineCircleIntersection',1],['line','lineEllipseIntersection',0],['ellipse','lineEllipseIntersection',1],['circle','circleCircleIntersection',1]];
       const options=[];
       for(const [role,kind,index] of specs){if(!this.toolAllowed('construct:'+kind))continue;for(const source of this.constructionPick(point,role,index,kind,true)){const key=JSON.stringify(source);if(!options.some(item=>JSON.stringify(item)===key))options.push(source);}}
       return options;
@@ -641,7 +641,7 @@
       state.pendingSourceOptions=null;state.sources=[...(state.sources||[]),{...source}];
       if(state.sources.length<2){this.engine.renderer.preview=null;this.status('Kies het tweede object.');this.renderInstructions();this.invalidate();return;}
       const objects=new Map(this.engine.model.all().map(object=>[object.id,object])),result=MI.IntersectionDispatcher.evaluate(state.sources,objects);
-      if(!result.supported){state.sources=state.sources.slice(0,1);this.status(result.reasonCode==='UNSUPPORTED_PAIR'?'Deze combinatie wordt niet ondersteund. Kies een lijn, veelhoekzijde of cirkel.':'Deze broncombinatie is ongeldig. Kies een ander object.');this.renderInstructions();this.invalidate();return;}
+      if(!result.supported){state.sources=state.sources.slice(0,1);this.status(result.reasonCode==='UNSUPPORTED_PAIR'?'Deze combinatie wordt niet ondersteund. Kies een lijn, veelhoekzijde, cirkel of ellips.':'Deze broncombinatie is ongeldig. Kies een ander object.');this.renderInstructions();this.invalidate();return;}
       if(!this.toolAllowed('construct:'+result.kind)){state.sources=[];this.status('Deze combinatie is niet toegestaan.');this.renderInstructions();this.invalidate();return;}
       const recipeTool='construct:'+result.kind,allowed=state.sources.every(ref=>{if(MI.AxisReferences.isAxis(ref))return this.runtime?this.runtime.getAxisSourceTools(ref.axis).includes(recipeTool):true;const caps=this.capabilities(ref.objectId),object=this.engine.get(ref.objectId);return !!object&&this.engine.isDisplayed(ref.objectId)&&object.visible!==false&&(!object.locked||!this.runtime)&&(!this.runtime||(caps.read&&caps.display&&caps.sourceTools.includes(recipeTool)));});
       if(!allowed){state.sources=state.sources.slice(0,1);this.status('Een bron is niet beschikbaar voor deze constructie.');this.renderInstructions();this.invalidate();return;}

@@ -5,7 +5,7 @@ module.exports=async page=>{
  const ids=await page.locator('#toolGrid [data-tool]').evaluateAll(nodes=>nodes.map(n=>n.dataset.tool));
  assert.equal(ids.length,39);assert.equal(new Set(ids).size,39);
  assert.equal(ids.filter(id=>id==='construct:intersection').length,1);
- for(const id of ['construct:lineIntersection','construct:lineCircleIntersection','construct:circleCircleIntersection'])assert.ok(!ids.includes(id),id+' must stay out of the visible tool catalog.');
+ for(const id of ['construct:lineIntersection','construct:lineCircleIntersection','construct:lineEllipseIntersection','construct:circleCircleIntersection'])assert.ok(!ids.includes(id),id+' must stay out of the visible tool catalog.');
  const snapshot=()=>page.evaluate(()=>{const a=FZI.MathIllustration.editor;return {document:a.engine.toJSON(),tool:a.tool,selected:a.selectedIds,interaction:a.interaction,history:a.history.entries,cursor:a.history.cursor,status:a.nodes.status.textContent,storage:Object.entries(localStorage)};});
  await page.evaluate(()=>FZI.MathIllustration.editor.loadDocument({objects:[]}));
  const documentBefore=await page.evaluate(()=>FZI.MathIllustration.editor.engine.toJSON());

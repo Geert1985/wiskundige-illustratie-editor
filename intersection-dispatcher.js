@@ -32,6 +32,13 @@
         accepts(original[0], 'circle', 'lineCircleIntersection', 1, objects))
       return { supported: true, kind: 'lineCircleIntersection', sources: [original[1], original[0]] };
 
+    if (accepts(original[0], 'line', 'lineEllipseIntersection', 0, objects) &&
+        accepts(original[1], 'ellipse', 'lineEllipseIntersection', 1, objects))
+      return { supported: true, kind: 'lineEllipseIntersection', sources: original };
+    if (accepts(original[1], 'line', 'lineEllipseIntersection', 0, objects) &&
+        accepts(original[0], 'ellipse', 'lineEllipseIntersection', 1, objects))
+      return { supported: true, kind: 'lineEllipseIntersection', sources: [original[1], original[0]] };
+
     if (accepts(original[0], 'circle', 'circleCircleIntersection', 0, objects) &&
         accepts(original[1], 'circle', 'circleCircleIntersection', 1, objects))
       return { supported: true, kind: 'circleCircleIntersection', sources: original };
@@ -41,7 +48,7 @@
   function evaluate(sources, objects) {
     const pair = classify(sources, objects);
     if (!pair.supported) return { ...pair, candidates: [] };
-    try { MI.ConstructionService.validateReferences({ kind: pair.kind, sources: pair.sources }, objects); }
+    try { MI.ConstructionService.validateReferences({ kind: pair.kind, sources: pair.sources, ...(pair.kind==='lineEllipseIntersection'?{branch:0}:{}) }, objects); }
     catch (error) { return { ...pair, supported: false, reasonCode: error.code || 'INVALID_REFERENCE', candidates: [] }; }
     const branches = pair.kind === 'lineIntersection' ? [undefined] : [0, 1];
     const evaluations = branches.map(branch => {
