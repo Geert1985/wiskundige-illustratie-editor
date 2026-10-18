@@ -65,7 +65,7 @@ Efficiëntie: vermijd een volledige regressiesuite na elke kleine documentcorrec
 
 ## 6. Opleveringsrapport en bewijs
 
-Maak `docs/M8b-3-CONSOLIDATION-REPORT.md` met **documentversie 1.0.0**:
+Maak `docs/archive/doc-e-batch-2/M8b-3-CONSOLIDATION-REPORT.md` met **documentversie 1.0.0**:
 
 - Baseline `main`-SHA, werkbranch en commitlijst.
 - Auditmatrix: elk domein PASS / FAIL / PARTIAL / NOT RUN, met concrete testrefs.
