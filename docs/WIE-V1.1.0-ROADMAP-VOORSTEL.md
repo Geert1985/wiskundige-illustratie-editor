@@ -153,12 +153,12 @@ Vast te leggen **NO-GO**-voorwaarden: stille documentinformatieverliezen, verzon
 - Bewijs JSON-roundtrip, onbevoegde bronprojectie, Undo/Redo, editor-/SVG-/PNG-pariteit en correcte beperkte formuleselectie met een handmatige WIE-acceptatie.
 - **Niet in F2:** `Uitwerking` met substitutiestappen, alle polygonformules, ongetypeerde vrije formule-CAS, vergelijkingstransformaties en WAT-integratie. Rechthoekoppervlakte `A=a·b` pas na een bewezen rechthoekcapability, afzonderlijke scopebeslissing en tests.
 
-**Fallback:** wanneer F1 niet wordt goedgekeurd of F2 niet veilig past, release v1.1.0 als kleinere kwaliteit-/stabiliteitsupdate en plan F2 in een volgende versie.
+**Fallback:** wanneer F1 niet wordt goedgekeurd of F2 niet veilig past, kan v1.1.0 verdergaan met T5b en een kwaliteits-/stabiliteitsronde, mits T5b zelf afzonderlijk geaccepteerd is. Bij onvoldoende T5b-acceptatie beslist de producteigenaar expliciet over verder uitstel of een stabiliteitsrelease.
 
 ### V11-R1 — Releasevoorbereiding en acceptatie
 
 - Vergelijk `develop` met de vastgestelde scope; een succesvolle feature-PR is niet dezelfde gebeurtenis als de release naar `main`.
-- Voer een **risicogebaseerde, gerichte regressiematrix** uit en leg uitgevoerde/overgeslagen tests eerlijk vast. Alleen bij uitzonderlijk breed code- of schema-effect bespreekt de producteigenaar een groter testbudget; **geen automatische volledige Edge-run**.
+- Voer een **risicogebaseerde, gerichte regressiematrix** uit en leg uitgevoerde/overgeslagen tests eerlijk vast. Voor T5b hoort daar gebruik in de WIE-werkbalk én de teksteditor bij, inclusief browserfocus, in-/uitvoer, resultaatformattering, eenheden, rechten en kopiëren. Alleen bij uitzonderlijk breed code- of schema-effect bespreekt de producteigenaar een groter testbudget; **geen automatische volledige Edge-run**.
 - Laat producteigenaar de nieuwe gebruikerservaring en resterende risico's expliciet aftekenen.
 - Publiceer `WIE v1.1.0` pas na expliciet release-GO via `release/v1.1.0`, pull request naar de beschermde `main`, tag en GitHub Release. Zorg dat `develop` en releasegeschiedenis consistent blijven.
 - Werk centrale [documentatie-index](README.md), release-notities, statusregistratie en enkel relevante technische contracten bij; verplaats geen oude rapporten als verborgen bijtaak.
@@ -169,7 +169,7 @@ Vast te leggen **NO-GO**-voorwaarden: stille documentinformatieverliezen, verzon
 |---|---|---|---|
 | **M7-VEC-FUND** en meetkundige transformaties | Verbeterde vectorconstructies en latere translatie/rotatie | Eigen gegevensmodel, afhankelijke constructies en acceptatiepad | Nieuwe implementatiepreflight en apart GO |
 | **M8-INT.3 kegelsnedensnijpunten** | Snijpunten cirkel–ellips en ellips–ellips | Numerieke betrouwbaarheid, `solutionKey`, tangenties en identiteitsbehoud zijn zelfstandig risicovol; traject bewust gepauzeerd | Optie-A-preflight en expliciet hervattingsbesluit |
-| **T5b/T5c / MathLive-verkenning** | Herbruikbare rekenmachine en berekende tekstwaarden | Vermijd dubbele engines, niet-geratificeerde UX en onbedoelde WAT-afhankelijkheid | Haalbaarheidsspiegeling, architectuur- en scopekeuze, aparte spike |
+| **T5c en latere T5d/K1–K8-uitbreidingen** | Opgeslagen berekende tekstfragmenten, extra rekenfuncties en vervolgcontroles | T5b in v1.1 is bewust beperkt tot invoeren, evalueren, tonen en kopiëren; extra capabilities hebben eigen contracten en versie-/documentrisico | Pas na T5b-acceptatie en afzonderlijke scope-GO |
 | **WIE-TXT-FORM.2/.3** | Uitwerkingen, bredere formulecatalogus, hergebruik | Hogere schema-/permissie-/wiskundige bewijscomplexiteit | Eerst formele acceptatie van F2 en nieuw contract |
 | **Gecombineerde meting** | Meetwaardensom en geometrische vereniging in afzonderlijke fasen | Optellen van metingen is anders dan geometrische unie; elk verdient eigen algoritmische en UX-poort | Contract en twee onafhankelijke implementatiebesluiten |
 | **Cursusviewer, assessment, WAT-CAS** | Breder From Zero 2 Infinity-platform | Andere productgrenzen en releasecyclus | Eigen project-/architectuurbesluit |
@@ -181,17 +181,19 @@ Deze onderwerpen blijven op de brede roadmap/backlog staan. **Buiten v1.1** bete
 
 | Keuze | Betekenis | Voordeel | Nadeel |
 |---|---|---|---|
-| **A — Kleine stabiliteitsrelease** | G0, gerichte Q1/P1, R1; geen nieuwe formuleslice | Korter risico- en releasepad | Weinig nieuwe zichtbare functionaliteit |
-| **B — Evenwichtig (advies)** | A plus F1 en, alleen bij GO, **F2 met 2 cirkelformules** | Één gebruikerszichtbare verbetering met afgedekt risico | Schema-/permissions-/exportontwerp moet eerst worden afgerond |
-| **C — Brede featureversie** | B plus vectoren, kegelsneden of calculator | Meer zichtbare functies | Meerdere grote risicopaden, uitgestelde release en moeilijkere regressies; **niet aanbevolen** |
+| **A — Calculator eerst (fallback)** | G0, gerichte Q1/P1, **T5b C0–C2**, R1; TXT-FORM.1 doorschuiven | Hergebruikt de al lopende POC, beperkt schema-/exportrisico | TXT-FORM.1 verschijnt nog niet in deze release |
+| **B — Calculator + TXT-FORM.1 (voorkeur)** | A plus **F1/F2**, met gescheiden ontwerp-/implementatie-/acceptatiepoorten | Rekenmachine en beperkte formulepresentatie leveren samen zichtbare meerwaarde | Twee onafhankelijke integraties vragen strikte test- en releasegates |
+| **C — Grote uitbreidingsrelease** | B plus vectorfundament, complexe snijpunten of bredere calculator-/CAS-functies | Meer zichtbare functionaliteit | Te hoge parallelle architectuur- en regressiedruk; **niet aanbevolen** |
 
-**Voorgesteld productbesluit:** keur voor v1.1.0 **optie B als planningsrichting** goed. Geef eerst alleen **GO voor V11-G0** en de uitwerking van **F1 als technisch contract**. Implementatie van F2, daadwerkelijke Q1-fixes en de release zelf blijven afzonderlijke beslissingen. Houd optie A beschikbaar als terugval.
+**Bijgesteld productvoorstel:** gebruiker vraagt expliciet de reeds lopende T5b-rekenmachine in WIE v1.1.0 te plannen. Advies blijft **roadmapvariant B**, nu mét T5b, maar plan C0/C1/C2 als eigen stroom en F1/F2 apart. Variant A (calculator zonder TXT-FORM.1) is een gerichte fallback. Alleen als ook de calculator niet veilig kan worden geaccepteerd, komt een stabiliteitsrelease of uitstel in aanmerking na een nieuw besluit.
+
+**Autorisatiegrens:** de scopewens geeft nog **geen productiecode-GO**, geen akkoord met ongecontroleerde POC-branchmerges, geen T5c-GO en geen release-GO.
 
 ## 6. Veilig ontwikkel- en samenwerkingsprotocol
 
 1. Iedere taak start vanaf actuele `develop` in een afzonderlijke branch; noteer start-SHA, scope, niet-doelen en relevante bestaande contracten.
 2. Eerst een kleine, brongegronde inventaris en exact wijzigingscontract; daarna minimale implementatie met gerichte red/green-tests.
-3. Geen nieuwe dubbele render-, command-, authorisatie- of rekeneigenaars. WIE/WAT-grenzen blijven expliciet.
+3. Geen nieuwe dubbele render-, command-, authorisatie- of rekeneigenaars. De rekenmachine gebruikt WIE T5a als enige evaluator; MathLive is de gestructureerde invoer. WIE/WAT-grenzen blijven expliciet.
 4. Documenteer uitgevoerde testcommando's, handmatige acceptance, resterende risico's en compatibiliteitsbewijs; claim nooit niet-uitgevoerde Edge-/browserproeven als PASS.
 5. Laat de producteigenaar de afzonderlijke ontwerp-, implementatie-, PR-merge- en releasepoorten controleren. `main` en de bestaande tag `v1.0.0` blijven stabiel.
 
@@ -199,12 +201,15 @@ Deze onderwerpen blijven op de brede roadmap/backlog staan. **Buiten v1.1** bete
 
 | ID | Vraag | Status |
 |---|---|---|
-| D-01 | Wordt **optie B** de beoogde v1.1.0-scope, met optie A als fallback? | **Voorgesteld; goedkeuring nodig** |
-| D-02 | Mogen we **V11-G0** (gerichte acceptatie-/risicoreconciliatie) uitvoeren? | **Voorgesteld; goedkeuring nodig** |
-| D-03 | Mogen we het **TXT-FORM.1-technisch implementatiecontract** (G1–G6) voorbereiden? | **Voorgesteld; goedkeuring nodig** |
-| D-04 | Welke actuele, aantoonbare Q1-defecten verdienen reparatie in v1.1? | **Niet bewezen of geprioriteerd zonder G0** |
-| D-05 | Is het veilig en gewenst om **F2** in v1.1 te implementeren? | **Geen GO; afhankelijk van F1** |
-| D-06 | Mogen uitgestelde trajecten (M8-INT.3, vectoren, T5b, WAT) mee in de releasescope? | **Voorstel: nee; eigen poorten** |
-| D-07 | Heeft v1.1 aan alle acceptatie- en releasecriteria voldaan? | **Nog geen release-GO** |
+| D-01 | Wordt **roadmapvariant B** (T5b + conditionele TXT-FORM.1) de beoogde v1.1.0-scope? | **Gebruikersrichting:** T5b moet erbij; definitieve scope-GO nog niet afgegeven |
+| D-02 | Mogen we **V11-G0** acceptatie-/risicoreconciliatie uitvoeren? | **Voorstel, expliciete GO nodig** |
+| D-03 | Welke actuele POC-B-commit en gerichte tests onderbouwen **V11-C0**? | **Lopend** op `test/t5b-mathlive-poc`; nieuw formatteerwerk nog formeel te reconciliëren |
+| D-04 | Wordt WIE T5a de enige T5b-productierekenkern, met MathLive als invoer en een strikte adapter? | **Technische voorkeursrichting, te ratificeren in C1** |
+| D-05 | Zijn twee T5b-hosts, UX, dependency, rechten en formattering gereed voor implementatie? | **C1-contract en aparte implementatie-GO vereist** |
+| D-06 | Mogen we **TXT-FORM.1-F1 (G1–G6)** als technisch contract uitwerken? | **Voorgesteld, aparte GO nodig** |
+| D-07 | Kan **TXT-FORM.1-F2** nog veilig in v1.1.0 worden geleverd? | **Geen code-GO; afhankelijk van F1 en prioriteitsafweging met T5b** |
+| D-08 | Zijn er aantoonbare P0/P1-regressies uit Q1 of open acceptaties? | **Eerst gerichte G0-triage** |
+| D-09 | Voldoen T5b en eventueel TXT-FORM.1 aan handmatige acceptatie en releasevoorwaarden? | **Nog geen v1.1-release-GO** |
+| D-10 | Vallen vectorfundament, M8-INT.3, T5c en WAT-CAS binnen v1.1? | **Voorstel: nee, eigen toekomstige poorten** |
 
-**Belangrijk:** dit document is een **ontwerpvoorstel v0.1.0** en wordt niet door publicatie op `develop` automatisch een normatief releasescopecontract. Het bestaande [DEVELOPMENT-ROADMAP.md](DEVELOPMENT-ROADMAP.md) blijft de geïntegreerde planning en historische traceerbaarheid bevatten; na expliciet productbesluit kunnen de goedgekeurde v1.1-mijlpalen daar als korte actuele samenvatting aan worden toegevoegd.
+**Documentstatus:** voorstel v0.2.0. Het centrale [DEVELOPMENT-ROADMAP.md](DEVELOPMENT-ROADMAP.md) blijft de actuele integratiestatus en geschiedenis bevatten. Pas na expliciet productbesluit wordt de v1.1-scope normatief; de POC blijft gescheiden van productie totdat C1/C2 hun gates behalen.
