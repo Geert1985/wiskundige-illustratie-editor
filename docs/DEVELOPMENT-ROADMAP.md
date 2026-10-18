@@ -13,7 +13,7 @@ Dit gedeelte is **leidend voor de geïntegreerde status** boven tijdgebonden che
 - **M8b parallellogrammen:** implementatie en M8b-3-eindconsolidatie zijn geïntegreerd via PR #21, #22 en [#23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23); het bijbehorende [ontwerpcontract](M8b-PARALLELLOGRAMMEN-CONTRACT.md) bevat gedateerde statusmomenten. Gebruik voor feitelijke functionaliteit de vrijgegeven code en [v1.0-release-notities](WIE-V1-RELEASE-NOTES.md).
 - **WIE-teksteditor:** opgemaakte tekst, dynamische waarden en continue inline-LaTeX zijn onderdeel van v1.0 (PR #49, gevolgd door releasegate #50). De zelfstandige wetenschappelijke T5b-calculator en T5c-berekende fragmenten zijn **niet** door deze release impliciet geïmplementeerd of vrijgegeven; raadpleeg [teksteditorarchitectuur](TEXT-EDITOR-ARCHITECTURE.md) en het afzonderlijke T5b-ontwerp.
 - **M7-VEC-FUND:** goedgekeurd als ontwerp, niet als voltooide vectorfundamentimplementatie. De afzonderlijke WAT-app voor symbolische algebra en transformaties valt buiten WIE v1.0.
-- **Documentatie:** DOC-A-audit via PR #52/#53 en DOC-C-proefarchivering (zeven historische rapporten) via PR #54 zijn op `develop` geïntegreerd, **niet** op `main`. Historische rapporten staan in [de DOC-A-archiefindex](archive/doc-a-batch-1/README.md).
+- **Documentatie:** DOC-A-audit via PR #52/#53 en DOC-C-proefarchivering (zeven historische rapporten) via PR #54 zijn op `develop` geïntegreerd, **niet** op `main`. Historische rapporten staan in [het historische archiefoverzicht](archive/README.md).
 
 Nieuwe featureprioriteiten en afbakening voor **v1.1.0** vereisen afzonderlijke expliciete productbesluiten; deze statusactualisatie verleent geen productiecode-GO.
 
