@@ -1,6 +1,6 @@
 # WIE v1.1.0 — Roadmapvoorstel
 
-- **Documentversie:** 0.1.0
+- **Documentversie:** 0.2.0
 - **Peildatum:** 18 oktober 2026
 - **Status:** **VOORSTEL — niet goedgekeurd als releasescope of implementatieopdracht**
 - **Repository:** `Geert1985/wiskundige-illustratie-editor`
@@ -9,17 +9,21 @@
 
 ## 1. Visie en aanbeveling
 
-WIE v1.0.0 is een officieel uitgebrachte zelfstandige geometrische editor met onder andere dynamische constructies, ellipsen, parallellogrammen, snijpunten, metingen, rijke tekst met inline LaTeX en dynamische meetwaarden, lagen, Undo/Redo en JSON-/SVG-/PNG-uitwisseling.
+WIE v1.0.0 bevat reeds een brede zelfstandige illustratie-editor: dynamische geometrie, meetwaarden, rijke tekst en export. De volgende versie bouwt voort op die basis zonder bestaande documentsemantiek te herschrijven.
 
-**Voorgestelde positionering van v1.1.0: betrouwbaar, helder en één tastbare functionele stap vooruit.** De versie moet bestaande documenten veilig houden, geen gekende goede workflows terugdraaien en vooral één nieuwe **vertical slice** van dynamische geometrische formulepresentatie kunnen leveren. Stabiliteitswerk gaat vóór cosmetische uitbreiding; ongecontroleerd verbreden van de scope is niet het doel.
+**Bijgestelde planningsrichting van de producteigenaar (18 oktober 2026): neem ook de reeds in ontwikkeling zijnde T5b-rekenmachine op als expliciet beoogde WIE v1.1.0-functionaliteit.** WIE-TXT-FORM.1 blijft daarnaast een afzonderlijk gefaseerde kandidaat. Beide trajecten respecteren WIE's bestaande rekeneigenaarschap en staan los van de zelfstandige WAT-app.
 
-**Voorkeursoptie B — evenwichtig:**
-1. Bestaande openstaande acceptatie-/bewijsgrenzen triëren en uitsluitend aantoonbaar relevante defecten verhelpen.
-2. Het technische implementatiecontract voor WIE-TXT-FORM.1 afronden en apart laten goedkeuren.
-3. **Alleen bij GO:** WIE-TXT-FORM.1 uitvoeren voor cirkeloppervlakte `A = πr²` en omtrek `P = 2πr`, met keuze tussen `Waarde` en `Formule` in de bestaande teksteditor.
-4. Integratie en gerichte releaseacceptatie voor v1.1.0.
+**Voorkeursvariant B — twee functionele trajecten met afzonderlijke gates:**
 
-**Dit is geen verplichting om TXT-FORM.1 te implementeren.** Bij onvoldoende contractzekerheid, tegenvallende performance of niet-geaccepteerd productgedrag schakelt v1.1.0 terug naar een kleinere stabiliteitsrelease (optie A). Een extra grote feature wordt niet als compensatie toegevoegd.
+1. **G0:** korte acceptatie- en risicoanalyse van de actuele ontwikkelbasis.
+2. **C0/C1:** de lopende MathLive-POC afronden en een technisch T5b-integratiecontract goedkeuren.
+3. **C2:** na afzonderlijk implementatie-GO één gedeelde wetenschappelijke rekenmachine voor WIE en de teksteditor bouwen, beperkt tot invoeren, evalueren, tonen en kopiëren.
+4. **F1/F2:** TXT-FORM.1 technisch voorbereiden en, alleen na eigen GO, de beperkte dynamische cirkelformules voor oppervlakte en omtrek ontwikkelen.
+5. **R1:** gerichte compatibiliteits-, test- en gebruikersacceptatie, gevolgd door een afzonderlijk release-GO.
+
+**Prioritering:** de calculator is een expliciete beoogde v1.1.0-kernfunctie, omdat het onderzoek al loopt. TXT-FORM.1 blijft eveneens de aanbevolen release-uitbreiding, maar kan naar een volgende versie doorschuiven wanneer het schema-/veiligheidscontract niet tijdig gereed of goedgekeurd is. Bij blokkade van beide features is alleen na nieuw productbesluit een stabiliteitsrelease toegestaan.
+
+**Let op verschillende variant-B-labels:** *roadmapvariant B* is deze releasescope. *T5b-POC-variant B* betekent MathLive-invoer met de bestaande WIE-T5a-evaluator, tegenover POC-variant A met CortexJS Compute Engine.
 
 ## 2. Basis, beperkingen en expliciet open werk
 
@@ -42,7 +46,9 @@ WIE v1.0.0 is een officieel uitgebrachte zelfstandige geometrische editor met on
 
 - **WAT — Wiskundige Analyse- en Transformatietool** is een apart project voor symbolische algebra, formuletransformaties, visuele termmanipulatie en algemene CAS-functionaliteit. **Geen algemene symbolische algebra-engine binnen WIE v1.1.0.**
 - De bestaande [WIE-TXT-FORM v1.3.0](WIE-TXT-FORM-DYNAMISCHE-FORMULES-CONTRACT.md) gaat over brongebonden *geometrische formulepresentatie* in WIE; niet over vrije algebraïsche transformaties.
-- [T5b — rekenmachine](WIE-T5b-UX-Contract-v1.0.2.md): UX-basis ontworpen maar nog geen implementatie-GO. Een eventuele MathLive-/Compute-Engine-integratie wordt **apart als haalbaarheid/spike** beoordeeld en niet zonder besluit een v1.1-releaseafhankelijkheid.
+- **T5b — rekenmachine: expliciet beoogd voor v1.1.0.** Het [bestaande UX-/integratiecontract](WIE-T5b-UX-Contract-v1.0.2.md) blijft de vertrekbasis voor één component met twee WIE-hosts.
+- Het lopende experiment is de [MathLive-POC op `test/t5b-mathlive-poc`](https://github.com/Geert1985/wiskundige-illustratie-editor/tree/test/t5b-mathlive-poc), met [POC-rapport](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/test/t5b-mathlive-poc/docs/T5B-MATHLIVE-POC-REPORT.md). GitHub toont experimentele commits **niet op de actuele `develop`**. Een proefresultaat is geen bewijs van productie-integratie.
+- **Technische voorkeursroute (POC-optie B):** MathLive als formule-input, beperkte en gevalideerde adapter, daarna de bestaande WIE-T5a-rekenkern. De CortexJS Compute Engine is een vergeleken onderzoeksvorm, geen tweede productie-engine; WAT blijft een aparte applicatie.
 - De uitbreiding [M7-VEC-FUND](M7-VEC-FUND-CONTRACT.md) is als ontwerp goedgekeurd; de zelfstandige vectorfundamentimplementatie en latere transformaties zijn **niet** impliciet onderdeel van v1.1.0.
 - [M8-INT.3](M8-INT-3-KEGELSNEDEN-SNIJPUNTEN-ONTWERPCONTRACT.md): keuze **optie A eerst**, optie B later als afzonderlijk groeipad; onderzoek/implementatie is momenteel gepauzeerd en vergt nieuw expliciet GO voor hervatting.
 
