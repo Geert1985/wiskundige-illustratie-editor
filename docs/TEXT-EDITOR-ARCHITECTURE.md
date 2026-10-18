@@ -1,14 +1,26 @@
 # Geavanceerde teksteditor — architectuur T1–T5
 
-Versie 1.18.0 - 2026-10-12 - T5a en volledige tekstwerkruimte geaccepteerd en geïntegreerd in main; T5b-productafbakening vastgesteld, UI-details nog te ontwerpen; T5b/T5c niet gestart.
+Versie 1.18.1 - 2026-10-18 - redactionele statusactualisatie na WIE v1.0.0; eerdere technische ontwerpen en testbewijzen blijven bewaard.
 
-Repository: Geert1985/wiskundige-illustratie-editor. Huidige geïntegreerde basis: `main` (na merge van `chatgpt/text-editor-full-workspace`); historische T5a-branch: `chatgpt/t5-calculator`; historische fase-0-branch: `chatgpt/editor-development`. Historisch onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`.
+Repository: Geert1985/wiskundige-illustratie-editor. Historische integratiebasis bij deze architectuur: `main` na merge van `chatgpt/text-editor-full-workspace`; historische T5a-branch: `chatgpt/t5-calculator`; historische fase-0-branch: `chatgpt/editor-development`. Destijds onderzochte baseline: `64ba1a29213a448df75e579fc9fb414667a31bee`. Actuele releasebasis: WIE `v1.0.0` op `4257e40d9ee85595844c5cfdd36e4d9b822cdda5`.
 
 Sectie 1 bewaart de historische inventaris van fase 0. Secties 19-21 beschrijven de geleverde T1-T3-implementatie en zijn leidend voor hun actuele status. Sectie 23 beschrijft T4; sectie 24 legt T5-prep als ontwerp/prototype vast; T5a–T5d blijven afzonderlijke rekenmilestones. De gebruiker gaf expliciete T2-starttoestemming; eerdere handmatige T1-controles zijn daarmee niet als uitgevoerd gemarkeerd. Zie [implementatieplan](TEXT-EDITOR-IMPLEMENTATION-PLAN.md).
 
 Audit B1–B7 is verwerkt in secties 11–18 en [audit resolution](TEXT-EDITOR-ARCHITECTURE-AUDIT-RESOLUTION.md). Die secties preciseren het eerdere voorstel en zijn leidend bij verschil. Bibliotheek- en fontkeuzes blijven open tot afzonderlijk goedgekeurde technische proeven resultaat leveren.
 
-## 1. Inventaris van de huidige implementatie
+## DOC-D — actuele release- en implementatiestatus (2026-10-18)
+
+Dit bestand combineert oorspronkelijke ontwerpteksten, oude inventarisaties en latere implementatierapporten. Gedateerde zinnen elders in dit document zoals 'T1–T5 nog niet geïmplementeerd' beschrijven **historische fasen**, niet noodzakelijk de situatie van WIE v1.0.0.
+
+- **Beschikbaar in WIE v1.0.0:** doorlopende rijke tekst, inline LaTeX/formulefragmenten, dynamische brongebonden meetwaarden en editorvalidatie; zie [release-notities](WIE-V1-RELEASE-NOTES.md), [documentformaat](../DOCUMENT-FORMAT.md) en de geïntegreerde formulewijzigingen via PR #49.
+- **T5a:** de numerieke expressiekern is eerder geïntegreerd; dit is geen volledige symbolische algebra- of CAS-engine.
+- **T5b en T5c:** de zelfstandige wetenschappelijke rekenmachine en opgeslagen `calculatedValue`-fragmenten hebben een afzonderlijke nog niet afgeronde uitvoerings- en acceptatiepoort. Het [T5b-UX-contract](WIE-T5b-UX-Contract-v1.0.2.md) is een ontwerp, geen vrijgegeven functie.
+- **Projectgrens:** uitgebreide symbolische formulemanipulatie en vergelijkingstransformaties vallen onder de aparte WAT-app.
+- **Branchbeleid:** nieuwe WIE-ontwikkelingen vertrekken van `develop`; `main` blijft gereserveerd voor stabiele releases.
+
+De historische inhoud wordt niet achteraf herschreven; bij conflict zijn het actuele productbesluit, de aantoonbaar vrijgegeven code en afzonderlijke geaccepteerde contracten leidend.
+
+## 1. Historische inventaris van de implementatie bij fase 0
 
 | Onderdeel | Bevinding en gevolg |
 |---|---|
