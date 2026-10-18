@@ -13,6 +13,7 @@ Deze index is het **startpunt voor documentatie**, zowel voor ontwikkelaars als 
 |---|---|---|
 | Wat bevat de uitgebrachte editor? | [WIE v1.0.0 — release notes](WIE-V1-RELEASE-NOTES.md) · [Hoofd-README](../README.md) | De **vrijgegeven scope**, beperkingen en startinstructies |
 | Wat is op dit moment geïntegreerd of gepland? | [Development Roadmap](DEVELOPMENT-ROADMAP.md) · [Feature Backlog](FEATURE-BACKLOG.md) | De **actuele kopstatus** boven de historische checkpoints; backlog is geen automatische GO |
+| Welke koers is voorgesteld voor WIE v1.1.0? | [Roadmapvoorstel v0.2.0 — inclusief T5b-rekenmachine](WIE-V1.1.0-ROADMAP-VOORSTEL.md) | **Nog niet goedgekeurde** scopevarianten, mijlpalen, gates en open besluiten |
 | Welke afspraken gelden voor Codex en branches? | [AGENTS.md](../AGENTS.md) | Bronvoorrang, afbakening, autorisatie, tests en Git-protocol |
 | Welke technische contracten moet ik raadplegen? | [§2 — Architectuur](#2-technische-basis-en-contracten) · [§3 — Onderwerpen](#3-ontwerp-en-ontwikkelonderwerpen) | Kies alleen de relevante normatieve en aanvullende documenten |
 | Wat vereist nog expliciete acceptatie? | [§4 — Openstaande poorten](#4-openstaande-acceptaties-en-restrisicos) | Voorkom dat oude PASS-rapporten als gebruikersacceptatie gelden |
