@@ -25,4 +25,5 @@ const server = http.createServer((req, res) => {
     fs.createReadStream(target).pipe(res);
   });
 });
-server.listen(4178, '127.0.0.1', () => process.stdout.write('T5b MathLive POC: http://127.0.0.1:4178\n'));
+const port = Number(process.env.PORT) || 4178;
+server.listen(port, '127.0.0.1', () => process.stdout.write(`T5b MathLive POC: http://127.0.0.1:${port}\n`));

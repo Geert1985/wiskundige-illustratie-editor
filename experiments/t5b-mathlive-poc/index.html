@@ -18,18 +18,71 @@
       <header class="intro">
         <p class="eyebrow">WIE · technisch experiment</p>
         <h1>T5b MathLive-proef</h1>
-        <p>Dezelfde MathLive-invoer, twee onafhankelijke rekenroutes. Deze proef is losgekoppeld van de editor.</p>
+        <p>Vergelijk twee toetsenborden op dezelfde MathLive-invoer. De rekenroutes hieronder blijven alleen technische referenties; deze proef is losgekoppeld van de editor.</p>
       </header>
 
       <section class="input-card" aria-labelledby="input-title">
+        <fieldset class="keyboard-choice" aria-label="Kies een toetsenbord">
+          <legend>Toetsenbordvariant</legend>
+          <label><input type="radio" name="keyboard-variant" value="standard" checked /> <span>Standaard MathLive</span></label>
+          <label><input type="radio" name="keyboard-variant" value="wie" /> <span>WIE-toetsenbord</span></label>
+        </fieldset>
         <div class="section-heading">
           <div>
             <p class="eyebrow">Gedeelde invoer</p>
             <h2 id="input-title">Formule</h2>
           </div>
-          <button id="keyboard-toggle" class="quiet-button" type="button">Toetsenbord</button>
+          <button id="keyboard-toggle" class="quiet-button" type="button" aria-expanded="false" aria-controls="custom-keyboard">Toetsenbord openen</button>
         </div>
         <math-field id="formula" aria-label="Wiskundige invoer" virtual-keyboard-mode="manual">2+3\times4</math-field>
+        <section id="custom-keyboard" class="custom-keyboard" aria-label="WIE-wiskundetoetsenbord" hidden>
+          <div class="key-row navigation-keys" aria-label="Cursorverplaatsing">
+            <button type="button" data-key="left" aria-label="Cursor naar links">←</button>
+            <button type="button" data-key="right" aria-label="Cursor naar rechts">→</button>
+            <button type="button" data-key="up" aria-label="Cursor omhoog">↑</button>
+            <button type="button" data-key="down" aria-label="Cursor omlaag">↓</button>
+            <button type="button" data-key="backspace" class="utility-key" aria-label="Backspace">⌫</button>
+          </div>
+          <div class="key-groups">
+            <div class="key-group numeric-group" aria-label="Cijfers en decimalen">
+              <button type="button" data-key="digit-7" data-insert="7">7</button>
+              <button type="button" data-key="digit-8" data-insert="8">8</button>
+              <button type="button" data-key="digit-9" data-insert="9">9</button>
+              <button type="button" data-key="digit-4" data-insert="4">4</button>
+              <button type="button" data-key="digit-5" data-insert="5">5</button>
+              <button type="button" data-key="digit-6" data-insert="6">6</button>
+              <button type="button" data-key="digit-1" data-insert="1">1</button>
+              <button type="button" data-key="digit-2" data-insert="2">2</button>
+              <button type="button" data-key="digit-3" data-insert="3">3</button>
+              <button type="button" data-key="decimal" data-insert=".">,</button>
+              <button type="button" data-key="digit-0" data-insert="0">0</button>
+              <button type="button" data-key="equals" data-insert="=">=</button>
+            </div>
+            <div class="side-groups">
+              <div class="key-group operator-group" aria-label="Rekenoperatoren">
+                <button type="button" data-key="plus" data-insert="+">+</button>
+                <button type="button" data-key="minus" data-insert="-">−</button>
+                <button type="button" data-key="multiply" data-insert="\times">×</button>
+                <button type="button" data-key="divide" data-insert="\div">÷</button>
+              </div>
+              <div class="key-group structure-group" aria-label="Haakjes en wiskundige structuren">
+                <button type="button" data-key="open-paren" data-insert="(">(</button>
+                <button type="button" data-key="close-paren" data-insert=")">)</button>
+                <button type="button" data-key="fraction" data-template="\frac{#?}{#?}">a⁄b</button>
+                <button type="button" data-key="power" data-template="^{#?}">xʸ</button>
+                <button type="button" data-key="sqrt" data-template="\sqrt{#?}">√x</button>
+                <button type="button" data-key="pi" data-insert="\pi">π</button>
+              </div>
+              <div class="key-group function-group" aria-label="Goniometrische functies">
+                <button type="button" data-key="sin" data-template="\sin\left(#?\right)" data-shift-label="asin" data-shift-template="\arcsin\left(#?\right)">sin</button>
+                <button type="button" data-key="cos" data-template="\cos\left(#?\right)" data-shift-label="acos" data-shift-template="\arccos\left(#?\right)">cos</button>
+                <button type="button" data-key="tan" data-template="\tan\left(#?\right)" data-shift-label="atan" data-shift-template="\arctan\left(#?\right)">tan</button>
+                <button type="button" data-key="shift" class="shift-key" aria-pressed="false">SHIFT</button>
+              </div>
+            </div>
+          </div>
+          <p class="keyboard-help">Tik op een toets om op de cursorpositie in te voegen. SHIFT geeft één keer asin, acos of atan.</p>
+        </section>
         <div class="examples" aria-label="Voorbeelden">
           <button type="button" data-example="2+3\times4">2 + 3 × 4</button>
           <button type="button" data-example="\sqrt{81}">√81</button>
@@ -39,9 +92,13 @@
         <p class="hint">De calculator ontvangt alleen invoer en toont een uitkomst. Er wordt niets naar WIE-documenten geschreven.</p>
       </section>
 
-      <section class="variants" aria-label="Vergelijking rekenroutes">
+      <section class="reference-heading" aria-labelledby="reference-title">
+        <p class="eyebrow">Ongewijzigde technische referentie</p>
+        <h2 id="reference-title">Rekenroutes (geen toetsenbordvarianten)</h2>
+      </section>
+      <section class="variants" aria-label="Technische rekenreferenties">
         <article class="variant" data-variant="A">
-          <div class="variant-heading"><span class="variant-tag">A</span><div><p class="eyebrow">MathLive + Compute Engine</p><h2>MathJSON / MathLive-route</h2></div></div>
+          <div class="variant-heading"><span class="variant-tag">A</span><div><p class="eyebrow">CortexJS-resultaatweergave</p><h2>MathLive + Compute Engine</h2></div></div>
           <p class="variant-description">MathLive levert LaTeX aan de CortexJS Compute Engine. Dit laat zien wat de geïntegreerde MathLive/CortexJS-rekenroute biedt.</p>
           <output id="result-a" class="result" aria-live="polite">Klaar voor berekening</output>
           <details><summary>Invoerrepresentaties</summary><dl><dt>LaTeX</dt><dd id="latex-value">—</dd><dt>MathJSON</dt><dd id="json-a">—</dd></dl></details>
@@ -49,7 +106,7 @@
         </article>
 
         <article class="variant" data-variant="B">
-          <div class="variant-heading"><span class="variant-tag">B</span><div><p class="eyebrow">MathLive-invoer + WIE T5a</p><h2>Bestaande rekenkern</h2></div></div>
+          <div class="variant-heading"><span class="variant-tag">B</span><div><p class="eyebrow">WIE T5a-resultaatweergave</p><h2>Bestaande rekenkern</h2></div></div>
           <p class="variant-description">MathLive levert ASCIIMath aan de bestaande WIE-parser en ExpressionEngine. Een dunne invoeradapter verbindt de UI met de T5a-kern.</p>
           <output id="result-b" class="result" aria-live="polite">Klaar voor berekening</output>
           <details><summary>Invoerrepresentatie</summary><dl><dt>ASCIIMath</dt><dd id="ascii-value">—</dd><dt>WIE-expressie</dt><dd id="wie-value">—</dd></dl></details>

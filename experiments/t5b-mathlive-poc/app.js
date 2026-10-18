@@ -5,7 +5,15 @@ import { compactFormattedResult } from './display-format.mjs';
 const { ExpressionEngine } = globalThis.FZI.MathIllustration;
 const ce = new ComputeEngine();
 const field = document.querySelector('#formula');
+const customKeyboard = document.querySelector('#custom-keyboard');
+const keyboardToggle = document.querySelector('#keyboard-toggle');
+let keyboardVariant = 'standard';
+let keyboardOpen = false;
+let shifted = false;
 const nodes = Object.fromEntries(['result-a', 'result-b', 'status-a', 'status-b', 'latex-value', 'json-a', 'ascii-value', 'wie-value'].map(id => [id, document.getElementById(id)]));
+const mathfieldCommands = Object.freeze({
+  left: 'moveToPreviousChar', right: 'moveToNextChar', up: 'moveUp', down: 'moveDown', backspace: 'deleteBackward',
+});
 
 function errorText(error) {
   return error?.code || error?.message || String(error);
@@ -58,6 +66,56 @@ function render() {
   }
 }
 
+function updateShiftState() {
+  const shiftButton = customKeyboard.querySelector('[data-key="shift"]');
+  shifted = !shifted;
+  shiftButton.setAttribute('aria-pressed', String(shifted));
+  shiftButton.classList.toggle('is-active', shifted);
+  customKeyboard.querySelectorAll('[data-shift-label]').forEach(button => {
+    button.textContent = shifted ? button.dataset.shiftLabel : button.dataset.key;
+    button.setAttribute('aria-label', shifted ? `${button.dataset.shiftLabel} invoegen` : `${button.dataset.key} invoegen`);
+  });
+}
+
+function setShifted(value) {
+  if (shifted !== value) updateShiftState();
+}
+
+function syncKeyboardVisibility() {
+  document.body.classList.toggle('keyboard-wie', keyboardVariant === 'wie');
+  customKeyboard.hidden = keyboardVariant !== 'wie' || !keyboardOpen;
+  keyboardToggle.setAttribute('aria-expanded', String(keyboardOpen));
+  keyboardToggle.textContent = keyboardOpen ? 'Toetsenbord sluiten' : 'Toetsenbord openen';
+  if (keyboardVariant === 'standard') {
+    window.mathVirtualKeyboard.layouts = 'default';
+    if (keyboardOpen) window.mathVirtualKeyboard.show();
+    else window.mathVirtualKeyboard.hide();
+  } else {
+    window.mathVirtualKeyboard.hide();
+  }
+}
+
+function activateKey(button) {
+  const key = button.dataset.key;
+  if (key === 'shift') {
+    updateShiftState();
+    field.focus();
+    return;
+  }
+
+  const secondaryTemplate = shifted ? button.dataset.shiftTemplate : undefined;
+  const template = secondaryTemplate || button.dataset.template;
+  const insertion = button.dataset.insert;
+  const command = mathfieldCommands[key];
+  if (!template && !insertion && !command) return;
+
+  field.focus();
+  if (command) field.executeCommand(command);
+  else field.executeCommand(['insert', template || insertion, { selectionMode: template ? 'placeholder' : 'after' }]);
+
+  if (secondaryTemplate) setShifted(false);
+}
+
 function initialize() {
   field.addEventListener('input', render);
   document.querySelectorAll('[data-example]').forEach(button => button.addEventListener('click', () => {
@@ -65,10 +123,25 @@ function initialize() {
     field.focus();
     render();
   }));
-  document.getElementById('keyboard-toggle').addEventListener('click', () => {
-    if (window.mathVirtualKeyboard.visible) window.mathVirtualKeyboard.hide();
-    else window.mathVirtualKeyboard.show();
+  document.querySelectorAll('input[name="keyboard-variant"]').forEach(radio => radio.addEventListener('change', () => {
+    keyboardVariant = radio.value;
+    setShifted(false);
+    syncKeyboardVisibility();
+    field.focus();
+  }));
+  keyboardToggle.addEventListener('click', () => {
+    keyboardOpen = !keyboardOpen;
+    syncKeyboardVisibility();
+    field.focus();
   });
+  customKeyboard.addEventListener('pointerdown', event => {
+    if (event.target.closest('button')) event.preventDefault();
+  });
+  customKeyboard.addEventListener('click', event => {
+    const button = event.target.closest('button[data-key]');
+    if (button) activateKey(button);
+  });
+  syncKeyboardVisibility();
   customElements.whenDefined('math-field').then(render);
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, { once: true });
