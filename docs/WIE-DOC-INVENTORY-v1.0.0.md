@@ -241,3 +241,17 @@ De aanbevelingen zijn **voorstellen, geen toestemming om te verplaatsen**. Groot
 - `experiments/.../fonts/*LICENSE.md` en `THIRD-PARTY-NOTICES.md` blijven bij hun afhankelijke assets; nooit louter wegens het woord 'oud' verplaatsen.
 
 **Status:** inventarisatie voltooid, classificatie voorlopig. Definitieve archivering vergt een aparte, gerichte verificatie en acceptatie.
+
+## Migratiebijlage — DOC-C proefarchivering (2026-10-18)
+
+De volledige bovenstaande bestandenlijst blijft ongewijzigd als historische momentopname van de inventarisatiebasis. De volgende zeven documenten zijn daarna verplaatst; hun oorspronkelijke paden in de lijst zijn dus historische padvermeldingen. Gebruik de actuele [DOC-A batch-1 archiefindex](archive/doc-a-batch-1/README.md) voor vindbaarheid:
+
+| Historisch pad | Actueel pad |
+|---|---|
+| `docs/CANVAS-GRID-CONTROLS-VERIFICATION.md` | `docs/archive/doc-a-batch-1/CANVAS-GRID-CONTROLS-VERIFICATION.md` |
+| `docs/FULLSCREEN-CANVAS-VERIFICATION.md` | `docs/archive/doc-a-batch-1/FULLSCREEN-CANVAS-VERIFICATION.md` |
+| `docs/POINT-CONSTRUCTION-MENU-REPORT.md` | `docs/archive/doc-a-batch-1/POINT-CONSTRUCTION-MENU-REPORT.md` |
+| `docs/LINE-SEGMENT-BEHAVIOR-REPORT.md` | `docs/archive/doc-a-batch-1/LINE-SEGMENT-BEHAVIOR-REPORT.md` |
+| `docs/LINKED-SHAPE-MENU-REPORT.md` | `docs/archive/doc-a-batch-1/LINKED-SHAPE-MENU-REPORT.md` |
+| `docs/GEO-UI-ELLIPSE-LABEL-ANCHORS-REPORT.md` | `docs/archive/doc-a-batch-1/GEO-UI-ELLIPSE-LABEL-ANCHORS-REPORT.md` |
+| `docs/TOOL-MENU-REORGANIZATION-REPORT.md` | `docs/archive/doc-a-batch-1/TOOL-MENU-REORGANIZATION-REPORT.md` |

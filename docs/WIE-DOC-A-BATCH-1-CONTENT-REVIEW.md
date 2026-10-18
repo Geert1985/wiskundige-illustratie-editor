@@ -2,7 +2,7 @@
 
 **Versie:** 1.1.0
 **Datum:** 2026-10-18
-**Status:** read-only inventarisatie voltooid; **geen toestemming om te archiveren**
+**Status van oorspronkelijke scan:** read-only inventarisatie voltooid; op dat moment **geen toestemming om te archiveren**. De later afzonderlijk opgedragen DOC-C-uitvoering is hieronder vastgelegd.
 **PR:** #53, concept, niet gemerged
 **Scanbranch:** `chore/wie-v1-1-doc-a-batch-1`
 **Scancommit:** `05c06adb28b4ba3532671bef3e5f1008ef290d2f`
@@ -149,3 +149,23 @@ De vijf rapporten met expliciet openstaande gebruikersacceptatie (constructiehov
 ## Besluit
 
 De repositorybrede verwijzingsinventaris voor de twaalf kandidaten is uitgevoerd. Alle gevonden interne inbound- en outboundverwijzingen zijn hierboven vastgelegd. **GO voor voorbereiding van een beperkte proefarchivering van de zeven genoemde bestanden, onder voorwaarde dat de index- en roadmaplinks in dezelfde wijziging worden gecorrigeerd.** **Geen uitvoerings-GO voor verplaatsen/verwijderen in deze opdracht.** De vijf kandidaten met expliciet openstaande gebruikersacceptatie blijven behouden. Externe URL's blijven een bewijsleemte; gebruik bij de latere uitvoeringsopdracht een oud-pad-stub als linkbehoud vereist is. PR #53 blijft concept; `main` en tag `v1.0.0` zijn niet gewijzigd.
+
+## DOC-C-uitvoering — eerste proefarchivering (2026-10-18)
+
+Deze uitvoeringsbijlage registreert de afzonderlijk opgedragen en uitgevoerde proefarchivering. Zij vervangt de historische scanbevindingen en het eerdere besluitvoorstel hierboven niet.
+
+De volgende zeven documenten zijn met `git mv` verplaatst naar `docs/archive/doc-a-batch-1/`:
+
+1. `docs/CANVAS-GRID-CONTROLS-VERIFICATION.md` → `docs/archive/doc-a-batch-1/CANVAS-GRID-CONTROLS-VERIFICATION.md`
+2. `docs/FULLSCREEN-CANVAS-VERIFICATION.md` → `docs/archive/doc-a-batch-1/FULLSCREEN-CANVAS-VERIFICATION.md`
+3. `docs/POINT-CONSTRUCTION-MENU-REPORT.md` → `docs/archive/doc-a-batch-1/POINT-CONSTRUCTION-MENU-REPORT.md`
+4. `docs/LINE-SEGMENT-BEHAVIOR-REPORT.md` → `docs/archive/doc-a-batch-1/LINE-SEGMENT-BEHAVIOR-REPORT.md`
+5. `docs/LINKED-SHAPE-MENU-REPORT.md` → `docs/archive/doc-a-batch-1/LINKED-SHAPE-MENU-REPORT.md`
+6. `docs/GEO-UI-ELLIPSE-LABEL-ANCHORS-REPORT.md` → `docs/archive/doc-a-batch-1/GEO-UI-ELLIPSE-LABEL-ANCHORS-REPORT.md`
+7. `docs/TOOL-MENU-REORGANIZATION-REPORT.md` → `docs/archive/doc-a-batch-1/TOOL-MENU-REORGANIZATION-REPORT.md`
+
+De twee roadmapverwijzingen zijn bijgewerkt naar de archiefpaden; de uitgaande roadmaplink in het Tool Menu-verslag is bijgewerkt naar `../../DEVELOPMENT-ROADMAP.md`. De oorspronkelijke v1.0-documenteninventaris bleef als historische momentopname intact; een migratiebijlage koppelt de oude en nieuwe paden. De [archiefindex](archive/doc-a-batch-1/README.md) houdt alle zeven documenten vindbaar en markeert het fullscreen-/Escape-verslag expliciet als historisch releasebewijs.
+
+De vijf rapporten met openstaande acceptatie zijn niet verplaatst en hun acceptatiestatus is niet gewijzigd: `CONSTRUCTION-HOVER-REPORT.md`, `FULL-CANVAS-AXES-REPORT.md`, `BISECTOR-CLIP-SPLIT-TOOLS-REPORT.md`, `M2c-VISUAL-FINISH-REPORT.md` en `M2c-INSPECTOR-FEEDBACK-REPORT.md`.
+
+Gerichte DOC-C-controles: precies zeven Git-renames aangetoond; alle zeven nieuwe bestanden aanwezig; oorspronkelijke inhoud byte-voor-byte gelijk (Tool Menu vergeleken na het terugdraaien van de enige goedgekeurde relatieve-linkwijziging); lokale Markdown-linkdoelen in de zeven rapporten, index en gewijzigde documentatie geldig; de vijf uitgesloten acceptatierapporten aanwezig en ongewijzigd; `git diff --check` geslaagd. Er zijn geen Node- of Edge-tests uitgevoerd omdat dit documentatieverplaatsingen zijn. De broninventarisatie onderzocht de repositorysnapshot; externe GitHub-URL's en verwijzingen buiten de repository blijven buiten bereik. Er zijn daarom geen oude-pad-compatibiliteitsaliassen toegevoegd.

@@ -359,7 +359,7 @@ Line-circle manually accepted. Circle-circle delivered at 785c10f on chatgpt/mat
 
 ## Point construction menu refinement (2026-10-10)
 
-At user request, all six point-producing construction tools are grouped in one remembered split-button, preserving full-screen and permission behavior. Browser validation and visual review pass; see [report](POINT-CONSTRUCTION-MENU-REPORT.md). Geometry milestone sequencing unchanged.
+At user request, all six point-producing construction tools are grouped in one remembered split-button, preserving full-screen and permission behavior. Browser validation and visual review pass; see [report](archive/doc-a-batch-1/POINT-CONSTRUCTION-MENU-REPORT.md). Geometry milestone sequencing unchanged.
 
 ## M5b derived circle checkpoint (2026-10-10)
 
@@ -367,7 +367,7 @@ Center/perimeter-source circle delivered at a502c55 on chatgpt/math-illustration
 
 ## Linked shape menu refinement (2026-10-10)
 
-Cirkel via punten and Lijnstuk door twee punten are now separate visible choices in Constructies. The linked segment is available directly instead of only inside the former split menu; see [line segment behavior report](LINE-SEGMENT-BEHAVIOR-REPORT.md). Geometry milestone sequencing unchanged.
+Cirkel via punten and Lijnstuk door twee punten are now separate visible choices in Constructies. The linked segment is available directly instead of only inside the former split menu; see [line segment behavior report](archive/doc-a-batch-1/LINE-SEGMENT-BEHAVIOR-REPORT.md). Geometry milestone sequencing unchanged.
 
 ## M5b technical completion (2026-10-10)
 
