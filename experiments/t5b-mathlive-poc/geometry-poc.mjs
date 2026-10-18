@@ -1,44 +1,20 @@
-const UNITS = Object.freeze({ mm: 0.1, cm: 1, m: 100 }); // Canonical length: centimetres
-
+const unitScale=Object.freeze({mm:.1,cm:1,m:100});
+const allowed=new Set(['Add','Subtract','Multiply','Divide','Power','Sqrt','Sin','Cos','Tan']);
+export const DEFAULT_BINDINGS=Object.freeze({r1:Object.freeze({token:'r_1',sourceId:'circle-1',instance:1,property:'radius'}),r2:Object.freeze({token:'r_2',sourceId:'circle-2',instance:1,property:'radius'})});
 export class MockGeometrySources {
-  constructor() {
-    this.revision = 0;
-    this.sources = new Map([['circle-1', { kind: 'circle', radius: 2, unit: 'cm', valid: true, accessible: true }]]);
-  }
-  update(id, patch) { const s = this.sources.get(id) || { kind: 'circle', radius: 2, unit: 'cm', valid: true, accessible: true }; Object.assign(s, patch); this.sources.set(id, s); this.revision++; }
-  remove(id) { this.sources.delete(id); this.revision++; }
-  resolve(binding) {
-    const s = this.sources.get(binding.sourceId);
-    if (!s || !s.accessible || !s.valid || binding.property !== 'radius' || !UNITS[s.unit] || !Number.isFinite(s.radius) || s.radius < 0)
-      throw new Error('Geometrische bron niet beschikbaar');
-    return { value: s.radius * UNITS[s.unit], dimension: { length: 1 }, revision: this.revision };
-  }
+ constructor(){this.revision=0;this.permissionEpoch=0;this.sources=new Map([['circle-1',{instance:1,radius:2,unit:'cm',valid:true,allowed:true}],['circle-2',{instance:1,radius:3,unit:'cm',valid:true,allowed:true}]]);}
+ update(id,patch){let s=this.sources.get(id);if(!s){s={instance:1,radius:2,unit:'cm',valid:true,allowed:true};}Object.assign(s,patch);this.sources.set(id,s);this.revision++;}
+ remove(id){this.sources.delete(id);this.revision++;}
+ restore(id,radius,unit='cm'){const old=this.sources.get(id);this.sources.set(id,{instance:(old?.instance||1)+1,radius,unit,valid:true,allowed:true});this.revision++;}
+ revoke(id){const s=this.sources.get(id);if(s){s.allowed=false;this.permissionEpoch++;}}
+ resolve(binding){const s=this.sources.get(binding.sourceId);if(!s||(binding.instanceGeneration!==undefined&&s.instance!==binding.instanceGeneration)||(binding.instance!==undefined&&s.instance!==binding.instance)||binding.property!=='radius'||!s.valid||s.allowed===false||s.accessible===false||!(s.unit in unitScale)||!Number.isFinite(s.radius))throw Object.assign(Error('Geometrische bron niet beschikbaar'),{code:'SOURCE_UNAVAILABLE'});return {value:s.radius*unitScale[s.unit],dimension:{length:1},revision:this.revision,precision:'measured',instanceGeneration:s.instance};}
 }
-
-export function convertLength(value, unit) {
-  if (!UNITS[unit]) throw new Error('Onbekende lengte-eenheid');
-  return value * UNITS[unit];
-}
-export function multiplyDimensions(a, b) {
-  return Object.fromEntries([...new Set([...Object.keys(a), ...Object.keys(b)])]
-    .map(key => [key, (a[key] || 0) + (b[key] || 0)]).filter(([, power]) => power));
-}
-export function addDimensions(a, b) {
-  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
-  if ([...keys].some(key => (a[key] || 0) !== (b[key] || 0))) throw new Error('Eenheden/dimensies zijn niet compatibel');
-  return { ...a };
-}
-
-// Latest-request wins; authorization and source revision are rechecked after async evaluation.
-export function createRevisionGuard(sources) {
-  let generation = 0;
-  return async function evaluate(binding, evaluateValue) {
-    const request = ++generation;
-    const source = sources.resolve(binding);
-    const revision = source.revision;
-    const result = await evaluateValue(source.value);
-    if (request !== generation || sources.revision !== revision) return { current: false, reason: 'bron gewijzigd tijdens berekening' };
-    try { sources.resolve(binding); } catch { return { current: false, reason: 'bron niet beschikbaar' }; }
-    return { current: true, result, revision };
-  };
-}
+function atom(x){return typeof x==='string';}
+export function validateAndAnalyze(json,bindings){let nodes=0,sources=0;function walk(n,depth=1){if(++nodes>256||depth>32)throw Error('INPUT_LIMIT');if(atom(n)){const b=bindings[n];if(b){sources++;if(sources>64)throw Error('INPUT_LIMIT');return {dim:{length:1},refs:[n]};}return {dim:{},refs:[]};}if(!Array.isArray(n)||n.length<2||!allowed.has(n[0]))throw Error('UNSUPPORTED_OPERATOR');const op=n[0],a=walk(n[1],depth+1);if(op==='Sqrt'){if(Object.values(a.dim).some(v=>v%2))throw Error('DIMENSION_CONFLICT');return {dim:Object.fromEntries(Object.entries(a.dim).map(([k,v])=>[k,v/2])),refs:a.refs};}if(['Sin','Cos','Tan'].includes(op)){if(Object.keys(a.dim).length&&!('angle'in a.dim))throw Error('DIMENSION_CONFLICT');return {dim:{},refs:a.refs};}if(op==='Power'){if(!atom(n[2])&&!Number.isInteger(n[2]))throw Error('INVALID_POWER');const exponent=Number(n[2]);if(!Number.isInteger(exponent)||Math.abs(exponent)>8)throw Error('INVALID_POWER');return {dim:Object.fromEntries(Object.entries(a.dim).map(([k,v])=>[k,v*exponent])),refs:a.refs};}const b=walk(n[2],depth+1);if(op==='Add'||op==='Subtract'){if(JSON.stringify(a.dim)!==JSON.stringify(b.dim))throw Error('DIMENSION_CONFLICT');return {dim:a.dim,refs:[...a.refs,...b.refs]};}const dim={...a.dim};for(const [k,v] of Object.entries(b.dim)){dim[k]=(dim[k]||0)+(op==='Multiply'?v:-v);if(!dim[k])delete dim[k];}return {dim,refs:[...a.refs,...b.refs]};}return walk(json);}
+export function replaceBindings(json,values){if(atom(json))return Object.hasOwn(values,json)?values[json]:json;if(!Array.isArray(json))throw Error('INVALID_MATHJSON');return json.map((v,i)=>i===0?v:replaceBindings(v,values));}
+export function createRevisionGuard(provider){let generation=0;return async function run(context,work){const request=++generation,stamp={request,formula:context.formula,revision:provider.revision,epoch:provider.permissionEpoch,instances:context.bindings.map(b=>provider.resolve(b).revision)};const snapshot=context.bindings.map(b=>provider.resolve(b));const result=await work(snapshot);if(request!==generation||stamp.revision!==provider.revision||stamp.epoch!==provider.permissionEpoch||stamp.formula!==context.formula)return {current:false};try{context.bindings.forEach(b=>provider.resolve(b));}catch{return {current:false};}return {current:true,result};};}
+export function sourceLatex(token){if(!['r1','r2'].includes(token))throw Error('INVALID_BINDING');return String.raw`\mathrm{r_{${token.slice(1)}}}`;}
+// Compatibility exports retained for the existing POC-2 geometry panel.
+export function convertLength(value,unit){const legacy={mm:.1,cm:1,m:100};if(!(unit in legacy)||!Number.isFinite(value))throw Error('INVALID_UNIT');return value*legacy[unit];}
+export function multiplyDimensions(a,b){const out={...a};for(const [k,v] of Object.entries(b))out[k]=(out[k]||0)+v;return Object.fromEntries(Object.entries(out).filter(([,v])=>v));}
+export function addDimensions(a,b){const keys=new Set([...Object.keys(a),...Object.keys(b)]);if([...keys].some(k=>(a[k]||0)!==(b[k]||0)))throw Error('Eenheden/dimensies zijn niet compatibel');return {...a};}
