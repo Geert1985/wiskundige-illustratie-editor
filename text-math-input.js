@@ -8,6 +8,11 @@
     return {start:offset,end:offset+content.length};
   }
   function catalogValue(item){return item.source||item.formula||item.latex||item.unicode;}
+  function delimitedInput(textBefore,from,to,text){
+    const candidate=String(textBefore)+String(text),match=/(\\\(([^\n]*?)\\\)|\\\[([\s\S]*?)\\\])$/.exec(candidate);
+    if(!match)return null;
+    return Object.freeze({source:match[2]??match[3],from:from-(String(textBefore).length-match.index),to:to+String(text).length,delimiter:match[2]!=null?'inline':'display'});
+  }
   function insertAtSelection(current,item,start,end){
     current=String(current);start=Math.max(0,Math.min(current.length,Number(start)||0));end=Math.max(start,Math.min(current.length,Number(end)||0));
     const inserted=catalogValue(item),value=current.slice(0,start)+inserted+current.slice(end);
@@ -20,5 +25,5 @@
     editor.insertText(item.unicode,bookmark);return Object.freeze({mode:'inserted',kind:'text'});
   }
   function insertFormula(editor,source,bookmark,position){const valid=MI.MathSource.validate(source);editor.insertMath(valid,bookmark,position);return valid;}
-  MI.TextMathInput=Object.freeze({templateSelection,insertAtSelection,insertSymbol,insertFormula});
+  MI.TextMathInput=Object.freeze({templateSelection,insertAtSelection,insertSymbol,insertFormula,delimitedInput});
 })(window);
