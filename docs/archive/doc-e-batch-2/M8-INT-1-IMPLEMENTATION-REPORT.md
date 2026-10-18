@@ -5,7 +5,7 @@
 Datum: 17 oktober 2026  
 Featurebranch: `codex/m8-int-1-line-ellipse`  
 Startpunt: `origin/main` / `9577be5dc346b4dd74739495a01e925a555cb34c`  
-Contract: [M8-INT.1 lijn–ellips v1.0.0](../../M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md)  
+Contract: [M8-INT.1 lijn–ellips v1.0.0](../../M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md)\
 Preflight: [M8-INT-1-PREFLIGHT.md](../../M8-INT-1-PREFLIGHT.md)
 
 ## Resultaat
