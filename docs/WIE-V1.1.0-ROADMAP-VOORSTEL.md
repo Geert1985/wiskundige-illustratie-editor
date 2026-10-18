@@ -56,12 +56,15 @@ WIE v1.0.0 bevat reeds een brede zelfstandige illustratie-editor: dynamische geo
 
 | ID | Prioriteit | Resultaat | Status van dit voorstel | Vrijgavepoort |
 |---|---|---|---|---|
-| **V11-G0** | Verplicht, eerst | Baseline en acceptatie-/risicoregister op actuele `develop` | Te besluiten | Producteigenaar accepteert **scope**, niet automatisch de uitkomsten van oude audits |
-| **V11-Q1** | Hoog | Kleine gerichte UX-/stabiliteitscorrecties, alleen voor bevestigde problemen | Voorwaardelijk | Reproduceerbaar scenario, klein contract, gerichte Node/Edge of handmatige check |
-| **V11-P1** | Hoog | Performance- en documentintegriteitsbaseline vóór nieuwe dynamische formulevelden | Onderdeel van G0/Q1 waar relevant | Geen meetbare/regressieve verslechtering in representatieve gevallen; geen algemene refactor zonder bewijs |
-| **V11-F1** | Hoog, nieuwe hoofdfeature | TXT-FORM.1 technisch ontwerp- en migratiecontract (G1–G6) | [Audit: CONDITIONAL GO voor ontwerp](WIE-TXT-FORM-0-ARCHITECTUURAUDIT-v1.0.0.md) | Producteigenaar keurt compleet implementatiecontract apart goed |
-| **V11-F2** | Alleen na F1-GO | TXT-FORM.1 vertical slice: cirkeloppervlakte/-omtrek, `Waarde`/`Formule`, dynamische bronbinding | Niet geïmplementeerd/vrijgegeven door dit voorstel | Gerichte tests, privacy/schema/export, handmatige acceptatie, PR naar `develop` |
-| **V11-R1** | Verplicht voor release | Stabilisatieronde, releasenotities, compatibiliteits- en acceptatiematrix | Nog niet gestart | Expliciet release-GO; `release/v1.1.0` → PR `main` → tag/release |
+| **V11-G0** | Verplicht | Actuele baseline en acceptatie-/risicoregister, inclusief POC-branchaudit | Voorgesteld | Scope- en risicobesluit |
+| **V11-Q1** | Hoog | Kleine, gerichte UX- en stabiliteitscorrecties | Voorwaardelijk | Aangetoond probleem en gerichte regressietest |
+| **V11-P1** | Hoog | Performance-/compatibiliteitscontrole voor nieuwe reken- en formulevelden | Waar relevant | Geen geconstateerde regressie |
+| **V11-C0** | Hoog | Lopende T5b MathLive-POC afronden en de actuele resultaatsweergave aantonen | **POC bestaat op testbranch; niet gemerged** | Gecontroleerde POC-resultaten en technische routekeuze |
+| **V11-C1** | Hoog | T5b technisch productie-integratiecontract en bijgewerkte UX-/securitymatrix | Nog niet goedgekeurd | Apart ontwerp-GO |
+| **V11-C2** | Hoog, beoogde releasefunctie | Eén gedeelde WIE/Teksteditor-calculator: invoer, evaluatie, presentatie, kopiëren | Niet geïmplementeerd op develop | C1-GO, gerichte tests en handmatige acceptatie |
+| **V11-F1** | Hoog, tweede traject | TXT-FORM.1 technisch ontwerp-/migratiecontract (G1–G6) | Audit: CONDITIONAL GO voor ontwerp | Apart ontwerp-GO |
+| **V11-F2** | Alleen na F1-GO | TXT-FORM.1: Waarde/Formule, dynamische cirkeloppervlakte en -omtrek | Nog geen productie-GO | Schema-/recht-/exporttests en handmatige acceptatie |
+| **V11-R1** | Verplicht | Gezamenlijke integratie- en releasecontrole | Niet gestart | Scope-gate, v1.1-release-GO en PR naar beschermde main |
 
 De werkpakketten zijn **geen kalenderplanning, technische inschatting of Codex-uitvoeringsautorisatie**. Een concrete taak wordt afzonderlijk uitgewerkt en gefaseerd goedgekeurd.
 
@@ -74,6 +77,8 @@ De werkpakketten zijn **geen kalenderplanning, technische inschatting of Codex-u
 - Breng uit DOC-A de vijf dossiers en uit DOC-E de veertien dossiers onder in een **kort acceptatieregister**; dit is geen opdracht om negentien volledige browserproeven uit te voeren.
 - Bevestig de reeds vastgelegde fullscreen-Escape-keuze en bestaand radiaalmenu-/multi-selectgedrag; heropen geen afgesloten UX-besluit zonder concrete nieuwe reden.
 - Controleer de impact van `TXT-FORM.1` op bestaande documentversies, bron-/permissionprojectie en teksteditorbundel.
+- Controleer `test/t5b-mathlive-poc` naast de actuele `develop`: isoleer de POC-commits, lees het actuele formatteerwerk en onderscheid code-aanwezigheid van werkelijk uitgevoerde PASS-tests.
+- Inspecteer de werkelijk geladen T5a-modules en het `editor.html`-scriptmanifest vóór keuze van een WIE-hostadapter.
 
 **Oplevering:** `docs/WIE-V1.1-ACCEPTATIE-EN-RISICOREGISTER.md` als voorstel; top 3–5 concrete ingrepen of expliciet 'geen defect geconstateerd'.
 
@@ -92,9 +97,36 @@ Alleen waar G0 aantoonbaar problemen of onvoldoende testbewijs voor *kritieke ac
 ### V11-P1 — Performance- en compatibiliteitscontrole
 
 - Hergebruik gerichte bestaande PERF-fixtures; herbaseline alleen wanneer de nieuwe implementatie of branch wezenlijk verschilt. Ontbrekende gegevens blijven 'niet gemeten'.
-- Meet waar TXT-FORM.1 nieuwe resolver-/rendererbelasting introduceert, met aandacht voor `resolveTextValue` en bronrechten. De statische [TXT-FORM.0-audit](WIE-TXT-FORM-0-ARCHITECTUURAUDIT-v1.0.0.md) noemt herhaalde indexconstructie als **potentieel schaalrisico, niet als bewezen defect**.
+- Meet waar TXT-FORM.1 of de rekenmachine nieuwe resolver-/rendererbelasting introduceert, met aandacht voor `resolveTextValue`, bronrechten en paneel-/focusrespons. De statische [TXT-FORM.0-audit](WIE-TXT-FORM-0-ARCHITECTUURAUDIT-v1.0.0.md) noemt herhaalde indexconstructie als **potentieel schaalrisico, niet als bewezen defect**.
 - Controleer fail-closed import, historische documentversies, bronverwijdering/herstel, duplicatie, autorisatie, Undo/Redo en export **alleen waar het nieuwe veld deze grenzen raakt**.
 - Documenteer de hardware-/browsercontext; geen fictieve prestatie-SLA of vereiste nul milliseconden. Geen incrementele SVG-renderarchitectuur als standaard v1.1-taak.
+
+### V11-C0 — Lopende MathLive-POC: afronden zonder productiecode
+
+De [T5b-POC-branch](https://github.com/Geert1985/wiskundige-illustratie-editor/tree/test/t5b-mathlive-poc) vergelijkt **A: MathLive + CortexJS Compute Engine** met **B: MathLive + WIE T5a**; de [POC-evaluatie](https://github.com/Geert1985/wiskundige-illustratie-editor/blob/test/t5b-mathlive-poc/docs/T5B-MATHLIVE-POC-REPORT.md) beveelt B aan. De gebruiker testte formule-invoer, virtueel toetsenbord en berekeningen positief. Overbodige decimalen in route B vormden een concreet presentatiepunt; de POC bevat intussen een afzonderlijke `display-format.mjs` die eindnullen verwijdert en `≈` bewaart bij echte benadering.
+
+**Bewijsgrens:** het oorspronkelijke evaluatierapport beschrijft beperkte voorbeelden. Op de branch staat aanvullende testcode; die moet op de laatste commit opnieuw daadwerkelijk uitgevoerd en aan het rapport toegevoegd worden. De POC heeft geen gevalideerde WIE-paneelhosts, autorisatiechips, lifecycle, clipboard, live bronbinding of volwaardige toegankelijkheids- en exportintegratie.
+
+**Poort C0:** lokale, geïsoleerde en gerichte parse-/adapter-/formatter-/browserproeven; valideer onder meer `2+3×4`, `√81`, `sin(30°)`, `π×2²`, exacte gehele getallen, beperkte decimalen en correcte `≈`-weergave. Geen volledige Edge-suite. Bevestig B als technisch voorkeursmodel, zonder een tweede numerieke waarheidsbron te introduceren.
+
+### V11-C1 — T5b-technisch integratiecontract vóór implementatie
+
+Vertrek van het [T5b UX-contract](WIE-T5b-UX-Contract-v1.0.2.md), de POC en actuele `develop`-architectuur. Leg afzonderlijk en expliciet vast:
+
+1. Eén calculatorcomponent, beschikbaar via de algemene WIE-werkbalk en via een dunne preview-host in de teksteditor; hetzelfde evaluator-/formattercontract in beide hosts.
+2. MathLive-invoer, een WIE-conform configureerbaar toetsenbord, een strikte ASCIIMath-/tokenadapter naar T5a; geen ongevalideerde MathJSON/LaTeX-AST als trusted input.
+3. WIE T5a als **enige productierekenmotor** voor numerieke waarde, eenheden, DEG/RAD en geautoriseerde geometriebronnen. Compute Engine blijft POC-vergelijking; de WAT-symboliek hoort niet in T5b.
+4. Afgeregelde numerieke formattering: nodeloze eindnullen weg, bruikbare ingestelde precisie, `≈` alleen bij echte benadering; geen afgeronde waarde als onvoorwaardelijke gelijkheid tonen.
+5. Paneelgrootte, verplaatsbaarheid, keyboard- en focushandling, Escape/fullscreen, responsiviteit, toegankelijkheid, bronpermission en geen onbedoelde canvas-/history-/documentmutatie.
+6. Dependency- en assetstrategie voor offline/static server, licenties, versiepinning, minimale gerichte regressietests en handmatige browseracceptatie.
+
+**Poort C1:** aparte goedkeuring van dit contract, daarna pas productie-implementatie-GO.
+
+### V11-C2 — Gedeelde WIE-rekenmachine (na aparte GO)
+
+Lever stapsgewijs de MathLive–T5a-adapter, een zwevend calculatorpaneel en twee hosts. Minimumgedrag is expressie invoeren, evalueren, het resultaat weergeven en kopiëren. De rekenmachine blijft **document- en history-neutraal**. Berekende inline-fragmenten (`calculatedValue`) zijn pas T5c, geen T5b-acceptatievereiste.
+
+**Poort C2:** gerichte tests voor eenheden, DEG/RAD, precisie/`≈`, ongeldige expressies, rechten, clipboard, focus, toetsenbord en correcte werking in beide hosts; handmatige acceptatie en een aparte PR naar `develop`. **Geen volledige Node-/Edge-runs zonder afzonderlijk besluit.**
 
 ### V11-F1 — TXT-FORM.1: contract vóór code
 
