@@ -56,6 +56,8 @@ De Edge-suite gebruikt Playwright en een geïnstalleerde Microsoft Edge. De voll
 
 ## Technische contracten
 
+De [centrale documentatie-index](docs/README.md) bundelt de actuele ingangen, ontwerpcontracten, nog openstaande acceptatiepunten en het historische archief. De links hieronder zijn een beknopte selectie.
+
 - [Documentformaat](DOCUMENT-FORMAT.md)
 - [Constructies en afhankelijkheden](CONSTRUCTIONS.md)
 - [Metingen en groepen](MEASUREMENTS-GROUPS.md)
