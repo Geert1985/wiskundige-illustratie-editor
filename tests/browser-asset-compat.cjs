@@ -7,9 +7,9 @@ module.exports = async page => {
     await page.reload();
     const versions = await page.evaluate(() => {const rows=Array.from(document.scripts,script=>{const url=new URL(script.src);return [url.pathname.split('/').at(-1),url.searchParams.get('v')];});return Object.fromEntries(rows);});
     assert.ok(Object.values(versions).every(Boolean));
-    assert.deepEqual(new Set(Object.values(versions)),new Set(['wie-tool-l5-2-20261017']));
-    assert.equal(versions['editor.js'],'wie-tool-l5-2-20261017');
-    assert.equal(versions['editor-radial-properties.js'],'wie-tool-l5-2-20261017');
+    assert.deepEqual(new Set(Object.values(versions)),new Set(['wie-radial-selection-20261018']));
+    assert.equal(versions['editor.js'],'wie-radial-selection-20261018');
+    assert.equal(versions['editor-radial-properties.js'],'wie-radial-selection-20261018');
     for (const type of ['line', 'straight', 'ray', 'vector']) {
       await require('./browser-tool-menu.cjs').choose(page,`[data-tool="${type}"]`);
       const start = await page.evaluate(() => FZI.MathIllustration.editor.transform().mathToScreen({ x: -2, y: -1 }));
