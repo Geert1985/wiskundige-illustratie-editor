@@ -9,7 +9,7 @@
 - `develop` is de integratiebasis voor volgende versies; begin onafhankelijke `feature/...`-, `fix/...`- en `chore/...`-branches standaard vanaf **actuele `develop`**. Alleen productiehotfixes vertrekken van `main` en worden teruggevoerd naar `develop`.
 - Merge een goedgekeurde feature via PR naar `develop`. Stabiliseer een volgende release in een afzonderlijke `release/vX.Y.Z`-branch; na releasecontrole volgt pas de PR naar `main`, tag en GitHub Release. Verplaats oude rapporten alleen na verwijzingsscan en met bijgewerkte links.
 - Hergebruik toepasselijke bestaande testbewijzen; voer **uitsluitend gerichte tests** uit op daadwerkelijk geraakte functionaliteit. Vraag niet automatisch een volledige Edge-suite aan. Documentatiewijzigingen krijgen gerichte link-, syntaxis- en diffcontroles.
-- De [DOC-A-audit](docs/WIE-DOC-A-BATCH-1-CONTENT-REVIEW.md) en [archiefindex](docs/archive/doc-a-batch-1/README.md) beschrijven historische rapporten; gearchiveerde verslagen mogen niet als actuele functionele contractspecificaties worden behandeld.
+- De [DOC-A-audit](docs/WIE-DOC-A-BATCH-1-CONTENT-REVIEW.md) en [centrale archiefindex](docs/archive/README.md) beschrijven historische rapporten; gearchiveerde verslagen mogen niet als actuele functionele contractspecificaties worden behandeld.
 
 ## Eerst lezen en bronvoorrang
 
