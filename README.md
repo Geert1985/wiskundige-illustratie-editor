@@ -1,6 +1,6 @@
 # WIE — Wiskundige Illustratie Editor
 
-WIE is een zelfstandige browsereditor voor het maken en delen van wiskundige illustraties. Deze branch bereidt de applicatieversie **1.0.0** voor. De release is pas officieel na het afzonderlijke releasebesluit en de publicatiestappen.
+WIE **v1.0.0** is een zelfstandige browsereditor voor het maken en delen van wiskundige illustraties.
 
 ## Starten
 
@@ -39,9 +39,9 @@ Niet alle zichtbare categorieën of geplande catalogusitems zijn actieve gereeds
 
 De applicatieversie **1.0.0** is niet hetzelfde als de JSON-documentversie. WIE leest geldige documentversies 1–10 en schrijft de laagste versie die de gebruikte functies kan beschrijven; documenten met onafhankelijke meetinstellingen kunnen bijvoorbeeld documentversie 10 vereisen. Oudere WIE-versies kunnen nieuwere documenten weigeren. Zie [DOCUMENT-FORMAT.md](DOCUMENT-FORMAT.md) voor versievoorwaarden en compatibiliteit.
 
-## Releaseprocedure
+## Versies en publicatie
 
-De voorgenomen procedure is: releasecandidate laten beoordelen en naar `main` mergen, de uiteindelijke releasecommit controleren, tag `v1.0.0` aanmaken en een GitHub Release met goedgekeurde release-notities publiceren. Publicatie of distributie naar een andere bestemming gebeurt alleen als een bestaande bestemming en procedure afzonderlijk bevestigd zijn. `package.json` behoudt `private: true`; npm-publicatie is niet onderdeel van deze procedure.
+Officiële GitHub Releases verwijzen naar een getagde commit op `main` en bijbehorende release-notities. Distributie naar een andere bestemming vereist een afzonderlijk bevestigd publicatieproces. `package.json` behoudt `private: true`; npm-publicatie is geen onderdeel van de releaseprocedure.
 
 ## Ontwikkel- en regressiecontroles
 
