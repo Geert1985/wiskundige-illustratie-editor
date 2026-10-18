@@ -193,7 +193,7 @@
           this.app.suppressMarqueeMenu||this.app.interaction)return;
         const hit=this.app.hitAt(e);
         if(!hit?.object||!this.app.canvasSelectable(hit.object))return;
-        this.contextEdge=hit.edgeRef||null;this.app.selectObject(hit.object.id,false,'canvas');
+        this.contextEdge=hit.edgeRef||null;this.selectContextObject(hit.object.id);
         this.openAt({x:e.clientX,y:e.clientY},true);
       },true);
       // Right-button pointerup fallback for browsers that dispatch
@@ -208,7 +208,7 @@
         if(this.app.suppressMarqueeMenu||this.app.interaction)return;
         const hit=this.app.hitAt(e);
         if(!hit?.object||!this.app.canvasSelectable(hit.object))return;
-        this.contextEdge=hit.edgeRef||null;this.app.selectObject(hit.object.id,false,'canvas');
+        this.contextEdge=hit.edgeRef||null;this.selectContextObject(hit.object.id);
         this.openAt({x:e.clientX,y:e.clientY},false);
       });
       this.listen(this.win,'resize',()=>{
@@ -217,6 +217,10 @@
       this.sync();
     }
     listen(node,type,fn,options){if(!node)return;node.addEventListener(type,fn,options);this.bound.push(()=>node.removeEventListener(type,fn,options));}
+    selectContextObject(id){
+      // A context action applies to the current selection; a right-click only seeds it when empty.
+      if(!this.app.selectedIds.length)this.app.selectObject(id,false,'canvas');
+    }
     context(){
       const app=this.app;
       if(app.inspectorTarget==='axes'&&!app.selectedIds.length)return {type:'axes',name:'Assenstelsel',id:'axes'};
