@@ -3,7 +3,7 @@ import { ComputeEngine } from '@cortex-js/compute-engine';
 import { compactFormattedResult } from './display-format.mjs';
 import { analyzeCortexExpression, configureDutchMathLive, createFormulaToken, setFormulaToken } from './cortex-analysis.mjs';
 import { MockGeometrySources, multiplyDimensions } from './geometry-poc.mjs';
-import { DEFAULT_BINDINGS, evaluateMathLiveLatex, sourceLatex } from './structural-binding.mjs';
+import { DEFAULT_BINDINGS, evaluateMathLiveLatex, sourceLatex, presentationUnit, toPresentationValue } from './structural-binding.mjs';
 
 const { ExpressionEngine } = globalThis.FZI.MathIllustration;
 const ce = new ComputeEngine();
@@ -173,12 +173,58 @@ const geoSources = new MockGeometrySources();
 let geoBindings = [geoSources.selectBinding('circle-1','wieSourceA'), geoSources.selectBinding('circle-2','wieSourceB')];
 let geoRequest=0, geoKind='area';
 async function renderGeometry(){
- const request=++geoRequest,status=document.querySelector('#geo-source-status'),exactOut=document.querySelector('#geo-result-exact'),approxOut=document.querySelector('#geo-result-approx'),revOut=document.querySelector('#geo-revision-status');
- exactOut.textContent='—';approxOut.textContent='—';revOut.textContent='Berekenen…';
- const state=document.querySelector('#geo-state').value,radius=Number(document.querySelector('#geo-radius').value),unit=document.querySelector('#geo-unit').value;
- if(state==='removed')geoSources.remove('circle-1');else geoSources.update('circle-1',{radius,unit,valid:state!=='invalid',allowed:state!=='denied'});
- const revision=geoSources.revision;
- try{const latex=document.querySelector('#geo-formula').getValue('latex-expanded');const result=evaluateMathLiveLatex(ce,latex,geoBindings,geoSources);await Promise.resolve();if(request!==geoRequest||revision!==geoSources.revision){exactOut.textContent='—';approxOut.textContent='—';revOut.textContent='Verouderde uitkomst gewist';return;}const dim=result.dimension;const suffix=dim.length===2?'cm²':dim.length===1?'cm':'';status.textContent=`Bron geldig · revisie ${revision}`;exactOut.textContent=`${result.expression.toString()} ${suffix}`;const numeric=result.expression.N().numericValue;approxOut.textContent=numeric===undefined?'Geen numerieke waarde':`≈${String(numeric).replace('.',',')} ${suffix}`;revOut.textContent='Actuele uitkomst · bronmeting';}catch(e){status.textContent='Bronbinding of formule niet beschikbaar';exactOut.textContent='—';approxOut.textContent='—';revOut.textContent=e.code||'Geen geldige actuele uitkomst';}}
+  const request = ++geoRequest;
+  const status = document.querySelector('#geo-source-status');
+  const exactOut = document.querySelector('#geo-result-exact');
+  const approxOut = document.querySelector('#geo-result-approx');
+  const revOut = document.querySelector('#geo-revision-status');
+  const dimensionOut = document.querySelector('#geo-result-dimension');
+  const unitOut = document.querySelector('#geo-result-unit');
+  exactOut.textContent = '—';
+  approxOut.textContent = '—';
+  dimensionOut.textContent = '—';
+  unitOut.textContent = '—';
+  revOut.textContent = 'Berekenen…';
+  const state = document.querySelector('#geo-state').value;
+  const radius = Number(document.querySelector('#geo-radius').value);
+  const unit = document.querySelector('#geo-unit').value;
+  if (state === 'removed') geoSources.remove('circle-1');
+  else geoSources.update('circle-1', { radius, unit, valid: state !== 'invalid', allowed: state !== 'denied' });
+  const revision = geoSources.revision;
+  try {
+    const latex = document.querySelector('#geo-formula').getValue('latex-expanded');
+    const angleMode = document.querySelector('#cortex-angle-mode').value;
+    const result = evaluateMathLiveLatex(ce, latex, geoBindings, geoSources, { angleMode });
+    await Promise.resolve();
+    if (request !== geoRequest || revision !== geoSources.revision) {
+      exactOut.textContent = '—';
+      approxOut.textContent = '—';
+      dimensionOut.textContent = '—';
+      unitOut.textContent = '—';
+      revOut.textContent = 'Verouderde uitkomst gewist';
+      return;
+    }
+    const dimension = result.dimension;
+    const displayUnit = presentationUnit(dimension, unit, angleMode);
+    const canonicalUnit = presentationUnit(dimension);
+    dimensionOut.textContent = dimension === null ? 'Niet eenduidig bewezen' : Object.keys(dimension).length ? JSON.stringify(dimension) : 'Dimensieloos';
+    unitOut.textContent = displayUnit || 'Geen eenheid';
+    exactOut.textContent = `${result.exactExpression}${canonicalUnit ? ` ${canonicalUnit}` : ''} · algebraïsche vorm`;
+    const numeric = result.numericValue === undefined ? undefined : toPresentationValue(result.numericValue, dimension, unit, angleMode);
+    approxOut.textContent = numeric === undefined
+      ? 'Geen numerieke benadering'
+      : `≈${new Intl.NumberFormat('nl-BE', { maximumFractionDigits: 8 }).format(numeric.value)}${numeric.unit ? ` ${numeric.unit}` : ''}`;
+    status.textContent = `Bron geldig · revisie ${revision}`;
+    revOut.textContent = result.sourceQuality === 'measured' ? 'Actuele uitkomst · invoer bevat geometrische meetwaarden' : 'Actuele symbolische uitkomst';
+  } catch (error) {
+    status.textContent = 'Bronbinding of formule niet beschikbaar';
+    exactOut.textContent = '—';
+    approxOut.textContent = '—';
+    dimensionOut.textContent = '—';
+    unitOut.textContent = '—';
+    revOut.textContent = error.code || 'Geen geldige actuele uitkomst';
+  }
+}
 function initialize() {
   field.addEventListener('input', () => {
     activeOperation = 'evaluate';
@@ -238,6 +284,7 @@ function initialize() {
   document.querySelector('#cortex-angle-mode').addEventListener('change', event => {
     ce.angularUnit = event.target.value;
     render();
+    renderGeometry();
   });
   document.querySelectorAll('[data-cortex-example]').forEach(button => button.addEventListener('click', () => {
     activeOperation = 'evaluate';

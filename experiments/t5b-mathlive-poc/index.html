@@ -156,9 +156,9 @@
         <p>Kies expliciet bron r₁ of r₂ om een gereserveerd MathLive-token in te voegen. Gewone symbolen zoals <code>r</code> blijven losse wiskundige variabelen.</p>
         <div class="examples"><label>Straal <input id="geo-radius" type="number" min="0" step="any" value="2"></label><label>Eenheid <select id="geo-unit"><option>mm</option><option selected>cm</option><option>m</option></select></label>
         <label>Mockstatus <select id="geo-state"><option value="valid">Geldig en toegankelijk</option><option value="invalid">Ongeldig</option><option value="denied">Toegang ingetrokken</option><option value="removed">Verwijderd</option></select></label><button id="geo-insert" type="button">Bron r₁ invoegen</button><button id="geo-insert-second" type="button">Bron r₂ invoegen</button></div>
-        <math-field id="geo-formula" aria-label="Formule met geometrische bron" virtual-keyboard-mode="manual">\pi r^2</math-field>
+        <math-field id="geo-formula" aria-label="Formule met geometrische bron" virtual-keyboard-mode="manual">\pi \mathrm{wieSourceA}^2</math-field>
         <div class="examples"><button data-geo-example="area">A = π × r²</button><button data-geo-example="circumference">O = 2 × π × r</button><button data-geo-example="length-sum">r + r</button><button data-geo-example="dimension-conflict">r + πr² (dimensieconflict)</button></div>
-        <dl class="cortex-stages"><dt>Bronstatus</dt><dd id="geo-source-status">Geldig · revisie 0</dd><dt>Exact</dt><dd id="geo-result-exact">—</dd><dt>Numeriek</dt><dd id="geo-result-approx">—</dd><dt>Herberekening</dt><dd id="geo-revision-status">Wacht op invoer</dd></dl>
+        <dl class="cortex-stages"><dt>Bronstatus</dt><dd id="geo-source-status">Geldig · revisie 0</dd><dt>Dimensie</dt><dd id="geo-result-dimension">—</dd><dt>Presentatie-eenheid</dt><dd id="geo-result-unit">—</dd><dt>Symbolische vorm (SI)</dt><dd id="geo-result-exact">—</dd><dt>Numerieke benadering</dt><dd id="geo-result-approx">—</dd><dt>Herberekening</dt><dd id="geo-revision-status">Wacht op invoer</dd></dl>
       </section>
       <section class="reference-heading" aria-labelledby="reference-title">
         <p class="eyebrow">Ongewijzigde technische referentie</p>
