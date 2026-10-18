@@ -431,7 +431,7 @@ Elke testcase controleert behalve posities ook bronrecept, branch, validiteitsco
 2. Herstel de geconstateerde legacyregressie: zonder `selectedBranches` filtert `Engine.constructIntersection` ongeldige takken in plaats van de hele constructie af te wijzen; expliciet ongeldige selectie blijft atomair weigeren; behoud branch 1 wanneer alleen die geldig is.
 3. Controleer permissies, types, asrollen, Undo/Redo, nulresultaten, annulering vóór commit, stabiele IDs, geen spontane puntcreatie en alle testcases `INT-001` t/m `INT-016`.
 4. Lees actuele `origin/main`, `AGENTS.md`, dit contract v1.1.0 en de roadmap. Rapporteer eventuele conflicten; neem de nieuwe contractdocumentatie over zonder andere trajecten te vermengen.
-5. Voer `npm test` en `npm run test:edge` uit, pas verouderde UI-tests aan zonder geometrische/securityregressies te verzwakken, werk `docs/M8-INT-0-IMPLEMENTATION-REPORT.md` bij met feitelijke testuitvoer en push uitsluitend naar dezelfde featurebranch.
+5. Voer `npm test` en `npm run test:edge` uit, pas verouderde UI-tests aan zonder geometrische/securityregressies te verzwakken, werk `docs/archive/doc-e-batch-2/M8-INT-0-IMPLEMENTATION-REPORT.md` bij met feitelijke testuitvoer en push uitsluitend naar dezelfde featurebranch.
 6. **Niet naar `main` mergen, de oude gespecialiseerde menuknoppen nog niet verwijderen en M8-INT.1/.2/.3 en M-PATH niet starten.**
 
 ---

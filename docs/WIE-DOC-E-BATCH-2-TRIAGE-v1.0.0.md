@@ -108,3 +108,25 @@ Deze aanvulling bewaart de oorspronkelijke triage en voegt de gevraagde volledig
 ## 5. Besluit
 
 **GO voor een gerichte, lokale verwijzingsscan van vier kandidaten. NO-GO voor onmiddellijk verplaatsen.** Vier rapporten hebben een expliciete acceptatie-/integratieketen; de overige veertien worden niet stilzwijgend als volledig geaccepteerd behandeld. DOC-C's zeven gearchiveerde documenten worden niet opnieuw aangeraakt.
+
+## DOC-E uitvoering — archiveringsbatch 2 (18 oktober 2026)
+
+**Uitvoerings-GO:** door producteigenaar verleend na de CONDITIONAL GO-preflight; de uitvoering staat afzonderlijk op `chore/wie-v1-1-doc-e-batch-2-archive` voor een PR naar `develop`. Dit besluit en deze bijlage wijzigen de historische preflight of oudere onbesliste acceptaties niet.
+
+**Vier historische rapporten verplaatst** naar `docs/archive/doc-e-batch-2/` zonder hun acceptatie-, regressie- of andere bewijsinhoud te herschrijven:
+
+- `docs/M8b-3-CONSOLIDATION-REPORT.md` → `docs/archive/doc-e-batch-2/M8b-3-CONSOLIDATION-REPORT.md` (M8b-3-consolidatie).
+- `docs/M8-INT-0-IMPLEMENTATION-REPORT.md` → `docs/archive/doc-e-batch-2/M8-INT-0-IMPLEMENTATION-REPORT.md` (M8-INT.0).
+- `docs/M8-INT-1-IMPLEMENTATION-REPORT.md` → `docs/archive/doc-e-batch-2/M8-INT-1-IMPLEMENTATION-REPORT.md` (M8-INT.1).
+- `docs/M8a-2-POINT-ON-ELLIPSE-IMPLEMENTATION.md` → `docs/archive/doc-e-batch-2/M8a-2-POINT-ON-ELLIPSE-IMPLEMENTATION.md` (M8a-2).
+
+**Verwijzingen gelijktijdig gemigreerd:**
+
+- Zeven inkomende Markdown-links: één in `AGENTS.md` en zes in `docs/DEVELOPMENT-ROADMAP.md`.
+- Drie expliciete repo-padvermeldingen: in `docs/M8b-3-CONSOLIDATION-PLAN.md`, `docs/M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md` en `docs/M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md`.
+- Twee uitgaande relatieve Markdown-links in het verplaatste `M8-INT-1-IMPLEMENTATION-REPORT.md`, naar `../../M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md` en `../../M8-INT-1-PREFLIGHT.md`.
+- [DOC-E archiefindex](archive/doc-e-batch-2/README.md), [centrale archiefindex](archive/README.md) en tweede migratiebijlage bij de [oorspronkelijke inventaris](WIE-DOC-INVENTORY-v1.0.0.md) houden de bewijzen vindbaar; het eerste DOC-C-archief blijft behouden.
+
+De definitieve verificatie van archiefbestanden, SHA's, interne links, achtergebleven verwijzingen, diff en PR vindt in de uitvoerings-PR plaats en mag alleen als PASS worden gerapporteerd na daadwerkelijke verificatie.
+
+**Restrisico:** oude externe `blob/main/docs/...`-links en verwijzingen buiten de repository waren niet volledig te onderzoeken. Er zijn geen oude-pad-stubs toegevoegd; maak die alleen wanneer concreet externe linkgebruik blijkt. Productiecode, tests, de 14 overige triagerapporten, `main` en release-tag `v1.0.0` horen buiten deze wijziging te blijven.

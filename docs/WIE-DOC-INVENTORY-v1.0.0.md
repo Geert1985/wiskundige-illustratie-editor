@@ -255,3 +255,16 @@ De volledige bovenstaande bestandenlijst blijft ongewijzigd als historische mome
 | `docs/LINKED-SHAPE-MENU-REPORT.md` | `docs/archive/doc-a-batch-1/LINKED-SHAPE-MENU-REPORT.md` |
 | `docs/GEO-UI-ELLIPSE-LABEL-ANCHORS-REPORT.md` | `docs/archive/doc-a-batch-1/GEO-UI-ELLIPSE-LABEL-ANCHORS-REPORT.md` |
 | `docs/TOOL-MENU-REORGANIZATION-REPORT.md` | `docs/archive/doc-a-batch-1/TOOL-MENU-REORGANIZATION-REPORT.md` |
+
+## Migratiebijlage — DOC-E batch 2 (18 oktober 2026)
+
+De oorspronkelijke v1.0-inventaris hierboven blijft een **historische momentopname**. De onderstaande paden werden pas later gewijzigd bij de WIE v1.1-documentatiearchivering. De oorspronkelijke indeling en documentstatus zijn daardoor niet met terugwerkende kracht herschreven.
+
+| Historisch pad | Actueel pad |
+|---|---|
+| `docs/M8b-3-CONSOLIDATION-REPORT.md` | `docs/archive/doc-e-batch-2/M8b-3-CONSOLIDATION-REPORT.md` |
+| `docs/M8-INT-0-IMPLEMENTATION-REPORT.md` | `docs/archive/doc-e-batch-2/M8-INT-0-IMPLEMENTATION-REPORT.md` |
+| `docs/M8-INT-1-IMPLEMENTATION-REPORT.md` | `docs/archive/doc-e-batch-2/M8-INT-1-IMPLEMENTATION-REPORT.md` |
+| `docs/M8a-2-POINT-ON-ELLIPSE-IMPLEMENTATION.md` | `docs/archive/doc-e-batch-2/M8a-2-POINT-ON-ELLIPSE-IMPLEMENTATION.md` |
+
+De [DOC-E archiefindex](archive/doc-e-batch-2/README.md) en de [overkoepelende archiefindex](archive/README.md) bieden actuele vindbaarheid. Het gedetailleerde verwijzingsbewijs staat in de [DOC-E preflight en uitvoeringsbijlage](WIE-DOC-E-BATCH-2-TRIAGE-v1.0.0.md).
