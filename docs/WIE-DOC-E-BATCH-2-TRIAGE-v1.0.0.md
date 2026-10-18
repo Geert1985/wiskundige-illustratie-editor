@@ -111,7 +111,7 @@ Deze aanvulling bewaart de oorspronkelijke triage en voegt de gevraagde volledig
 
 ## DOC-E uitvoering — archiveringsbatch 2 (18 oktober 2026)
 
-**Uitvoerings-GO:** door producteigenaar verleend na de CON­DITIONAL-GO-preflight; de uitvoering staat afzonderlijk op `chore/wie-v1-1-doc-e-batch-2-archive` voor een PR naar `develop`. Dit besluit en deze bijlage wijzigen de historische preflight of oudere onbesliste acceptaties niet.
+**Uitvoerings-GO:** door producteigenaar verleend na de CONDITIONAL GO-preflight; de uitvoering staat afzonderlijk op `chore/wie-v1-1-doc-e-batch-2-archive` voor een PR naar `develop`. Dit besluit en deze bijlage wijzigen de historische preflight of oudere onbesliste acceptaties niet.
 
 **Vier historische rapporten verplaatst** naar `docs/archive/doc-e-batch-2/` zonder hun acceptatie-, regressie- of andere bewijsinhoud te herschrijven:
 
