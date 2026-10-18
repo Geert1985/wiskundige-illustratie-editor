@@ -13,6 +13,8 @@
 
 ## Eerst lezen en bronvoorrang
 
+De [centrale documentatie-index](docs/README.md) is de ingang voor geldige documentatiepaden, statusverschillen, open acceptatiepoorten en het archief. Deze index is **navigatie**, geen vervanging van het recentst expliciet goedgekeurde contract of de feitelijke broncode.
+
 1. Controleer **altijd de actuele uitgecheckte branch, de bestaande broncode en het werkelijk geladen `editor.html`-manifest**. Neem niet aan dat een feature al op `main` staat omdat hij op een ontwikkelbranch werkt.
 2. Lees **[docs/UI-RADIAL-9-CONTRACT-DRIVEN.md](docs/UI-RADIAL-9-CONTRACT-DRIVEN.md)** voor de actuele contextuele constructie- en radialmenuarchitectuur en **[docs/DEVELOPMENT-ROADMAP.md](docs/DEVELOPMENT-ROADMAP.md)** voor projectscope en ontwikkelstatus.
 3. Lees **[docs/CORE-1-ARCHITECTURE-DESIGN.md](docs/CORE-1-ARCHITECTURE-DESIGN.md)** voor de gedeelde servicegrenzen en **[CONSTRUCTIONS.md](CONSTRUCTIONS.md)** voor constructieafhankelijkheden.
