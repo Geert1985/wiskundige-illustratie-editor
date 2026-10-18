@@ -869,9 +869,11 @@ test('WIE-TOOL-L2 canvas midpoint uses single completion, preserves selection an
  assert.equal(completions,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'midpoint');assert.deepEqual(plain(h.app.selectedIds),[h.app.selectedId]);assert.equal(h.app.history.entries.length,1);assert.equal(h.app.engine.renderer.preview,null);h.app.travelHistory();assert.deepEqual(plain(h.engine.toJSON()),before);h.app.travelHistory(true);assert.equal(h.engine.get(h.app.selectedId).construction.kind,'midpoint');
 });
 
-test('WIE-TOOL-L2 non-migrated parallel retains its L1 completion route',()=>{
+test('WIE-TOOL-L3.2 parallel completes once through the central lifecycle',()=>{
  const h=appRuntime();h.app.setTool('construct:parallel');h.down({x:.5,y:1});const complete=h.app.completeToolInteraction.bind(h.app);let completions=0;h.app.completeToolInteraction=args=>{completions++;return complete(args);};h.down({x:0,y:0});
- assert.equal(completions,0);assert.equal(h.app.tool,'select');assert.equal(h.engine.get(h.app.selectedId).construction.kind,'parallel');assert.equal(h.app.history.entries.length,1);
+ const created=h.engine.model.objects.filter(object=>object.construction?.kind==='parallel');
+ assert.equal(completions,1);assert.equal(created.length,1);assert.equal(h.app.tool,'select');assert.equal(h.app.interaction,null);assert.equal(h.app.selectedId,created[0].id);assert.deepEqual(plain(h.app.selectedIds),[created[0].id]);assert.equal(h.app.history.entries.length,1);
+ const after=plain(h.engine.toJSON());assert.equal(h.app.history.undo(),true);assert.equal(h.engine.model.objects.some(object=>object.construction?.kind==='parallel'),false);assert.equal(h.app.history.redo(),true);assert.deepEqual(plain(h.engine.toJSON()),after);
 });
 
 test('WIE-TOOL-L3.2 generic linked constructions use central single completion and select every result',()=>{
