@@ -2,8 +2,8 @@ import 'mathlive';
 import { ComputeEngine } from '@cortex-js/compute-engine';
 import { compactFormattedResult } from './display-format.mjs';
 import { analyzeCortexExpression, configureDutchMathLive, createFormulaToken, setFormulaToken } from './cortex-analysis.mjs';
-import { MockGeometrySources, multiplyDimensions } from './geometry-poc.mjs';
-import { DEFAULT_BINDINGS, evaluateMathLiveLatex, sourceLatex, presentationUnit, toPresentationValue } from './structural-binding.mjs';
+import { MockGeometrySources, multiplyDimensions, createPublicationGuard } from './geometry-poc.mjs';
+import { DEFAULT_BINDINGS, evaluateMathLiveLatex, sourceLatex, presentationUnit, toPresentationValue, bindingsReferencedByLatex } from './structural-binding.mjs';
 
 const { ExpressionEngine } = globalThis.FZI.MathIllustration;
 const ce = new ComputeEngine();
@@ -171,59 +171,58 @@ function activateKey(button) {
 
 const geoSources = new MockGeometrySources();
 let geoBindings = [geoSources.selectBinding('circle-1','wieSourceA'), geoSources.selectBinding('circle-2','wieSourceB')];
-let geoRequest=0, geoKind='area';
-async function renderGeometry(){
-  const request = ++geoRequest;
+let geoFormulaGeneration = 0, geoKind = 'area', geoPresentation = { unit: 'cm', angleMode: 'deg' };
+const geoPublicationGuard = createPublicationGuard(geoSources, publication => {
   const status = document.querySelector('#geo-source-status');
   const exactOut = document.querySelector('#geo-result-exact');
   const approxOut = document.querySelector('#geo-result-approx');
-  const revOut = document.querySelector('#geo-revision-status');
   const dimensionOut = document.querySelector('#geo-result-dimension');
   const unitOut = document.querySelector('#geo-result-unit');
+  const revisionOut = document.querySelector('#geo-revision-status');
   exactOut.textContent = '—';
   approxOut.textContent = '—';
   dimensionOut.textContent = '—';
   unitOut.textContent = '—';
-  revOut.textContent = 'Berekenen…';
+  status.textContent = publication.status === 'Actueel' ? 'POC-mockbron gecontroleerd' : publication.status;
+  revisionOut.textContent = publication.status;
+  if (publication.status !== 'Actueel' || !publication.result) return;
+  const result = publication.result;
+  const { unit, angleMode } = geoPresentation;
+  const dimension = result.dimension;
+  const displayUnit = presentationUnit(dimension, unit, angleMode);
+  const canonicalUnit = presentationUnit(dimension);
+  dimensionOut.textContent = dimension === null ? 'Niet eenduidig bewezen' : Object.keys(dimension).length ? JSON.stringify(dimension) : 'Dimensieloos';
+  unitOut.textContent = displayUnit || 'Geen eenheid';
+  exactOut.textContent = `${result.exactExpression}${canonicalUnit ? ` ${canonicalUnit}` : ''} · algebraïsche vorm`;
+  const numeric = result.numericValue === undefined ? undefined : toPresentationValue(result.numericValue, dimension, unit, angleMode);
+  approxOut.textContent = numeric === undefined
+    ? 'Geen numerieke benadering'
+    : `≈${new Intl.NumberFormat('nl-BE', { maximumFractionDigits: 8 }).format(numeric.value)}${numeric.unit ? ` ${numeric.unit}` : ''}`;
+  revisionOut.textContent = result.sourceQuality === 'measured' ? 'Actueel · bevat meetwaarden' : 'Actuele symbolische uitkomst';
+});
+function renderGeometry(){
+  geoPublicationGuard.invalidate('Berekenen');
   const state = document.querySelector('#geo-state').value;
   const radius = Number(document.querySelector('#geo-radius').value);
   const unit = document.querySelector('#geo-unit').value;
+  const angleMode = document.querySelector('#cortex-angle-mode').value;
+  const formulaSnapshot = document.querySelector('#geo-formula').getValue('latex-expanded');
+  geoPresentation = Object.freeze({ unit, angleMode });
   if (state === 'removed') geoSources.remove('circle-1');
   else geoSources.update('circle-1', { radius, unit, valid: state !== 'invalid', allowed: state !== 'denied' });
-  const revision = geoSources.revision;
-  try {
-    const latex = document.querySelector('#geo-formula').getValue('latex-expanded');
-    const angleMode = document.querySelector('#cortex-angle-mode').value;
-    const result = evaluateMathLiveLatex(ce, latex, geoBindings, geoSources, { angleMode });
-    await Promise.resolve();
-    if (request !== geoRequest || revision !== geoSources.revision) {
-      exactOut.textContent = '—';
-      approxOut.textContent = '—';
-      dimensionOut.textContent = '—';
-      unitOut.textContent = '—';
-      revOut.textContent = 'Verouderde uitkomst gewist';
-      return;
-    }
-    const dimension = result.dimension;
-    const displayUnit = presentationUnit(dimension, unit, angleMode);
-    const canonicalUnit = presentationUnit(dimension);
-    dimensionOut.textContent = dimension === null ? 'Niet eenduidig bewezen' : Object.keys(dimension).length ? JSON.stringify(dimension) : 'Dimensieloos';
-    unitOut.textContent = displayUnit || 'Geen eenheid';
-    exactOut.textContent = `${result.exactExpression}${canonicalUnit ? ` ${canonicalUnit}` : ''} · algebraïsche vorm`;
-    const numeric = result.numericValue === undefined ? undefined : toPresentationValue(result.numericValue, dimension, unit, angleMode);
-    approxOut.textContent = numeric === undefined
-      ? 'Geen numerieke benadering'
-      : `≈${new Intl.NumberFormat('nl-BE', { maximumFractionDigits: 8 }).format(numeric.value)}${numeric.unit ? ` ${numeric.unit}` : ''}`;
-    status.textContent = `Bron geldig · revisie ${revision}`;
-    revOut.textContent = result.sourceQuality === 'measured' ? 'Actuele uitkomst · invoer bevat geometrische meetwaarden' : 'Actuele symbolische uitkomst';
-  } catch (error) {
-    status.textContent = 'Bronbinding of formule niet beschikbaar';
-    exactOut.textContent = '—';
-    approxOut.textContent = '—';
-    dimensionOut.textContent = '—';
-    unitOut.textContent = '—';
-    revOut.textContent = error.code || 'Geen geldige actuele uitkomst';
+  let bindings;
+  try { bindings = bindingsReferencedByLatex(ce, formulaSnapshot, geoBindings); }
+  catch (error) {
+    const invalidFormulaCodes = new Set(['INVALID_MATH','INVALID_BINDING','UNKNOWN_BINDING','INPUT_LIMIT','UNSUPPORTED_EXPRESSION','DIMENSION_CONFLICT','DIMENSION_UNDETERMINED','INVALID_POWER','INVALID_SOURCE_DIMENSION','INVALID_SOURCE_UNIT','INVALID_NUMBER']);
+    geoPublicationGuard.invalidate(invalidFormulaCodes.has(error?.code) ? 'Ongeldige formule' : 'Berekening mislukt');
+    return;
   }
+  void geoPublicationGuard.run({ formulaSnapshot, formulaGeneration: geoFormulaGeneration, bindings, settings: geoPresentation },
+    (context, snapshotProvider) => {
+      const result = evaluateMathLiveLatex(ce, context.formulaSnapshot, context.bindings, snapshotProvider, context.settings);
+      if (result.numericValue !== undefined) toPresentationValue(result.numericValue, result.dimension, context.settings.unit, context.settings.angleMode);
+      return result;
+    });
 }
 function initialize() {
   field.addEventListener('input', () => {
@@ -300,11 +299,13 @@ function initialize() {
     geoKind=button.dataset.geoExample;
     const token=sourceLatex('wieSourceA'); const pi='\\pi ';
     const formulas={area:pi+token+'^2',circumference:'2'+pi+token,'length-sum':token+'+'+token,'dimension-conflict':token+'+'+pi+token+'^2'};
+    geoFormulaGeneration++;
     document.querySelector('#geo-formula').setValue(formulas[geoKind]); renderGeometry();
   }));
-  ['geo-radius','geo-unit','geo-state','geo-formula'].forEach(id=>document.querySelector(`#${id}`).addEventListener(id==='geo-formula'?'input':'change',renderGeometry));
-  document.querySelector('#geo-insert').addEventListener('click',()=>{try{geoBindings=[geoSources.selectBinding('circle-1','wieSourceA'),geoBindings[1]];document.querySelector('#geo-formula').executeCommand(['insert',sourceLatex('wieSourceA'),{selectionMode:'after'}]);renderGeometry();}catch{renderGeometry();}});
-  document.querySelector('#geo-insert-second').addEventListener('click',()=>{try{geoBindings=[geoBindings[0],geoSources.selectBinding('circle-2','wieSourceB')];document.querySelector('#geo-formula').executeCommand(['insert',sourceLatex('wieSourceB'),{selectionMode:'after'}]);renderGeometry();}catch{renderGeometry();}});
+  ['geo-radius','geo-unit','geo-state'].forEach(id=>document.querySelector(`#${id}`).addEventListener('change',renderGeometry));
+  document.querySelector('#geo-formula').addEventListener('input',()=>{geoFormulaGeneration++;renderGeometry();});
+  document.querySelector('#geo-insert').addEventListener('click',()=>{try{geoBindings=[geoSources.selectBinding('circle-1','wieSourceA'),geoBindings[1]];geoFormulaGeneration++;document.querySelector('#geo-formula').executeCommand(['insert',sourceLatex('wieSourceA'),{selectionMode:'after'}]);renderGeometry();}catch{renderGeometry();}});
+  document.querySelector('#geo-insert-second').addEventListener('click',()=>{try{geoBindings=[geoBindings[0],geoSources.selectBinding('circle-2','wieSourceB')];geoFormulaGeneration++;document.querySelector('#geo-formula').executeCommand(['insert',sourceLatex('wieSourceB'),{selectionMode:'after'}]);renderGeometry();}catch{renderGeometry();}});
   renderGeometry();
   customKeyboard.addEventListener('pointerdown', event => {
     if (event.target.closest('button')) event.preventDefault();

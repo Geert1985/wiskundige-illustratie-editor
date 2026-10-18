@@ -180,3 +180,16 @@ export function evaluateMathLiveLatex(engine, latex, bindings, provider, options
   if (!parsed?.isValid) fail('INVALID_MATH');
   return evaluateBoundMathJson(engine, parsed.json, bindings, provider, options);
 }
+export function bindingsReferencedByLatex(engine, latex, bindings, options = {}) {
+  if (typeof latex !== 'string' || latex.length > (options.maxCharacters || 2048) || !Array.isArray(bindings)) fail('INPUT_LIMIT');
+  let parsed;
+  try { parsed = engine.parse(latex); } catch { fail('INVALID_MATH'); }
+  if (!parsed?.isValid) fail('INVALID_MATH');
+  const table = Object.create(null);
+  for (const binding of bindings) {
+    if (!binding || typeof binding.token !== 'string' || own(table, binding.token)) fail('INVALID_BINDING');
+    table[binding.token] = { dimension: {} };
+  }
+  const refs = validateTree(parsed.json, table, options).refs;
+  return Object.freeze(refs.map(token => bindings.find(binding => binding.token === token)));
+}
