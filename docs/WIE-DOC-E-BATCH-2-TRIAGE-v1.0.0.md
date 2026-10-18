@@ -73,6 +73,38 @@ Gebruik een schone lokale worktree met de **actuele** `develop` als uitgangspunt
 
 Na succesvolle controle kan een aparte, kleine DOC-E-archiverings-PR naar `develop` volgen. Corrigeer de inkomende/uitgaande verwijzingen en voeg archiefindex/migratiebijlage toe in dezelfde commitserie; bescherm `main` en release-tag `v1.0.0`.
 
+## DOC-E repositorybrede verwijzingsscan — preflightresultaat (2026-10-18)
+
+Deze aanvulling bewaart de oorspronkelijke triage en voegt de gevraagde volledige gerichte verwijzingsscan toe. Er zijn in deze preflight **geen bestanden verplaatst of verwijderd**.
+
+### Baseline en methode
+
+- Branch: `chore/wie-v1-1-doc-e-batch-2-preflight`; gecontroleerde baseline: `ff62099f851454846bb442f28b790f33cedb02c0`.
+- Per exacte basename, oud pad `docs/<naam>` en voorgesteld pad `docs/archive/doc-e-batch-2/<naam>` is `git grep -n -I -i -F` op de volledige tracked repositorysnapshot uitgevoerd. Dit dekt alle tracked tekstbestanden; Git's `-I` negeert binaire bestanden.
+- Uitgaande Markdown-doelen van de vier kandidaten zijn afzonderlijk uitgelezen; alle huidige lokale doelen bestaan.
+- De document-SHA's hieronder zijn Git blob-SHA's van de gecontroleerde baseline, waarmee de exacte historische broninhoud is geïdentificeerd.
+- Externe GitHub-verwijzingen naar oude blob-URL's, vrije tekst buiten deze repository en verwijzingen in niet-uitgecheckte branches zijn niet gescand.
+
+### Verificatiematrix en padmapping
+
+| Huidig → voorgesteld pad | Inkomende verwijzingen op deze baseline | Uitgaande relatieve links | Compatibiliteitsbestand | Acceptatie-/regressiebewijs |
+|---|---|---|---|---|
+| `docs/M8b-3-CONSOLIDATION-REPORT.md` → `docs/archive/doc-e-batch-2/M8b-3-CONSOLIDATION-REPORT.md` | Actieve Markdown-links: `AGENTS.md` regel 70; `docs/DEVELOPMENT-ROADMAP.md` regels 254 en 268. Platte padvermelding: `docs/M8b-3-CONSOLIDATION-PLAN.md` regel 68. Historische inventaris-/triagevermeldingen: `docs/WIE-DOC-INVENTORY-v1.0.0.md` regel 137 en deze triage. | Geen lokale relatieve links; de PR #23-links in het verslag zijn absolute GitHub-URL's. | Niet nodig voor aangetroffen interne verwijzingen; die links zijn in een latere archiverings-PR bij te werken. Externe oude blob-URL's zijn onbewezen. | Definitieve gebruikersacceptatie 16 okt. 2026 en merge PR #23 vastgelegd; 705/705 Node en volledige Edge-regressie gerapporteerd. Baselineblob `ab525fa074f5b6dad945b46f85454100669e69f6`, 10.319 bytes. |
+| `docs/M8-INT-0-IMPLEMENTATION-REPORT.md` → `docs/archive/doc-e-batch-2/M8-INT-0-IMPLEMENTATION-REPORT.md` | Actieve Markdown-links: `docs/DEVELOPMENT-ROADMAP.md` regels 208 en 231. Platte padvermelding: `docs/M8-INT-SNIJPUNTEN-ONTWERPCONTRACT.md` regel 434. Historische inventaris-/triagevermeldingen: inventaris regel 116 en deze triage. | Geen lokale relatieve links. | Niet nodig voor aangetroffen interne verwijzingen; die links zijn in een latere archiverings-PR bij te werken. Externe oude blob-URL's zijn onbewezen. | Gebruikersacceptatie 17 okt. 2026 staat in het verslag; de roadmap bevestigt integratie via PR #27. Het verslag rapporteert 713/713 Node en gerichte plus volledige Edge PASS. Baselineblob `0139c0325bd52c7188671f79e614e58bf6bfa2e2`, 5.548 bytes. |
+| `docs/M8-INT-1-IMPLEMENTATION-REPORT.md` → `docs/archive/doc-e-batch-2/M8-INT-1-IMPLEMENTATION-REPORT.md` | Actieve Markdown-links: `docs/DEVELOPMENT-ROADMAP.md` regels 208 en 237. Platte padvermelding: `docs/M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md` regel 258. Historische inventaris-/triagevermeldingen: inventaris regel 118 en deze triage. | Twee lokale links moeten bij verhuizing worden gewijzigd: `M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md` → `../../M8-INT-1-LIJN-ELLIPS-ONTWERPCONTRACT.md`; `M8-INT-1-PREFLIGHT.md` → `../../M8-INT-1-PREFLIGHT.md`. PR #28-links zijn absolute GitHub-URL's en blijven gelijk. | Niet nodig voor aangetroffen interne verwijzingen als bovenstaande links mee worden bijgewerkt. Externe oude blob-URL's zijn onbewezen. | Gebruikersacceptatie inclusief UX-correctie en integratie via PR #28 staan in het verslag; 735/735 Node, gerichte M8-INT-Edge en volledige Edge PASS met `pageErrors: []` gerapporteerd. Baselineblob `aa36679d7949cf4939321b881dcafdb3549d33bd`, 5.622 bytes. |
+| `docs/M8a-2-POINT-ON-ELLIPSE-IMPLEMENTATION.md` → `docs/archive/doc-e-batch-2/M8a-2-POINT-ON-ELLIPSE-IMPLEMENTATION.md` | Geen inkomende operationele Markdown-link of code/config/testpad gevonden. Alleen de historische DOC-E-triage (regel 50) en inventaris (regel 129) noemen het pad. | Geen lokale relatieve links; PR #16- en Actions-links zijn absolute GitHub-URL's. | Geen interne alias nodig; er zijn geen actieve in-repository inkomende links gevonden. Externe oude blob-URL's zijn onbewezen. | Gebruikersacceptatie 15 okt. 2026 en PR #16 staan in het verslag; 659/659 Node en volledige Edge PASS gerapporteerd. De eerste Edge-poging strandde eerder op een bestaande teksteditor-timeout; poging 2 slaagde, oorzaak van de eerste timeout bleef onbekend. Baselineblob `ed7d2de709b056ec17a6726efc59472eb98361f8`, 10.439 bytes. |
+
+### Uitvoering bij een latere archiveringsopdracht
+
+1. Werk de drie M8b-links in `AGENTS.md`/roadmap volgens de matrix bij; werk de vier M8-INT-links in de roadmap bij en corrigeer de twee volledige padvermeldingen in de relevante M8-INT-contracten.
+2. Wijzig de twee relatieve links in het M8-INT.1-verslag naar `../../...`; de overige drie verslagen hebben geen uitgaande relatieve link die door deze bestemming verandert.
+3. Behoud `docs/WIE-DOC-INVENTORY-v1.0.0.md` als historische snapshot en voeg pas bij een daadwerkelijke verhuizing een expliciet gemarkeerde migratiebijlage toe. Werk een actuele archiefindex bij zodat de vier rapporten en de fullscreen-/releasebewijsketen vindbaar blijven.
+4. Een oude-pad-stub is voor de gevonden interne verwijzingen niet vereist. Voeg er alleen een toe als later concreet gebruik van externe oude GitHub-blob-URL's wordt aangetoond.
+
+**Bewijsgrens/risico:** de vier volledige rapporten op deze baseline bevatten de historische acceptatiebesluiten, testuitkomsten en genoemde uitzonderingen; hun blobs zijn in deze preflight niet gewijzigd. Dit bevestigt behoud in Git op deze basis, niet dat externe links of niet-uitgecheckte branches alle verwijzingen hebben bijgewerkt. De rapporten zelf mogen bij een latere verplaatsing inhoudelijk niet worden herschreven.
+
+**Oordeel DOC-E verwijzingspreflight: CONDITIONAL GO voor een afzonderlijke archiverings-PR**, op voorwaarde dat de drie M8b-verwijzingen, de vier M8-INT-roadmaplinks, de twee volledige contractpadvermeldingen en de twee uitgaande M8-INT.1-links in dezelfde wijziging worden gecorrigeerd, de inventaris als snapshot behouden blijft en de archiefindex wordt toegevoegd. **Deze scan geeft geen uitvoerings-GO om nu te verplaatsen**; externe oude blob-URL's blijven onbewezen.
+
 ## 5. Besluit
 
 **GO voor een gerichte, lokale verwijzingsscan van vier kandidaten. NO-GO voor onmiddellijk verplaatsen.** Vier rapporten hebben een expliciete acceptatie-/integratieketen; de overige veertien worden niet stilzwijgend als volledig geaccepteerd behandeld. DOC-C's zeven gearchiveerde documenten worden niet opnieuw aangeraakt.
