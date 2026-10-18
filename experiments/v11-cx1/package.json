@@ -1,0 +1,11 @@
+{
+  "name": "wie-v11-cx1-authorization-proof",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "test": "node --test test/*.test.cjs"
+  },
+  "dependencies": {
+    "@cortex-js/compute-engine": "0.156.0"
+  }
+}
