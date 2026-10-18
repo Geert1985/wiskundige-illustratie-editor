@@ -1,8 +1,10 @@
 # From Zero 2 Infinity — Mathematical Illustration Platform
 
-Version: 1.0.0
-Status: proposed product specification (not yet implemented)
-Date: 2026-10-09
+Version: 1.0.1 (scope and status clarification, 2026-10-18)
+Status: broader platform vision, partly realized. The standalone WIE authoring editor was released as v1.0.0; the interactive course viewer and assessment runtime are not automatically included in that release.
+Date: 2026-10-18
+
+**Scope note:** The proposals below extend beyond the shipped WIE editor. Consult the [release notes](WIE-V1-RELEASE-NOTES.md) and [development roadmap](DEVELOPMENT-ROADMAP.md) to distinguish implementation from proposed capabilities. Symbolic manipulation and an independent full formula editor belong to WAT.
 
 ## Purpose
 A reusable mathematical illustration and construction platform serving three contexts:
