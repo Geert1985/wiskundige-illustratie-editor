@@ -1,10 +1,10 @@
 # WIE DOC-E — Tweede archiveringsronde: status- en verwijzingstriage
 
-**Documentversie:** 1.0.0  
-**Datum:** 18 oktober 2026  
-**Status:** read-only inhoudelijke triage; **geen archiverings-GO**  
-**Repository:** `Geert1985/wiskundige-illustratie-editor`  
-**Baseline:** `develop` op `1ec3b482222d7486f82ff094687628dcc59508eb` (na DOC-D, PR #55)  
+**Documentversie:** 1.0.0
+**Datum:** 18 oktober 2026
+**Status:** read-only inhoudelijke triage; **geen archiverings-GO**
+**Repository:** `Geert1985/wiskundige-illustratie-editor`
+**Baseline:** `develop` op `1ec3b482222d7486f82ff094687628dcc59508eb` (na DOC-D, PR #55)
 **Werkbranch:** `chore/wie-v1-1-doc-e-batch-2-triage`
 
 ## 1. Doel en afbakening
