@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "@cortex-js/compute-engine": "0.156.0",
+    "mathlive": "0.111.1"
+  },
+  "scripts": {
+    "serve": "node serve.cjs",
+    "test:poc": "node --test test/poc.test.cjs",
+    "test:poc:browser": "node test/browser-smoke.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

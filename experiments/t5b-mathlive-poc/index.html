@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>T5b MathLive POC</title>
+    <script type="importmap">
+      {"imports":{"mathlive":"/node_modules/mathlive/mathlive.min.mjs","@cortex-js/compute-engine":"/node_modules/@cortex-js/compute-engine/dist/esm-min/compute-engine.js"}}
+    </script>
+    <script defer src="/_wie/expression-numeric.js"></script>
+    <script defer src="/_wie/expression-ast.js"></script>
+    <script defer src="/_wie/expression-engine.js"></script>
+    <link rel="stylesheet" href="./styles.css" />
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="intro">
+        <p class="eyebrow">WIE · technisch experiment</p>
+        <h1>T5b MathLive-proef</h1>
+        <p>Dezelfde MathLive-invoer, twee onafhankelijke rekenroutes. Deze proef is losgekoppeld van de editor.</p>
+      </header>
+
+      <section class="input-card" aria-labelledby="input-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Gedeelde invoer</p>
+            <h2 id="input-title">Formule</h2>
+          </div>
+          <button id="keyboard-toggle" class="quiet-button" type="button">Toetsenbord</button>
+        </div>
+        <math-field id="formula" aria-label="Wiskundige invoer" virtual-keyboard-mode="manual">2+3\times4</math-field>
+        <div class="examples" aria-label="Voorbeelden">
+          <button type="button" data-example="2+3\times4">2 + 3 × 4</button>
+          <button type="button" data-example="\sqrt{81}">√81</button>
+          <button type="button" data-example="\sin(30\,\mathrm{deg})">sin(30 deg)</button>
+          <button type="button" data-example="\pi\times 2^2">π × 2²</button>
+        </div>
+        <p class="hint">De calculator ontvangt alleen invoer en toont een uitkomst. Er wordt niets naar WIE-documenten geschreven.</p>
+      </section>
+
+      <section class="variants" aria-label="Vergelijking rekenroutes">
+        <article class="variant" data-variant="A">
+          <div class="variant-heading"><span class="variant-tag">A</span><div><p class="eyebrow">MathLive + Compute Engine</p><h2>MathJSON / MathLive-route</h2></div></div>
+          <p class="variant-description">MathLive levert LaTeX aan de CortexJS Compute Engine. Dit laat zien wat de geïntegreerde MathLive/CortexJS-rekenroute biedt.</p>
+          <output id="result-a" class="result" aria-live="polite">Klaar voor berekening</output>
+          <details><summary>Invoerrepresentaties</summary><dl><dt>LaTeX</dt><dd id="latex-value">—</dd><dt>MathJSON</dt><dd id="json-a">—</dd></dl></details>
+          <p id="status-a" class="status" role="status"></p>
+        </article>
+
+        <article class="variant" data-variant="B">
+          <div class="variant-heading"><span class="variant-tag">B</span><div><p class="eyebrow">MathLive-invoer + WIE T5a</p><h2>Bestaande rekenkern</h2></div></div>
+          <p class="variant-description">MathLive levert ASCIIMath aan de bestaande WIE-parser en ExpressionEngine. Een dunne invoeradapter verbindt de UI met de T5a-kern.</p>
+          <output id="result-b" class="result" aria-live="polite">Klaar voor berekening</output>
+          <details><summary>Invoerrepresentatie</summary><dl><dt>ASCIIMath</dt><dd id="ascii-value">—</dd><dt>WIE-expressie</dt><dd id="wie-value">—</dd></dl></details>
+          <p id="status-b" class="status" role="status"></p>
+        </article>
+      </section>
+
+      <footer>MathLive MIT · Compute Engine MIT · Lokale POC-dependencies, geen productie-import</footer>
+    </main>
+  </body>
+</html>
