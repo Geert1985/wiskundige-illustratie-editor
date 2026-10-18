@@ -214,6 +214,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 #valuePrecisionLabel{color:#a8bac3;font-size:11px;font-weight:400}
 .text-insert-pane input#valuePrecision{min-height:24px;height:24px;padding:0;border:0;background:transparent;accent-color:#f2ca59;cursor:pointer}
 .rich-text-toolbar{display:flex;flex:0 0 auto;flex-wrap:wrap;align-items:center;gap:5px;margin:0;padding:10px;background:#0e2029}
+.rich-view-toggle{display:flex;flex:0 0 auto;gap:3px;padding-right:7px;border-right:1px solid #344850}.rich-view-toggle button{min-height:32px!important;padding:4px 8px!important;font-size:11px!important}.rich-view-toggle button[aria-pressed=true]{border-color:#f2ca59!important;color:#f2ca59!important;background:#354039!important}
 .rich-toolbar-group{display:flex;align-items:center;flex-wrap:wrap;gap:4px;min-width:0;max-width:100%}
 .text-editor-dialog .rich-text-toolbar button,.text-editor-dialog .rich-text-toolbar select{min-height:36px;padding:5px 8px;border:1px solid #3b515d;border-radius:7px;background:#112630;color:#e9eef0;font-size:13px}
 .text-editor-dialog .rich-text-toolbar button{display:inline-flex;align-items:center;justify-content:center;min-width:36px}
@@ -243,6 +244,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 .text-feedback-scroll{flex:0 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
 #mathPreview{display:flex;align-items:center;justify-content:center;min-height:90px;overflow:auto;padding:14px;border:1px solid #536b76;border-radius:8px;background:#0e1d25;color:#fff}
 #mathPreview svg{flex:0 0 auto;max-width:100%;height:auto;overflow:visible}
+#mathPreview{display:block;min-height:160px;padding:14px;background:#fff;color:#222;font:16px 'Source Sans 3',system-ui,sans-serif}#mathPreview p{margin:0 0 .75em;white-space:pre-wrap}#mathPreview svg{max-height:3em;vertical-align:middle}
 .value-preview-field{display:flex;flex-direction:column;gap:7px;color:#a8bac3;font-size:12px}
 #valuePreview{display:block;min-height:54px;padding:12px;border:1px solid #536b76;border-radius:8px;background:#0e1d25;color:#f2ca59;font-size:16px;overflow-wrap:anywhere}
 .insert-action-row{display:flex;flex:0 0 auto;flex-wrap:wrap;gap:7px;padding-top:10px;border-top:1px solid #344a54}

@@ -40,6 +40,7 @@ function mount(element,initial,onChange=()=>{},options={}){
  const state=EditorState.create({schema,doc:toDoc(base),plugins:[history(),keymap({'Mod-z':undo,'Mod-y':redo,'Mod-Shift-z':redo,'Mod-b':toggleMark(schema.marks.bold),'Mod-i':toggleMark(schema.marks.italic),'Shift-Enter':(state,dispatch)=>{dispatch(state.tr.replaceSelectionWith(schema.node('hardBreak')));return true;},...baseKeymap})]});
  view=new EditorView(element,{
    attributes:{style:`font-size:${base.defaults.fontSize}px;font-family:${base.defaults.fontId==='serif'?'"Source Serif 4"':'"Source Sans 3"'};color:${base.defaults.color};font-kerning:none;font-variant-ligatures:none`,role:'textbox','aria-label':'Tekstinhoud','aria-multiline':'true',tabindex:'0'},state,
+   handleTextInput(view,from,to,text){const $from=view.state.doc.resolve(from),typed=$from.parent.textContent.slice(0,$from.parentOffset)+text,match=/(\\\(([^\n]*?)\\\)|\\\[([\s\S]*?)\\\])$/.exec(typed);if(!match)return false;const source=match[2]??match[3];try{MI.MathSource.validate(source);MI.MathFragments.box(source);}catch{return false;}const prefix=$from.parent.textContent.slice(0,$from.parentOffset).length-match.index,start=from-prefix,node=schema.nodes.math.create({source,runId:`math-typed-${++serial}`},null,view.state.storedMarks||$from.marks());view.dispatch(view.state.tr.replaceWith(start,to+text.length,node));return true;},
    decorations(state){
      const selection=state.selection;
      if(selection.empty||selection instanceof NodeSelection)return DecorationSet.empty;
@@ -72,6 +73,7 @@ function mount(element,initial,onChange=()=>{},options={}){
  const restore=b=>{if(!b||b.doc!==view.state.doc)throw Error('De tekstselectie is gewijzigd.');view.dispatch(view.state.tr.setSelection(b.selection.resolve(view.state.doc)));};
  return {
    view,get:()=>fromDoc(view.state.doc,base),focus:()=>view.focus(),bookmark,restore,toolbarState,
+   setEditable(value){view.setProps({editable:()=>Boolean(value)});element.dataset.view= value?'code':'visual';},
    setValueEditHandler:handler=>{editValue=handler;},refreshValues(){for(const paint of painters)paint();},
    setMathEditHandler:handler=>{editMath=handler;},
    selectedMath(){const s=view.state.selection;return s instanceof NodeSelection&&s.node.type.name==='math'?{position:s.from,source:s.node.attrs.source}:null;},
