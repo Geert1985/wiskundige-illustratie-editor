@@ -237,6 +237,7 @@ body.text-workspace-open>.topbar,body.text-workspace-open>.workspace{display:non
 .text-editor-dialog .rich-text-surface:focus-within{border-color:#d9b846;box-shadow:0 0 0 2px #d9b84644}
 .text-editor-dialog .rich-text-surface .ProseMirror{min-height:100%;outline:none;overflow-wrap:anywhere;color:#222}
 .text-editor-dialog .rich-text-surface .ProseMirror p{white-space:pre-wrap;margin:0 0 .75em}
+.rich-math-source{width:auto;min-width:3ch;max-width:28ch;padding:1px 3px;border:1px solid transparent;border-radius:3px;background:#f4f6f7;color:#17242a;font:inherit;font-family:ui-monospace,Consolas,monospace;vertical-align:baseline}.rich-math-source:focus{border-color:#b6974d;outline:1px solid #b6974d}.rich-math-source[aria-invalid=true]{border-color:#bf3d3d;background:#fff0f0}.rich-math-atom[data-view=visual] .rich-math-source{display:none}
 .text-feedback-panel{padding:12px;border-left:1px solid #344a54;background:#0d2029}
 .text-feedback-context{display:flex;flex-direction:column;flex:1 1 auto;min-height:0;gap:10px}
 .text-feedback-panel h3{margin:0;font-size:15px;color:#e9eef0}

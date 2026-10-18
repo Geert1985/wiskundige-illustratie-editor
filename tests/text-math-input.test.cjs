@@ -27,6 +27,17 @@ test('math input replaces UTF-16 selections and selects the first argument of st
   assert.equal(glyph.value,'α + \\theta');assert.equal(glyph.selectionStart,glyph.selectionEnd);
 });
 
+test('delimited input consumes only a closed math expression and preserves adjacent text ranges',()=>{
+  const input=setup().TextMathInput;
+  const before='before text \\(x+1\\',from=before.length,to=from;
+  const inline=input.delimitedInput(before,from,to,')');
+  assert.deepEqual({...inline},{source:'x+1',from:12,to:from+1,delimiter:'inline'});
+  const document=before.slice(0,inline.from)+'ATOM'+before.slice(inline.to)+' after text';
+  assert.equal(document,'before text ATOM after text');
+  const displayBefore='left \\[x\\';assert.equal(input.delimitedInput(displayBefore,displayBefore.length,displayBefore.length,']').delimiter,'display');
+  assert.equal(input.delimitedInput('keep \\(unfinished',18,18,'!'),null);
+});
+
 test('symbol insertion keeps ProseMirror bookmarks and validates formula atoms before insertion',async()=>{
   const MI=setup(),inserted=[];MI.MathFragments.load=async()=>{};
   const editor={insertText:(value,bookmark)=>inserted.push(['text',value,bookmark]),insertMath:(value,bookmark,position)=>inserted.push(['math',value,bookmark,position])};
