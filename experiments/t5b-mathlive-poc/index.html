@@ -54,7 +54,7 @@
               <button type="button" data-key="digit-1" data-insert="1">1</button>
               <button type="button" data-key="digit-2" data-insert="2">2</button>
               <button type="button" data-key="digit-3" data-insert="3">3</button>
-              <button type="button" data-key="decimal" data-insert=".">,</button>
+              <button type="button" data-key="decimal" data-insert="{,}">,</button>
               <button type="button" data-key="digit-0" data-insert="0">0</button>
               <button type="button" data-key="equals" data-insert="=">=</button>
             </div>
@@ -90,6 +90,65 @@
           <button type="button" data-example="\pi\times 2^2">π × 2²</button>
         </div>
         <p class="hint">De calculator ontvangt alleen invoer en toont een uitkomst. Er wordt niets naar WIE-documenten geschreven.</p>
+      </section>
+
+      <section class="text-formula-card" aria-labelledby="text-formula-title">
+        <p class="eyebrow">Tijdelijke tekstsimulatie · geen WIE-document</p>
+        <h2 id="text-formula-title">Formules in lopende tekst</h2>
+        <p>Typ gewone tekst, zet de cursor op de invoegplek en voeg de huidige MathLive-formule toe. Klik op een formule om die te heropenen en te bewerken.</p>
+        <div class="text-editor-toolbar">
+          <button id="insert-formula" class="quiet-button" type="button">Invoegen in tekst</button>
+          <button id="multiple-formulas-example" class="quiet-button" type="button">Voorbeeld met meerdere formules</button>
+        </div>
+        <div id="text-editor" class="text-editor" contenteditable="true" role="textbox" aria-label="Tekst met bewerkbare formules" aria-multiline="true" spellcheck="false">Bereken de som en controleer de uitkomst: </div>
+        <p class="hint">Formules zijn tijdelijke gestructureerde elementen met MathLive-LaTeX. Er wordt niets opgeslagen of geëxporteerd.</p>
+      </section>
+
+      <section id="formula-dialog" class="formula-dialog" aria-labelledby="formula-dialog-title" aria-label="Formule opnieuw bewerken" hidden>
+        <form id="formula-edit-form">
+          <h2 id="formula-dialog-title">Formule bewerken</h2>
+          <p>Pas de formule aan in MathLive en plaats de wijziging terug in de tekst.</p>
+          <math-field id="text-formula-field" aria-label="Bewerkbare formule" virtual-keyboard-mode="manual"></math-field>
+          <div class="text-editor-toolbar">
+            <button id="cancel-formula-edit" class="quiet-button" type="button">Annuleren</button>
+            <button class="primary-button" type="submit">Terugplaatsen</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="cortex-probe" aria-labelledby="cortex-probe-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Tijdelijke evaluatieproef</p>
+            <h2 id="cortex-probe-title">CortexJS: invoer, parse en berekening</h2>
+          </div>
+          <label class="angle-mode">Hoekstand CortexJS
+            <select id="cortex-angle-mode" aria-label="Hoekstand voor CortexJS">
+              <option value="rad" selected>RAD · radialen</option>
+              <option value="deg">DEG · graden</option>
+            </select>
+          </label>
+        </div>
+        <div class="examples" aria-label="CortexJS-testformules">
+          <button type="button" data-cortex-example="2+3\times4">Basis</button>
+          <button type="button" data-cortex-example="\frac{1}{3}">Breuk</button>
+          <button type="button" data-cortex-example="\sqrt{2}">Wortel</button>
+          <button type="button" data-cortex-example="\sin(30)">sin(30)</button>
+          <button type="button" data-cortex-example="x^2+1">Symbolisch</button>
+          <button type="button" data-cortex-example="\begin{pmatrix}1&2\\3&4\end{pmatrix}">Matrix</button>
+          <button id="determinant-button" type="button">Bereken determinant</button>
+        </div>
+        <dl class="cortex-stages">
+          <div><dt>1 · Visueel ingevoerd</dt><dd id="visual-status" role="status">Leeg</dd></div>
+          <div><dt>2 · Wiskundig geparseerd</dt><dd id="parse-status" role="status">Niet geparseerd</dd></div>
+          <div><dt>3 · Evaluatie</dt><dd id="compute-status" role="status">Geen invoer</dd></div>
+        </dl>
+        <p class="eyebrow">Exacte / symbolische uitkomst</p>
+        <math-field id="cortex-exact-result" read-only aria-label="Exacte of symbolische CortexJS-uitkomst"> </math-field>
+        <p id="compute-detail" class="status" role="status"></p>
+        <p class="eyebrow">Numerieke benadering, indien beschikbaar</p>
+        <output id="cortex-numeric-result" class="result">—</output>
+        <p class="hint">Een geldige symbolische uitdrukking of matrix is geen rekenfout. De WIE T5a-referentie blijft beperkt tot haar bestaande numerieke grammatica en DEG-route.</p>
       </section>
 
       <section class="reference-heading" aria-labelledby="reference-title">

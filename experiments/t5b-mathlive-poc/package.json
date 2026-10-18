@@ -6,6 +6,7 @@
   "scripts": {
     "serve": "node serve.cjs",
     "test:poc": "node --test test/poc.test.cjs",
+    "test:poc1": "node --test test/poc1.test.cjs",
     "test:poc:browser": "node test/browser-smoke.cjs"
   },
   "devDependencies": {
