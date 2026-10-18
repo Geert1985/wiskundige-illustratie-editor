@@ -6,11 +6,6 @@
   const DRAG_SAFE_MODES = new Set(['object','group','label','measurement-label','endpoint','vertex','pathPoint','circleDistributionPoint']);
   const DEFAULT_BOUNDS = { xMin: -5, xMax: 5, yMin: -3, yMax: 3 };
   const INTERSECTION_KINDS = Object.freeze(['lineIntersection','lineCircleIntersection','lineEllipseIntersection','circleCircleIntersection']);
-  const TOOL_LIFECYCLE = Object.freeze({
-    point:'repeat', line:'repeat', straight:'repeat', ray:'repeat', vector:'repeat', triangle:'repeat', polygon:'repeat', circle:'repeat', angle:'repeat', rightAngle:'repeat', dimension:'repeat', text:'repeat',
-    'construct:midpoint':'single', 'construct:pointOnObject':'single', 'construct:intersection':'single', 'construct:perpendicular':'single', 'construct:perpendicularBisector':'single', 'construct:bisector':'single', 'construct:lineBetweenPoints':'single', 'construct:parallel':'single', 'construct:tangent':'single', 'construct:circleByCenterPoint':'single', 'construct:ellipseByFociAndPoint':'single', 'construct:parallelogramBySideAngle':'single', 'construct:triangleFromPoints':'single', 'construct:centroid':'single', 'construct:circumcenter':'single', 'construct:orthocenter':'single', 'construct:incenter':'single', 'construct:incircle':'single', 'construct:eulerLine':'single', 'construct:ninePointCircle':'single', 'construct:anglePoints':'single', 'construct:angleDirections':'single', 'construct:polygonRegion':'single', 'construct:circleSectorRegion':'single', 'construct:circleSegmentRegion':'single'
-  });
-  MI.ToolLifecyclePolicies=TOOL_LIFECYCLE;
   const clone = value => JSON.parse(JSON.stringify(value));
   class EditorApp {
     constructor({ engine, services, document, window, storage }) {
@@ -25,7 +20,7 @@
       for (const id of ["toolInstructions", "canvasFullscreenBtn", "canvasToolsBtn", "canvasToolsMenu", "fullscreenHint", "canvas", "canvasWrap", "status", "objectCount", "selectionPanel", "titleInput", "descriptionInput", "crosshair", "viewList", "toolGrid", "resetViewBtn", "newBtn", "saveBtn", "loadBtn", "fileInput", "exportJsonBtn", "exportSvgBtn", "exportPngBtn", "undoBtn", "redoBtn", "textDialog", "textForm", "textValue", "textEditorStatus", "richTextSurface", "richFont", "richFontSize", "richColor", "richColorMenu", "richUndo", "richRedo", "colorDialog", "colorForm", "colorField", "colorPalette", "colorCancel", "viewControls", "navigationTools", "panBtn", "zoomInBtn", "zoomOutBtn", "zoomPercent", "fileMenu", "moreBtn", "propertiesSidebar", "toolsToggle", "propertiesToggle", "propertiesClose", "layersSection", "linearToolMain", "linearToolToggle", "linearToolMenu"]) this.nodes[id] = document.getElementById(id);
       this.toolCatalog=MI.ToolCatalog.build(this.nodes.toolGrid);this.splitToolSelection=new Map();this.splitMenuOpen=null;
       const registeredTools=this.toolCatalog.list('sidebar').flatMap(category=>category.entries.filter(entry=>entry.status==='implemented').map(entry=>entry.id));
-      if(registeredTools.length&&(registeredTools.length!==Object.keys(TOOL_LIFECYCLE).length||registeredTools.some(id=>!TOOL_LIFECYCLE[id])))throw new TypeError('Elk beschikbaar gereedschap vereist een expliciet lifecyclebeleid.');
+      MI.ToolLifecyclePolicies=Object.freeze(Object.fromEntries(registeredTools.map(id=>[id,this.toolCatalog.getTool(id).lifecycle])));
       for(const group of this.toolCatalog.splits)try{const saved=storage?.getItem('fzi-math-illustration-'+group.storageKey+'-tool'),legacy=saved==='construct:angleXAxis'&&group.id==='angle'?'construct:angleDirections':saved;if(group.toolIds.includes(legacy))this.splitToolSelection.set(group.id,legacy);}catch(_){}
       MI.EditorColor.renderPalette(this.nodes.colorPalette, { groupLabel: "Kleuren" });
       MI.EditorColor.renderPalette(this.nodes.richColorMenu, { buttonClass: "rich-color-swatch", groupLabel: "Tekstkleur kiezen" });
@@ -363,18 +358,28 @@
       catch(error) {this.status(error.message);return {ok:false,result:null,error};}
       finally { this.history.record(before); this.invalidate(); }
     }
-    completeToolInteraction({toolId=this.tool,outcome,origin='canvas',selection}={}) {
+    completeToolInteraction({toolId=this.tool,outcome,origin='canvas',selection,successMessage}={}) {
+      // Supported origins: canvas (owned interaction cleanup/policy) and context-complete (preserve the active tool and independent interaction).
+      if(!['canvas','context-complete'].includes(origin))throw new TypeError('Unknown completion origin: '+origin);
       if(!outcome?.ok)return false;
-      const policy=TOOL_LIFECYCLE[toolId];
-      if(!policy)throw new TypeError('Onbekend lifecyclebeleid voor gereedschap: '+toolId);
+      const registration=this.toolCatalog.getTool(toolId);
+      if(!registration)throw new TypeError('Onbekend lifecyclebeleid voor gereedschap: '+toolId);
+      const policy=registration.lifecycle;
+      if(!['repeat','single'].includes(policy))throw new TypeError('Unknown lifecycle policy for tool: '+toolId);
+      if(origin==='context-complete'){
+        if(selection!==undefined){const ids=Array.isArray(selection)?selection.slice():[];this.selectedId=ids[0]||null;this.selectedIds=ids;}
+        this.status(successMessage||'Gekoppelde constructie toegevoegd.');
+        this.invalidate();
+        return true;
+      }
       const state=this.interaction;
       this.interaction=null;
       this.release(state);
       this.engine.renderer.preview=null;this.feedback=null;
-      if(selection!==undefined){this.selectedIds=Array.isArray(selection)?selection.slice():[];this.selectedId=this.selectedIds[0]||null;}
+      if(selection!==undefined){const ids=Array.isArray(selection)?selection.slice():[];this.selectedId=ids[0]||null;this.selectedIds=ids;}
       if(policy==='single')this.setTool('select');
       else {this.renderInstructions();this.invalidate();}
-      if(origin==='canvas'&&policy==='single')this.status('Gekoppelde constructie toegevoegd.');
+      if(origin==='canvas'&&policy==='single')this.status(successMessage||'Gekoppelde constructie toegevoegd.');
       return true;
     }
     travelHistory(redo = false) {
@@ -583,8 +588,36 @@
     textSourceOptions(){return this.engine.model.objects.filter(o=>MI.DynamicText.propertiesFor(o).length).map(o=>({id:o.id,name:o.name||o.id,properties:MI.DynamicText.propertiesFor(o).filter(property=>!this.runtime||this.engine.textSourceAllowed(o.id,property))})).filter(o=>o.properties.length);}
     closeText() { this.textWorkspace?.destroy();this.textWorkspace=null;if(this.textTransaction){this.runtime?.cancel(this.textTransaction);this.textTransaction=null;}this.nodes.richColorMenu&&(this.nodes.richColorMenu.hidden=true);this.nodes.richColor?.setAttribute?.('aria-expanded','false');this.textMigrateLegacy=false;this.textEditorRequest++;this.pendingText = null;this.textInsertPanel?.destroy();this.textInsertPanel=null;this.richTextEditor?.destroy();this.richTextEditor=null;this.textEditId=null;if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close();const focus=this.textReturnFocus;this.textReturnFocus=null;if(focus?.isConnected)focus.focus(); this.renderInstructions(); }
     async submitText() {
-      if(this.textInsertPanel?.isOpen()){this.textInsertPanel.announcePending();this.nodes.textEditorStatus.textContent='Bevestig of annuleer eerst de openstaande formule of dynamische waarde.';return;}if(this.runtime&&this.textPermissionEpoch!==this.runtime.permissionEpoch){this.status('De toegangsrechten zijn gewijzigd. Open de tekst opnieuw.');return;}
-      const pending=this.pendingText,id=this.textEditId;if(!id){const layer=MI.DocumentLayers.automaticTextLayer(this.engine.model.layers,this.engine.model.meta);if(layer?.visible===false){this.status('De tekstlaag is verborgen. Maak deze eerst zichtbaar.');return;}}let content;try{content=this.richTextEditor?.get();}catch(error){this.status(error.message);return;}if(!content&&this.nodes.textValue.value.trim()){content={schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:this.nodes.textValue.value.trim(),marks:{}}]}]};}if(!content)return;const text=MI.TextContent.plain(content);if(!text.trim())return;const request=this.textEditorRequest;try{if(MI.MathFragments.has([{textContent:content}])){await MI.MathFragments.load();for(const p of content.paragraphs)for(const r of p.runs)if(r.kind==='math')MI.MathFragments.box(r.source);}}catch(error){this.status(error.message);return;}if(request!==this.textEditorRequest)return;const target=id?{kind:'existing',id}:{kind:'new',position:{x:pending.point.x,y:pending.point.y}},command={schema:1,operation:'text.commit',expectedDocumentRevision:this.textExpectedRevision,payload:{target,content,...(this.textMigrateLegacy?{migrateLegacy:true}:{})}},decision=this.commands.canExecute(command);if(!decision.allowed){this.status(decision.code==='STALE_TRANSACTION'?'De illustratie is intussen gewijzigd. Sluit de teksteditor en open hem opnieuw.':decision.code==='MODE_DENIED'&&!id?'Automatische tekstlaagcreatie is in deze modus niet toegestaan.':'Tekstwijziging niet toegestaan: '+decision.code);return;}const handle=this.textTransaction;this.textTransaction=null;this.closeText();this.changeDocument(()=>{const result=handle?this.runtime.commit(handle,command.payload):this.commands.execute(command);this.selectedId=result.result.id;});
+      if(this.textInsertPanel?.isOpen()){this.textInsertPanel.announcePending();this.nodes.textEditorStatus.textContent='Bevestig of annuleer eerst de openstaande formule of dynamische waarde.';return;}
+      if(this.runtime&&this.textPermissionEpoch!==this.runtime.permissionEpoch){this.status('De toegangsrechten zijn gewijzigd. Open de tekst opnieuw.');return;}
+      const pending=this.pendingText,id=this.textEditId;
+      if(!id){const layer=MI.DocumentLayers.automaticTextLayer(this.engine.model.layers,this.engine.model.meta);if(layer?.visible===false){this.status('De tekstlaag is verborgen. Maak deze eerst zichtbaar.');return;}}
+      let content;
+      try{content=this.richTextEditor?.get();}catch(error){this.status(error.message);return;}
+      if(!content&&this.nodes.textValue.value.trim())content={schema:1,defaults:{fontId:'sans',fontSize:16,color:'#222222'},width:null,paragraphs:[{id:'p1',align:'left',lineHeight:1.25,runs:[{id:'r1',kind:'text',text:this.nodes.textValue.value.trim(),marks:{}}]}]};
+      if(!content)return;
+      const text=MI.TextContent.plain(content);if(!text.trim())return;
+      const request=this.textEditorRequest;
+      try{if(MI.MathFragments.has([{textContent:content}])){await MI.MathFragments.load();for(const p of content.paragraphs)for(const r of p.runs)if(r.kind==='math')MI.MathFragments.box(r.source);}}
+      catch(error){this.status(error.message);return;}
+      if(request!==this.textEditorRequest)return;
+      const target=id?{kind:'existing',id}:{kind:'new',position:{x:pending.point.x,y:pending.point.y}},command={schema:1,operation:'text.commit',expectedDocumentRevision:this.textExpectedRevision,payload:{target,content,...(this.textMigrateLegacy?{migrateLegacy:true}:{})}},decision=this.commands.canExecute(command);
+      if(!decision.allowed){this.status(decision.code==='STALE_TRANSACTION'?'De illustratie is intussen gewijzigd. Sluit de teksteditor en open hem opnieuw.':decision.code==='MODE_DENIED'&&!id?'Automatische tekstlaagcreatie is in deze modus niet toegestaan.':'Tekstwijziging niet toegestaan: '+decision.code);return;}
+      const handle=this.textTransaction;
+      let committedObject=null;
+      const outcome=this.changeDocument(()=>{
+        const result=handle?this.runtime.commit(handle,command.payload):this.commands.execute(command);
+        committedObject=result?.result||null;
+        if(!id&&committedObject?.id){this.selectedId=committedObject.id;this.selectedIds=[committedObject.id];}
+        return committedObject;
+      },{cancelInteraction:false});
+      if(!outcome.ok){
+        if(handle){this.textTransaction=null;try{const retryCommand=this.command('text.commit',command.payload);this.textTransaction=this.runtime.begin(retryCommand);this.textExpectedRevision=retryCommand.expectedDocumentRevision;}catch(_){}}
+        return;
+      }
+      this.textTransaction=null;
+      if(!id)this.completeToolInteraction({toolId:'text',outcome,origin:'canvas',selection:committedObject?.id?[committedObject.id]:undefined});
+      this.closeText();
     }
     validColor() { return this.colorInput && /^#[0-9a-f]{6}$/i.test(this.colorInput.value); }
     updateColorPicker(color,{initial=false}={}) {
@@ -708,8 +741,12 @@
       if(!result.candidates.length){state.sources=state.sources.slice(0,1);this.engine.renderer.preview=null;this.status('Geen uniek snijpunt binnen deze objecten ('+result.reasonCode+'). Kies een andere tweede bron.');this.renderInstructions();this.invalidate();return;}
       let created=[];
       const outcome=this.changeDocument(()=>{created=this.execute('construction.create',{toolId:recipeTool,sources:result.sources}).result;this.selectedIds=created.map(object=>object.id);return created;},{cancelInteraction:false});
-      if(outcome.ok&&created.length){this.interaction=null;this.release(state);this.engine.renderer.preview=null;this.setTool('select');this.intersectionCompleted=true;this.status(created.length+' snijpunt(en) toegevoegd.');}
+      if(outcome.ok&&created.length){
+        this.completeToolInteraction({toolId:'construct:intersection',outcome,origin:'canvas',selection:created.map(object=>object.id),successMessage:created.length+' snijpunt(en) toegevoegd.'});
+        this.intersectionCompleted=true;
+      }
       else if(!outcome.ok){state.sources=state.sources.slice(0,1);this.release(state);state.pointerId=null;}
+      else {state.sources=state.sources.slice(0,1);this.engine.renderer.preview=null;this.status('De snijpuntconstructie heeft geen object opgeleverd. Kies een andere tweede bron.');this.renderInstructions();}
       this.invalidate();
     }
     intersectionClick(point) {
@@ -734,11 +771,11 @@
       if(kind==='parallelogramBySideAngle'&&state.parallelogramPlacement){const result=state.numericPinned?this.updateParallelogramParameterPreview():this.parallelogramPlacementPreview(point,event);if(result?.valid)this.commitParallelogramPlacement();else{this.status('Kies een geldige plaatsingspositie buiten de lijn AB ('+(result?.reasonCode||'ongeldig')+').');this.invalidate();}return;}
       if(kind==='ellipseByFociAndPoint'&&state.sources.length===2){
         const preview=this.ellipsePlacementPreview(point);if(!preview?.valid){this.status('Deze positie geeft geen geldige ellips ('+(preview?.reasonCode||'ONGELDIGE_GEOMETRIE')+'). Kies Q buiten het brandpuntsegment.');this.invalidate();return;}
-        const payload={toolId:'construct:ellipseByFociAndPoint',sources:preview.source?[...state.sources.map(ref=>({...ref})),{...preview.source}]:state.sources.map(ref=>({...ref})),...(preview.source?{}:{controlPoint:{...preview.point}})};
+        const toolId='construct:ellipseByFociAndPoint',payload={toolId,sources:preview.source?[...state.sources.map(ref=>({...ref})),{...preview.source}]:state.sources.map(ref=>({...ref})),...(preview.source?{}:{controlPoint:{...preview.point}})};
         const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',payload).result,ellipse=created.find(o=>o.type==='ellipse');this.selectedIds=ellipse?[ellipse.id]:created.map(o=>o.id);return created;},{cancelInteraction:false});
-        this.release(state);state.pointerId=null;
-        if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status(preview.source?'Ellips gekoppeld aan bestaand besturingspunt Q.':'Besturingspunt Q en ellips toegevoegd.');}
-        this.invalidate();return;
+        if(outcome.ok)this.completeToolInteraction({toolId,outcome,origin:'canvas',selection:this.selectedIds});
+        else {this.release(state);state.pointerId=null;this.invalidate();}
+        return;
       }
       let sources=this.constructionSourcesAt(point,event,state.sources);
       if(!sources){this.status('Geen geschikte bron geraakt. '+this.constructionHint(kind,state.sources.length));return;}
@@ -764,15 +801,8 @@
       if(state.sources.length<MI.ConstructionService.kinds[kind]){this.status(this.constructionHint(kind,state.sources.length));this.invalidate();return;}
       if(kind==='angleDirections')state.sources=MI.ConstructionService.selectAngleArms(state.sources,state.anglePicks,new Map(this.engine.model.objects.map(o=>[o.id,o])));
       const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',{toolId:'construct:'+kind,sources:state.sources,...(MI.ConstructionService.pathKind(kind)?{parameter:MI.ConstructionService.projectParameter(kind,this.engine.get(state.sources[0].objectId),state.sources[0],point)}:{}),...(state.extent?{extent:state.extent}:{})}).result;this.selectedIds=created.map(o=>o.id);return created;},{cancelInteraction:false});
-      if(kind==='midpoint'){
-        if(outcome.ok)this.completeToolInteraction({toolId:'construct:midpoint',outcome,origin:'canvas',selection:this.selectedIds});
-        else {this.release(state);state.pointerId=null;state.sources=previousSources;}
-      }else{
-        this.release(state);state.pointerId=null;
-        if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status('Gekoppelde constructie toegevoegd.');}
-        else {state.sources=previousSources;if(kind==='angleDirections')state.anglePicks.pop();}
-        this.invalidate();
-      }
+      if(outcome.ok)this.completeToolInteraction({toolId:'construct:'+kind,outcome,origin:'canvas',selection:this.selectedIds});
+      else {this.release(state);state.pointerId=null;state.sources=previousSources;if(kind==='angleDirections')state.anglePicks.pop();this.invalidate();}
     }
     ellipsePlacementPreview(point){
       const state=this.interaction;if(!state||!state.ellipsePlacement||state.sources.length!==2)return null;
@@ -802,9 +832,9 @@
       const payload={toolId:'construct:parallelogramBySideAngle',sources:state.sources.map(ref=>({objectId:ref.objectId})),sideLength:state.matchAB?state.previewSideLength:state.sideLength,signedAngle:state.signedAngle,...(state.matchAB?{sideLengthMode:'matchAB'}:{})};
       let namingError=null;
       const outcome=this.changeDocument(()=>{const created=this.execute('construction.create',payload).result;this.selectedIds=created.map(o=>o.id);try{this.nameGenericParallelogramSources(state.sources);}catch(error){namingError=error;}return created;},{cancelInteraction:false});
-      this.release(state);state.pointerId=null;
-      if(outcome.ok){this.interaction=null;this.engine.renderer.preview=null;this.feedback=null;this.tool='select';this.status(namingError?'Parallellogram toegevoegd; bronpunten konden niet worden hernoemd.':'Gekoppeld parallellogram toegevoegd.');}
-      this.invalidate();return outcome.ok;
+      if(outcome.ok)this.completeToolInteraction({toolId:payload.toolId,outcome,origin:'canvas',selection:this.selectedIds,...(namingError?{successMessage:'Parallellogram toegevoegd; bronpunten konden niet allemaal worden hernoemd.'}:{})});
+      else {this.release(state);state.pointerId=null;this.invalidate();}
+      return outcome.ok;
     }
     nameGenericParallelogramSources(sources){const names=['A','B'],ids=sources.map(ref=>ref.objectId),objects=ids.map(id=>this.engine.get(id));if(objects.some((o,i)=>!o||o.type!=='point'||o.name!==o.id&&!/^(Punt|Point)\s+\d+$/i.test(o.name||'')))return;for(let i=0;i<2;i++)if(this.engine.model.objects.some(o=>!ids.includes(o.id)&&o.name===names[i]))return;const payloads=objects.map((o,i)=>({ids:[o.id],fields:[{path:'name',value:names[i]}]}));if(payloads.some(p=>!this.allowed('object.setProperties',p)))return;for(const payload of payloads)this.execute('object.setProperties',payload);}
     queueConstructionPlacementPreview(){
@@ -857,15 +887,18 @@
       // are already complete, so use the usual document command directly.
       if(plan.mode==='complete'&&!universal){
         try{
+          let created=[],createdIds=[];
           const outcome=this.changeDocument(()=>{
-            this.selectedIds=this.execute('construction.create',{
+            created=this.execute('construction.create',{
               toolId,sources:plan.sources.map(ref=>({...ref}))
-            }).result.map(object=>object.id);
-          });
+            }).result;
+            if(!Array.isArray(created))throw new TypeError('De constructie gaf geen resultatenlijst terug.');
+            createdIds=created.map(object=>object?.id).filter(Boolean);
+            if(createdIds.length){this.selectedId=createdIds[0];this.selectedIds=createdIds;}
+          },{cancelInteraction:false});
           if(!outcome.ok)return false;
-          this.status('Gekoppelde constructie toegevoegd.');
-          this.invalidate();
-          return true;
+          if(!createdIds.length){this.status('De contextconstructie heeft geen object opgeleverd.');this.invalidate();return false;}
+          return this.completeToolInteraction({toolId,outcome,origin:'context-complete',selection:createdIds});
         }catch(error){
           this.status(error.message);this.invalidate();return false;
         }
@@ -927,16 +960,15 @@
       const recipeTool='construct:'+kind;
       const sourceCaps=this.runtime?this.capabilities(source.id):null;
       if(!this.toolAllowed(recipeTool)||!this.constructionSelectable(source,recipeTool)||(this.runtime&&(!sourceCaps.read||!sourceCaps.display||!sourceCaps.sourceTools.includes(recipeTool)))){this.cancel();this.status('De geselecteerde bron is niet langer beschikbaar.');return;}
-      try{
-        const outcome=this.changeDocument(()=>{
-          this.selectedIds=this.execute('construction.create',{
-            toolId:recipeTool,sources:state.sources,parameter
-          }).result.map(o=>o.id);
-        },{cancelInteraction:false});
-        this.release(state);state.pointerId=null;
-        if(outcome.ok){this.interaction=null;this.tool='select';this.engine.renderer.preview=null;this.feedback=null;this.status('Afhankelijk punt toegevoegd.');}
-      }catch(error){this.status(error.message);}
-      this.invalidate();
+      let createdIds=[];
+      const outcome=this.changeDocument(()=>{
+        createdIds=this.execute('construction.create',{
+          toolId:recipeTool,sources:state.sources,parameter
+        }).result.map(o=>o.id);
+        return createdIds;
+      },{cancelInteraction:false});
+      if(outcome.ok)this.completeToolInteraction({toolId:'construct:pointOnObject',outcome,origin:'canvas',selection:createdIds});
+      else {this.release(state);state.pointerId=null;this.invalidate();}
     }
     ellipsePointPlacementPreview(point){
       const state=this.interaction,ref=state?.sources?.[0],source=ref&&this.engine.get(ref.objectId);
@@ -1240,15 +1272,27 @@
       this.engine.renderer.preview = null; this.feedback = null;
       if (this.initialized) this.invalidate();
     }
+    cancelActiveInteraction({reason='escape'}={}) {
+      if(reason!=='escape')return false;
+      const active=!!(this.interaction||this.circleDistributionPreview||this.ellipsePreviewFrame!=null||this.pointPlacementPreviewFrame!=null||this.engine.renderer.preview||this.tool!=='select'||this.navigationMode!=='select'||this.axisMenuOpen);
+      if(!active)return false;
+      this.cancel();
+      this.tool='select';this.navigationMode='select';this.axisMenuOpen=false;
+      this.renderInstructions();this.invalidate();
+      return true;
+    }
     keyDown(event) {
-      if(event.key==='Escape'&&this.nodes.textDialog?.open){event.preventDefault();this.closeText();return;}
+      if(event.key==='Escape'&&event.defaultPrevented)return;
+      if(event.key==='Escape'&&this.nodes.textDialog?.open){event.preventDefault();if(!this.textWorkspace?.handleCancel?.())this.closeText();return;}
+      // The native color dialog owns its cancel event; don't also cancel canvas state.
+      if(event.key==='Escape'&&this.nodes.colorDialog?.open)return;
       if(event.key==='Escape' && this.nodes.canvasToolsMenu && this.nodes.canvasToolsMenu.hidden===false){event.preventDefault();this.closeCanvasTools(true);return;}
-      if(event.key==='Escape' && this.canvasFullscreen && this.document.body?.classList.contains('properties-open')){event.preventDefault();this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.navigationTools?.querySelector?.('[data-view-select=axes]')?.focus?.();return;}
+      if(event.key==='Escape' && this.canvasFullscreen && this.document.body?.classList.contains('properties-open')){this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.navigationTools?.querySelector?.('[data-view-select=axes]')?.focus?.();return;}
       if(event.key==='Escape' && this.splitMenuOpen){event.preventDefault();this.closeSplitMenu(true);return;}
       if(event.key==='Escape' && this.nodes.fileMenu?.open){event.preventDefault();this.closeFileMenu(true);return;}
       const state = this.interaction;
-      if(event.key==='Escape' && !state && this.document.body?.classList.contains('properties-open') && this.window.innerWidth<1000){this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.propertiesToggle?.focus?.();this.selectedIds=[];this.inspectorTarget='objects';this.clearHover();this.invalidate();return;}
-      if(event.key==='Escape' && !state && this.document.body?.classList.contains('tools-open') && this.window.innerWidth<760){this.document.body.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.nodes.toolsToggle?.focus?.();this.selectedIds=[];this.inspectorTarget='objects';this.clearHover();this.invalidate();return;}
+      if(event.key==='Escape' && this.document.body?.classList.contains('properties-open') && (this.canvasFullscreen||this.window.innerWidth<1000)){if(!this.canvasFullscreen)event.preventDefault();this.document.body.classList.remove('properties-open');this.nodes.propertiesToggle?.setAttribute?.('aria-expanded','false');this.nodes.propertiesToggle?.focus?.();this.invalidate();return;}
+      if(event.key==='Escape' && this.document.body?.classList.contains('tools-open') && this.window.innerWidth<760){this.document.body.classList.remove('tools-open');this.nodes.toolsToggle?.setAttribute?.('aria-expanded','false');this.nodes.toolsToggle?.focus?.();this.invalidate();return;}
       if (event.key === "Escape" && (this.pendingText || this.colorId)) { event.preventDefault(); this.closeDialogs(true); return; }
       const active = this.document.activeElement;
       const editable = active && (/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName) || active.isContentEditable);
@@ -1265,7 +1309,7 @@
       if(!editable && !this.interaction && (event.ctrlKey||event.metaKey) && event.key.toLowerCase()==='g'){event.preventDefault();if(event.shiftKey)this.ungroupSelection();else this.groupSelection();return;}
       if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='a') {event.preventDefault();this.cancel();this.tool='select';this.selectedIds=this.engine.model.objects.filter(o=>this.canvasSelectable(o)&&this.groupCanvasSelectable(o.id)).map(o=>o.id);this.invalidate();return;}
       if(!editable && (event.ctrlKey || event.metaKey) && event.key.toLowerCase()==='d') {event.preventDefault();this.duplicateSelection();return;}
-      if (event.key === "Escape") { this.cancel(); if(!state){this.selectedIds=[];this.inspectorTarget='objects';this.clearHover();}this.tool = "select";this.navigationMode='select'; this.axisMenuOpen = false; this.invalidate(); return; }
+      if (event.key === "Escape") { this.cancelActiveInteraction({reason:'escape'}); return; }
       if(state && state.mode==='polygon') {
         if(event.key==='Enter') { event.preventDefault(); this.finishPolygon(); }
         if(event.key==='Backspace') { event.preventDefault(); if(state.vertices.length>1) { state.vertices.pop(); this.polygonPreview(); } else this.cancel(); }

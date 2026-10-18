@@ -4,6 +4,9 @@
   global.FZI = global.FZI || {};
   global.FZI.MathIllustration = global.FZI.MathIllustration || {};
   const MI = global.FZI.MathIllustration;
+  const LIFECYCLE_POLICIES = new Set(['repeat', 'single']);
+  const INTERACTION_ADAPTERS = new Set(['point', 'draw', 'polygon', 'construction', 'placement', 'text']);
+  const NON_CREATION_TOOLS = new Set(['select', 'pan', 'zoomIn', 'zoomOut']);
 
   const freeze = value => {
     if (value && typeof value === 'object' && !Object.isFrozen(value)) {
@@ -21,9 +24,13 @@
         if (!entry || !['implemented', 'planned'].includes(entry.status) || typeof entry.label !== 'string' || !entry.label) throw new TypeError('Ongeldig gereedschap.');
         if (entry.status === 'implemented') {
           if (typeof entry.id !== 'string' || !entry.id || typeof entry.commandToolId !== 'string' || !entry.commandToolId) throw new TypeError('Een werkend gereedschap vereist stabiele tool- en command-ID’s.');
+          if (NON_CREATION_TOOLS.has(entry.id)) throw new TypeError('Een navigatiemodus mag niet als creatietool worden geregistreerd: ' + entry.id);
+          if (!LIFECYCLE_POLICIES.has(entry.lifecycle)) throw new TypeError('Unknown lifecycle policy for tool: ' + entry.id);
+          if (typeof entry.interactionAdapter !== 'string' || !entry.interactionAdapter) throw new TypeError('Missing interaction adapter for tool: ' + entry.id);
+          if (!INTERACTION_ADAPTERS.has(entry.interactionAdapter)) throw new TypeError('Unknown interaction adapter for tool: ' + entry.id + ' (' + entry.interactionAdapter + ')');
           return { ...entry };
         }
-        if ('id' in entry || 'commandToolId' in entry || 'splitGroup' in entry) throw new TypeError('Een geplande tool mag niet interactief zijn.');
+        if ('id' in entry || 'commandToolId' in entry || 'splitGroup' in entry || 'lifecycle' in entry || 'interactionAdapter' in entry) throw new TypeError('Een geplande tool mag niet interactief zijn.');
         return { label: entry.label, status: 'planned', markup: entry.markup || '', title: typeof entry.title === 'string' ? entry.title : '' };
       });
       const emptySubgroups = (category.emptySubgroups || []).map(subgroup => {
@@ -74,7 +81,15 @@
       const entries = Array.from(category.querySelectorAll('[data-tool], .tool-placeholder')).map(element => {
         if (element.classList.contains('tool-placeholder')) return { label: element.textContent.trim(), status: 'planned', markup: element.innerHTML, title: element.title || '' };
         const id = element.dataset.tool;
-        return { id, label: element.textContent.trim(), status: 'implemented', commandToolId: id.startsWith('construct:') ? id : 'create:' + id, markup: element.innerHTML };
+        return {
+          id,
+          label: element.textContent.trim(),
+          status: 'implemented',
+          commandToolId: id.startsWith('construct:') ? id : 'create:' + id,
+          lifecycle: element.dataset.lifecycle,
+          interactionAdapter: element.dataset.interactionAdapter,
+          markup: element.innerHTML,
+        };
       });
       const emptySubgroups = Array.from(category.querySelectorAll('[data-tool-subgroup]')).filter(subgroup => !subgroup.querySelector('.tool-grid > .tool, .tool-placeholder')).map(subgroup => ({
         id: subgroup.dataset.toolSubgroup,
