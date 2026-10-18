@@ -1,6 +1,6 @@
 # AGENTS.md — Wiskundige Illustratie Editor (WIE)
 
-**Versie:** 1.0.9 · **Datum:** 2026-10-18 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
+**Versie:** 1.0.9 · **Datum:** 2026-10-18 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.
 **Doel:** persistente instructies voor Codex en andere code-assistenten, zonder eerder goedgekeurde implementaties onbedoeld terug te draaien.
 
 ## Release- en branchbeleid vanaf WIE v1.0.0 (2026-10-18)
