@@ -6,7 +6,8 @@
 **Repository:** [`Geert1985/wiskundige-illustratie-editor`](https://github.com/Geert1985/wiskundige-illustratie-editor)  
 **Gecontroleerde basis:** `main` op `63ab45acc7e94b120a5fb052840c199816399afd`  
 **Status van de contractpublicatie (historisch):** goedgekeurd ontwerpcontract; die publicatie gaf op zichzelf geen implementatie- of mergeautorisatie en voerde geen tests uit.
-**Implementatiestatusannotatie (2026-10-18):** M8a-1, M8a-2 en M8a-1b zijn nadien geïmplementeerd en via PR #15, #16 en #17 op `main` geïntegreerd vóór WIE v1.0.0. Dit is uitsluitend een statuscorrectie; de goedgekeurde normatieve ontwerpinhoud v1.1.0 blijft ongewijzigd.  
+**Implementatiestatusannotatie (2026-10-18):** M8a-1, M8a-2 en M8a-1b zijn nadien geïmplementeerd en via PR #15, #16 en #17 op `main` geïntegreerd vóór WIE v1.0.0. Dit is uitsluitend een statuscorrectie; de goedgekeurde normatieve ontwerpinhoud v1.1.0 blijft ongewijzigd.
+
 **Roadmappositie:** M8a — Ellipsen; behoud M7a–c (starre transformaties) en M8b (parallellogram) ongewijzigd.
 
 ---
