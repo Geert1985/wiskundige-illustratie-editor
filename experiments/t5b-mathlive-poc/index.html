@@ -151,6 +151,15 @@
         <p class="hint">Een geldige symbolische uitdrukking of matrix is geen rekenfout. De WIE T5a-referentie blijft beperkt tot haar bestaande numerieke grammatica en DEG-route.</p>
       </section>
 
+      <section class="text-formula-card geometry-card" aria-labelledby="geometry-title">
+        <p class="eyebrow">POC-2 · tijdelijke mockgeometrie</p><h2 id="geometry-title">Dynamische bron: cirkel</h2>
+        <p>Zichtbare variabele <code>r</code> is gekoppeld aan een getypeerde bron: cirkel → straal. De stabiele bron-ID blijft intern.</p>
+        <div class="examples"><label>Straal <input id="geo-radius" type="number" min="0" step="any" value="2"></label><label>Eenheid <select id="geo-unit"><option>mm</option><option selected>cm</option><option>m</option></select></label>
+        <label>Mockstatus <select id="geo-state"><option value="valid">Geldig en toegankelijk</option><option value="invalid">Ongeldig</option><option value="denied">Toegang ingetrokken</option><option value="removed">Verwijderd</option></select></label><button id="geo-insert" type="button">Geometrische bron invoegen</button></div>
+        <math-field id="geo-formula" aria-label="Formule met geometrische bron" virtual-keyboard-mode="manual">\pi r^2</math-field>
+        <div class="examples"><button data-geo-example="area">A = π × r²</button><button data-geo-example="circumference">O = 2 × π × r</button><button data-geo-example="length-sum">r + r</button><button data-geo-example="dimension-conflict">r + πr² (dimensieconflict)</button></div>
+        <dl class="cortex-stages"><dt>Bronstatus</dt><dd id="geo-source-status">Geldig · revisie 0</dd><dt>Exact</dt><dd id="geo-result-exact">—</dd><dt>Numeriek</dt><dd id="geo-result-approx">—</dd><dt>Herberekening</dt><dd id="geo-revision-status">Wacht op invoer</dd></dl>
+      </section>
       <section class="reference-heading" aria-labelledby="reference-title">
         <p class="eyebrow">Ongewijzigde technische referentie</p>
         <h2 id="reference-title">Rekenroutes (geen toetsenbordvarianten)</h2>

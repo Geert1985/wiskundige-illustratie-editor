@@ -2,6 +2,7 @@ import 'mathlive';
 import { ComputeEngine } from '@cortex-js/compute-engine';
 import { compactFormattedResult } from './display-format.mjs';
 import { analyzeCortexExpression, configureDutchMathLive, createFormulaToken, setFormulaToken } from './cortex-analysis.mjs';
+import { MockGeometrySources, addDimensions, multiplyDimensions } from './geometry-poc.mjs';
 
 const { ExpressionEngine } = globalThis.FZI.MathIllustration;
 const ce = new ComputeEngine();
@@ -167,6 +168,25 @@ function activateKey(button) {
   if (secondaryTemplate) setShifted(false);
 }
 
+const geoSources = new MockGeometrySources();
+const geoBinding = Object.freeze({ sourceId: 'circle-1', property: 'radius', type: 'geometry-source' });
+let geoRequest = 0, geoKind = 'area';
+async function renderGeometry() {
+ const request=++geoRequest, status=document.querySelector('#geo-source-status'), exactOut=document.querySelector('#geo-result-exact'), approxOut=document.querySelector('#geo-result-approx'), revOut=document.querySelector('#geo-revision-status');
+ const state=document.querySelector('#geo-state').value, radius=Number(document.querySelector('#geo-radius').value), unit=document.querySelector('#geo-unit').value;
+ if(state==='removed') geoSources.remove(geoBinding.sourceId); else geoSources.update(geoBinding.sourceId,{radius,unit,valid:state!=='invalid',accessible:state!=='denied'});
+ const revision=geoSources.revision;
+ try {
+  const source=geoSources.resolve(geoBinding); status.textContent=`Geldig · revisie ${revision}`;
+  let dim={length:1}; if(geoKind==='area')dim=multiplyDimensions(dim,dim); if(geoKind==='dimension-conflict')throw new Error('Eenheden/dimensies zijn niet compatibel');
+  const latex=document.querySelector('#geo-formula').getValue('latex-expanded').replace(/(?<![A-Za-z])r(?![A-Za-z])/g,`(${source.value})`);
+  const result=ce.parse(latex).evaluate(); await Promise.resolve();
+  if(request!==geoRequest||revision!==geoSources.revision){revOut.textContent='Verouderde berekening genegeerd';return;}
+  if(!result.isValid||result.isNaN||result.isInfinity)throw new Error('Ongeldige formule');
+  exactOut.textContent=`${result.toString()} ${dim.length===2?'cm²':'cm'}`;
+  const n=result.N().numericValue; approxOut.textContent=n===undefined?'Geen numerieke waarde':`≈${String(n).replace('.',',')} ${dim.length===2?'cm²':'cm'}`; revOut.textContent=`Actueel · revisie ${revision}`;
+ } catch(error){status.textContent='Bron of dimensie niet beschikbaar';exactOut.textContent='—';approxOut.textContent='—';revOut.textContent=error.message==='Eenheden/dimensies zijn niet compatibel'?error.message:'Geen actuele uitkomst';}
+}
 function initialize() {
   field.addEventListener('input', () => {
     activeOperation = 'evaluate';
@@ -237,6 +257,14 @@ function initialize() {
     activeOperation = 'determinant';
     render();
   });
+  document.querySelectorAll('[data-geo-example]').forEach(button => button.addEventListener('click', () => {
+    geoKind=button.dataset.geoExample;
+    const formulas={area:'\\pi r^2',circumference:'2\\pi r','length-sum':'r+r','dimension-conflict':'r+\\pi r^2'};
+    document.querySelector('#geo-formula').setValue(formulas[geoKind]); renderGeometry();
+  }));
+  ['geo-radius','geo-unit','geo-state','geo-formula'].forEach(id=>document.querySelector(`#${id}`).addEventListener(id==='geo-formula'?'input':'change',renderGeometry));
+  document.querySelector('#geo-insert').addEventListener('click',()=>{document.querySelector('#geo-formula').executeCommand(['insert','r',{selectionMode:'after'}]);renderGeometry();});
+  renderGeometry();
   customKeyboard.addEventListener('pointerdown', event => {
     if (event.target.closest('button')) event.preventDefault();
   });
