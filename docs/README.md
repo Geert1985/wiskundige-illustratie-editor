@@ -1,9 +1,9 @@
 # WIE — Centrale documentatie-index
 
-**Documentversie:** 1.0.0  
-**Peildatum:** 18 oktober 2026  
-**Scope:** WIE — Wiskundige Illustratie Editor, binnen From Zero 2 Infinity  
-**Status:** navigatie- en statusindex voor `develop`, geen nieuw functioneel contract of implementatie-GO.
+- **Documentversie:** 1.0.0
+- **Peildatum:** 18 oktober 2026
+- **Scope:** WIE — Wiskundige Illustratie Editor, binnen From Zero 2 Infinity
+- **Status:** navigatie- en statusindex voor `develop`, geen nieuw functioneel contract of implementatie-GO.
 
 Deze index is het **startpunt voor documentatie**, zowel voor ontwikkelaars als voor Codex. Hij is geen vervanging van de inhoudelijke contracten, de repositorycode, de acceptatierapporten of de releasebewijzen. Controleer bij elke nieuwe opdracht eerst de actuele branch, commit, werkelijk geladen modules en goedgekeurde productbesluiten.
 
