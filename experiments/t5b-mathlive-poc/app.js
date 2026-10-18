@@ -1,5 +1,6 @@
 import 'mathlive';
 import { ComputeEngine } from '@cortex-js/compute-engine';
+import { compactFormattedResult } from './display-format.mjs';
 
 const { ExpressionEngine } = globalThis.FZI.MathIllustration;
 const ce = new ComputeEngine();
@@ -25,7 +26,7 @@ function evaluateB(asciiMath) {
   const ast = ExpressionEngine.parse(normalized);
   const result = ExpressionEngine.evaluate(ast, { angleMode: 'deg' });
   const formatted = ExpressionEngine.format(result.quantity, { precision: 8 });
-  return { formatted: formatted.text, canonical: ExpressionEngine.print(ast).text };
+  return { formatted: compactFormattedResult(formatted), canonical: ExpressionEngine.print(ast).text };
 }
 
 function render() {
