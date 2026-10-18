@@ -3,7 +3,7 @@
 
 **Documentversie:** 1.3.1
 **Datum:** 16 oktober 2026
-**Status:** M8b-1 geïntegreerd op `main` via PR #21; M8b-2/2b/2c door gebruiker geaccepteerd en geïntegreerd via PR #22; M8b-3-consolidatie is gestart op een afzonderlijke featurebranch en nog niet geaccepteerd.
+**Implementatiestatusannotatie (2026-10-18):** M8b-1 is geïntegreerd via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie is nadien aanvaard en via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23) op `main` gemerged vóór WIE v1.0.0. Verdere beschrijvingen van open M8b-3-poorten zijn historische checkpoints; de normatieve wiskundige ontwerpinhoud v1.3.1 is ongewijzigd.
 **Repository:** [Geert1985/wiskundige-illustratie-editor](https://github.com/Geert1985/wiskundige-illustratie-editor)  
 **Actueel versiebeleid:** vaste parallellogramconstructies gebruiken `constructionSchema:8`; persistente `sideLengthMode:"matchAB"` gebruikt schema 9. Individuele GEO-UI-metingen behouden documentversie 10 en `measurementSchema:1`. Dit beleid is via PR #22 op `main` geïntegreerd.
 **Roadmapreferenties:** `tasks-129` t/m `tasks-133` — M8b: twee zijden en ingesloten hoek, live lengte-/hoekaanduiding, degeneraties en roundtrip, test-/acceptatiepoort.  

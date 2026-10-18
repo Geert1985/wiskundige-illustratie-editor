@@ -1,7 +1,15 @@
 # AGENTS.md — Wiskundige Illustratie Editor (WIE)
 
-**Versie:** 1.0.8 · **Datum:** 2026-10-16 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.  
+**Versie:** 1.0.9 · **Datum:** 2026-10-18 · **Geldigheid:** deze repository/branch en afgeleide featurebranches.
 **Doel:** persistente instructies voor Codex en andere code-assistenten, zonder eerder goedgekeurde implementaties onbedoeld terug te draaien.
+
+## Release- en branchbeleid vanaf WIE v1.0.0 (2026-10-18)
+
+- `main` is de beschermde **stabiele releasebranch**, getagd als [`v1.0.0`](https://github.com/Geert1985/wiskundige-illustratie-editor/releases/tag/v1.0.0) op `4257e40d9ee85595844c5cfdd36e4d9b822cdda5`. Geen directe pushes of featurewerk op `main`.
+- `develop` is de integratiebasis voor volgende versies; begin onafhankelijke `feature/...`-, `fix/...`- en `chore/...`-branches standaard vanaf **actuele `develop`**. Alleen productiehotfixes vertrekken van `main` en worden teruggevoerd naar `develop`.
+- Merge een goedgekeurde feature via PR naar `develop`. Stabiliseer een volgende release in een afzonderlijke `release/vX.Y.Z`-branch; na releasecontrole volgt pas de PR naar `main`, tag en GitHub Release. Verplaats oude rapporten alleen na verwijzingsscan en met bijgewerkte links.
+- Hergebruik toepasselijke bestaande testbewijzen; voer **uitsluitend gerichte tests** uit op daadwerkelijk geraakte functionaliteit. Vraag niet automatisch een volledige Edge-suite aan. Documentatiewijzigingen krijgen gerichte link-, syntaxis- en diffcontroles.
+- De [DOC-A-audit](docs/WIE-DOC-A-BATCH-1-CONTENT-REVIEW.md) en [archiefindex](docs/archive/doc-a-batch-1/README.md) beschrijven historische rapporten; gearchiveerde verslagen mogen niet als actuele functionele contractspecificaties worden behandeld.
 
 ## Eerst lezen en bronvoorrang
 

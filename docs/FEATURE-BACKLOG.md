@@ -1,10 +1,12 @@
 # Mathematical Illustration Platform — Complete Feature Backlog
 
-Version: 1.10.0 (STAB-1 actual-main reconciliation, 2026-10-15)
-Status: `main` staat op `ccacb0d` na PR #13 (UI-RADIAL-11/12), boven op PR #12 (UI-RADIAL/REG-2). STAB-1 verifieert deze actuele basis; de audit op `8603355` en historische tijdlijn hieronder blijven gedateerde context, geen resultaten van de huidige test-run.
-Date: 2026-10-15
+Version: 1.10.1 (DOC-D statusconsolidatie na WIE v1.0.0; 2026-10-18)
+Status: WIE v1.0.0 is uitgebracht op `main` (tag `v1.0.0`, commit `4257e40d9ee85595844c5cfdd36e4d9b822cdda5`). `develop` verzamelt de documentatie- en toekomstige ontwikkelingswijzigingen. Eerdere statusreconciliaties hieronder beschrijven de toenmalige commits en zijn geen actuele vrijgaveclaims.
+Date: 2026-10-18
 
-> **Normatieve ontwerpen:** [M8a — Ellipsen v1.0.0](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen v1.0.0](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn door de gebruiker **goedgekeurd als ontwerp**, niet geïmplementeerd. [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md) definiëren huidige UI- en servicegrenzen; zie [roadmap](DEVELOPMENT-ROADMAP.md) voor status. [M7-VEC-FUND — Vectorfundament v1.0.0](M7-VEC-FUND-CONTRACT.md) is **formeel goedgekeurd als ontwerp**, niet geïmplementeerd. Het oude vectorlabel `M7a` is vervangen; de bestaande M7a–c-transformatiegroep behoudt de naam. Historische verwijzingen naar M7b/M7f als vervolgwerk zijn nog geen definitieve hernummering of Codex-GO.
+> **Actuele status bij WIE v1.0.0:** [M8a — Ellipsen](M8a-ELLIPSEN-CONTRACT.md) en [M8b — Parallellogrammen](M8b-PARALLELLOGRAMMEN-CONTRACT.md) zijn geïntegreerd (M8a PR #15–#17; M8b PR #21–#23), niet langer uitsluitend ontwerpen. [UI-RADIAL-9](UI-RADIAL-9-CONTRACT-DRIVEN.md) en [AGENTS.md](../AGENTS.md) vormen actuele UI- en samenwerkingsgrenzen; zie [roadmap](DEVELOPMENT-ROADMAP.md) en [v1.0-release-notities](WIE-V1-RELEASE-NOTES.md). [M7-VEC-FUND — Vectorfundament](M7-VEC-FUND-CONTRACT.md) blijft **goedgekeurd als ontwerp, niet geïmplementeerd**. M7a–c blijven gereserveerd voor starre transformaties. Eerdere versie-/faseclaims hieronder zijn gedateerde momentopnamen.
+
+**Interpretatie:** dit is een cumulatieve wensen- en besluitengeschiedenis. Historische uitspraken zoals 'niet gestart' en 'nog niet geïmplementeerd' horen bij hun eigen peildatum en overrulen bovenstaande v1.0-baseline niet. Nieuwe v1.1-functionaliteit vereist een afzonderlijke ontwerp- en uitvoerings-GO.
 
 Priority is implementation sequence, not permission to omit any feature. All entries are in scope for the long-term product. Status: proposed / existing-to-verify / implemented / tested / released.
 

@@ -1,8 +1,21 @@
 # Mathematical Illustration Platform — Development Roadmap
 
-Version: 2.8.53 (WIE-TOOL-L5.5 gespecialiseerde gereedschapsroutes; behoud eerdere roadmapbesluiten; 2026-10-17)
+Version: 2.8.54 (DOC-D statusconsolidatie na v1.0.0; historische roadmap behouden; 2026-10-18)
 Status: `main` bevat het volledig geaccepteerde M8b-traject: M8b-1 via PR #21, M8b-2/2b/2c via PR #22 en M8b-3-eindconsolidatie via [PR #23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23), mergecommit `fdf5d4fc49ddd4dcb05a8b4b5178cd78cd23d883`. Vaste parallellogrammen blijven `constructionSchema:8` gebruiken; dynamische gelijke-zijdenvoorwaarden `constructionSchema:9`. M8-INT.0 is op 17 oktober 2026 handmatig geaccepteerd en via [PR #27](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/27) op `main` geïntegreerd. De drie oude zichtbare snijpuntknoppen zijn verwijderd, de legacyrecepten behouden en de finale Node-/Edge-tests zijn volgens het implementatieverslag geslaagd. M8-INT.1 (lijn–ellips, inclusief het automatische terugkeren naar Selecteren na geslaagde Snijpunt-constructie) is op 17 oktober 2026 handmatig geaccepteerd en via [PR #28](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/28) naar `main` gemerged. Historische checkpoints hieronder blijven tijdgebonden momentopnamen.
-Date: 2026-10-17
+Date: 2026-10-18
+
+## Actuele release- en ontwikkelstatus (DOC-D, 2026-10-18)
+
+Dit gedeelte is **leidend voor de geïntegreerde status** boven tijdgebonden checkpointteksten hieronder. De historische checkpoints blijven ongewijzigd als ontwerp-, test- en besluitgeschiedenis, en hun toenmalige `main`-SHA's / 'niet gestart'-oordelen zijn **geen actuele branchstatus**.
+
+- **Officiële WIE-release:** [v1.0.0](https://github.com/Geert1985/wiskundige-illustratie-editor/releases/tag/v1.0.0), `main` op `4257e40d9ee85595844c5cfdd36e4d9b822cdda5` (PR #51). `main` is beschermd en bedoeld voor stabiele releases; volgende ontwikkelingen worden via feature-/chorebranches naar `develop` geïntegreerd.
+- **M8a ellipsen:** geïmplementeerde kern en dynamisch punt/besturingspunt Q zijn opgenomen via PR #15, #16 en #17. Het goedgekeurde [ellipscontract](M8a-ELLIPSEN-CONTRACT.md) blijft normatieve ontwerpbasis; oude ontwerpstatus `nog niet geïmplementeerd` is historisch.
+- **M8b parallellogrammen:** implementatie en M8b-3-eindconsolidatie zijn geïntegreerd via PR #21, #22 en [#23](https://github.com/Geert1985/wiskundige-illustratie-editor/pull/23); het bijbehorende [ontwerpcontract](M8b-PARALLELLOGRAMMEN-CONTRACT.md) bevat gedateerde statusmomenten. Gebruik voor feitelijke functionaliteit de vrijgegeven code en [v1.0-release-notities](WIE-V1-RELEASE-NOTES.md).
+- **WIE-teksteditor:** opgemaakte tekst, dynamische waarden en continue inline-LaTeX zijn onderdeel van v1.0 (PR #49, gevolgd door releasegate #50). De zelfstandige wetenschappelijke T5b-calculator en T5c-berekende fragmenten zijn **niet** door deze release impliciet geïmplementeerd of vrijgegeven; raadpleeg [teksteditorarchitectuur](TEXT-EDITOR-ARCHITECTURE.md) en het afzonderlijke T5b-ontwerp.
+- **M7-VEC-FUND:** goedgekeurd als ontwerp, niet als voltooide vectorfundamentimplementatie. De afzonderlijke WAT-app voor symbolische algebra en transformaties valt buiten WIE v1.0.
+- **Documentatie:** DOC-A-audit via PR #52/#53 en DOC-C-proefarchivering (zeven historische rapporten) via PR #54 zijn op `develop` geïntegreerd, **niet** op `main`. Historische rapporten staan in [de DOC-A-archiefindex](archive/doc-a-batch-1/README.md).
+
+Nieuwe featureprioriteiten en afbakening voor **v1.1.0** vereisen afzonderlijke expliciete productbesluiten; deze statusactualisatie verleent geen productiecode-GO.
 
 ## WIE-TOOL-L5.5 — Gespecialiseerde gereedschapsroutes en lifecyclecontracten (branchstatus 2026-10-17)
 
