@@ -1,6 +1,6 @@
 # WIE v1.0.0 — release notes
 
-**Status:** release candidatevoorbereiding. Deze notities beschrijven de beoogde eerste officiële release; ze vormen op zichzelf geen publicatie of definitieve vrijgave.
+**Versie:** 1.0.0. Deze notities beschrijven de eerste officiële versie van WIE.
 
 ## Eerste release
 
@@ -18,7 +18,7 @@ WIE is een zelfstandige browsereditor voor wiskundige illustraties. WIE v1.0.0 b
 
 ## Documentcompatibiliteit
 
-De appversie **1.0.0** is onafhankelijk van de JSON-documentversie. De releasecandidate leest geldige documentversies 1–10 en schrijft de laagste versie die de gebruikte functies kan opslaan (v2–v10). Functieschema's zoals construction, rich text, region, ellipse en measurement worden aanvullend gedeclareerd en gevalideerd. Import wordt geweigerd wanneer objecten of schema's ongeldig zijn of een toekomstige versie niet wordt ondersteund. Zie [DOCUMENT-FORMAT.md](../DOCUMENT-FORMAT.md) voor de versievoorwaarden.
+De appversie **1.0.0** is onafhankelijk van de JSON-documentversie. WIE v1.0.0 leest geldige documentversies 1–10 en schrijft de laagste versie die de gebruikte functies kan opslaan (v2–v10). Functieschema's zoals construction, rich text, region, ellipse en measurement worden aanvullend gedeclareerd en gevalideerd. Import wordt geweigerd wanneer objecten of schema's ongeldig zijn of een toekomstige versie niet wordt ondersteund. Zie [DOCUMENT-FORMAT.md](../DOCUMENT-FORMAT.md) voor de versievoorwaarden.
 
 Oudere WIE-versies kunnen nieuwe documentversies, objecttypen of feature-schema's weigeren. Werk met een actuele WIE-versie wanneer een bestand nieuwere functies gebruikt; open en sla zo'n bestand niet opnieuw op met een oudere versie die die functies niet kent.
 
@@ -47,12 +47,6 @@ De producteigenaar heeft handmatig geaccepteerd dat fullscreen met Escape in Mic
 
 Start lokaal met `npm run serve` en open <http://127.0.0.1:8080/>. Zie [README.md](../README.md) voor gebruik en scope.
 
-## Voorgestelde definitieve releaseprocedure
+## Distributie
 
-1. Laat deze releasecandidate en de definitieve notities beoordelen; merge de goedgekeurde wijziging naar `main`.
-2. Controleer de uiteindelijke releasecommit en bevestig dat die de goedgekeurde kandidaat bevat.
-3. Maak op die commit de Git-tag `v1.0.0`.
-4. Publiceer een GitHub Release met de goedgekeurde release-notities.
-5. Voer aanvullende distributiestappen alleen uit wanneer de producteigenaar een bestaande bestemming en procedure heeft bevestigd.
-
-Deze branch maakt geen tag aan en publiceert geen release. `package.json` blijft `private: true`; npm-publicatie is geen onderdeel van de voorgestelde procedure.
+De officiële versie wordt herkenbaar gemaakt met Git-tag `v1.0.0` en bijbehorende GitHub Release. `package.json` blijft `private: true`; npm-publicatie maakt geen deel uit van deze versie. Aanvullende hosting of distributie vereist afzonderlijke besluitvorming.
