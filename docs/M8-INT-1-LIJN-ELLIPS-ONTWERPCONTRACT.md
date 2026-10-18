@@ -255,7 +255,7 @@ Implementatievolgorde na aparte GO:
 4. **Universele dispatcher/UI:** breid het bestaande bronpaarcontract, ellipscontext en bronprefill uit; behoud één `Snijpunt`-tool en M8-INT.0-gedrag.
 5. **Permissions:** valideer nieuw recept, bronrollen, asgrants en runtime/exportprojection aan dezelfde servicegrenzen.
 6. **Verificatie:** onafhankelijke solver-fixtures, `INT-101`–`INT-122`, legacytests, `npm test`, `npm run test:edge`; rapporteer échte aantallen en page errors. Test gemengde documenten en zoom/pan.
-7. **Oplevering:** ontwerpafwijkingen, commit-SHA's, testuitvoer, restpunten, browseracceptatiechecklist en implementatieverslag `docs/M8-INT-1-IMPLEMENTATION-REPORT.md`.
+7. **Oplevering:** ontwerpafwijkingen, commit-SHA's, testuitvoer, restpunten, browseracceptatiechecklist en implementatieverslag `docs/archive/doc-e-batch-2/M8-INT-1-IMPLEMENTATION-REPORT.md`.
 
 **Niet aanmaken:** parallelle `ConstructionService`, tweede menu-/UI-engine, gekopieerde ellipsdefinitie-engine, algemene polynoom-/CAS-engine of aparte autorisatieservice.
 
