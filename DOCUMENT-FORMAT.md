@@ -1,10 +1,32 @@
-# Illustration documents — versioned formats through v10 (historical v2 specification retained)
+# Illustration documents — versioned formats through v10
 
-**Current status (2026-10-15):** `main` supports document versions through **9**; this feature branch adds optional document v10 for independent measurement labels. Writers continue exporting the lowest applicable version for existing documents; v10 and `measurementSchema:1` are emitted only when an object uses the new `measurements` field. The detailed original version-2 rules below are **historical**. A missing version still denotes legacy version 1. Unsupported future versions and malformed objects are rejected atomically. M8b remains a design contract, not an implemented schema revision. See [M8b](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md).
+**Actuele status (2026-10-18, `main`):** de reader ondersteunt geldige documentversies **1 tot en met 10**. `IllustrationModel.toJSON()` schrijft de laagste toepasselijke documentversie: v2 voor gewone documenten, v3 voor gekoppelde constructies, v4 voor groepen, v5 voor lagen, v6 voor cirkelpuntverdelingen, v7 voor gestructureerde rijke tekst, v8 voor regio's, v9 voor ellipsen en v10 voor onafhankelijke meetinstellingen. Als meerdere kenmerken samengaan, kiest de writer de hoogste vereiste versie. De corresponderende `constructionSchema`, `groupSchema`, `layerSchema`, `circleDistributionSchema`, `textSchema`, `regionSchema`, `ellipseSchema` en `measurementSchema` worden onafhankelijk gevalideerd waar van toepassing. `MODEL_VERSION` is 2; versie 1 blijft een legacy-invoerformaat. Een ontbrekende rootversie wordt als v1 gelezen.
 
-## Schema and atomic loading
+De applicatieversie (bijvoorbeeld **1.0.0**) staat los van deze JSON-documentversies. De historische v2-specificatie en oudere statusnotities verderop zijn behouden als technische migratiegeschiedenis; ze beschrijven niet noodzakelijk de actuele maximale ondersteuning. Waar historische tekst en onderstaande actuele voorwaarden verschillen, gelden de actuele voorwaarden en validatie in `model.js`. Onbekende toekomstige documentversies, ongeldige schema-/functiecombinaties en ongeldige objecten worden atomair geweigerd. Er wordt niet stilzwijgend naar een ouder formaat gedowngraded.
 
-- Root: a JSON object with an `objects` array. `type` may be omitted in a legacy file, otherwise it must be `geometry`. `version` is 1 or 2 (legacy numeric strings are accepted).
+Een nieuwere WIE kan geldige oudere documenten lezen wanneer alle aanwezige objecten en constructies binnen hun gedeclareerde schema's vallen. Een oudere WIE-versie kan documenten met nieuwere versies, objecttypen of schema's niet begrijpen; zulke bestanden horen geweigerd te worden. Sla een document met nieuwe functies niet vanuit een oudere editor opnieuw op: de oudere versie kan het niet veilig behouden. M8b is inmiddels geïmplementeerd; oudere passages die dit alleen een ontwerp noemen zijn historische statusnotities. Zie [M8b](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md).
+
+## Actuele documentversiekeuze
+
+| Hoogste vereiste documentversie | Wordt geschreven wanneer het document bevat | Vereiste featuredeclaratie |
+|---|---|---|
+| v2 | Gewone geometrie; dit is ook de writerbasisversie voor een eenvoudig document. | Geen aanvullende feature-schema's vereist. |
+| v3 | Gekoppelde constructies zonder een hogere versie-eis. | `constructionSchema` passend bij de gebruikte recepten. |
+| v4 | Persistente groepen. | `groupSchema: 1`; construction schema indien nodig. |
+| v5 | Lagen. | `layerSchema: 1`; groepen en constructies blijven gedeclareerd. |
+| v6 | Cirkelpuntverdelingen. | `circleDistributionSchema: 1` en de gevalideerde `circleDistributions`-registry. |
+| v7 | Gestructureerde rijke tekst, waaronder opmaak en inline-formulefragmenten. | `textSchema` volgens de opgeslagen fragmenten. |
+| v8 | Regio-objecten. | `regionSchema: 1`; regioconstructies vereisen ook het passende `constructionSchema`. |
+| v9 | Ellipsobjecten en ondersteunde ellipsconstructies. | `ellipseSchema: 1`; ellipsrecepten vereisen het passende `constructionSchema`. |
+| v10 | Onafhankelijke meetinstellingen op ondersteunde objecten. | `measurementSchema: 1`. |
+
+De tabel beschrijft de huidige `toJSON()`-selectie; een bestand met meerdere kenmerken krijgt de hoogste toepasselijke documentversie, plus de schema-declaraties voor alle gebruikte features. De reader controleert dat versienummer, objecten en schema's onderling overeenstemmen. Niet elk document dat bijvoorbeeld v8 declareert mag een regio missen of een onbekende schemawaarde gebruiken.
+
+## Legacy v1/v2-basisschema en atomair laden
+
+De onderstaande basisregels beschrijven het oorspronkelijke v1/v2-documentcontract. De featuresecties verderop beschrijven de latere actuele schema-uitbreidingen.
+
+- Root: a JSON object with an `objects` array. `type` may be omitted in a legacy file, otherwise it must be `geometry`. In de v1/v2-basisschema's is `version` 1 or 2 (legacy numeric strings are accepted); de huidige lezer ondersteunt ook v3–v10 zoals hieronder beschreven.
 - `meta` is an optional object; `title` and `description`, when non-null, must be strings. Other metadata fields are retained.
 - Each object has a supported type (`point`, `line`, `circle`, `text`, `straight`, `ray`, `vector`, `polygon`, `dimension`, `angle`) and a nonblank string ID or finite legacy numeric ID. IDs are canonicalized to strings and must be unique after canonicalization. Numeric ID `1` and string ID `"1"` conflict. Missing geometry fields retain the existing defaults; supplied coordinates must be finite numbers or nonempty numeric strings. A supplied circle radius cannot be negative. Straight/ray require distinct definition points; the new linear types require finite direction length.
 - Optional visibility/label flags are booleans or legacy null. Label offsets are finite numbers/numeric strings or null. Styles are objects. Names, labels and text are strings or finite legacy numbers, which retain their textual meaning.
@@ -100,10 +122,10 @@ Documents containing at least one `textContent` fragment use version 7 and `text
 v7/textSchema 1–3 unchanged. textContent.width is null for automatic width or a positive SVG-pixel width (same coordinate system as font sizes), maximum 1000000. It is formatting, not geometry/content/reference data. No new persisted fragment or raster cache; legacy rich text with null width keeps its compatibility layout. Long ordinary words wrap by grapheme; math/source atoms remain whole and may overflow. PNG native-font bitmaps are private export intermediates only. See docs/T4-CONTRACT.md and docs/T4-REPORT.md. calculatedValue/schema 4 remains future T5c design, not accepted by the current reader.
 
 
-## Region documents — version 8 (current production model)
+## Region documents — version 8
 
 The current `region` object type declares document `version:8` and `regionSchema:1`. Recipes `polygonRegion`, `circleSectorRegion` and `circleSegmentRegion` require `constructionSchema:5`; mixed documents can also contain compatible rich text, circle-point distributions, layers and groups with their own declared schemas. Derived region contour and area values are recomputed and are not stored as independent authoritative geometry. Import verifies schema combinations and resolves constructions before committing document state. See [REG-1](docs/REG-1-CONTRACT.md) and [REG-2 report](docs/REG-2-REPORT.md).
 
-**Measurement labels (feature branch, document v10):** documents containing independent measurement settings use `measurementSchema:1`. Per-object `measurements` stores visibility, precision override, computed/free-text mode, text, and document-coordinate label offsets for supported measurement kinds. Readers that do not support v10 must reject these documents. Documents without this field keep their existing version and their legacy `showMeasurement`, `measurementMode`, `measurementText`, and `areaDisplay` interpretation. Supported independent families are line segments, dimensions, angles, circles, polygons (including triangles), and ellipses; region areas retain their existing `areaDisplay` schema and independent canvas-drag position. Vector metrics await M7-VEC-FUND. Cloning copies settings and label offsets as stored.
+**Independent measurement settings — document v10 (current):** documents containing independent measurement settings use `measurementSchema:1`. Per-object `measurements` stores visibility, precision override, computed/free-text mode, text, and document-coordinate label offsets for supported measurement kinds. Readers that do not support v10 must reject these documents. When this field is absent, measurement settings alone do not raise the version; any other feature can still require a higher version. The legacy `showMeasurement`, `measurementMode`, `measurementText`, and `areaDisplay` fields retain their existing interpretation. Supported independent families are line segments, dimensions, angles, circles, polygons (including triangles), and ellipses; region areas retain their existing `areaDisplay` schema and independent canvas-drag position. Vector metrics await M7-VEC-FUND. Cloning copies settings and label offsets as stored.
 
-**Not yet supported:** M8b proposes another linked-`polygon` recipe whose version must be determined after M8a. No proposed version or schema is active until explicitly implemented, migration-tested and accepted.
+**Historische ontwerpnotitie:** the original M8b proposal described an additional linked-`polygon` recipe pending M8a. M8b has since been implemented and accepted; its parallelogram recipes require construction schema 8, or schema 9 for the `matchAB` variant. A document can declare a higher construction schema when it also uses a recipe that requires one. This paragraph remains only to preserve the earlier versioning decision context; see [M8b](docs/M8b-PARALLELLOGRAMMEN-CONTRACT.md) and the current schema logic in `model.js`.
