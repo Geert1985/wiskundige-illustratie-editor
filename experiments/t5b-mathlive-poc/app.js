@@ -170,7 +170,7 @@ function activateKey(button) {
 }
 
 const geoSources = new MockGeometrySources();
-const geoBindings = [{ token: 'wieSourceA', sourceId: 'circle-1', property: 'radius', instanceGeneration: 1 }, { token: 'wieSourceB', sourceId: 'circle-2', property: 'radius', instanceGeneration: 1 }];
+let geoBindings = [geoSources.selectBinding('circle-1','wieSourceA'), geoSources.selectBinding('circle-2','wieSourceB')];
 let geoRequest=0, geoKind='area';
 async function renderGeometry(){
  const request=++geoRequest,status=document.querySelector('#geo-source-status'),exactOut=document.querySelector('#geo-result-exact'),approxOut=document.querySelector('#geo-result-approx'),revOut=document.querySelector('#geo-revision-status');
@@ -256,8 +256,8 @@ function initialize() {
     document.querySelector('#geo-formula').setValue(formulas[geoKind]); renderGeometry();
   }));
   ['geo-radius','geo-unit','geo-state','geo-formula'].forEach(id=>document.querySelector(`#${id}`).addEventListener(id==='geo-formula'?'input':'change',renderGeometry));
-  document.querySelector('#geo-insert').addEventListener('click',()=>{document.querySelector('#geo-formula').executeCommand(['insert',sourceLatex('wieSourceA'),{selectionMode:'after'}]);renderGeometry();});
-  document.querySelector('#geo-insert-second').addEventListener('click',()=>{document.querySelector('#geo-formula').executeCommand(['insert',sourceLatex('wieSourceB'),{selectionMode:'after'}]);renderGeometry();});
+  document.querySelector('#geo-insert').addEventListener('click',()=>{try{geoBindings=[geoSources.selectBinding('circle-1','wieSourceA'),geoBindings[1]];document.querySelector('#geo-formula').executeCommand(['insert',sourceLatex('wieSourceA'),{selectionMode:'after'}]);renderGeometry();}catch{renderGeometry();}});
+  document.querySelector('#geo-insert-second').addEventListener('click',()=>{try{geoBindings=[geoBindings[0],geoSources.selectBinding('circle-2','wieSourceB')];document.querySelector('#geo-formula').executeCommand(['insert',sourceLatex('wieSourceB'),{selectionMode:'after'}]);renderGeometry();}catch{renderGeometry();}});
   renderGeometry();
   customKeyboard.addEventListener('pointerdown', event => {
     if (event.target.closest('button')) event.preventDefault();
