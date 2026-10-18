@@ -589,6 +589,11 @@
     closeText() { this.textWorkspace?.destroy();this.textWorkspace=null;if(this.textTransaction){this.runtime?.cancel(this.textTransaction);this.textTransaction=null;}this.nodes.richColorMenu&&(this.nodes.richColorMenu.hidden=true);this.nodes.richColor?.setAttribute?.('aria-expanded','false');this.textMigrateLegacy=false;this.textEditorRequest++;this.pendingText = null;this.textInsertPanel?.destroy();this.textInsertPanel=null;this.richTextEditor?.destroy();this.richTextEditor=null;this.textEditId=null;if (this.nodes.textDialog && this.nodes.textDialog.open) this.nodes.textDialog.close();const focus=this.textReturnFocus;this.textReturnFocus=null;if(focus?.isConnected)focus.focus(); this.renderInstructions(); }
     async submitText() {
       if(this.textInsertPanel?.isOpen()){this.textInsertPanel.announcePending();this.nodes.textEditorStatus.textContent='Bevestig of annuleer eerst de openstaande formule of dynamische waarde.';return;}
+      if(this.richTextEditor?.hasInvalidMathDraft?.()){
+        this.status('Herstel de onvolledige of ongeldige LaTeX-formule voordat u de tekst opslaat. De formulecode blijft in de editor staan.');
+        this.richTextEditor.focus();
+        return;
+      }
       if(this.runtime&&this.textPermissionEpoch!==this.runtime.permissionEpoch){this.status('De toegangsrechten zijn gewijzigd. Open de tekst opnieuw.');return;}
       const pending=this.pendingText,id=this.textEditId;
       if(!id){const layer=MI.DocumentLayers.automaticTextLayer(this.engine.model.layers,this.engine.model.meta);if(layer?.visible===false){this.status('De tekstlaag is verborgen. Maak deze eerst zichtbaar.');return;}}
