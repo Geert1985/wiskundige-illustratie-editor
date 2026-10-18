@@ -13,7 +13,7 @@
 - **Vectoren** is zichtbaar als lege, niet-uitklapbare subcategorie met milestone `M7-VEC-FUND`; er is geen vectorgereedschap of tool-ID toegevoegd.
 - De menu-ingangen voor `construct:perimeter` en `construct:area` zijn verwijderd. Berekening, constructierecepten, afhankelijke herberekening, maatlabels, inspector, geschiedenis en documentopslag/-export bleven behouden.
 - **Gecombineerde meting** is een niet-interactieve placeholder. De zijpaneelzoekfunctie vindt placeholders en telt ze mee; de fullscreenkiezer toont de placeholder met tooltip zonder hem activeerbaar te maken.
-- Het primaire-functieclassificatieprincipe is vastgelegd in de [ontwikkelroadmap](DEVELOPMENT-ROADMAP.md).
+- Het primaire-functieclassificatieprincipe is vastgelegd in de [ontwikkelroadmap](../../DEVELOPMENT-ROADMAP.md).
 
 ## Verificatie
 
